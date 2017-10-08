@@ -6,13 +6,13 @@ data Bool : Set where
   true  : Bool
   false : Bool
 
-_∨_ : Bool → Bool → Bool
-true ∨ _  = true
-false ∨ b = b
+_or_ : Bool → Bool → Bool
+true or _  = true
+false or b = b
 
-_∧_ : Bool → Bool → Bool
-false ∧ _ = false
-true ∧ b  = b
+_and_ : Bool → Bool → Bool
+false and _ = false
+true and b  = b
 
 
 ----------------------------------------
@@ -45,13 +45,15 @@ data Formula : Set where
   Q   : Formula
   R   : Term → Formula
   _⇒_ : Formula → Formula → Formula
+  _∧_ : Formula → Formula → Formula
   Ε   : Formula
+
 
 _≡_ : Formula → Formula → Bool
 P ≡ P             = true
 Q ≡ Q             = true
 R t ≡ R s         = t == s
-(a ⇒ b) ≡ (c ⇒ d) = (a ≡ c) ∧ (b ≡ d)
+(a ⇒ b) ≡ (c ⇒ d) = (a ≡ c) and (b ≡ d)
 _ ≡ _             = false
 
 lhs : Formula → Formula
@@ -65,23 +67,17 @@ rhs _ = Ε
 
 ----------------------------------------
 
-data Deduction : Set where
-  Assumption : Formula → Deduction
-  ArrowIntro : Deduction → Formula → Deduction
-  ArrowElim  : Deduction → Deduction → Deduction
+data Deduction : Formula → Set where
+  Assume     : (f : Formula) → Deduction f
+  ArrowIntro : {f : Formula} → (Deduction f) → (g : Formula) → Deduction (g ⇒ f)
+  ArrowElim  : {f g : Formula} → Deduction (g ⇒ f) → Deduction g → Deduction f
+
+test0 : Deduction P
+test0 = Assume P
 
 
-resolve : Deduction → Formula
-resolve (Assumption f)   = f
-resolve (ArrowIntro Φ f) = f ⇒ (resolve Φ)
-resolve (ArrowElim Φ Ψ)  with (lhs (resolve Φ)) ≡ (resolve Ψ)
-...                         | true  = rhs (resolve Φ)
-...                         | false = Ε
+test1 : Deduction Q
+test1 = (ArrowElim (Assume (P ⇒ Q)) (Assume P))
 
-
-
-test1 : Formula
-test1 = resolve (ArrowElim (Assumption (P ⇒ Q)) (Assumption P))
-
-test2 : Formula
-test2 = resolve (ArrowIntro (Assumption Q) P)
+test2 : Deduction (P ⇒ Q)
+test2 = (ArrowIntro (Assume Q) P)
