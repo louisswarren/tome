@@ -46,7 +46,12 @@ data Formula : Set where
   R   : Term → Formula
   _⇒_ : Formula → Formula → Formula
   _∧_ : Formula → Formula → Formula
+  _∨_ : Formula → Formula → Formula
   Ε   : Formula
+
+infixr 10 _∨_
+infixr 20 _∧_
+infixr 30 _⇒_
 
 
 _≡_ : Formula → Formula → Bool
@@ -71,13 +76,45 @@ data Deduction : Formula → Set where
   Assume     : (f : Formula) → Deduction f
   ArrowIntro : {f : Formula} → (Deduction f) → (g : Formula) → Deduction (g ⇒ f)
   ArrowElim  : {f g : Formula} → Deduction (g ⇒ f) → Deduction g → Deduction f
+  ConjIntro  : {f g : Formula} → Deduction f → Deduction g → Deduction (f ∧ g)
+  ConjElim₁  : {f g : Formula} → Deduction (f ∧ g) → Deduction f
+  ConjElim₂  : {f g : Formula} → Deduction (f ∧ g) → Deduction g
+  DisjIntro₁ : {f : Formula} → Deduction f → (g : Formula) → Deduction (f ∨ g)
+  DisjIntro₂ : {f : Formula} → Deduction f → (g : Formula) → Deduction (g ∨ f)
+
+
+-- Shorthands
+ConjElim : {f g : Formula} → Deduction (f ∧ g) → Deduction f
+ConjElim = ConjElim₁
+
+DisjIntro : {f : Formula} → Deduction f → (g : Formula) → Deduction (f ∨ g)
+DisjIntro = DisjIntro₁
+
+
+
+-- Tests
 
 test0 : Deduction P
 test0 = Assume P
 
 
 test1 : Deduction Q
-test1 = (ArrowElim (Assume (P ⇒ Q)) (Assume P))
+test1 = ArrowElim (Assume (P ⇒ Q)) (Assume P)
 
 test2 : Deduction (P ⇒ Q)
-test2 = (ArrowIntro (Assume Q) P)
+test2 = ArrowIntro (Assume Q) P
+
+test3 : Deduction (P ∧ Q)
+test3 = ConjIntro (Assume P) (Assume Q)
+
+test4 : Deduction P
+test4 = ConjElim₁ (Assume (P ∧ Q))
+
+test5 : Deduction Q
+test5 = ConjElim₂ (Assume (P ∧ Q))
+
+test6 : Deduction (P ∨ Q)
+test6 = DisjIntro₁ (Assume P) Q
+
+test7 : Deduction (Q ∨ P)
+test7 = DisjIntro₂ (Assume P) Q
