@@ -91,6 +91,8 @@ DisjIntro : {f : Formula} → Deduction f → (g : Formula) → Deduction (f ∨
 DisjIntro = DisjIntro₁
 
 
+Conclusion : {f : Formula} → Deduction f → Formula
+Conclusion {f} _ = f
 
 -- Tests
 
