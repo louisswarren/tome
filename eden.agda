@@ -26,7 +26,23 @@ NatEq zero zero       = true
 NatEq (suc n) (suc m) = NatEq n m
 NatEq _ _             = false
 
+
 ----------------------------------------
+
+data List (A : Set) : Set where
+  []   : List A
+  _::_ : A → List A → List A
+
+
+[_] : {A : Set} → A → List A
+[ x ] = x :: []
+
+_++_ : {A : Set} → List A → List A → List A
+[] ++ ys        = ys
+(x :: xs) ++ ys = x :: (xs ++ ys)
+
+----------------------------------------
+
 data Term : Set where
   NamedTerm : ℕ → Term
   X : Term
@@ -59,48 +75,41 @@ P ≡ P             = true
 Q ≡ Q             = true
 R t ≡ R s         = t == s
 (a ⇒ b) ≡ (c ⇒ d) = (a ≡ c) and (b ≡ d)
+(a ∧ b) ≡ (c ∧ d) = (a ≡ c) and (b ≡ d)
+(a ∨ b) ≡ (c ∨ d) = (a ≡ c) and (b ≡ d)
 _ ≡ _             = false
 
-lhs : Formula → Formula
-lhs (a ⇒ _) = a
-lhs _ = Ε
 
-rhs : Formula → Formula
-rhs (_ ⇒ b) = b
-rhs _ = Ε
+_discharging_ : List Formula → Formula → List Formula
+[] discharging _        = []
+(x :: xs) discharging y with (x ≡ y)
+...                        | true  = (xs discharging y)
+...                        | false = x :: (xs discharging y)
 
 
 ----------------------------------------
 
-data Deduction : Formula → Set where
-  Assume     : (f : Formula) → Deduction f
-  ArrowIntro : {f : Formula} → (Deduction f) → (g : Formula) → Deduction (g ⇒ f)
-  ArrowElim  : {f g : Formula} → Deduction (g ⇒ f) → Deduction g → Deduction f
-  ConjIntro  : {f g : Formula} → Deduction f → Deduction g → Deduction (f ∧ g)
-  ConjElim₁  : {f g : Formula} → Deduction (f ∧ g) → Deduction f
-  ConjElim₂  : {f g : Formula} → Deduction (f ∧ g) → Deduction g
-  DisjIntro₁ : {f : Formula} → Deduction f → (g : Formula) → Deduction (f ∨ g)
-  DisjIntro₂ : {f : Formula} → Deduction f → (g : Formula) → Deduction (g ∨ f)
+data Deduction : List Formula → Formula → Set where
+  Assume     : (f : Formula) → Deduction [ f ] f
+  ArrowIntro : {f : Formula} → {afs : List Formula} → (Deduction afs f) → (g : Formula) → Deduction (afs discharging g) (g ⇒ f)
+  ArrowElim  : {f g : Formula} → {ars ags : List Formula} → Deduction ars (g ⇒ f) → Deduction ags g → Deduction (ars ++ ags) f
+  ConjIntro  : {f g : Formula} → {afs ags : List Formula} → Deduction afs f → Deduction ags g → Deduction (afs ++ ags) (f ∧ g)
+  ConjElim₁  : {f g : Formula} → {acs : List Formula} → Deduction acs (f ∧ g) → Deduction acs f
+  ConjElim₂  : {f g : Formula} → {acs : List Formula} → Deduction acs (f ∧ g) → Deduction acs g
+  DisjIntro₁ : {f : Formula} → {afs : List Formula} → Deduction afs f → (g : Formula) → Deduction afs (f ∨ g)
+  DisjIntro₂ : {f : Formula} → {afs : List Formula} → Deduction afs f → (g : Formula) → Deduction afs (g ∨ f)
 
 
--- Shorthands
-ConjElim : {f g : Formula} → Deduction (f ∧ g) → Deduction f
-ConjElim = ConjElim₁
-
-DisjIntro : {f : Formula} → Deduction f → (g : Formula) → Deduction (f ∨ g)
-DisjIntro = DisjIntro₁
-
-
-Conclusion : {f : Formula} → Deduction f → Formula
+Conclusion : {f : Formula} → {afs : List Formula} → Deduction afs f → Formula
 Conclusion {f} _ = f
 
 -- Tests
 
-test0 : Deduction P
+test0 : Deduction [ P ] P
 test0 = Assume P
 
 
-test1 : Deduction Q
+test1 : Deduction (P :: [ P ⇒ Q ] ) Q
 test1 = ArrowElim (Assume (P ⇒ Q)) (Assume P)
 
 test2 : Deduction (P ⇒ Q)
