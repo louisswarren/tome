@@ -98,6 +98,8 @@ data Deduction : List Formula → Formula → Set where
   DisjElim   : ∀{f g r ads als ars} → Deduction ads (f ∨ g) → Deduction als r → Deduction ars r → Deduction (ads ++ ((als discharging f) ++ (ars discharging g))) r
   UniGIntro  : ∀{f afs t} → {p : isTrue (not (t freein afs))} → Deduction afs f → (t : Term) → Deduction afs (Α t f)
   UniGElim   : ∀{f afs t} → Deduction afs (Α t f) → Deduction afs f
+  ExiGIntro  : ∀{f afs} → Deduction afs f → (t : Term) → Deduction afs (Ε t f)
+  ExiGElim  : ∀{f g afs gfs t} → isTrue (not (t freein [ g ])) → Deduction afs (Ε t f) → Deduction gfs g → Deduction (afs ++ (gfs discharging f)) g
 
 
 
@@ -137,5 +139,5 @@ test8 = ArrowIntro (DisjIntro₁ (Assume P) Q) P
 test9 : Deduction (P ∨ Q :: P ⇒ R :: Q ⇒ R :: []) R
 test9 = DisjElim (Assume (P ∨ Q)) (ArrowElim (Assume (P ⇒ R)) (Assume P)) (ArrowElim (Assume (Q ⇒ R)) (Assume Q))
 
---test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
---test10 = UniGIntro (ConjElim₁ (UniGElim (Assume (Α X (S X ∧ P))))) X
+test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
+test10 = UniGIntro (ConjElim₁ (UniGElim (Assume (Α X (S X ∧ P))))) X
