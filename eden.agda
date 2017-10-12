@@ -14,6 +14,16 @@ _and_ : Bool → Bool → Bool
 false and _ = false
 true and b  = b
 
+not : Bool → Bool
+not true  = false
+not false = true
+
+data False  : Set where
+record True : Set where
+
+isTrue : Bool → Set
+isTrue true  = True
+isTrue false = False
 
 ----------------------------------------
 
@@ -44,6 +54,10 @@ _++_ : {A : Set} → List A → List A → List A
 infixr 10 _++_
 infixr 20 _::_
 
+all : {A : Set} → (A → Bool) → List A → Bool
+all _ []        = true
+all f (x :: xs) = (f x) and (all f xs)
+
 ----------------------------------------
 
 data Term : Set where
@@ -67,7 +81,8 @@ data Formula : Set where
   _⇒_ : Formula → Formula → Formula
   _∧_ : Formula → Formula → Formula
   _∨_ : Formula → Formula → Formula
-  Ε   : Formula
+  Α   : Term → Formula → Formula
+  Ε   : Term → Formula → Formula
 
 infixr 110 _∨_
 infixr 120 _∧_
@@ -92,6 +107,29 @@ _discharging_ : List Formula → Formula → List Formula
 ...                        | false = x :: (xs discharging y)
 
 
+_freein₁_ : Term → Formula → Bool
+t freein₁ P       = false
+t freein₁ Q       = false
+t freein₁ R       = false
+t freein₁ (S n)   = not (t == n)
+t freein₁ (a ⇒ b) = (t freein₁ a) or (t freein₁ b)
+t freein₁ (a ∧ b) = (t freein₁ a) or (t freein₁ b)
+t freein₁ (a ∨ b) = (t freein₁ a) or (t freein₁ b)
+t freein₁ (Ε n a) = (not (t == n)) and (t freein₁ a)
+t freein₁ (Α n a) = (not (t == n)) and (t freein₁ a)
+
+_arefreein'_ : List Term → Formula → Bool
+[] arefreein' f        = true
+(t :: ts) arefreein' f = (t freein₁ f) and (ts arefreein' f)
+
+_arefreein_ : List Term → List Formula → Bool
+ts arefreein fs = all (_arefreein'_ ts) fs
+
+_freein_ : Term → List Formula → Bool
+t freein fs = all (_freein₁_ t) fs
+
+
+
 ----------------------------------------
 
 data Deduction : List Formula → Formula → Set where
@@ -104,6 +142,8 @@ data Deduction : List Formula → Formula → Set where
   DisjIntro₁ : ∀{f afs}       → Deduction afs f       → (g : Formula)   → Deduction afs (f ∨ g)
   DisjIntro₂ : ∀{f afs}       → Deduction afs f       → (g : Formula)   → Deduction afs (g ∨ f)
   DisjElim   : ∀{f g r ads als ars} → Deduction ads (f ∨ g) → Deduction als r → Deduction ars r → Deduction (ads ++ ((als discharging f) ++ (ars discharging g))) r
+  UniGIntro  : ∀{f afs t} → {p : isTrue (t freein afs)} → Deduction afs f → (t : Term) → Deduction afs (Α t f)
+  UniGElim   : ∀{f afs t} → Deduction afs (Α t f) → Deduction afs f
 
 
 
@@ -143,3 +183,5 @@ test8 = ArrowIntro (DisjIntro₁ (Assume P) Q) P
 test9 : Deduction (P ∨ Q :: P ⇒ R :: Q ⇒ R :: []) R
 test9 = DisjElim (Assume (P ∨ Q)) (ArrowElim (Assume (P ⇒ R)) (Assume P)) (ArrowElim (Assume (Q ⇒ R)) (Assume Q))
 
+test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
+test10 = UniGIntro (ConjElim₁ (UniGElim (Assume (Α X (S X ∧ P))))) X
