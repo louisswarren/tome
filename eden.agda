@@ -1,22 +1,8 @@
+open import common
+
 module eden where
 
 ----------------------------------------
-
-data Bool : Set where
-  true  : Bool
-  false : Bool
-
-_or_ : Bool → Bool → Bool
-true or _  = true
-false or b = b
-
-_and_ : Bool → Bool → Bool
-false and _ = false
-true and b  = b
-
-not : Bool → Bool
-not true  = false
-not false = true
 
 data False  : Set where
 record True : Set where
@@ -27,49 +13,17 @@ isTrue false = False
 
 ----------------------------------------
 
-data ℕ : Set where
-  zero : ℕ
-  suc  : ℕ → ℕ
-
-NatEq : ℕ → ℕ → Bool
-NatEq zero zero       = true
-NatEq (suc n) (suc m) = NatEq n m
-NatEq _ _             = false
-
-
-----------------------------------------
-
-data List (A : Set) : Set where
-  []   : List A
-  _::_ : A → List A → List A
-
-
-[_] : {A : Set} → A → List A
-[ x ] = x :: []
-
-_++_ : {A : Set} → List A → List A → List A
-[] ++ ys        = ys
-(x :: xs) ++ ys = x :: (xs ++ ys)
-
-infixr 10 _++_
-infixr 20 _::_
-
-all : {A : Set} → (A → Bool) → List A → Bool
-all _ []        = true
-all f (x :: xs) = (f x) and (all f xs)
-
-----------------------------------------
-
 data Term : Set where
   NamedTerm : ℕ → Term
   X : Term
   Y : Term
 
-_==_ : Term → Term → Bool
-NamedTerm n == NamedTerm m = NatEq n m
-X == X                     = true
-Y == Y                     = true
-_ == _                     = false
+TermEq : Term → Term → Bool
+TermEq (NamedTerm n) (NamedTerm m) = n == m
+TermEq X X                         = true
+TermEq Y Y                         = true
+TermEq _ _                         = false
+
 
 ----------------------------------------
 
@@ -93,7 +47,7 @@ _≡_ : Formula → Formula → Bool
 P ≡ P             = true
 Q ≡ Q             = true
 R ≡ R             = true
-S t ≡ S s         = t == s
+S t ≡ S s         = TermEq t s
 (a ⇒ b) ≡ (c ⇒ d) = (a ≡ c) and (b ≡ d)
 (a ∧ b) ≡ (c ∧ d) = (a ≡ c) and (b ≡ d)
 (a ∨ b) ≡ (c ∨ d) = (a ≡ c) and (b ≡ d)
@@ -111,12 +65,12 @@ _freein₁_ : Term → Formula → Bool
 t freein₁ P       = false
 t freein₁ Q       = false
 t freein₁ R       = false
-t freein₁ (S n)   = not (t == n)
+t freein₁ (S n)   = not (TermEq t n)
 t freein₁ (a ⇒ b) = (t freein₁ a) or (t freein₁ b)
 t freein₁ (a ∧ b) = (t freein₁ a) or (t freein₁ b)
 t freein₁ (a ∨ b) = (t freein₁ a) or (t freein₁ b)
-t freein₁ (Ε n a) = (not (t == n)) and (t freein₁ a)
-t freein₁ (Α n a) = (not (t == n)) and (t freein₁ a)
+t freein₁ (Ε n a) = (not (TermEq t n)) and (t freein₁ a)
+t freein₁ (Α n a) = (not (TermEq t n)) and (t freein₁ a)
 
 _arefreein'_ : List Term → Formula → Bool
 [] arefreein' f        = true
@@ -183,5 +137,5 @@ test8 = ArrowIntro (DisjIntro₁ (Assume P) Q) P
 test9 : Deduction (P ∨ Q :: P ⇒ R :: Q ⇒ R :: []) R
 test9 = DisjElim (Assume (P ∨ Q)) (ArrowElim (Assume (P ⇒ R)) (Assume P)) (ArrowElim (Assume (Q ⇒ R)) (Assume Q))
 
-test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
-test10 = UniGIntro (ConjElim₁ (UniGElim (Assume (Α X (S X ∧ P))))) X
+--test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
+--test10 = UniGIntro (ConjElim₁ (UniGElim (Assume (Α X (S X ∧ P))))) X
