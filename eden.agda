@@ -142,7 +142,7 @@ data Deduction : List Formula → Formula → Set where
   DisjIntro₁ : ∀{f afs}       → Deduction afs f       → (g : Formula)   → Deduction afs (f ∨ g)
   DisjIntro₂ : ∀{f afs}       → Deduction afs f       → (g : Formula)   → Deduction afs (g ∨ f)
   DisjElim   : ∀{f g r ads als ars} → Deduction ads (f ∨ g) → Deduction als r → Deduction ars r → Deduction (ads ++ ((als discharging f) ++ (ars discharging g))) r
-  UniGIntro  : ∀{f afs t} → {p : isTrue (t freein afs)} → Deduction afs f → (t : Term) → Deduction afs (Α t f)
+  UniGIntro  : ∀{f afs t} → {p : isTrue (not (t freein afs))} → Deduction afs f → (t : Term) → Deduction afs (Α t f)
   UniGElim   : ∀{f afs t} → Deduction afs (Α t f) → Deduction afs f
 
 
