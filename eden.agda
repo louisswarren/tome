@@ -28,6 +28,7 @@ TermEq _ _                         = false
 ----------------------------------------
 
 data Formula : Set where
+  ⊥   : Formula
   P   : Formula
   Q   : Formula
   R   : Formula
@@ -42,8 +43,31 @@ infixr 110 _∨_
 infixr 120 _∧_
 infixr 130 _⇒_
 
+¬ : Formula → Formula
+¬ a = a ⇒ ⊥
+
+
+rebind : Formula → Term → Term → Formula
+rebind ⊥ _ _       = P
+rebind P _ _       = P
+rebind Q _ _       = P
+rebind R _ _       = P
+rebind (S t) x y   with (TermEq t x)
+...                   | true  = S y
+...                   | false = S t
+rebind (a ⇒ b) x y = (rebind a x y) ⇒ (rebind b x y)
+rebind (a ∧ b) x y = (rebind a x y) ∧ (rebind b x y)
+rebind (a ∨ b) x y = (rebind a x y) ∨ (rebind b x y)
+rebind (Α t f) x y with (TermEq t x)
+...                   | true  = Α t f
+...                   | false = Α t (rebind f x y)
+rebind (Ε t f) x y with (TermEq t x)
+...                   | true  = Ε t f
+...                   | false = Ε t (rebind f x y)
+
 
 _≡_ : Formula → Formula → Bool
+⊥ ≡ ⊥             = true
 P ≡ P             = true
 Q ≡ Q             = true
 R ≡ R             = true
@@ -51,6 +75,8 @@ S t ≡ S s         = TermEq t s
 (a ⇒ b) ≡ (c ⇒ d) = (a ≡ c) and (b ≡ d)
 (a ∧ b) ≡ (c ∧ d) = (a ≡ c) and (b ≡ d)
 (a ∨ b) ≡ (c ∨ d) = (a ≡ c) and (b ≡ d)
+(Α t f) ≡ (Α s g) = (rebind f t s) ≡ g
+(Ε t f) ≡ (Ε s g) = (rebind f t s) ≡ g
 _ ≡ _             = false
 
 _discharging_ : List Formula → Formula → List Formula
@@ -61,6 +87,7 @@ _discharging_ : List Formula → Formula → List Formula
 
 
 _freein_ : Term → Formula → Bool
+t freein ⊥       = false
 t freein P       = false
 t freein Q       = false
 t freein R       = false
@@ -147,4 +174,19 @@ test12 = ExiGIntro (Assume (S X)) X
 
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
 test13 = ExiGElim (Recur AllClosed) (Assume (Ε X (S X))) (ArrowElim (UniGElim (Assume (Α X ((S X) ⇒ P)))) (Assume (S X)))
+
+
+
+-- Non-trivial usage
+
+all-contradict : Deduction ((¬(S X)) :: [ Α X (S X) ]) ⊥
+all-contradict = ArrowElim (Assume (¬(S X))) (UniGElim (Assume (Α X (S X))))
+
+
+not-for-all : Deduction [ (¬(S X)) ] ( ¬ (Α X (S X)))
+not-for-all = ArrowIntro all-contradict (Α X (S X))
+
+
+gmp-complement : Deduction [ Ε X (¬ (S X)) ] (¬(Α X (S X)))
+gmp-complement = ExiGElim (Recur AllClosed) (Assume (Ε X (¬(S X)))) not-for-all
 
