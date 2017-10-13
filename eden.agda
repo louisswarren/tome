@@ -11,6 +11,7 @@ isTrue : Bool → Set
 isTrue true  = True
 isTrue false = False
 
+
 ----------------------------------------
 
 data Term : Set where
@@ -39,9 +40,11 @@ data Formula : Set where
   Α   : Term → Formula → Formula
   Ε   : Term → Formula → Formula
 
+
 infixr 110 _∨_
 infixr 120 _∧_
 infixr 130 _⇒_
+
 
 ¬ : Formula → Formula
 ¬ a = a ⇒ ⊥
@@ -79,6 +82,7 @@ S t ≡ S s         = TermEq t s
 (Ε t f) ≡ (Ε s g) = (rebind f t s) ≡ g
 _ ≡ _             = false
 
+
 _discharging_ : List Formula → Formula → List Formula
 [] discharging _        = []
 (x :: xs) discharging y with (x ≡ y)
@@ -107,20 +111,69 @@ data _NotFreeIn_ (t : Term) : List Formula → Set where
 ----------------------------------------
 
 data Deduction : List Formula → Formula → Set where
-  Assume     :                  (f : Formula)                           → Deduction [ f ] f
-  ArrowIntro : ∀{f afs}       → (Deduction afs f)     → (g : Formula)   → Deduction (afs discharging g) (g ⇒ f)
-  ArrowElim  : ∀{f g ars ags} → Deduction ars (g ⇒ f) → Deduction ags g → Deduction (ars ++ ags) f
-  ConjIntro  : ∀{f g afs ags} → Deduction afs f       → Deduction ags g → Deduction (afs ++ ags) (f ∧ g)
-  ConjElim₁  : ∀{f g acs}     → Deduction acs (f ∧ g)                   → Deduction acs f
-  ConjElim₂  : ∀{f g acs}     → Deduction acs (f ∧ g)                   → Deduction acs g
-  DisjIntro₁ : ∀{f afs}       → Deduction afs f       → (g : Formula)   → Deduction afs (f ∨ g)
-  DisjIntro₂ : ∀{f afs}       → Deduction afs f       → (g : Formula)   → Deduction afs (g ∨ f)
-  DisjElim   : ∀{f g r ads als ars} → Deduction ads (f ∨ g) → Deduction als r → Deduction ars r → Deduction (ads ++ ((als discharging f) ++ (ars discharging g))) r
-  UniGIntro  : ∀{f afs t} → (t NotFreeIn afs) → Deduction afs f → (t : Term) → Deduction afs (Α t f)
-  UniGElim   : ∀{f afs t} → Deduction afs (Α t f) → Deduction afs f
-  ExiGIntro  : ∀{f afs} → Deduction afs f → (t : Term) → Deduction afs (Ε t f)
+  Assume     : (p : Formula)
+               → Deduction [ p ] p
+
+  ArrowIntro : ∀{Γ q}
+               → (Deduction Γ q)
+               → (p : Formula)
+               → Deduction (Γ discharging p) (p ⇒ q)
+
+  ArrowElim  : ∀{Γ₁ Γ₂ p q}
+               → Deduction Γ₁ (p ⇒ q)
+               → Deduction Γ₂ p
+               → Deduction (Γ₁ ++ Γ₂) q
+
+  ConjIntro  : ∀{Γ₁ Γ₂ p q}
+               → Deduction Γ₁ p
+               → Deduction Γ₂ q
+               → Deduction (Γ₁ ++ Γ₂) (p ∧ q)
+
+  ConjElim₁  : ∀{Γ p q}
+               → Deduction Γ (p ∧ q)
+               → Deduction Γ p
+
+  ConjElim₂  : ∀{Γ p q}
+               → Deduction Γ (p ∧ q)
+               → Deduction Γ q
+
+  DisjIntro₁ : ∀{Γ p}
+               → Deduction Γ p
+               → (q : Formula)
+               → Deduction Γ (p ∨ q)
+
+  DisjIntro₂ : ∀{Γ p}
+               → Deduction Γ p
+               → (q : Formula)
+               → Deduction Γ (q ∨ p)
+
+  DisjElim   : ∀{Γ₁ Γ₂ Γ₃ p q r}
+               → Deduction Γ₁ (p ∨ q)
+               → Deduction Γ₂ r
+               → Deduction Γ₃ r
+               → Deduction (Γ₁ ++ (Γ₂ discharging p) ++ (Γ₃ discharging q)) r
+
+  UniGIntro  : ∀{Γ p x}
+               → (x NotFreeIn Γ)
+               → Deduction Γ p
+               → (x : Term)
+               → Deduction Γ (Α x p)
+
+  UniGElim   : ∀{Γ p x}
+               → Deduction Γ (Α x p)
+               → Deduction Γ p
+
+  ExiGIntro  : ∀{Γ p}
+               → Deduction Γ p
+               → (x : Term)
+               → Deduction Γ (Ε x p)
+
   --- Not necessarily valid - cannot use an already existing term
-  ExiGElim   : ∀{f g afs gfs t} → t NotFreeIn [ g ] → Deduction afs (Ε t f) → Deduction gfs g → Deduction (afs ++ (gfs discharging f)) g
+  ExiGElim   : ∀{Γ₁ Γ₂ p q x}
+               → x NotFreeIn [ q ]
+               → Deduction Γ₁ (Ε x p)
+               → Deduction Γ₂ q
+               → Deduction (Γ₁ ++ (Γ₂ discharging p)) q
 
 
 
@@ -189,4 +242,7 @@ not-for-all = ArrowIntro all-contradict (Α X (S X))
 
 gmp-complement : Deduction [ Ε X (¬ (S X)) ] (¬(Α X (S X)))
 gmp-complement = ExiGElim (Recur AllClosed) (Assume (Ε X (¬(S X)))) not-for-all
+
+
+
 
