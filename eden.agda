@@ -53,7 +53,6 @@ S t ≡ S s         = TermEq t s
 (a ∨ b) ≡ (c ∨ d) = (a ≡ c) and (b ≡ d)
 _ ≡ _             = false
 
-
 _discharging_ : List Formula → Formula → List Formula
 [] discharging _        = []
 (x :: xs) discharging y with (x ≡ y)
@@ -61,32 +60,21 @@ _discharging_ : List Formula → Formula → List Formula
 ...                        | false = x :: (xs discharging y)
 
 
-_freein₁_ : Term → Formula → Bool
-t freein₁ P       = false
-t freein₁ Q       = false
-t freein₁ R       = false
-t freein₁ (S n)   = not (TermEq t n)
-t freein₁ (a ⇒ b) = (t freein₁ a) or (t freein₁ b)
-t freein₁ (a ∧ b) = (t freein₁ a) or (t freein₁ b)
-t freein₁ (a ∨ b) = (t freein₁ a) or (t freein₁ b)
-t freein₁ (Ε n a) = (not (TermEq t n)) and (t freein₁ a)
-t freein₁ (Α n a) = (not (TermEq t n)) and (t freein₁ a)
-
-_arefreein'_ : List Term → Formula → Bool
-[] arefreein' f        = true
-(t :: ts) arefreein' f = (t freein₁ f) and (ts arefreein' f)
-
-_arefreein_ : List Term → List Formula → Bool
-ts arefreein fs = all (_arefreein'_ ts) fs
-
-_freein_ : Term → List Formula → Bool
-t freein fs = all (_freein₁_ t) fs
-
+_freein_ : Term → Formula → Bool
+t freein P       = false
+t freein Q       = false
+t freein R       = false
+t freein (S n)   = not (TermEq t n)
+t freein (a ⇒ b) = (t freein a) or (t freein b)
+t freein (a ∧ b) = (t freein a) or (t freein b)
+t freein (a ∨ b) = (t freein a) or (t freein b)
+t freein (Ε n a) = (not (TermEq t n)) and (t freein a)
+t freein (Α n a) = (not (TermEq t n)) and (t freein a)
 
 
 data _NotFreeIn_ (t : Term) : List Formula → Set where
   AllClosed : t NotFreeIn []
-  Recur     : ∀{f fs} → {p : isTrue (not (t freein₁ f))} → t NotFreeIn fs → t NotFreeIn (f :: fs)
+  Recur     : ∀{f fs} → {p : isTrue (not (t freein f))} → t NotFreeIn fs → t NotFreeIn (f :: fs)
 
 
 ----------------------------------------
@@ -104,7 +92,8 @@ data Deduction : List Formula → Formula → Set where
   UniGIntro  : ∀{f afs t} → (t NotFreeIn afs) → Deduction afs f → (t : Term) → Deduction afs (Α t f)
   UniGElim   : ∀{f afs t} → Deduction afs (Α t f) → Deduction afs f
   ExiGIntro  : ∀{f afs} → Deduction afs f → (t : Term) → Deduction afs (Ε t f)
-  ExiGElim  : ∀{f g afs gfs t} → {p : isTrue (not (t freein [ g ]))} → Deduction afs (Ε t f) → Deduction gfs g → Deduction (afs ++ (gfs discharging f)) g
+  --- Not necessarily valid - cannot use an already existing term
+  ExiGElim   : ∀{f g afs gfs t} → t NotFreeIn [ g ] → Deduction afs (Ε t f) → Deduction gfs g → Deduction (afs ++ (gfs discharging f)) g
 
 
 
@@ -157,5 +146,5 @@ test12 : Deduction [ S X ] (Ε X (S X))
 test12 = ExiGIntro (Assume (S X)) X
 
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
-test13 = ExiGElim (Assume (Ε X (S X))) (ArrowElim (UniGElim (Assume (Α X ((S X) ⇒ P)))) (Assume (S X)))
+test13 = ExiGElim (Recur AllClosed) (Assume (Ε X (S X))) (ArrowElim (UniGElim (Assume (Α X ((S X) ⇒ P)))) (Assume (S X)))
 
