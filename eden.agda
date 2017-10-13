@@ -105,7 +105,9 @@ t freein (Α n a) = (not (TermEq t n)) and (t freein a)
 
 data _NotFreeIn_ (t : Term) : List Formula → Set where
   AllClosed : t NotFreeIn []
-  Recur     : ∀{f fs} → {p : isTrue (not (t freein f))} → t NotFreeIn fs → t NotFreeIn (f :: fs)
+  Recur     : ∀{Γ p} → {_ : isTrue (not (t freein p))}
+              → t NotFreeIn Γ
+              → t NotFreeIn (p :: Γ)
 
 
 ----------------------------------------
@@ -177,8 +179,8 @@ data Deduction : List Formula → Formula → Set where
 
 
 
-Conclusion : {f : Formula} → {afs : List Formula} → Deduction afs f → Formula
-Conclusion {f} _ = f
+Conclusion : {p : Formula} → {Γ : List Formula} → Deduction Γ p → Formula
+Conclusion {p} _ = p
 
 -- Tests
 
