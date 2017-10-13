@@ -84,6 +84,11 @@ t freein fs = all (_freein₁_ t) fs
 
 
 
+data _NotFreeIn_ (t : Term) : List Formula → Set where
+  AllClosed : t NotFreeIn []
+  Recur     : ∀{f fs} → {p : isTrue (not (t freein₁ f))} → t NotFreeIn fs → t NotFreeIn (f :: fs)
+
+
 ----------------------------------------
 
 data Deduction : List Formula → Formula → Set where
@@ -96,7 +101,7 @@ data Deduction : List Formula → Formula → Set where
   DisjIntro₁ : ∀{f afs}       → Deduction afs f       → (g : Formula)   → Deduction afs (f ∨ g)
   DisjIntro₂ : ∀{f afs}       → Deduction afs f       → (g : Formula)   → Deduction afs (g ∨ f)
   DisjElim   : ∀{f g r ads als ars} → Deduction ads (f ∨ g) → Deduction als r → Deduction ars r → Deduction (ads ++ ((als discharging f) ++ (ars discharging g))) r
-  UniGIntro  : ∀{f afs t} → {p : isTrue (not (t freein afs))} → Deduction afs f → (t : Term) → Deduction afs (Α t f)
+  UniGIntro  : ∀{f afs t} → (t NotFreeIn afs) → Deduction afs f → (t : Term) → Deduction afs (Α t f)
   UniGElim   : ∀{f afs t} → Deduction afs (Α t f) → Deduction afs f
   ExiGIntro  : ∀{f afs} → Deduction afs f → (t : Term) → Deduction afs (Ε t f)
   ExiGElim  : ∀{f g afs gfs t} → {p : isTrue (not (t freein [ g ]))} → Deduction afs (Ε t f) → Deduction gfs g → Deduction (afs ++ (gfs discharging f)) g
@@ -139,8 +144,11 @@ test8 = ArrowIntro (DisjIntro₁ (Assume P) Q) P
 test9 : Deduction (P ∨ Q :: P ⇒ R :: Q ⇒ R :: []) R
 test9 = DisjElim (Assume (P ∨ Q)) (ArrowElim (Assume (P ⇒ R)) (Assume P)) (ArrowElim (Assume (Q ⇒ R)) (Assume Q))
 
---- test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
---- test10 = UniGIntro (ConjElim₁ (UniGElim (Assume (Α X (S X ∧ P))))) X
+test10terms : X NotFreeIn [ (Α X (S X ∧ P)) ]
+test10terms = Recur AllClosed
+
+test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
+test10 = UniGIntro test10terms (ConjElim₁ (UniGElim (Assume (Α X (S X ∧ P))))) X
 
 test11 : Deduction [ (Α X (S X)) ] (S X)
 test11 = UniGElim (Assume (Α X (S X)))
@@ -150,3 +158,4 @@ test12 = ExiGIntro (Assume (S X)) X
 
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
 test13 = ExiGElim (Assume (Ε X (S X))) (ArrowElim (UniGElim (Assume (Α X ((S X) ⇒ P)))) (Assume (S X)))
+
