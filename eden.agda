@@ -49,23 +49,23 @@ infixr 130 _⇒_
 ¬ a = a ⇒ ⊥
 
 
-rebind : Formula → Term → Term → Formula
-rebind ⊥ _ _       = ⊥
-rebind P _ _       = P
-rebind Q _ _       = Q
-rebind R _ _       = R
-rebind (S t) x y   with (TermEq t x)
+rename : Formula → Term → Term → Formula
+rename ⊥ _ _       = ⊥
+rename P _ _       = P
+rename Q _ _       = Q
+rename R _ _       = R
+rename (S t) x y   with (TermEq t x)
 ...                   | true  = S y
 ...                   | false = S t
-rebind (a ⇒ b) x y = (rebind a x y) ⇒ (rebind b x y)
-rebind (a ∧ b) x y = (rebind a x y) ∧ (rebind b x y)
-rebind (a ∨ b) x y = (rebind a x y) ∨ (rebind b x y)
-rebind (Α t f) x y with (TermEq t x)
+rename (a ⇒ b) x y = (rename a x y) ⇒ (rename b x y)
+rename (a ∧ b) x y = (rename a x y) ∧ (rename b x y)
+rename (a ∨ b) x y = (rename a x y) ∨ (rename b x y)
+rename (Α t f) x y with (TermEq t x)
 ...                   | true  = Α t f
-...                   | false = Α t (rebind f x y)
-rebind (Ε t f) x y with (TermEq t x)
+...                   | false = Α t (rename f x y)
+rename (Ε t f) x y with (TermEq t x)
 ...                   | true  = Ε t f
-...                   | false = Ε t (rebind f x y)
+...                   | false = Ε t (rename f x y)
 
 
 _≡_ : Formula → Formula → Bool
@@ -77,16 +77,16 @@ S t ≡ S s         = TermEq t s
 (a ⇒ b) ≡ (c ⇒ d) = (a ≡ c) and (b ≡ d)
 (a ∧ b) ≡ (c ∧ d) = (a ≡ c) and (b ≡ d)
 (a ∨ b) ≡ (c ∨ d) = (a ≡ c) and (b ≡ d)
-(Α t f) ≡ (Α s g) = (rebind f t s) ≡ g
-(Ε t f) ≡ (Ε s g) = (rebind f t s) ≡ g
+(Α t f) ≡ (Α s g) = (rename f t s) ≡ g
+(Ε t f) ≡ (Ε s g) = (rename f t s) ≡ g
 _ ≡ _             = false
 
 
-_discharging_ : List Formula → Formula → List Formula
-[] discharging _        = []
-(x :: xs) discharging y with (x ≡ y)
-...                        | true  = (xs discharging y)
-...                        | false = x :: (xs discharging y)
+_\\_ : List Formula → Formula → List Formula
+[] \\ _        = []
+(x :: xs) \\ y with (x ≡ y)
+...               | true  = (xs \\ y)
+...               | false = x :: (xs \\ y)
 
 
 _freein_ : Term → Formula → Bool
@@ -104,7 +104,8 @@ t freein (Α n a) = (not (TermEq t n)) and (t freein a)
 
 data _NotFreeIn_ (t : Term) : List Formula → Set where
   AllClosed : t NotFreeIn []
-  Recur     : ∀{Γ p} → {_ : isTrue (not (t freein p))}
+  Recur     : ∀{Γ p}
+              → {_ : isTrue (not (t freein p))}
               → t NotFreeIn Γ
               → t NotFreeIn (p :: Γ)
 
@@ -118,7 +119,7 @@ data Deduction : List Formula → Formula → Set where
   ArrowIntro : ∀{Γ q}
                → (Deduction Γ q)
                → (p : Formula)
-               → Deduction (Γ discharging p) (p ⇒ q)
+               → Deduction (Γ \\ p) (p ⇒ q)
 
   ArrowElim  : ∀{Γ₁ Γ₂ p q}
                → Deduction Γ₁ (p ⇒ q)
@@ -152,7 +153,7 @@ data Deduction : List Formula → Formula → Set where
                → Deduction Γ₁ (p ∨ q)
                → Deduction Γ₂ r
                → Deduction Γ₃ r
-               → Deduction (Γ₁ ++ (Γ₂ discharging p) ++ (Γ₃ discharging q)) r
+               → Deduction (Γ₁ ++ (Γ₂ \\ p) ++ (Γ₃ \\ q)) r
 
   UniGIntro  : ∀{Γ p x}
                → (x NotFreeIn Γ)
@@ -163,7 +164,7 @@ data Deduction : List Formula → Formula → Set where
   UniGElim   : ∀{Γ p x}
                → (y : Term)
                → Deduction Γ (Α x p)
-               → Deduction Γ (rebind p x y)
+               → Deduction Γ (rename p x y)
 
   ExiGIntro  : ∀{Γ p}
                → Deduction Γ p
@@ -175,8 +176,8 @@ data Deduction : List Formula → Formula → Set where
                → y NotFreeIn [ q ]
                → Deduction Γ₁ (Ε x p)
                → Deduction Γ₂ q
-               → y NotFreeIn (Γ₂ discharging (rebind p x y))
-               → Deduction (Γ₁ ++ (Γ₂ discharging (rebind p x y))) q
+               → y NotFreeIn (Γ₂ \\ (rename p x y))
+               → Deduction (Γ₁ ++ (Γ₂ \\ (rename p x y))) q
 
 
 
