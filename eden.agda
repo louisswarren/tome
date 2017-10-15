@@ -11,7 +11,6 @@ isTrue : Bool → Set
 isTrue true  = True
 isTrue false = False
 
-
 ----------------------------------------
 
 data Term : Set where
@@ -51,10 +50,10 @@ infixr 130 _⇒_
 
 
 rebind : Formula → Term → Term → Formula
-rebind ⊥ _ _       = P
+rebind ⊥ _ _       = ⊥
 rebind P _ _       = P
-rebind Q _ _       = P
-rebind R _ _       = P
+rebind Q _ _       = Q
+rebind R _ _       = R
 rebind (S t) x y   with (TermEq t x)
 ...                   | true  = S y
 ...                   | false = S t
@@ -162,8 +161,9 @@ data Deduction : List Formula → Formula → Set where
                → Deduction Γ (Α x p)
 
   UniGElim   : ∀{Γ p x}
+               → (y : Term)
                → Deduction Γ (Α x p)
-               → Deduction Γ p
+               → Deduction Γ (rebind p x y)
 
   ExiGIntro  : ∀{Γ p}
                → Deduction Γ p
@@ -172,10 +172,11 @@ data Deduction : List Formula → Formula → Set where
 
   --- Not necessarily valid - cannot use an already existing term
   ExiGElim   : ∀{Γ₁ Γ₂ p q x}
-               → x NotFreeIn [ q ]
+               → (y : Term)
+               → y NotFreeIn [ q ]
                → Deduction Γ₁ (Ε x p)
                → Deduction Γ₂ q
-               → Deduction (Γ₁ ++ (Γ₂ discharging p)) q
+               → Deduction (Γ₁ ++ (Γ₂ discharging (rebind p x y))) q
 
 
 
@@ -219,23 +220,23 @@ test10terms : X NotFreeIn [ (Α X (S X ∧ P)) ]
 test10terms = Recur AllClosed
 
 test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
-test10 = UniGIntro test10terms (ConjElim₁ (UniGElim (Assume (Α X (S X ∧ P))))) X
+test10 = UniGIntro test10terms (ConjElim₁ (UniGElim X (Assume (Α X (S X ∧ P))))) X
 
-test11 : Deduction [ (Α X (S X)) ] (S X)
-test11 = UniGElim (Assume (Α X (S X)))
+test11 : Deduction [ (Α X (S X)) ] (S Y)
+test11 = UniGElim Y (Assume (Α X (S X)))
 
 test12 : Deduction [ S X ] (Ε X (S X))
 test12 = ExiGIntro (Assume (S X)) X
 
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
-test13 = ExiGElim (Recur AllClosed) (Assume (Ε X (S X))) (ArrowElim (UniGElim (Assume (Α X ((S X) ⇒ P)))) (Assume (S X)))
+test13 = ExiGElim Y (Recur AllClosed) (Assume (Ε X (S X))) (ArrowElim (UniGElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y)))
 
 
 
 -- Non-trivial usage
 
 all-contradict : Deduction ((¬(S X)) :: [ Α X (S X) ]) ⊥
-all-contradict = ArrowElim (Assume (¬(S X))) (UniGElim (Assume (Α X (S X))))
+all-contradict = ArrowElim (Assume (¬(S X))) (UniGElim X (Assume (Α X (S X))))
 
 
 not-for-all : Deduction [ (¬(S X)) ] ( ¬ (Α X (S X)))
@@ -243,7 +244,7 @@ not-for-all = ArrowIntro all-contradict (Α X (S X))
 
 
 gmp-complement : Deduction [ Ε X (¬ (S X)) ] (¬(Α X (S X)))
-gmp-complement = ExiGElim (Recur AllClosed) (Assume (Ε X (¬(S X)))) not-for-all
+gmp-complement = ExiGElim X (Recur AllClosed) (Assume (Ε X (¬(S X)))) not-for-all
 
 
 
