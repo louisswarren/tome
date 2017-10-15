@@ -170,12 +170,12 @@ data Deduction : List Formula → Formula → Set where
                → (x : Term)
                → Deduction Γ (Ε x p)
 
-  --- Not necessarily valid - cannot use an already existing term
   ExiGElim   : ∀{Γ₁ Γ₂ p q x}
                → (y : Term)
                → y NotFreeIn [ q ]
                → Deduction Γ₁ (Ε x p)
                → Deduction Γ₂ q
+               → y NotFreeIn (Γ₂ discharging (rebind p x y))
                → Deduction (Γ₁ ++ (Γ₂ discharging (rebind p x y))) q
 
 
@@ -229,7 +229,7 @@ test12 : Deduction [ S X ] (Ε X (S X))
 test12 = ExiGIntro (Assume (S X)) X
 
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
-test13 = ExiGElim Y (Recur AllClosed) (Assume (Ε X (S X))) (ArrowElim (UniGElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y)))
+test13 = ExiGElim Y (Recur AllClosed) (Assume (Ε X (S X))) (ArrowElim (UniGElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y))) (Recur AllClosed)
 
 
 
@@ -244,7 +244,7 @@ not-for-all = ArrowIntro all-contradict (Α X (S X))
 
 
 gmp-complement : Deduction [ Ε X (¬ (S X)) ] (¬(Α X (S X)))
-gmp-complement = ExiGElim X (Recur AllClosed) (Assume (Ε X (¬(S X)))) not-for-all
+gmp-complement = ExiGElim X (Recur AllClosed) (Assume (Ε X (¬(S X)))) not-for-all AllClosed
 
 
 
