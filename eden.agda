@@ -88,6 +88,8 @@ _∖_ : List Formula → Formula → List Formula
 ...              | true  = (xs ∖ y)
 ...              | false = x :: (xs ∖ y)
 
+infixl 200 _∖_
+
 
 _freein_ : Term → Formula → Bool
 t freein ⊥       = false
@@ -131,13 +133,10 @@ data Deduction : List Formula → Formula → Set where
                → Deduction Γ₂ q
                → Deduction (Γ₁ ++ Γ₂) (p ∧ q)
 
-  ConjElim₁  : ∀{Γ p q}
-               → Deduction Γ (p ∧ q)
-               → Deduction Γ p
-
-  ConjElim₂  : ∀{Γ p q}
-               → Deduction Γ (p ∧ q)
-               → Deduction Γ q
+  ConjElim   : ∀{Γ₁ Γ₂ p q r}
+               → Deduction Γ₁ (p ∧ q)
+               → Deduction Γ₂ r
+               → Deduction (Γ₁ ++ (Γ₂ ∖ p ∖ q)) r
 
   DisjIntro₁ : ∀{Γ p}
                → Deduction Γ p
@@ -200,10 +199,10 @@ test3 : Deduction (P :: [ Q ]) (P ∧ Q)
 test3 = ConjIntro (Assume P) (Assume Q)
 
 test4 : Deduction [ P ∧ Q ] P
-test4 = ConjElim₁ (Assume (P ∧ Q))
+test4 = ConjElim (Assume (P ∧ Q)) (Assume P)
 
 test5 : Deduction [ P ∧ Q ] Q
-test5 = ConjElim₂ (Assume (P ∧ Q))
+test5 = ConjElim (Assume (P ∧ Q)) (Assume Q)
 
 test6 : Deduction [ P ] (P ∨ Q)
 test6 = DisjIntro₁ (Assume P) Q
@@ -221,7 +220,7 @@ test10terms : X NotFreeIn [ (Α X (S X ∧ P)) ]
 test10terms = Recur AllClosed
 
 test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
-test10 = UniGIntro test10terms (ConjElim₁ (UniGElim X (Assume (Α X (S X ∧ P))))) X
+test10 = UniGIntro test10terms (ConjElim (UniGElim X (Assume (Α X (S X ∧ P)))) (Assume (S X))) X
 
 test11 : Deduction [ (Α X (S X)) ] (S Y)
 test11 = UniGElim Y (Assume (Α X (S X)))
