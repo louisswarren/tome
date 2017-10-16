@@ -82,11 +82,11 @@ S t ≡ S s         = TermEq t s
 _ ≡ _             = false
 
 
-_\\_ : List Formula → Formula → List Formula
-[] \\ _        = []
-(x :: xs) \\ y with (x ≡ y)
-...               | true  = (xs \\ y)
-...               | false = x :: (xs \\ y)
+_∖_ : List Formula → Formula → List Formula
+[] ∖ _        = []
+(x :: xs) ∖ y with (x ≡ y)
+...              | true  = (xs ∖ y)
+...              | false = x :: (xs ∖ y)
 
 
 _freein_ : Term → Formula → Bool
@@ -119,7 +119,7 @@ data Deduction : List Formula → Formula → Set where
   ArrowIntro : ∀{Γ q}
                → (Deduction Γ q)
                → (p : Formula)
-               → Deduction (Γ \\ p) (p ⇒ q)
+               → Deduction (Γ ∖ p) (p ⇒ q)
 
   ArrowElim  : ∀{Γ₁ Γ₂ p q}
                → Deduction Γ₁ (p ⇒ q)
@@ -153,7 +153,7 @@ data Deduction : List Formula → Formula → Set where
                → Deduction Γ₁ (p ∨ q)
                → Deduction Γ₂ r
                → Deduction Γ₃ r
-               → Deduction (Γ₁ ++ (Γ₂ \\ p) ++ (Γ₃ \\ q)) r
+               → Deduction (Γ₁ ++ (Γ₂ ∖ p) ++ (Γ₃ ∖ q)) r
 
   UniGIntro  : ∀{Γ p x}
                → (x NotFreeIn Γ)
@@ -176,8 +176,8 @@ data Deduction : List Formula → Formula → Set where
                → y NotFreeIn [ q ]
                → Deduction Γ₁ (Ε x p)
                → Deduction Γ₂ q
-               → y NotFreeIn (Γ₂ \\ (rename p x y))
-               → Deduction (Γ₁ ++ (Γ₂ \\ (rename p x y))) q
+               → y NotFreeIn (Γ₂ ∖ (rename p x y))
+               → Deduction (Γ₁ ++ (Γ₂ ∖ (rename p x y))) q
 
 
 
