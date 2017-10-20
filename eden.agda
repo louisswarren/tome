@@ -158,6 +158,12 @@ data Deduction : List Formula → Formula → Set where
                → y NotFreeIn (Γ₂ ∖ (p [ x / y ]))
                → Deduction (Γ₁ ++ (Γ₂ ∖ (p [ x / y ]))) q
 
+
+----------------------------------------
+
+--applyscheme : ∀{α} → Deduction [] α → 
+
+
 ----------------------------------------
 
 X Y Z : Term
@@ -228,7 +234,14 @@ test12 = ExiGIntro (Assume (S X)) X
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
 test13 = ExiGElim Y (Assume (Ε X (S X))) (ArrowElim (UniGElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y))) (Recur AllClosed)
 
+test14terms : Y NotFreeIn [ Α X (S X) ]
+test14terms = Recur AllClosed
 
+test14 : Deduction [ Α X (S X) ] (Α Y (S Y))
+test14 = UniGIntro test14terms (UniGElim Y (Assume (Α X (S X)))) Y
+
+test15 : Deduction [ Ε X (S X) ] (Ε Y (S Y))
+test15 = ExiGElim Y (Assume (Ε X (S X))) (ExiGIntro (Assume (S Y)) Y) AllClosed
 
 -- Non-trivial usage
 
