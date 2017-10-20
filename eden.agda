@@ -38,20 +38,20 @@ infixr 130 _⇒_
 
 
 
-rename : Formula → Term → Term → Formula
-rename (atom n) _ _   = atom n
-rename (pred n t) x y with (TermEq t x)
-...                   | true  = (pred n y)
-...                   | false = (pred n t)
-rename (a ⇒ b) x y    = (rename a x y) ⇒ (rename b x y)
-rename (a ∧ b) x y    = (rename a x y) ∧ (rename b x y)
-rename (a ∨ b) x y    = (rename a x y) ∨ (rename b x y)
-rename (Α t f) x y    with (TermEq t x)
-...                      | true  = Α t f
-...                      | false = Α t (rename f x y)
-rename (Ε t f) x y    with (TermEq t x)
-...                   | true  = Ε t f
-...                   | false = Ε t (rename f x y)
+_[_/_] : Formula → Term → Term → Formula
+(atom n)[ _ / _ ]   = atom n
+(pred n t)[ x / y ] with (TermEq t x)
+...                            | true  = (pred n y)
+...                            | false = (pred n t)
+(a ⇒ b)[ x / y ]    = (a [ x / y ]) ⇒ (b [ x / y ])
+(a ∧ b)[ x / y ]    = (a [ x / y ]) ∧ (b [ x / y ])
+(a ∨ b)[ x / y ]    = (a [ x / y ]) ∨ (b [ x / y ])
+(Α t f)[ x / y ]    with (TermEq t x)
+...                    | true  = Α t f
+...                    | false = Α t (f [ x / y ])
+(Ε t f)[ x / y ]    with (TermEq t x)
+...                    | true  = Ε t f
+...                    | false = Ε t (f [ x / y ])
 
 
 _≡_ : Formula → Formula → Bool
@@ -60,8 +60,8 @@ _≡_ : Formula → Formula → Bool
 (a ⇒ b) ≡ (c ⇒ d)       = (a ≡ c) and (b ≡ d)
 (a ∧ b) ≡ (c ∧ d)       = (a ≡ c) and (b ≡ d)
 (a ∨ b) ≡ (c ∨ d)       = (a ≡ c) and (b ≡ d)
-(Α t f) ≡ (Α s g)       = (rename f t s) ≡ g
-(Ε t f) ≡ (Ε s g)       = (rename f t s) ≡ g
+(Α t f) ≡ (Α s g)       = (f [ t / s ]) ≡ g
+(Ε t f) ≡ (Ε s g)       = (f [ t / s ]) ≡ g
 _ ≡ _                   = false
 
 
@@ -143,7 +143,7 @@ data Deduction : List Formula → Formula → Set where
   UniGElim   : ∀{Γ p x}
                → (y : Term)
                → Deduction Γ (Α x p)
-               → Deduction Γ (rename p x y)
+               → Deduction Γ (p [ x / y ])
 
   ExiGIntro  : ∀{Γ p}
                → Deduction Γ p
@@ -155,8 +155,8 @@ data Deduction : List Formula → Formula → Set where
                → {_ : isTrue (not (y freein q))}
                → Deduction Γ₁ (Ε x p)
                → Deduction Γ₂ q
-               → y NotFreeIn (Γ₂ ∖ (rename p x y))
-               → Deduction (Γ₁ ++ (Γ₂ ∖ (rename p x y))) q
+               → y NotFreeIn (Γ₂ ∖ (p [ x / y ]))
+               → Deduction (Γ₁ ++ (Γ₂ ∖ (p [ x / y ]))) q
 
 ----------------------------------------
 
