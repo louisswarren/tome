@@ -14,17 +14,17 @@ isTrue false = False
 ----------------------------------------
 
 data Term : Set where
-  term : ℕ → Term
+  term : String → Term
 
 TermEq : Term → Term → Bool
-TermEq (term n) (term m) = n == m
+TermEq (term n) (term m) = n === m
 
 
 ----------------------------------------
 
 data Formula : Set where
-  atom  : ℕ → Formula
-  pred  : ℕ → Term → Formula
+  atom  : String → Formula
+  pred  : String → Term → Formula
   _⇒_   : Formula → Formula → Formula
   _∧_   : Formula → Formula → Formula
   _∨_   : Formula → Formula → Formula
@@ -55,8 +55,8 @@ _[_/_] : Formula → Term → Term → Formula
 
 
 _≡_ : Formula → Formula → Bool
-(atom n) ≡ (atom m)     = n == m
-(pred n t) ≡ (pred m s) = (n == m) and TermEq t s
+(atom n) ≡ (atom m)     = n === m
+(pred n t) ≡ (pred m s) = (n === m) and TermEq t s
 (a ⇒ b) ≡ (c ⇒ d)       = (a ≡ c) and (b ≡ d)
 (a ∧ b) ≡ (c ∧ d)       = (a ≡ c) and (b ≡ d)
 (a ∨ b) ≡ (c ∨ d)       = (a ≡ c) and (b ≡ d)
@@ -95,11 +95,14 @@ data _NotFreeIn_ (t : Term) : List Formula → Set where
 ----------------------------------------
 
 data Deduction : List Formula → Formula → Set where
+  Lemma      : ∀{p}
+               → Deduction [] p
+               → Deduction [] p
   Assume     : (p : Formula)
                → Deduction [ p ] p
 
   ArrowIntro : ∀{Γ q}
-               → (Deduction Γ q)
+               → Deduction Γ q
                → (p : Formula)
                → Deduction (Γ ∖ p) (p ⇒ q)
 
@@ -135,7 +138,7 @@ data Deduction : List Formula → Formula → Set where
                → Deduction (Γ₁ ++ (Γ₂ ∖ p) ++ (Γ₃ ∖ q)) r
 
   UniGIntro  : ∀{Γ p x}
-               → (x NotFreeIn Γ)
+               → x NotFreeIn Γ
                → Deduction Γ p
                → (x : Term)
                → Deduction Γ (Α x p)
@@ -161,24 +164,32 @@ data Deduction : List Formula → Formula → Set where
 
 ----------------------------------------
 
---applyscheme : ∀{α} → Deduction [] α → 
+-- missing parentheses!
+texify-formula : Formula → String
+texify-formula (atom n) = n
+texify-formula (pred n (term t)) = n >> t
+texify-formula (p ⇒ q) = (texify-formula p) >> " ⇒ " >> (texify-formula q)
+texify-formula (p ∧ q) = (texify-formula p) >> " ∧ " >> (texify-formula q)
+texify-formula (p ∨ q) = (texify-formula p) >> " ∨ " >> (texify-formula q)
+texify-formula (Α (term t) p) = "∀" >> t >> (texify-formula p)
+texify-formula (Ε (term t) p) = "∃" >> t >> (texify-formula p)
 
 
 ----------------------------------------
 
 X Y Z : Term
-X = term 0
-Y = term 1
-Z = term 2
+X = term "x"
+Y = term "y"
+Z = term "z"
 
 ⊥ P Q R : Formula
-⊥ = atom 0
-P = atom 1
-Q = atom 2
-R = atom 3
+⊥ = atom "⊥"
+P = atom "P"
+Q = atom "Q"
+R = atom "R"
 
 S : Term → Formula
-S = pred 0
+S = pred "S"
 
 ¬ : Formula → Formula
 ¬ a = a ⇒ ⊥
