@@ -1,10 +1,14 @@
 module common where
 
+
 ----------------------------------------
 
 data Bool : Set where
   true  : Bool
   false : Bool
+{-# BUILTIN BOOL  Bool  #-}
+{-# BUILTIN TRUE  true  #-}
+{-# BUILTIN FALSE false #-}
 
 _or_ : Bool → Bool → Bool
 true or _  = true
@@ -32,6 +36,7 @@ zero ==  zero      = true
 (suc n) == (suc m) = n == m
 _ == _             = false
 
+
 ----------------------------------------
 
 data List (A : Set) : Set where
@@ -53,3 +58,21 @@ all : {A : Set} → (A → Bool) → List A → Bool
 all _ []        = true
 all f (x :: xs) = (f x) and (all f xs)
 
+
+----------------------------------------
+
+postulate String : Set
+{-# BUILTIN STRING String #-}
+
+primitive
+  primStringAppend   : String → String → String
+  primStringEquality : String → String → Bool
+  primShowString     : String → String
+
+_>>_ : String → String → String
+_>>_ = primStringAppend
+
+infixl 1 _>>_
+
+_===_ : String → String → Bool
+_===_ = primStringEquality

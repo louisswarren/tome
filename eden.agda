@@ -95,9 +95,6 @@ data _NotFreeIn_ (t : Term) : List Formula → Set where
 ----------------------------------------
 
 data Deduction : List Formula → Formula → Set where
-  Lemma      : ∀{p}
-               → Deduction [] p
-               → Deduction [] p
   Assume     : (p : Formula)
                → Deduction [ p ] p
 
@@ -161,18 +158,53 @@ data Deduction : List Formula → Formula → Set where
                → y NotFreeIn (Γ₂ ∖ (p [ x / y ]))
                → Deduction (Γ₁ ++ (Γ₂ ∖ (p [ x / y ]))) q
 
+conclusion : ∀{p Γ} → Deduction Γ p → Formula
+conclusion {p} _ = p
 
 ----------------------------------------
 
--- missing parentheses!
-texify-formula : Formula → String
-texify-formula (atom n) = n
-texify-formula (pred n (term t)) = n >> t
-texify-formula (p ⇒ q) = (texify-formula p) >> " ⇒ " >> (texify-formula q)
-texify-formula (p ∧ q) = (texify-formula p) >> " ∧ " >> (texify-formula q)
-texify-formula (p ∨ q) = (texify-formula p) >> " ∨ " >> (texify-formula q)
-texify-formula (Α (term t) p) = "∀" >> t >> (texify-formula p)
-texify-formula (Ε (term t) p) = "∃" >> t >> (texify-formula p)
+
+texformula : Formula → String
+texsubformula : Formula → String
+
+texformula (atom n) = n
+texformula (pred n (term t)) = n >> t
+texformula (p ⇒ q) = (texsubformula p) >> " \\mimp " >> (texsubformula q)
+texformula (p ∧ q) = (texsubformula p) >> " \\mand " >> (texsubformula q)
+texformula (p ∨ q) = (texsubformula p) >> " \\mor " >> (texsubformula q)
+texformula (Α (term t) p) = "\\forall_{" >> t >> "}" >> (texsubformula p)
+texformula (Ε (term t) p) = "\\exists_{" >> t >> "}" >> (texsubformula p)
+
+texsubformula f@(atom n) = texformula f
+texsubformula f@(pred n t) = texformula f
+texsubformula f@(Α _ _)    = texformula f
+texsubformula f@(Ε _ _)    = texformula f
+texsubformula p          = "(" >> texformula p >> ")"
+
+texroot : ∀{Γ p} → ℕ → Deduction Γ p → String → String
+texroot 1 T rule = "\\RightLabel{" >> rule >> "}\n" >>
+                   "\\UnaryInfC{$" >> texformula (conclusion T) >> "$}\n"
+texroot 2 T rule = "\\RightLabel{" >> rule >> "}\n" >>
+                   "\\BinaryInfC{$" >> texformula (conclusion T) >> "$}\n"
+texroot 3 T rule = "\\RightLabel{" >> rule >> "}\n" >>
+                   "\\TernaryInfC{$" >> texformula (conclusion T) >> "$}\n"
+texroot _ T rule = ""
+
+
+
+texify : ∀{Γ p} → Deduction Γ p → String
+texify d@(Assume _)           = "\\AxiomC{$" >> texformula (conclusion d) >> "$}\n"
+texify d@(ArrowIntro T _)     = (texify T) >> texroot 1 d "\\ndii"
+texify d@(ArrowElim T₁ T₂)    = (texify T₁) >> (texify T₂) >> texroot 2 d "\\ndie"
+texify d@(ConjIntro T₁ T₂)    = (texify T₁) >> (texify T₂) >> texroot 2 d "\\ndci"
+texify d@(ConjElim T₁ T₂)     = (texify T₁) >> (texify T₂) >> texroot 2 d "\\ndce"
+texify d@(DisjIntro₁ T _)     = (texify T) >> texroot 1 d "\\nddi"
+texify d@(DisjIntro₂ T _)     = (texify T) >> texroot 1 d "\\nddi"
+texify d@(DisjElim T₁ T₂ T₃)  = (texify T₁) >> (texify T₂) >> (texify T₃) >> texroot 2 d "\\ndce"
+texify d@(UniGIntro _ T _)    = (texify T) >> texroot 1 d "\\ndfi"
+texify d@(UniGElim _ T)       = (texify T) >> texroot 1 d "\\ndfe"
+texify d@(ExiGIntro T _)      = (texify T) >> texroot 1 d "\\ndei"
+texify d@(ExiGElim _ T₁ T₂ _) = (texify T₁) >> (texify T₂) >> texroot 2 d "\\ndee"
 
 
 ----------------------------------------
@@ -183,7 +215,7 @@ Y = term "y"
 Z = term "z"
 
 ⊥ P Q R : Formula
-⊥ = atom "⊥"
+⊥ = atom "\\bot"
 P = atom "P"
 Q = atom "Q"
 R = atom "R"
@@ -267,3 +299,5 @@ not-for-all = ArrowIntro all-contradict (Α X (S X))
 gmp-complement : Deduction [ Ε X (¬ (S X)) ] (¬(Α X (S X)))
 gmp-complement = ExiGElim X (Assume (Ε X (¬(S X)))) not-for-all AllClosed
 
+nd : String
+nd = texify gmp-complement
