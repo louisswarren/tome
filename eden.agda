@@ -91,6 +91,9 @@ data _NotFreeIn_ (t : Term) : List Formula → Set where
               → t NotFreeIn Γ
               → t NotFreeIn (p :: Γ)
 
+_∈_ : Formula → List Formula → Bool
+x ∈ []        = false
+x ∈ (y :: ys) = (x ≡ y) or (x ∈ ys)
 
 ----------------------------------------
 
@@ -161,8 +164,11 @@ data Deduction : List Formula → Formula → Set where
 conclusion : ∀{p Γ} → Deduction Γ p → Formula
 conclusion {p} _ = p
 
-----------------------------------------
+assumptions : ∀{Γ p} → Deduction Γ p → List Formula
+assumptions {Γ} _ = Γ
 
+
+----------------------------------------
 
 texformula : Formula → String
 texsubformula : Formula → String
@@ -192,19 +198,39 @@ texroot _ T rule = ""
 
 
 
+texify' : ∀{Γ p} → Deduction Γ p → List Formula → String
+texify' d@(Assume p)           Γ with (p ∈ Γ)
+...                                 | true  = "\\AxiomC{$"
+                                              >> texformula p
+                                              >> "$}\n"
+...                                 | false = "\\AxiomC{[$"
+                                              >> texformula p
+                                              >> "$]}\n"
+texify' d@(ArrowIntro T _)     Γ = (texify' T Γ) >> texroot 1 d "\\ndii"
+texify' d@(ArrowElim T₁ T₂)    Γ = (texify' T₁ Γ)
+                                   >> (texify' T₂ Γ)
+                                   >> texroot 2 d "\\ndie"
+texify' d@(ConjIntro T₁ T₂)    Γ = (texify' T₁ Γ)
+                                   >> (texify' T₂ Γ)
+                                   >> texroot 2 d "\\ndci"
+texify' d@(ConjElim T₁ T₂)     Γ = (texify' T₁ Γ)
+                                   >> (texify' T₂ Γ)
+                                   >> texroot 2 d "\\ndce"
+texify' d@(DisjIntro₁ T _)     Γ = (texify' T Γ) >> texroot 1 d "\\nddi"
+texify' d@(DisjIntro₂ T _)     Γ = (texify' T Γ) >> texroot 1 d "\\nddi"
+texify' d@(DisjElim T₁ T₂ T₃)  Γ = (texify' T₁ Γ)
+                                   >> (texify' T₂ Γ)
+                                   >> (texify' T₃ Γ)
+                                   >> texroot 2 d "\\ndce"
+texify' d@(UniGIntro _ T _)    Γ = (texify' T Γ) >> texroot 1 d "\\ndfi"
+texify' d@(UniGElim _ T)       Γ = (texify' T Γ) >> texroot 1 d "\\ndfe"
+texify' d@(ExiGIntro T _)      Γ = (texify' T Γ) >> texroot 1 d "\\ndei"
+texify' d@(ExiGElim _ T₁ T₂ _) Γ = (texify' T₁ Γ)
+                                   >> (texify' T₂ Γ)
+                                   >> texroot 2 d "\\ndee"
+
 texify : ∀{Γ p} → Deduction Γ p → String
-texify d@(Assume _)           = "\\AxiomC{$" >> texformula (conclusion d) >> "$}\n"
-texify d@(ArrowIntro T _)     = (texify T) >> texroot 1 d "\\ndii"
-texify d@(ArrowElim T₁ T₂)    = (texify T₁) >> (texify T₂) >> texroot 2 d "\\ndie"
-texify d@(ConjIntro T₁ T₂)    = (texify T₁) >> (texify T₂) >> texroot 2 d "\\ndci"
-texify d@(ConjElim T₁ T₂)     = (texify T₁) >> (texify T₂) >> texroot 2 d "\\ndce"
-texify d@(DisjIntro₁ T _)     = (texify T) >> texroot 1 d "\\nddi"
-texify d@(DisjIntro₂ T _)     = (texify T) >> texroot 1 d "\\nddi"
-texify d@(DisjElim T₁ T₂ T₃)  = (texify T₁) >> (texify T₂) >> (texify T₃) >> texroot 2 d "\\ndce"
-texify d@(UniGIntro _ T _)    = (texify T) >> texroot 1 d "\\ndfi"
-texify d@(UniGElim _ T)       = (texify T) >> texroot 1 d "\\ndfe"
-texify d@(ExiGIntro T _)      = (texify T) >> texroot 1 d "\\ndei"
-texify d@(ExiGElim _ T₁ T₂ _) = (texify T₁) >> (texify T₂) >> texroot 2 d "\\ndee"
+texify d = texify' d (assumptions d)
 
 
 ----------------------------------------
