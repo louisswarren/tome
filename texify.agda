@@ -9,16 +9,21 @@ texsubformula : Formula → String
 
 texformula (atom n) = n
 texformula (pred n (term t)) = n >> t
-texformula (p ⇒ q) = (texsubformula p) >> " \\mimp " >> (texsubformula q)
+texformula (p ⇒ q) with (q ≡ ⊥)
+...                   | true  = "\\lnot " >> (texsubformula p)
+...                   | false = (texsubformula p) >> " \\mimp " >> (texsubformula q)
 texformula (p ∧ q) = (texsubformula p) >> " \\mand " >> (texsubformula q)
 texformula (p ∨ q) = (texsubformula p) >> " \\mor " >> (texsubformula q)
 texformula (Α (term t) p) = "\\forall_{" >> t >> "}" >> (texsubformula p)
 texformula (Ε (term t) p) = "\\exists_{" >> t >> "}" >> (texsubformula p)
 
-texsubformula f@(atom n) = texformula f
+texsubformula f@(atom n)   = texformula f
 texsubformula f@(pred n t) = texformula f
 texsubformula f@(Α _ _)    = texformula f
 texsubformula f@(Ε _ _)    = texformula f
+texsubformula f@(_ ⇒ q) with (q ≡ ⊥)
+...                        | true  = texformula f
+...                        | false = "(" >> texformula f >> ")"
 texsubformula p          = "(" >> texformula p >> ")"
 
 texroot : ∀{Γ p} → ℕ → Deduction Γ p → String → String
