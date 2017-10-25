@@ -23,6 +23,15 @@ not true  = false
 not false = true
 
 
+data False  : Set where
+record True : Set where
+
+isTrue : Bool → Set
+isTrue true  = True
+isTrue false = False
+
+
+
 ----------------------------------------
 
 data ℕ : Set where
