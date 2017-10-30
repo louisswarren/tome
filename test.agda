@@ -165,7 +165,7 @@ translate : ∀{Γ p}
           → Deduction (replaceall α β Γ) (replace α β p)
 
 translate α β (Assume p) = Assume (replace α β p)
-translate α β (ArrowIntro T p) = ArrowIntro (translate α β T) (p)
+translate α β (ArrowIntro T p) = ArrowIntro (translate α β T) (replace α β p)
 translate α β (ArrowElim T₁ T₂) = ArrowElim (translate α β T₁) (translate α β T₂)
 translate α β (ConjIntro T₁ T₂) = ConjIntro (translate α β T₁) (translate α β T₂)
 translate α β (ConjElim  T₁ T₂) = ConjElim  (translate α β T₁) (translate α β T₂)
