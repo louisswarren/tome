@@ -10,8 +10,7 @@ X = term "x"
 Y = term "y"
 Z = term "z"
 
-⊥ P Q R : Formula
-⊥ = atom "\\bot"
+P Q R : Formula
 P = atom "P"
 Q = atom "Q"
 R = atom "R"
@@ -97,3 +96,82 @@ gmp-complement = ExiGElim X (Assume (Ε X (¬(S X)))) not-for-all AllClosed
 
 nd : String
 nd = texify gmp-complement
+
+
+tex1 : String
+tex1 = texformula ((P ∨ Q) ⇒ ⊥)
+
+tex2 : String
+tex2 = texformula (((P ∨ Q) ⇒ ⊥) ∧ R)
+
+tex3 : String
+tex3 = texformula ((P ⇒ ⊥) ∧ R)
+
+
+tex1' : String
+tex1' = texformula ((P ∨ Q) ⇒ P)
+
+tex2' : String
+tex2' = texformula (((P ∨ Q) ⇒ P) ∧ R)
+
+tex3' : String
+tex3' = texformula ((P ⇒ P) ∧ R)
+
+
+-- A scheme-level derivation allows arbitrary instantiation inside a deduction
+
+
+findpreds : Formula → List Formula
+findpreds p@(atom _)   with (p ≡ ⊥)
+...                        | true  = []
+...                        | false = p :: []
+findpreds p@(pred _ _) = [ p ]
+findpreds (p ⇒ q)      = (findpreds p) ++ (findpreds q)
+findpreds (p ∧ q)      = (findpreds p) ++ (findpreds q)
+findpreds (p ∨ q)      = (findpreds p) ++ (findpreds q)
+findpreds (Α _ p)      = findpreds p
+findpreds (Ε _ p)      = findpreds p
+
+
+
+-- Replace one atom with a formula, one predicate with another (keeping
+-- quantifier in place), or otherwise leave it as-is.
+replace : Formula → Formula → Formula → Formula
+replace (atom n)   q f@(atom m)   with (n === m)
+...                                | true  = q
+...                                | false = f
+replace (atom _)   _ f@(pred _ _) = f
+replace (pred _ _) _ f@(atom _)   = f
+replace (pred n _) q f@(pred m _) with (n === m)
+...                                | true  = q
+...                                | false = f
+replace α β (r ⇒ s) = (replace α β r) ⇒ (replace α β s)
+replace α β (r ∧ s) = (replace α β r) ∧ (replace α β s)
+replace α β (r ∨ s) = (replace α β r) ∨ (replace α β s)
+replace α β (Α t r) = Α t (replace α β r)
+replace α β (Ε t r) = Ε t (replace α β r)
+replace _ _ f       = f
+
+replaceall : Formula → Formula → List Formula → List Formula
+replaceall α β = map (replace α β)
+
+
+-- This will fail to typecheck if the translation does not have a valid proof.
+-- Should only happen if you do something wrong.
+translate : ∀{Γ p}
+          → (α : Formula)
+          → (β : Formula)
+          → Deduction Γ p
+          → Deduction (replaceall α β Γ) (replace α β p)
+
+translate α β (Assume p) = Assume (replace α β p)
+translate α β (ArrowIntro T p) = ArrowIntro (translate α β T) (p)
+translate α β (ArrowElim T₁ T₂) = ArrowElim (translate α β T₁) (translate α β T₂)
+translate α β (ConjIntro T₁ T₂) = ConjIntro (translate α β T₁) (translate α β T₂)
+translate α β (ConjElim  T₁ T₂) = ConjElim  (translate α β T₁) (translate α β T₂)
+translate α β (DisjIntro₁ T p) = DisjIntro₁ (translate α β T) (replace α β p)
+translate α β (DisjIntro₂ T p) = DisjIntro₂ (translate α β T) (replace α β p)
+translate α β (DisjElim T₁ T₂ T₃) = DisjElim (translate α β T₁)
+                                             (translate α β T₂) (translate α β T₃)
+translate α β 
+translate α β 

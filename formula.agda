@@ -84,3 +84,5 @@ _∈_ : Formula → List Formula → Bool
 x ∈ []        = false
 x ∈ (y :: ys) = (x ≡ y) or (x ∈ ys)
 
+
+⊥ = atom "\\bot"

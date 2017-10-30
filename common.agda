@@ -40,11 +40,21 @@ data ℕ : Set where
 {-# BUILTIN NATURAL ℕ #-}
 
 
+_+_ : ℕ → ℕ → ℕ
+0 + n = n
+(suc n) + m = suc (n + m)
+
+
 _==_ : ℕ → ℕ → Bool
 zero ==  zero      = true
 (suc n) == (suc m) = n == m
 _ == _             = false
 
+
+max : ℕ → ℕ → ℕ
+max 0 m             = m
+max n 0             = n
+max (suc n) (suc m) = suc (max n m)
 
 ----------------------------------------
 
@@ -66,6 +76,29 @@ infixr 20 _::_
 all : {A : Set} → (A → Bool) → List A → Bool
 all _ []        = true
 all f (x :: xs) = (f x) and (all f xs)
+
+map : {A B : Set} → (A → B) → List A → List B
+map _ []        = []
+map f (x :: xs) = (f x) :: (map f xs)
+
+len : {A : Set} → List A → ℕ
+len []        = zero
+len (x :: xs) = suc (len xs)
+
+----------------------------------------
+
+data Vector (A : Set) : (n : ℕ) → Set where
+  []   : Vector A 0
+  _::_ : {n : ℕ} → A → Vector A n → Vector A (suc n)
+
+_+/+_ : ∀{A n m} → Vector A n → Vector A m → Vector A (n + m)
+[] +/+ ys        = ys
+(x :: xs) +/+ ys = x :: (xs +/+ ys)
+
+
+listtovec : {A : Set} → (xs : List A) → Vector A (len xs)
+listtovec [] = []
+listtovec (x :: xs) = x :: (listtovec xs)
 
 
 ----------------------------------------
