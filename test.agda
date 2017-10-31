@@ -1,6 +1,7 @@
 open import common
 open import formula
 open import deduction
+open import scheme
 open import texify
 
 ----------------------------------------
@@ -17,10 +18,6 @@ R = atom "R"
 
 S : Term → Formula
 S = pred "S"
-
-¬ : Formula → Formula
-¬ a = a ⇒ ⊥
-
 
 ----------------------------------------
 
@@ -83,6 +80,14 @@ test15 = ExiGElim Y (Assume (Ε X (S X))) (ExiGIntro (Assume (S Y)) Y) AllClosed
 
 -- Non-trivial usage
 
+dneg : Deduction [ P ] (¬¬ P)
+dneg = ArrowIntro (ArrowElim (Assume (¬ P)) (Assume P)) (¬ P)
+
+wlemded : Deduction [ P ∨ ¬ P ] ((¬ P) ∨ (¬¬ P))
+wlemded = DisjElim (Assume (P ∨ ¬ P)) (DisjIntro₂ dneg (¬ P))
+                                   (DisjIntro₁ (Assume (¬ P)) (¬¬ P))
+
+
 all-contradict : Deduction ((¬(S X)) :: [ Α X (S X) ]) ⊥
 all-contradict = ArrowElim (Assume (¬(S X))) (UniGElim X (Assume (Α X (S X))))
 
@@ -133,45 +138,12 @@ findpreds (Α _ p)      = findpreds p
 findpreds (Ε _ p)      = findpreds p
 
 
+lem = P ∨ ¬ P
+wlem = ¬ P ∨ ¬¬ P
 
--- Replace one atom with a formula, one predicate with another (keeping
--- quantifier in place), or otherwise leave it as-is.
-replace : Formula → Formula → Formula → Formula
-replace (atom n)   q f@(atom m)   with (n === m)
-...                                | true  = q
-...                                | false = f
-replace (atom _)   _ f@(pred _ _) = f
-replace (pred _ _) _ f@(atom _)   = f
-replace (pred n _) q f@(pred m _) with (n === m)
-...                                | true  = q
-...                                | false = f
-replace α β (r ⇒ s) = (replace α β r) ⇒ (replace α β s)
-replace α β (r ∧ s) = (replace α β r) ∧ (replace α β s)
-replace α β (r ∨ s) = (replace α β r) ∨ (replace α β s)
-replace α β (Α t r) = Α t (replace α β r)
-replace α β (Ε t r) = Ε t (replace α β r)
-replace _ _ f       = f
-
-replaceall : Formula → Formula → List Formula → List Formula
-replaceall α β = map (replace α β)
+wlempf : Proof [] wlem
+wlempf = Using (lem) P (¬ P) (Generalise (Assume wlem))
 
 
--- This will fail to typecheck if the translation does not have a valid proof.
--- Should only happen if you do something wrong.
-translate : ∀{Γ p}
-          → (α : Formula)
-          → (β : Formula)
-          → Deduction Γ p
-          → Deduction (replaceall α β Γ) (replace α β p)
+wlemarrow = fullarrow wlempf
 
-translate α β (Assume p) = Assume (replace α β p)
-translate α β (ArrowIntro T p) = ArrowIntro (translate α β T) (replace α β p)
-translate α β (ArrowElim T₁ T₂) = ArrowElim (translate α β T₁) (translate α β T₂)
-translate α β (ConjIntro T₁ T₂) = ConjIntro (translate α β T₁) (translate α β T₂)
-translate α β (ConjElim  T₁ T₂) = ConjElim  (translate α β T₁) (translate α β T₂)
-translate α β (DisjIntro₁ T p) = DisjIntro₁ (translate α β T) (replace α β p)
-translate α β (DisjIntro₂ T p) = DisjIntro₂ (translate α β T) (replace α β p)
-translate α β (DisjElim T₁ T₂ T₃) = DisjElim (translate α β T₁)
-                                             (translate α β T₂) (translate α β T₃)
-translate α β 
-translate α β 

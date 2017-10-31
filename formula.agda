@@ -25,7 +25,13 @@ infixr 110 _∨_
 infixr 120 _∧_
 infixr 130 _⇒_
 
+⊥ = atom "\\bot"
 
+¬ : Formula → Formula
+¬ a = a ⇒ ⊥
+
+¬¬ : Formula → Formula
+¬¬ a = ¬ (¬ a)
 
 _[_/_] : Formula → Term → Term → Formula
 (atom n)[ _ / _ ]   = atom n
@@ -85,4 +91,25 @@ x ∈ []        = false
 x ∈ (y :: ys) = (x ≡ y) or (x ∈ ys)
 
 
-⊥ = atom "\\bot"
+
+-- Replace one atom with a formula, one predicate with another (keeping
+-- quantifier in place), or otherwise leave it as-is.
+replace : Formula → Formula → Formula → Formula
+replace (atom n)   q f@(atom m)   with (n === m)
+...                                | true  = q
+...                                | false = f
+replace (atom _)   _ f@(pred _ _) = f
+replace (pred _ _) _ f@(atom _)   = f
+replace (pred n _) q f@(pred m _) with (n === m)
+...                                | true  = q
+...                                | false = f
+replace α β (r ⇒ s) = (replace α β r) ⇒ (replace α β s)
+replace α β (r ∧ s) = (replace α β r) ∧ (replace α β s)
+replace α β (r ∨ s) = (replace α β r) ∨ (replace α β s)
+replace α β (Α t r) = Α t (replace α β r)
+replace α β (Ε t r) = Ε t (replace α β r)
+replace _ _ f       = f
+
+replaceall : Formula → Formula → List Formula → List Formula
+replaceall α β x = map (replace α β) x
+

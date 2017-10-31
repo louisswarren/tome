@@ -32,10 +32,10 @@ data Deduction : List Formula → Formula → Set where
                → (q : Formula)
                → Deduction Γ (p ∨ q)
 
-  DisjIntro₂ : ∀{Γ p}
-               → Deduction Γ p
-               → (q : Formula)
-               → Deduction Γ (q ∨ p)
+  DisjIntro₂ : ∀{Γ q}
+               → Deduction Γ q
+               → (p : Formula)
+               → Deduction Γ (p ∨ q)
 
   DisjElim   : ∀{Γ₁ Γ₂ Γ₃ p q r}
                → Deduction Γ₁ (p ∨ q)
