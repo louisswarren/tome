@@ -69,5 +69,7 @@ texify' d@(ExiGElim _ T₁ T₂ _) Γ = (texify' T₁ Γ)
                                    >> texroot 2 d "\\ndee"
 
 texify : ∀{Γ p} → Deduction Γ p → String
-texify d = texify' d (assumptions d)
+texify d = "\\begin{prooftree}\n"
+           >> texify' d (assumptions d) >> "\n"
+           >> "\\end{prooftree}"
 
