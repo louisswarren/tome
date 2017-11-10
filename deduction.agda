@@ -4,71 +4,71 @@ open import formula
 module deduction where
 
 data Deduction : List Formula → Formula → Set where
-  Assume     : (p : Formula)
-               → Deduction [ p ] p
+  Assume     : (α : Formula)
+               → Deduction [ α ] α
 
-  ArrowIntro : ∀{Γ q}
-               → Deduction Γ q
-               → (p : Formula)
-               → Deduction (Γ ∖ p) (p ⇒ q)
+  ArrowIntro : ∀{Γ β}
+               → Deduction Γ β
+               → (α : Formula)
+               → Deduction (Γ ∖ α) (α ⇒ β)
 
-  ArrowElim  : ∀{Γ₁ Γ₂ p q}
-               → Deduction Γ₁ (p ⇒ q)
-               → Deduction Γ₂ p
-               → Deduction (Γ₁ ++ Γ₂) q
+  ArrowElim  : ∀{Γ₁ Γ₂ α β}
+               → Deduction Γ₁ (α ⇒ β)
+               → Deduction Γ₂ α
+               → Deduction (Γ₁ ++ Γ₂) β
 
-  ConjIntro  : ∀{Γ₁ Γ₂ p q}
-               → Deduction Γ₁ p
-               → Deduction Γ₂ q
-               → Deduction (Γ₁ ++ Γ₂) (p ∧ q)
+  ConjIntro  : ∀{Γ₁ Γ₂ α β}
+               → Deduction Γ₁ α
+               → Deduction Γ₂ β
+               → Deduction (Γ₁ ++ Γ₂) (α ∧ β)
 
-  ConjElim   : ∀{Γ₁ Γ₂ p q r}
-               → Deduction Γ₁ (p ∧ q)
-               → Deduction Γ₂ r
-               → Deduction (Γ₁ ++ (Γ₂ ∖ p ∖ q)) r
+  ConjElim   : ∀{Γ₁ Γ₂ α β γ}
+               → Deduction Γ₁ (α ∧ β)
+               → Deduction Γ₂ γ
+               → Deduction (Γ₁ ++ (Γ₂ ∖ α ∖ β)) γ
 
-  DisjIntro₁ : ∀{Γ p}
-               → Deduction Γ p
-               → (q : Formula)
-               → Deduction Γ (p ∨ q)
+  DisjIntro₁ : ∀{Γ α}
+               → Deduction Γ α
+               → (β : Formula)
+               → Deduction Γ (α ∨ β)
 
-  DisjIntro₂ : ∀{Γ q}
-               → Deduction Γ q
-               → (p : Formula)
-               → Deduction Γ (p ∨ q)
+  DisjIntro₂ : ∀{Γ β}
+               → Deduction Γ β
+               → (α : Formula)
+               → Deduction Γ (α ∨ β)
 
-  DisjElim   : ∀{Γ₁ Γ₂ Γ₃ p q r}
-               → Deduction Γ₁ (p ∨ q)
-               → Deduction Γ₂ r
-               → Deduction Γ₃ r
-               → Deduction (Γ₁ ++ (Γ₂ ∖ p) ++ (Γ₃ ∖ q)) r
+  DisjElim   : ∀{Γ₁ Γ₂ Γ₃ α β γ}
+               → Deduction Γ₁ (α ∨ β)
+               → Deduction Γ₂ γ
+               → Deduction Γ₃ γ
+               → Deduction (Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β)) γ
 
-  UniGIntro  : ∀{Γ p}
-               → Deduction Γ p
+  UnivIntro  : ∀{Γ α}
+               → Deduction Γ α
                → (x : Term)
                → {_ : x notfreein Γ}
-               → Deduction Γ (Α x p)
+               → Deduction Γ (Α x α)
 
-  UniGElim   : ∀{Γ p x}
-               → (y : Term)
-               → Deduction Γ (Α x p)
-               → Deduction Γ (p [ x / y ])
+  UnivElim   : ∀{Γ α x}
+               → (t : Term)
+               → Deduction Γ (Α x α)
+               → Deduction Γ (α [ x / t ])
 
-  ExiGIntro  : ∀{Γ p}
-               → Deduction Γ p
+  ExistIntro : ∀{Γ α}
+               → Deduction Γ α
                → (x : Term)
-               → Deduction Γ (Ε x p)
+               → Deduction Γ (Ε x α)
 
-  ExiGElim   : ∀{Γ₁ Γ₂ p q x}
-               → (y : Term)
-               → Deduction Γ₁ (Ε x p)
-               → Deduction Γ₂ q
-               → {_ : y notfreein [ q ]}
-               → {_ : y notfreein (Γ₂ ∖ (p [ x / y ]))}
-               → Deduction (Γ₁ ++ (Γ₂ ∖ (p [ x / y ]))) q
+  ExistElim  : ∀{Γ₁ Γ₂ α β x}
+               → (t : Term)
+               → Deduction Γ₁ (Ε x α)
+               → Deduction Γ₂ β
+               → {_ : t notfreein [ β ]}
+               → {_ : t notfreein (Γ₂ ∖ (α [ x / t ]))}
+               → Deduction (Γ₁ ++ (Γ₂ ∖ (α [ x / t ]))) β
 
-conclusion : ∀{p Γ} → Deduction Γ p → Formula
-conclusion {p} _ = p
+conclusion : ∀{α Γ} → Deduction Γ α → Formula
+conclusion {α} _ = α
 
-assumptions : ∀{Γ p} → Deduction Γ p → List Formula
+assumptions : ∀{Γ α} → Deduction Γ α → List Formula
 assumptions {Γ} _ = Γ

@@ -55,22 +55,22 @@ test9 : Deduction (P ∨ Q :: P ⇒ R :: Q ⇒ R :: []) R
 test9 = DisjElim (Assume (P ∨ Q)) (ArrowElim (Assume (P ⇒ R)) (Assume P)) (ArrowElim (Assume (Q ⇒ R)) (Assume Q))
 
 test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
-test10 = UniGIntro (ConjElim (UniGElim X (Assume (Α X (S X ∧ P)))) (Assume (S X))) X
+test10 = UnivIntro (ConjElim (UnivElim X (Assume (Α X (S X ∧ P)))) (Assume (S X))) X
 
 test11 : Deduction [ (Α X (S X)) ] (S Y)
-test11 = UniGElim Y (Assume (Α X (S X)))
+test11 = UnivElim Y (Assume (Α X (S X)))
 
 test12 : Deduction [ S X ] (Ε X (S X))
-test12 = ExiGIntro (Assume (S X)) X
+test12 = ExistIntro (Assume (S X)) X
 
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
-test13 = ExiGElim Y (Assume (Ε X (S X))) (ArrowElim (UniGElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y)))
+test13 = ExistElim Y (Assume (Ε X (S X))) (ArrowElim (UnivElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y)))
 
 test14 : Deduction [ Α X (S X) ] (Α Y (S Y))
-test14 = UniGIntro (UniGElim Y (Assume (Α X (S X)))) Y
+test14 = UnivIntro (UnivElim Y (Assume (Α X (S X)))) Y
 
 test15 : Deduction [ Ε X (S X) ] (Ε Y (S Y))
-test15 = ExiGElim Y (Assume (Ε X (S X))) (ExiGIntro (Assume (S Y)) Y)
+test15 = ExistElim Y (Assume (Ε X (S X))) (ExistIntro (Assume (S Y)) Y)
 
 -- Non-trivial usage
 
@@ -83,7 +83,7 @@ wlemded = DisjElim (Assume (P ∨ ¬ P)) (DisjIntro₂ dneg (¬ P))
 
 
 all-contradict : Deduction ((¬(S X)) :: [ Α X (S X) ]) ⊥
-all-contradict = ArrowElim (Assume (¬(S X))) (UniGElim X (Assume (Α X (S X))))
+all-contradict = ArrowElim (Assume (¬(S X))) (UnivElim X (Assume (Α X (S X))))
 
 
 not-for-all : Deduction [ (¬(S X)) ] ( ¬ (Α X (S X)))
@@ -91,7 +91,7 @@ not-for-all = ArrowIntro all-contradict (Α X (S X))
 
 
 gmp-complement : Deduction [ Ε X (¬ (S X)) ] (¬(Α X (S X)))
-gmp-complement = ExiGElim X (Assume (Ε X (¬(S X)))) not-for-all
+gmp-complement = ExistElim X (Assume (Ε X (¬(S X)))) not-for-all
 
 nd : String
 nd = texify gmp-complement

@@ -13,6 +13,10 @@ Y = term "y"
 P : Term → Formula
 P = pred "P"
 
+∀x = Α X
+∃x = Ε X
+∀y = Α Y
+∃y = Ε Y
 
 -- Macros
 
@@ -44,11 +48,11 @@ hε'-trivial = replace Φ (∃x(P X)) hε'
 
 
 hε-equiv₁ : Deduction [ hε ] hε'
-hε-equiv₁ = ArrowIntro (ExiGElim X (Assume hε) (ExiGIntro (ArrowIntro
+hε-equiv₁ = ArrowIntro (ExistElim X (Assume hε) (ExistIntro (ArrowIntro
             (ArrowElim (Assume (Ε X (P X) ⇒ P X))
             (assume-and-elim Φ (Ε X (P X)))) Φ) X))
                  (Φ ⇒ Ε X (P X))
 
 hε-equiv₂ : Deduction [ hε'-trivial ] hε
-hε-equiv₂ = ExiGElim Y (ArrowElim (Assume hε'-trivial) (⇒id (Ε X (P X))))
-                       (ExiGIntro (Assume (Ε X (P X) ⇒ P Y)) Y)
+hε-equiv₂ = ExistElim Y (ArrowElim (Assume hε'-trivial) (⇒id (Ε X (P X))))
+                        (ExistIntro (Assume (Ε X (P X) ⇒ P Y)) Y)

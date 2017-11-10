@@ -61,10 +61,10 @@ texify' d@(DisjElim T₁ T₂ T₃) Γ = (texify' T₁ Γ)
                                   >> (texify' T₂ Γ)
                                   >> (texify' T₃ Γ)
                                   >> texroot 2 d "\\ndce"
-texify' d@(UniGIntro T _)     Γ = (texify' T Γ) >> texroot 1 d "\\ndfi"
-texify' d@(UniGElim _ T)      Γ = (texify' T Γ) >> texroot 1 d "\\ndfe"
-texify' d@(ExiGIntro T _)     Γ = (texify' T Γ) >> texroot 1 d "\\ndei"
-texify' d@(ExiGElim _ T₁ T₂)  Γ = (texify' T₁ Γ)
+texify' d@(UnivIntro T _)     Γ = (texify' T Γ) >> texroot 1 d "\\ndfi"
+texify' d@(UnivElim _ T)      Γ = (texify' T Γ) >> texroot 1 d "\\ndfe"
+texify' d@(ExistIntro T _)    Γ = (texify' T Γ) >> texroot 1 d "\\ndei"
+texify' d@(ExistElim _ T₁ T₂) Γ = (texify' T₁ Γ)
                                   >> (texify' T₂ Γ)
                                   >> texroot 2 d "\\ndee"
 
