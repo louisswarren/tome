@@ -77,6 +77,10 @@ all : {A : Set} → (A → Bool) → List A → Bool
 all _ []        = true
 all f (x :: xs) = (f x) and (all f xs)
 
+any : {A : Set} → (A → Bool) → List A → Bool
+any _ []        = false
+any f (x :: xs) = (f x) or (any f xs)
+
 map : {A B : Set} → (A → B) → List A → List B
 map _ []        = []
 map f (x :: xs) = (f x) :: (map f xs)

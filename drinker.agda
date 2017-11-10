@@ -30,21 +30,25 @@ contraposition {_} {p} {q} T =
                                      (ArrowElim T (Assume p))) p) (¬ q)
 
 
+record Scheme : Set where
+  field
+    formula : Formula
+    name    : String
 
 
 -- Results
 
-hε  = Ε Y (Ε X (P X) ⇒ (P Y))
-hε' = (Φ ⇒ Ε X (P X)) ⇒ Ε X (Φ ⇒ P X)
-hε'-trivial = replace Φ (Ε X (P X)) hε'
+hε  = ∃y(∃x(P X) ⇒ (P Y))
+hε' = (Φ ⇒ ∃x(P X)) ⇒ ∃x(Φ ⇒ P X)
+hε'-trivial = replace Φ (∃x(P X)) hε'
 
 
 hε-equiv₁ : Deduction [ hε ] hε'
 hε-equiv₁ = ArrowIntro (ExiGElim X (Assume hε) (ExiGIntro (ArrowIntro
             (ArrowElim (Assume (Ε X (P X) ⇒ P X))
-            (assume-and-elim Φ (Ε X (P X)))) Φ) X) (Recur AllClosed))
+            (assume-and-elim Φ (Ε X (P X)))) Φ) X))
                  (Φ ⇒ Ε X (P X))
 
 hε-equiv₂ : Deduction [ hε'-trivial ] hε
 hε-equiv₂ = ExiGElim Y (ArrowElim (Assume hε'-trivial) (⇒id (Ε X (P X))))
-                       (ExiGIntro (Assume (Ε X (P X) ⇒ P Y)) Y) AllClosed
+                       (ExiGIntro (Assume (Ε X (P X) ⇒ P Y)) Y)

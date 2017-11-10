@@ -64,7 +64,7 @@ data Deduction : List Formula → Formula → Set where
                → {_ : isTrue (not (y freein q))}
                → Deduction Γ₁ (Ε x p)
                → Deduction Γ₂ q
-               → y NotFreeIn (Γ₂ ∖ (p [ x / y ]))
+               → {_ : isTrue (not (any (_freein_ y) (Γ₂ ∖ (p [ x / y ]))))}
                → Deduction (Γ₁ ++ (Γ₂ ∖ (p [ x / y ]))) q
 
 conclusion : ∀{p Γ} → Deduction Γ p → Formula

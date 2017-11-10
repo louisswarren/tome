@@ -67,7 +67,7 @@ test12 : Deduction [ S X ] (Ε X (S X))
 test12 = ExiGIntro (Assume (S X)) X
 
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
-test13 = ExiGElim Y (Assume (Ε X (S X))) (ArrowElim (UniGElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y))) (Recur AllClosed)
+test13 = ExiGElim Y (Assume (Ε X (S X))) (ArrowElim (UniGElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y)))
 
 test14terms : Y NotFreeIn [ Α X (S X) ]
 test14terms = Recur AllClosed
@@ -76,7 +76,7 @@ test14 : Deduction [ Α X (S X) ] (Α Y (S Y))
 test14 = UniGIntro test14terms (UniGElim Y (Assume (Α X (S X)))) Y
 
 test15 : Deduction [ Ε X (S X) ] (Ε Y (S Y))
-test15 = ExiGElim Y (Assume (Ε X (S X))) (ExiGIntro (Assume (S Y)) Y) AllClosed
+test15 = ExiGElim Y (Assume (Ε X (S X))) (ExiGIntro (Assume (S Y)) Y)
 
 -- Non-trivial usage
 
@@ -97,7 +97,7 @@ not-for-all = ArrowIntro all-contradict (Α X (S X))
 
 
 gmp-complement : Deduction [ Ε X (¬ (S X)) ] (¬(Α X (S X)))
-gmp-complement = ExiGElim X (Assume (Ε X (¬(S X)))) not-for-all AllClosed
+gmp-complement = ExiGElim X (Assume (Ε X (¬(S X)))) not-for-all
 
 nd : String
 nd = texify gmp-complement
