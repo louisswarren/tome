@@ -43,10 +43,10 @@ data Deduction : List Formula → Formula → Set where
                → Deduction Γ₃ r
                → Deduction (Γ₁ ++ (Γ₂ ∖ p) ++ (Γ₃ ∖ q)) r
 
-  UniGIntro  : ∀{Γ p x}
-               → x NotFreeIn Γ
+  UniGIntro  : ∀{Γ p}
                → Deduction Γ p
                → (x : Term)
+               → {_ : isTrue (not (any (_freein_ x) Γ))}
                → Deduction Γ (Α x p)
 
   UniGElim   : ∀{Γ p x}
