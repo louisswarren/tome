@@ -79,12 +79,9 @@ t freein (Ε n a)    = (not (TermEq t n)) and (t freein a)
 t freein (Α n a)    = (not (TermEq t n)) and (t freein a)
 
 
-data _NotFreeIn_ (t : Term) : List Formula → Set where
-  AllClosed : t NotFreeIn []
-  Recur     : ∀{Γ p}
-              → {_ : isTrue (not (t freein p))}
-              → t NotFreeIn Γ
-              → t NotFreeIn (p :: Γ)
+_notfreein_ : Term → List Formula → Set
+t notfreein Γ = isTrue (not (any (_freein_ t) Γ))
+
 
 _∈_ : Formula → List Formula → Bool
 x ∈ []        = false

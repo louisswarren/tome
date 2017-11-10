@@ -46,7 +46,7 @@ data Deduction : List Formula → Formula → Set where
   UniGIntro  : ∀{Γ p}
                → Deduction Γ p
                → (x : Term)
-               → {_ : isTrue (not (any (_freein_ x) Γ))}
+               → {_ : x notfreein Γ}
                → Deduction Γ (Α x p)
 
   UniGElim   : ∀{Γ p x}
@@ -61,10 +61,10 @@ data Deduction : List Formula → Formula → Set where
 
   ExiGElim   : ∀{Γ₁ Γ₂ p q x}
                → (y : Term)
-               → {_ : isTrue (not (y freein q))}
                → Deduction Γ₁ (Ε x p)
                → Deduction Γ₂ q
-               → {_ : isTrue (not (any (_freein_ y) (Γ₂ ∖ (p [ x / y ]))))}
+               → {_ : y notfreein [ q ]}
+               → {_ : y notfreein (Γ₂ ∖ (p [ x / y ]))}
                → Deduction (Γ₁ ++ (Γ₂ ∖ (p [ x / y ]))) q
 
 conclusion : ∀{p Γ} → Deduction Γ p → Formula
