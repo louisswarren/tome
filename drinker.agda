@@ -28,12 +28,6 @@ assume-and-elim p q = ArrowElim (Assume (p ⇒ q)) (Assume p)
 ⇒id p = ArrowIntro (Assume p) p
 
 
-contraposition : ∀{Γ p q} → Deduction Γ (p ⇒ q) → Deduction _ ((¬ q) ⇒ (¬ p))
-contraposition {_} {p} {q} T =
-  ArrowIntro (ArrowIntro (ArrowElim (Assume (¬ q))
-                                     (ArrowElim T (Assume p))) p) (¬ q)
-
-
 record Scheme : Set where
   field
     formula : Formula

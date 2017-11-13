@@ -117,6 +117,10 @@ tex3' : String
 tex3' = texformula ((P ⇒ P) ∧ R)
 
 
+
+
+
+
 -- A scheme-level derivation allows arbitrary instantiation inside a deduction
 
 
@@ -135,9 +139,33 @@ findpreds (Ε _ p)      = findpreds p
 lem = P ∨ ¬ P
 wlem = ¬ P ∨ ¬¬ P
 
-wlempf : Proof [] wlem
-wlempf = Using (lem) P (¬ P) (Generalise (Assume wlem))
+-- wlempf : Proof [] wlem
+-- wlempf = Using (lem) P (¬ P) (Generalise (Assume wlem))
 
 
-wlemarrow = fullarrow wlempf
 
+
+
+-- Contraposition as a function
+contraposfunc : ∀{Γ p q} → Deduction Γ (p ⇒ q) → Deduction _ ((¬ q) ⇒ (¬ p))
+contraposfunc {_} {p} {q} T =
+  ArrowIntro (ArrowIntro (ArrowElim (Assume (¬ q))
+                                     (ArrowElim T (Assume p))) p) (¬ q)
+
+-- Contraposition as a collapsed result
+contraposscheme : Deduction [ P ⇒ Q ] ((¬ Q) ⇒ (¬ P))
+contraposscheme = ArrowIntro (ArrowIntro
+                              (ArrowElim (Assume (¬ Q))
+                               (ArrowElim (Assume (P ⇒ Q)) (Assume P))) P) (¬ Q)
+contrapospf : Proof [ P ⇒ Q ] ((¬ Q) ⇒ (¬ P))
+contrapospf = proof "Contraposition" contraposscheme
+
+sd1 : Deduction [ P ⇒ Q ∨ Q ⇒ P ] ((¬ Q) ⇒ (¬ P) ∨ Q ⇒ P)
+sd1 = DisjElim (Assume (P ⇒ Q ∨ Q ⇒ P))
+                (DisjIntro₁ (contraposfunc (Assume (P ⇒ Q))) (Q ⇒ P))
+                (DisjIntro₂ (Assume (Q ⇒ P)) (¬ Q ⇒ ¬ P))
+
+sd2 : Deduction [ P ⇒ Q ∨ Q ⇒ P ] ((¬ Q) ⇒ (¬ P) ∨ Q ⇒ P)
+sd2 = DisjElim (Assume (P ⇒ Q ∨ Q ⇒ P))
+                (DisjIntro₁ (Collapse ((Assume (P ⇒ Q)) :: []) contrapospf) (Q ⇒ P))
+                (DisjIntro₂ (Assume (Q ⇒ P)) (¬ Q ⇒ ¬ P))

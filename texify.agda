@@ -27,13 +27,14 @@ texsubformula f@(_ ⇒ q) with (q ≡ ⊥)
 texsubformula p          = "(" >> texformula p >> ")"
 
 texroot : ∀{Γ p} → ℕ → Deduction Γ p → String → String
+texroot 0 _ _    = ""
 texroot 1 T rule = "\\RightLabel{" >> rule >> "}\n" >>
                    "\\UnaryInfC{$" >> texformula (conclusion T) >> "$}\n"
 texroot 2 T rule = "\\RightLabel{" >> rule >> "}\n" >>
                    "\\BinaryInfC{$" >> texformula (conclusion T) >> "$}\n"
 texroot 3 T rule = "\\RightLabel{" >> rule >> "}\n" >>
                    "\\TernaryInfC{$" >> texformula (conclusion T) >> "$}\n"
-texroot _ T rule = ""
+texroot (suc n) T rule = "\\BinaryInfC{\\vdots}" >> texroot n T rule
 
 
 
@@ -72,7 +73,7 @@ texify' Γ d@(DisjIntro₂ T _)    = (texify' Γ T) >> texroot 1 d "\\nddi"
 texify' Γ d@(DisjElim T₁ T₂ T₃) = (texify' Γ T₁)
                                   >> (texify' Γ T₂)
                                   >> (texify' Γ T₃)
-                                  >> texroot 2 d "\\ndce"
+                                  >> texroot 3 d "\\ndde"
 texify' Γ d@(UnivIntro T _)     = (texify' Γ T) >> texroot 1 d "\\ndfi"
 texify' Γ d@(UnivElim _ T)      = (texify' Γ T) >> texroot 1 d "\\ndfe"
 texify' Γ d@(ExistIntro T _)    = (texify' Γ T) >> texroot 1 d "\\ndei"
