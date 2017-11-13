@@ -37,39 +37,51 @@ texroot _ T rule = ""
 
 
 
-texify' : ∀{Γ p} → Deduction Γ p → List Formula → String
-texify' d@(Assume p)          Γ with (p ∈ Γ)
+join : String → List String → String
+join _     []                 = ""
+join _     (x :: [])          = x
+join delim (x :: xs@(y :: _)) = x >> delim >> (join delim xs)
+
+texify' : ∀{Γ p} → List Formula → Deduction Γ p → String
+
+texdlmap : ∀{Γs αs} → List Formula → DeductionList Γs αs → List String
+texdlmap _ []        = []
+texdlmap Γ (T :: Ts) = (texify' Γ T) :: (texdlmap Γ Ts)
+
+texify' Γ d@(Collapse Ts (proof name _)) = (join "\\n" (texdlmap Γ Ts))
+                                           >> (texroot (lendl Ts) d name)
+texify' Γ d@(Assume p)          with (p ∈ Γ)
 ...                                | true  = "\\AxiomC{$"
                                              >> texformula p
                                              >> "$}\n"
 ...                                | false = "\\AxiomC{[$"
                                              >> texformula p
                                              >> "$]}\n"
-texify' d@(ArrowIntro T _)    Γ = (texify' T Γ) >> texroot 1 d "\\ndii"
-texify' d@(ArrowElim T₁ T₂)   Γ = (texify' T₁ Γ)
-                                  >> (texify' T₂ Γ)
+texify' Γ d@(ArrowIntro T _)    = (texify' Γ T) >> texroot 1 d "\\ndii"
+texify' Γ d@(ArrowElim T₁ T₂)   = (texify' Γ T₁)
+                                  >> (texify' Γ T₂)
                                   >> texroot 2 d "\\ndie"
-texify' d@(ConjIntro T₁ T₂)   Γ = (texify' T₁ Γ)
-                                  >> (texify' T₂ Γ)
+texify' Γ d@(ConjIntro T₁ T₂)   = (texify' Γ T₁)
+                                  >> (texify' Γ T₂)
                                   >> texroot 2 d "\\ndci"
-texify' d@(ConjElim T₁ T₂)    Γ = (texify' T₁ Γ)
-                                  >> (texify' T₂ Γ)
+texify' Γ d@(ConjElim T₁ T₂)    = (texify' Γ T₁)
+                                  >> (texify' Γ T₂)
                                   >> texroot 2 d "\\ndce"
-texify' d@(DisjIntro₁ T _)    Γ = (texify' T Γ) >> texroot 1 d "\\nddi"
-texify' d@(DisjIntro₂ T _)    Γ = (texify' T Γ) >> texroot 1 d "\\nddi"
-texify' d@(DisjElim T₁ T₂ T₃) Γ = (texify' T₁ Γ)
-                                  >> (texify' T₂ Γ)
-                                  >> (texify' T₃ Γ)
+texify' Γ d@(DisjIntro₁ T _)    = (texify' Γ T) >> texroot 1 d "\\nddi"
+texify' Γ d@(DisjIntro₂ T _)    = (texify' Γ T) >> texroot 1 d "\\nddi"
+texify' Γ d@(DisjElim T₁ T₂ T₃) = (texify' Γ T₁)
+                                  >> (texify' Γ T₂)
+                                  >> (texify' Γ T₃)
                                   >> texroot 2 d "\\ndce"
-texify' d@(UnivIntro T _)     Γ = (texify' T Γ) >> texroot 1 d "\\ndfi"
-texify' d@(UnivElim _ T)      Γ = (texify' T Γ) >> texroot 1 d "\\ndfe"
-texify' d@(ExistIntro T _)    Γ = (texify' T Γ) >> texroot 1 d "\\ndei"
-texify' d@(ExistElim _ T₁ T₂) Γ = (texify' T₁ Γ)
-                                  >> (texify' T₂ Γ)
+texify' Γ d@(UnivIntro T _)     = (texify' Γ T) >> texroot 1 d "\\ndfi"
+texify' Γ d@(UnivElim _ T)      = (texify' Γ T) >> texroot 1 d "\\ndfe"
+texify' Γ d@(ExistIntro T _)    = (texify' Γ T) >> texroot 1 d "\\ndei"
+texify' Γ d@(ExistElim _ T₁ T₂) = (texify' Γ T₁)
+                                  >> (texify' Γ T₂)
                                   >> texroot 2 d "\\ndee"
 
 texify : ∀{Γ p} → Deduction Γ p → String
 texify d = "\\begin{prooftree}\n"
-           >> texify' d (assumptions d) >> "\n"
+           >> texify' (assumptions d) d >> "\n"
            >> "\\end{prooftree}"
 
