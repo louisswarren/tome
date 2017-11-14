@@ -15,8 +15,11 @@ P = pred "P"
 
 ∀x = Α X
 ∃x = Ε X
+Px = P X
+
 ∀y = Α Y
 ∃y = Ε Y
+Py = P Y
 
 -- Macros
 
@@ -36,17 +39,41 @@ record Scheme : Set where
 
 -- Results
 
-hε  = ∃y(∃x(P X) ⇒ (P Y))
-hε' = (Φ ⇒ ∃x(P X)) ⇒ ∃x(Φ ⇒ P X)
-hε'-trivial = replace Φ (∃x(P X)) hε'
+hε  = ∃y(∃x Px ⇒ Py)
+hε' = (Φ ⇒ ∃x Px) ⇒ ∃x(Φ ⇒ Px)
+hε'-trivial = replace Φ (∃x Px) hε'
 
 
 hε-equiv₁ : Deduction [ hε ] hε'
 hε-equiv₁ = ArrowIntro (ExistElim X (Assume hε) (ExistIntro (ArrowIntro
-            (ArrowElim (Assume (Ε X (P X) ⇒ P X))
-            (assume-and-elim Φ (Ε X (P X)))) Φ) X))
-                 (Φ ⇒ Ε X (P X))
+            (ArrowElim (Assume (∃x Px ⇒ Px))
+            (assume-and-elim Φ (∃x Px))) Φ) X))
+                 (Φ ⇒ ∃x Px)
 
 hε-equiv₂ : Deduction [ hε'-trivial ] hε
-hε-equiv₂ = ExistElim Y (ArrowElim (Assume hε'-trivial) (⇒id (Ε X (P X))))
-                        (ExistIntro (Assume (Ε X (P X) ⇒ P Y)) Y)
+hε-equiv₂ = ExistElim Y (ArrowElim (Assume hε'-trivial) (⇒id (∃x Px)))
+                        (ExistIntro (Assume (∃x Px ⇒ Py)) Y)
+
+s = texify hε-equiv₁
+
+
+LEM : Formula → Formula
+LEM Φ = Φ ∨ (¬ Φ)
+
+EFQ : Formula → Formula
+EFQ Φ = ⊥ ⇒ Φ
+
+dp  = ∃y(Py ⇒ ∀x Px)
+gmp = ¬ (∀x Px) ⇒ ∃x (¬ Px)
+
+postulate
+  gmp-deduction : Deduction [] gmp
+
+gmp-proof = proof "GMP" gmp-deduction
+
+dp-class : Deduction (LEM (∀x Px) :: gmp :: EFQ (∀x Px) :: []) dp
+dp-class = DisjElim (Assume (LEM (∀x Px)))
+            (ExistIntro (ArrowIntro (Assume (∀x Px)) Py) Y)
+            (ExistElim Y (ArrowElim (Assume gmp) (Assume (¬ (∀x Px))))
+             (ExistIntro (ArrowIntro (ArrowElim (Assume (EFQ (∀x Px)))
+                                (ArrowElim (Assume (¬ Py)) (Assume Py))) Py) Y))
