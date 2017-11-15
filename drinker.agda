@@ -64,6 +64,7 @@ EFQ : Formula → Formula
 EFQ Φ = ⊥ ⇒ Φ
 
 dp  = ∃y(Py ⇒ ∀x Px)
+dp' = ∃y(∀x (Py ⇒ Px))
 gmp = ¬ (∀x Px) ⇒ ∃x (¬ Px)
 
 postulate
@@ -77,3 +78,20 @@ dp-class = DisjElim (Assume (LEM (∀x Px)))
             (ExistElim Y (ArrowElim (Assume gmp) (Assume (¬ (∀x Px))))
              (ExistIntro Y (ArrowIntro (ArrowElim (Assume (EFQ (∀x Px)))
                                 (ArrowElim (Assume (¬ Py)) (Assume Py))) Py)))
+
+dp-equiv₁ : Deduction [ dp ] dp'
+dp-equiv₁ = (ExistElim Y (Assume dp) (ExistIntro Y
+             (UnivIntro X (ArrowIntro (UnivElim X
+              (ArrowElim (Assume (Py ⇒ ∀x Px)) (Assume Py))) Py))))
+
+dp-equiv₂ : Deduction [ dp' ] dp
+dp-equiv₂ = ExistElim Y (Assume dp') (ExistIntro Y
+             (ArrowIntro (UnivIntro X
+              (ArrowElim (UnivElim X (Assume (∀x (Py ⇒ Px)))) (Assume Py))) Py))
+
+
+
+pf = texify dp-equiv₁
+
+
+
