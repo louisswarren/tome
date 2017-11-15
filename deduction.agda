@@ -66,8 +66,8 @@ data Deduction where
                → Deduction (Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β)) γ
 
   UnivIntro  : ∀{Γ α}
-               → Deduction Γ α
                → (x : Term)
+               → Deduction Γ α
                → {_ : x notfreein Γ}
                → Deduction Γ (Α x α)
 
@@ -77,8 +77,8 @@ data Deduction where
                → Deduction Γ (α [ x / t ])
 
   ExistIntro : ∀{Γ α}
-               → Deduction Γ α
                → (x : Term)
+               → Deduction Γ α
                → Deduction Γ (Ε x α)
 
   ExistElim  : ∀{Γ₁ Γ₂ α β x}

@@ -55,22 +55,22 @@ test9 : Deduction (P ∨ Q :: P ⇒ R :: Q ⇒ R :: []) R
 test9 = DisjElim (Assume (P ∨ Q)) (ArrowElim (Assume (P ⇒ R)) (Assume P)) (ArrowElim (Assume (Q ⇒ R)) (Assume Q))
 
 test10 : Deduction [ (Α X (S X ∧ P)) ] (Α X (S X))
-test10 = UnivIntro (ConjElim (UnivElim X (Assume (Α X (S X ∧ P)))) (Assume (S X))) X
+test10 = UnivIntro X (ConjElim (UnivElim X (Assume (Α X (S X ∧ P)))) (Assume (S X)))
 
 test11 : Deduction [ (Α X (S X)) ] (S Y)
 test11 = UnivElim Y (Assume (Α X (S X)))
 
 test12 : Deduction [ S X ] (Ε X (S X))
-test12 = ExistIntro (Assume (S X)) X
+test12 = ExistIntro X (Assume (S X))
 
 test13 : Deduction ((Ε X (S X)) :: [ Α X ((S X) ⇒ P) ]) P
 test13 = ExistElim Y (Assume (Ε X (S X))) (ArrowElim (UnivElim Y (Assume (Α X ((S X) ⇒ P)))) (Assume (S Y)))
 
 test14 : Deduction [ Α X (S X) ] (Α Y (S Y))
-test14 = UnivIntro (UnivElim Y (Assume (Α X (S X)))) Y
+test14 = UnivIntro Y (UnivElim Y (Assume (Α X (S X))))
 
 test15 : Deduction [ Ε X (S X) ] (Ε Y (S Y))
-test15 = ExistElim Y (Assume (Ε X (S X))) (ExistIntro (Assume (S Y)) Y)
+test15 = ExistElim Y (Assume (Ε X (S X))) (ExistIntro Y (Assume (S Y)))
 
 -- Non-trivial usage
 

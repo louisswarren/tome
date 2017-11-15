@@ -74,15 +74,15 @@ texify' Γ d@(DisjElim T₁ T₂ T₃) = (texify' Γ T₁)
                                   >> (texify' Γ T₂)
                                   >> (texify' Γ T₃)
                                   >> texroot 3 d "\\ndde"
-texify' Γ d@(UnivIntro T _)     = (texify' Γ T) >> texroot 1 d "\\ndfi"
+texify' Γ d@(UnivIntro _ T)     = (texify' Γ T) >> texroot 1 d "\\ndfi"
 texify' Γ d@(UnivElim _ T)      = (texify' Γ T) >> texroot 1 d "\\ndfe"
-texify' Γ d@(ExistIntro T _)    = (texify' Γ T) >> texroot 1 d "\\ndei"
+texify' Γ d@(ExistIntro _ T)    = (texify' Γ T) >> texroot 1 d "\\ndei"
 texify' Γ d@(ExistElim _ T₁ T₂) = (texify' Γ T₁)
                                   >> (texify' Γ T₂)
                                   >> texroot 2 d "\\ndee"
 
 texify : ∀{Γ p} → Deduction Γ p → String
 texify d = "\\begin{prooftree}\n"
-           >> texify' (assumptions d) d >> "\n"
-           >> "\\end{prooftree}"
+           >> texify' (assumptions d) d
+           >> "\\end{prooftree}\n"
 

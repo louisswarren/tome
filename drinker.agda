@@ -45,14 +45,14 @@ hε'-trivial = replace Φ (∃x Px) hε'
 
 
 hε-equiv₁ : Deduction [ hε ] hε'
-hε-equiv₁ = ArrowIntro (ExistElim X (Assume hε) (ExistIntro (ArrowIntro
+hε-equiv₁ = ArrowIntro (ExistElim X (Assume hε) (ExistIntro X (ArrowIntro
             (ArrowElim (Assume (∃x Px ⇒ Px))
-            (assume-and-elim Φ (∃x Px))) Φ) X))
+            (assume-and-elim Φ (∃x Px))) Φ)))
                  (Φ ⇒ ∃x Px)
 
 hε-equiv₂ : Deduction [ hε'-trivial ] hε
 hε-equiv₂ = ExistElim Y (ArrowElim (Assume hε'-trivial) (⇒id (∃x Px)))
-                        (ExistIntro (Assume (∃x Px ⇒ Py)) Y)
+                        (ExistIntro Y (Assume (∃x Px ⇒ Py)))
 
 s = texify hε-equiv₁
 
@@ -73,7 +73,7 @@ gmp-proof = proof "GMP" gmp-deduction
 
 dp-class : Deduction (LEM (∀x Px) :: gmp :: EFQ (∀x Px) :: []) dp
 dp-class = DisjElim (Assume (LEM (∀x Px)))
-            (ExistIntro (ArrowIntro (Assume (∀x Px)) Py) Y)
+            (ExistIntro Y (ArrowIntro (Assume (∀x Px)) Py))
             (ExistElim Y (ArrowElim (Assume gmp) (Assume (¬ (∀x Px))))
-             (ExistIntro (ArrowIntro (ArrowElim (Assume (EFQ (∀x Px)))
-                                (ArrowElim (Assume (¬ Py)) (Assume Py))) Py) Y))
+             (ExistIntro Y (ArrowIntro (ArrowElim (Assume (EFQ (∀x Px)))
+                                (ArrowElim (Assume (¬ Py)) (Assume Py))) Py)))
