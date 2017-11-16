@@ -7,11 +7,11 @@ X Y : Term
 X = term "x"
 Y = term "y"
 
-Φ : Formula
-Φ = atom "\\Phi"
-
 P : Term → Formula
 P = pred "P"
+
+Q : Formula
+Q = atom "Q"
 
 ∀x = Α X
 ∃x = Ε X
@@ -49,28 +49,50 @@ record Scheme : Set where
 
 -- Results
 
-hε  = ∃y(∃x Px ⇒ Py)
-hε' = (Φ ⇒ ∃x Px) ⇒ ∃x(Φ ⇒ Px)
-hε'-trivial = replace Φ (∃x Px) hε'
+-- Propositional unary schemes
+LEM WLEM : Formula → Formula
+DGP      : Formula → Formula → Formula
+
+LEM  Φ   = Φ ∨ (¬ Φ)
+WLEM Φ   = (¬ Φ) ∨ (¬¬ Φ)
+DGP  Φ Ψ = Φ ⇒ Ψ ∨ Ψ ⇒ Φ
 
 
-hε-equiv₁ : Deduction [ hε ] hε'
-hε-equiv₁ = ArrowIntro (ExistElim X (Assume hε) (ExistIntro X (ArrowIntro
-            (ArrowElim (Assume (∃x Px ⇒ Px))
-            (assume-and-elim Φ (∃x Px))) Φ)))
-                 (Φ ⇒ ∃x Px)
+-- First-order schemes
+DP Hε GMP : (Term → Formula) → Formula
+IP       : Formula → (Term → Formula) → Formula
 
-hε-equiv₂ : Deduction [ hε'-trivial ] hε
-hε-equiv₂ = ExistElim Y (ArrowElim (Assume hε'-trivial) (⇒id (∃x Px)))
-                        (ExistIntro Y (Assume (∃x Px ⇒ Py)))
+DP    A = ∃y((A Y) ⇒ ∀x (A X))
+Hε    A = ∃y(∃x (A X) ⇒ A Y)
+IP  N A = (N ⇒ ∃x (A X)) ⇒ ∃x (N ⇒ (A X))
+GMP   A = ¬∀x (A X) ⇒ ∃x (¬(A X))
 
-
-LEM : Formula → Formula
-LEM Φ = Φ ∨ (¬ Φ)
-
-dp  = ∃y(Py ⇒ ∀x Px)
+-- Canonical instances
+hε  = Hε P
+hε' = ∃y(∀x (Py ⇒ Px))
+ip  = IP Q P
+dp  = DP P
 dp' = ∃y(∀x (Py ⇒ Px))
-gmp = ¬ (∀x Px) ⇒ ∃x (¬ Px)
+gmp = GMP P
+
+
+
+-- Example: Proving canonical instances
+
+hε-equiv₁ : Proof [ Hε P ] ip
+hε-equiv₁ = minimalproof "Hε ⊢ IP"
+            (ArrowIntro (ExistElim X (Assume (Hε P)) (ExistIntro X (ArrowIntro
+             (ArrowElim (Assume (∃x Px ⇒ Px))
+             (assume-and-elim Q (∃x Px))) Q)))
+             (Q ⇒ ∃x Px))
+
+hε-equiv₂ : Proof [ IP (∃x Px) P ] hε
+hε-equiv₂ = minimalproof "IP ⊢ Hε"
+            (ExistElim Y (ArrowElim (Assume (IP (∃x Px) P)) (⇒id (∃x Px)))
+                         (ExistIntro Y (Assume (∃x Px ⇒ Py))))
+
+
+-- Example: Proving a scheme
 
 lem-class : (p : Formula) → Proof _ (LEM p)
 lem-class p = classicalproof "LEM" (ClassAbsurd (LEM p) (ArrowElim
@@ -78,8 +100,6 @@ lem-class p = classicalproof "LEM" (ClassAbsurd (LEM p) (ArrowElim
                            (DisjIntro₂ (Assume (¬ p)) p)) (¬ p))
               (ArrowIntro (ArrowElim (Assume (¬ (LEM p)))
                            (DisjIntro₁ (Assume p) (¬ p))) p)))
-
-tex-lem = texifypf (lem-class Φ)
 
 gmp-class : Proof [] gmp
 gmp-class = classicalproof "GMP"
