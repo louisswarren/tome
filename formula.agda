@@ -34,19 +34,19 @@ infixr 130 _⇒_
 ¬¬ a = ¬ (¬ a)
 
 _[_/_] : Formula → Term → Term → Formula
-(atom n)[ _ / _ ]   = atom n
-(pred n t)[ x / y ] with (TermEq t x)
-...                            | true  = (pred n y)
-...                            | false = (pred n t)
-(a ⇒ b)[ x / y ]    = (a [ x / y ]) ⇒ (b [ x / y ])
-(a ∧ b)[ x / y ]    = (a [ x / y ]) ∧ (b [ x / y ])
-(a ∨ b)[ x / y ]    = (a [ x / y ]) ∨ (b [ x / y ])
-(Α t f)[ x / y ]    with (TermEq t x)
-...                    | true  = Α t f
-...                    | false = Α t (f [ x / y ])
-(Ε t f)[ x / y ]    with (TermEq t x)
-...                    | true  = Ε t f
-...                    | false = Ε t (f [ x / y ])
+(atom a)[ _ / _ ]   = atom a
+(pred a t)[ x / y ] with (TermEq t x)
+...                            | true  = (pred a y)
+...                            | false = (pred a t)
+(α ⇒ β)[ x / y ]    = (α [ x / y ]) ⇒ (β [ x / y ])
+(α ∧ β)[ x / y ]    = (α [ x / y ]) ∧ (β [ x / y ])
+(α ∨ β)[ x / y ]    = (α [ x / y ]) ∨ (β [ x / y ])
+(Α t α)[ x / y ]    with (TermEq t x)
+...                    | true  = Α t α
+...                    | false = Α t (α [ x / y ])
+(Ε t α)[ x / y ]    with (TermEq t x)
+...                    | true  = Ε t α
+...                    | false = Ε t (α [ x / y ])
 
 
 _≡_ : Formula → Formula → Bool

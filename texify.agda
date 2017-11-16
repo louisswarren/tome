@@ -68,6 +68,8 @@ texify' Γ d@(ExistIntro _ T)    = (texify' Γ T) >> texroot 1 d "\\ndei"
 texify' Γ d@(ExistElim _ T₁ T₂) = (texify' Γ T₁)
                                   >> (texify' Γ T₂)
                                   >> texroot 2 d "\\ndee"
+texify' Γ d@(ClassAbsurd _ T)   = (texify' Γ T) >> texroot 1 d "\\nddne"
+texify' Γ d@(IntAbsurd _ T)     = (texify' Γ T) >> texroot 1 d "\\ndefq"
 
 texify : ∀{Γ p} → Deduction Γ p → String
 texify d = "\\begin{prooftree}\n"

@@ -13,10 +13,12 @@ data Bool : Set where
 _or_ : Bool → Bool → Bool
 true or _  = true
 false or b = b
+infixr 5 _or_
 
 _and_ : Bool → Bool → Bool
 false and _ = false
 true and b  = b
+infixr 10 _and_
 
 not : Bool → Bool
 not true  = false
@@ -122,3 +124,9 @@ infixl 1 _>>_
 
 _===_ : String → String → Bool
 _===_ = primStringEquality
+
+join : String → List String → String
+join _     []                 = ""
+join _     (x :: [])          = x
+join delim (x :: xs@(y :: _)) = x >> delim >> (join delim xs)
+
