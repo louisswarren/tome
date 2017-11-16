@@ -64,45 +64,36 @@ hε-equiv₂ : Deduction [ hε'-trivial ] hε
 hε-equiv₂ = ExistElim Y (ArrowElim (Assume hε'-trivial) (⇒id (∃x Px)))
                         (ExistIntro Y (Assume (∃x Px ⇒ Py)))
 
-s = texify hε-equiv₁
-
 
 LEM : Formula → Formula
 LEM Φ = Φ ∨ (¬ Φ)
-
-EFQ : Formula → Formula
-EFQ Φ = ⊥ ⇒ Φ
-
-DNE : Formula → Formula
-DNE Φ = (¬¬ Φ) ⇒ Φ
-
-DNEpred : Term → Formula → Formula
-DNEpred X Φ = Α X ((¬¬ Φ) ⇒ Φ)
 
 dp  = ∃y(Py ⇒ ∀x Px)
 dp' = ∃y(∀x (Py ⇒ Px))
 gmp = ¬ (∀x Px) ⇒ ∃x (¬ Px)
 
+lem-class : (p : Formula) → Proof _ (LEM p)
+lem-class p = classicalproof "LEM" (ClassAbsurd (LEM p) (ArrowElim
+              (ArrowIntro (ArrowElim (Assume (¬ (LEM p)))
+                           (DisjIntro₂ (Assume (¬ p)) p)) (¬ p))
+              (ArrowIntro (ArrowElim (Assume (¬ (LEM p)))
+                           (DisjIntro₁ (Assume p) (¬ p))) p)))
 
-gmp-deduction : Deduction (DNE (∃x ¬Px) :: DNEpred X Px :: []) gmp
-gmp-deduction = ArrowIntro (ArrowElim (Assume (DNE (∃x ¬Px)))
-                 (ArrowIntro
-                  (ArrowElim (Assume (¬∀x Px))
-                   (UnivIntro X (ArrowElim (
-                                 (UnivElim X (Assume (DNEpred X Px))))
-                    (ArrowIntro (ArrowElim (Assume (¬∃x ¬Px))
-                     (ExistIntro X (Assume ¬Px))) ¬Px))))
-                  (¬∃x ¬Px)))
-                 (¬∀x Px)
+tex-lem = texifypf (lem-class Φ)
 
+gmp-class : Proof [] gmp
+gmp-class = classicalproof "GMP"
+            (ArrowIntro (ClassAbsurd (∃x ¬Px)
+             (ArrowElim (Assume (¬∀x Px)) (UnivIntro X
+              (ClassAbsurd Px (ArrowElim (Assume (¬∃x ¬Px))
+               (ExistIntro X (Assume ¬Px)))))))
+             (¬∀x Px))
 
-gmp-proof = proof "GMP" gmp-deduction
-
-dp-class : Deduction (LEM (∀x Px) :: gmp :: EFQ (∀x Px) :: []) dp
-dp-class = DisjElim (Assume (LEM (∀x Px)))
+dp-class : Deduction [] dp
+dp-class = DisjElim (Cite (lem-class (∀x Px)))
             (ExistIntro Y (ArrowIntro (Assume (∀x Px)) Py))
-            (ExistElim Y (ArrowElim (Assume gmp) (Assume (¬∀x Px)))
-             (ExistIntro Y (ArrowIntro (ArrowElim (Assume (EFQ (∀x Px)))
+            (ExistElim Y (ArrowElim (Cite gmp-class) (Assume (¬∀x Px)))
+             (ExistIntro Y (ArrowIntro (IntAbsurd (∀x Px)
                                 (ArrowElim (Assume ¬Py) (Assume Py))) Py)))
 
 dp-equiv₁ : Deduction [ dp ] dp'
