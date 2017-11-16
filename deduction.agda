@@ -8,6 +8,10 @@ data Proof : List Formula → Formula →  Set
 data Deduction : List Formula → Formula → Set
 
 data Deduction where
+  Cite        : ∀{α}
+                → Proof [] α
+                → Deduction [] α
+
   Assume      : (α : Formula)
                 → Deduction [ α ] α
 
@@ -91,6 +95,31 @@ assumptions {Γ} _ = Γ
 
 
 isMinimal : ∀{Γ α} → Deduction Γ α → Bool
+isIntuitionistic : ∀{Γ α} → Deduction Γ α → Bool
+
+
+data Proof where
+  minimalproof        : ∀{Γ α}
+                        → String
+                        → (T : Deduction Γ α)
+                        → {_ : isTrue (isMinimal T)}
+                        → Proof Γ α
+
+  intuitionisticproof : ∀{Γ α}
+                        → String
+                        → (T : Deduction Γ α)
+                        → {_ : isTrue (isIntuitionistic T)}
+                        → Proof Γ α
+
+  classicalproof      : ∀{Γ α}
+                        → String
+                        → (T : Deduction Γ α)
+                        → Proof Γ α
+
+
+isMinimal (Cite (minimalproof        _ T)) = isMinimal T
+isMinimal (Cite (intuitionisticproof _ T)) = isMinimal T
+isMinimal (Cite (classicalproof      _ T)) = isMinimal T
 isMinimal (Assume                 _) = true
 isMinimal (ArrowIntro    T        _) = isMinimal T
 isMinimal (ArrowElim     T₁ T₂     ) = isMinimal T₁ and isMinimal T₂
@@ -108,7 +137,9 @@ isMinimal (ClassAbsurd _ T         ) = false
 isMinimal (IntAbsurd   _ T         ) = false
 
 
-isIntuitionistic : ∀{Γ α} → Deduction Γ α → Bool
+isIntuitionistic (Cite (minimalproof        _ T)) = isIntuitionistic T
+isIntuitionistic (Cite (intuitionisticproof _ T)) = isIntuitionistic T
+isIntuitionistic (Cite (classicalproof      _ T)) = isIntuitionistic T
 isIntuitionistic (Assume                 _) = true
 isIntuitionistic (ArrowIntro    T        _) = isIntuitionistic T
 isIntuitionistic (ArrowElim     T₁ T₂     ) = isIntuitionistic T₁
@@ -129,22 +160,3 @@ isIntuitionistic (ExistElim   _ T₁ T₂     ) = isIntuitionistic T₁
                                                 and isIntuitionistic T₂
 isIntuitionistic (ClassAbsurd _ T         ) = false
 isIntuitionistic (IntAbsurd   _ T         ) = true
-
-
-data Proof where
-  minimalproof        : ∀{Γ α}
-                        → String
-                        → (T : Deduction Γ α)
-                        → {_ : isTrue (isMinimal T)}
-                        → Proof Γ α
-
-  intuitionisticproof : ∀{Γ α}
-                        → String
-                        → (T : Deduction Γ α)
-                        → {_ : isTrue (isIntuitionistic T)}
-                        → Proof Γ α
-
-  classicalproof      : ∀{Γ α}
-                        → String
-                        → (T : Deduction Γ α)
-                        → Proof Γ α

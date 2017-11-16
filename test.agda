@@ -168,3 +168,20 @@ sd1 = DisjElim (Assume (P ⇒ Q ∨ Q ⇒ P))
 
 
 
+lem-class : Proof [] lem
+lem-class = classicalproof "LEM"
+            (ClassAbsurd lem (ArrowElim
+             (ArrowIntro (ArrowElim (Assume (¬ lem))
+                          (DisjIntro₂ (Assume (¬ P)) P)) (¬ P))
+             (ArrowIntro (ArrowElim (Assume (¬ lem))
+                          (DisjIntro₁ (Assume P) (¬ P))) P)))
+
+
+matimp-class : Proof [] ((P ⇒ Q) ⇒ (¬ P ∨ Q))
+matimp-class = classicalproof "MAT"
+               (ArrowIntro
+                (DisjElim (Cite lem-class)
+                 (DisjIntro₂ (ArrowElim (Assume (P ⇒ Q)) (Assume P)) (¬ P))
+                 (DisjIntro₁ (Assume (¬ P)) Q))
+                (P ⇒ Q))
+

@@ -39,6 +39,9 @@ texroot (suc n) T rule = "\\BinaryInfC{\\vdots}" >> texroot n T rule
 
 
 texify' : ∀{Γ p} → List Formula → Deduction Γ p → String
+texify' Γ (Cite (minimalproof x T)) = "\\AxiomC{}\n" >> texroot 1 T x
+texify' Γ (Cite (intuitionisticproof x T)) = "\\AxiomC{}\n" >> texroot 1 T x
+texify' Γ (Cite (classicalproof x T)) = "\\AxiomC{}\n" >> texroot 1 T x
 texify' Γ d@(Assume p)          with (p ∈ Γ)
 ...                                | true  = "\\AxiomC{$"
                                              >> texformula p
@@ -75,4 +78,9 @@ texify : ∀{Γ p} → Deduction Γ p → String
 texify d = "\\begin{prooftree}\n"
            >> texify' (assumptions d) d
            >> "\\end{prooftree}\n"
+
+texifypf : ∀{Γ p} → Proof Γ p → String
+texifypf (minimalproof x T) = texify T
+texifypf (intuitionisticproof x T) = texify T
+texifypf (classicalproof x T) = texify T
 
