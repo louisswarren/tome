@@ -16,10 +16,20 @@ P = pred "P"
 ∀x = Α X
 ∃x = Ε X
 Px = P X
+¬Px = ¬ Px
 
 ∀y = Α Y
 ∃y = Ε Y
 Py = P Y
+¬Py = ¬ Py
+
+
+¬∀x ¬∃x ¬∀y ¬∃y : Formula → Formula
+¬∀x Φ = ¬ (∀x Φ)
+¬∃x Φ = ¬ (∃x Φ)
+¬∀y Φ = ¬ (∀y Φ)
+¬∃y Φ = ¬ (∃y Φ)
+
 
 -- Macros
 
@@ -63,21 +73,37 @@ LEM Φ = Φ ∨ (¬ Φ)
 EFQ : Formula → Formula
 EFQ Φ = ⊥ ⇒ Φ
 
+DNE : Formula → Formula
+DNE Φ = (¬¬ Φ) ⇒ Φ
+
+DNEpred : Term → Formula → Formula
+DNEpred X Φ = Α X ((¬¬ Φ) ⇒ Φ)
+
 dp  = ∃y(Py ⇒ ∀x Px)
 dp' = ∃y(∀x (Py ⇒ Px))
 gmp = ¬ (∀x Px) ⇒ ∃x (¬ Px)
 
-postulate
-  gmp-deduction : Deduction [] gmp
+
+gmp-deduction : Deduction (DNE (∃x ¬Px) :: DNEpred X Px :: []) gmp
+gmp-deduction = ArrowIntro (ArrowElim (Assume (DNE (∃x ¬Px)))
+                 (ArrowIntro
+                  (ArrowElim (Assume (¬∀x Px))
+                   (UnivIntro X (ArrowElim (
+                                 (UnivElim X (Assume (DNEpred X Px))))
+                    (ArrowIntro (ArrowElim (Assume (¬∃x ¬Px))
+                     (ExistIntro X (Assume ¬Px))) ¬Px))))
+                  (¬∃x ¬Px)))
+                 (¬∀x Px)
+
 
 gmp-proof = proof "GMP" gmp-deduction
 
 dp-class : Deduction (LEM (∀x Px) :: gmp :: EFQ (∀x Px) :: []) dp
 dp-class = DisjElim (Assume (LEM (∀x Px)))
             (ExistIntro Y (ArrowIntro (Assume (∀x Px)) Py))
-            (ExistElim Y (ArrowElim (Assume gmp) (Assume (¬ (∀x Px))))
+            (ExistElim Y (ArrowElim (Assume gmp) (Assume (¬∀x Px)))
              (ExistIntro Y (ArrowIntro (ArrowElim (Assume (EFQ (∀x Px)))
-                                (ArrowElim (Assume (¬ Py)) (Assume Py))) Py)))
+                                (ArrowElim (Assume ¬Py) (Assume Py))) Py)))
 
 dp-equiv₁ : Deduction [ dp ] dp'
 dp-equiv₁ = (ExistElim Y (Assume dp) (ExistIntro Y
@@ -88,10 +114,4 @@ dp-equiv₂ : Deduction [ dp' ] dp
 dp-equiv₂ = ExistElim Y (Assume dp') (ExistIntro Y
              (ArrowIntro (UnivIntro X
               (ArrowElim (UnivElim X (Assume (∀x (Py ⇒ Px)))) (Assume Py))) Py))
-
-
-
-pf = texify dp-equiv₁
-
-
 
