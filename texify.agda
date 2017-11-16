@@ -33,24 +33,12 @@ texroot 1 T rule = "\\RightLabel{" >> rule >> "}\n" >>
 texroot 2 T rule = "\\RightLabel{" >> rule >> "}\n" >>
                    "\\BinaryInfC{$" >> texformula (conclusion T) >> "$}\n"
 texroot 3 T rule = "\\RightLabel{" >> rule >> "}\n" >>
-                   "\\TernaryInfC{$" >> texformula (conclusion T) >> "$}\n"
+                   "\\TrinaryInfC{$" >> texformula (conclusion T) >> "$}\n"
 texroot (suc n) T rule = "\\BinaryInfC{\\vdots}" >> texroot n T rule
 
 
 
-join : String → List String → String
-join _     []                 = ""
-join _     (x :: [])          = x
-join delim (x :: xs@(y :: _)) = x >> delim >> (join delim xs)
-
 texify' : ∀{Γ p} → List Formula → Deduction Γ p → String
-
-texdlmap : ∀{Γs αs} → List Formula → DeductionList Γs αs → List String
-texdlmap _ []        = []
-texdlmap Γ (T :: Ts) = (texify' Γ T) :: (texdlmap Γ Ts)
-
-texify' Γ d@(Collapse Ts (proof name _)) = (join "\\n" (texdlmap Γ Ts))
-                                           >> (texroot (lendl Ts) d name)
 texify' Γ d@(Assume p)          with (p ∈ Γ)
 ...                                | true  = "\\AxiomC{$"
                                              >> texformula p
