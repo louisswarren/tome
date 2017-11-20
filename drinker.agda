@@ -60,17 +60,17 @@ DGP  Φ Ψ = Φ ⇒ Ψ ∨ Ψ ⇒ Φ
 
 -- First-order schemes
 DP Hε GMP : (Term → Formula) → Formula
-IP       : Formula → (Term → Formula) → Formula
+IP       : (α : Formula) → (Term → Formula) → (t : Term) → {_ : t notfreein [ α ]} → Formula
 
 DP    A = ∃y((A Y) ⇒ ∀x (A X))
 Hε    A = ∃y(∃x (A X) ⇒ A Y)
-IP  N A = (N ⇒ ∃x (A X)) ⇒ ∃x (N ⇒ (A X))
+IP  N A t = (N ⇒ Ε t (A X)) ⇒ Ε t (N ⇒ (A X))
 GMP   A = ¬∀x (A X) ⇒ ∃x (¬(A X))
 
 -- Canonical instances
 hε  = Hε P
 hε' = ∃y(∀x (Py ⇒ Px))
-ip  = IP Q P
+ip  = IP Q P X
 dp  = DP P
 dp' = ∃y(∀x (Py ⇒ Px))
 gmp = GMP P
@@ -86,9 +86,9 @@ hε-equiv₁ = minimalproof "Hε ⊢ IP"
              (assume-and-elim Q (∃x Px))) Q)))
              (Q ⇒ ∃x Px))
 
-hε-equiv₂ : Proof [ IP (∃x Px) P ] hε
+hε-equiv₂ : Proof [ IP (∃x Px) P X ] hε
 hε-equiv₂ = minimalproof "IP ⊢ Hε"
-            (ExistElim Y (ArrowElim (Assume (IP (∃x Px) P)) (⇒id (∃x Px)))
+            (ExistElim Y (ArrowElim (Assume (IP (∃x Px) P X)) (⇒id (∃x Px)))
                          (ExistIntro Y (Assume (∃x Px ⇒ Py))))
 
 
