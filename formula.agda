@@ -3,7 +3,7 @@ open import common
 module formula where
 
 
--- Relations
+-- Relation symbols
 
 data _-aryRelationSymbol : ℕ → Set where
   _-aryrelationsymbol_ : (n : ℕ) → String → (n)-aryRelationSymbol
@@ -12,24 +12,26 @@ Propsymbol = (zero)-aryRelationSymbol
 propsymbol : String → Propsymbol
 propsymbol s = (zero)-aryrelationsymbol s
 
+
 -- Terms
 
 data _-aryFunctionSymbol : ℕ → Set where
   _-aryfunctionsymbol_ : (n : ℕ) → String → (n)-aryFunctionSymbol
 
-Constant = (zero)-aryFunctionSymbol
-constant : String → Constant
-constant s = (zero)-aryfunctionsymbol s
+ConstantSymbol = (zero)-aryFunctionSymbol
+constantsymbol : String → ConstantSymbol
+constantsymbol s = (zero)-aryfunctionsymbol s
 
 data Variable : Set where
   variable : String → Variable
 
 data Term : Set where
-  variableTerm : Variable → Term
-  functionTerm : ∀{n} → (n)-aryFunctionSymbol → Vector Term n → Term
+  variableterm : Variable → Term
+  functionterm : ∀{n} → (n)-aryFunctionSymbol → Vector Term n → Term
 
-constantTerm : Constant → Term
-constantTerm t = functionTerm t []
+constantterm : ConstantSymbol → Term
+constantterm t = functionterm t []
+
 
 -- Formulae
 
@@ -38,15 +40,15 @@ data Formula : Set where
   _⇒_    : Formula → Formula → Formula
   _∧_    : Formula → Formula → Formula
   _∨_    : Formula → Formula → Formula
-  ∃[_]_  : Variable → Formula → Formula
   ∀[_]_  : Variable → Formula → Formula
+  ∃[_]_  : Variable → Formula → Formula
 
 infixr 110 _∨_
 infixr 120 _∧_
 infixr 130 _⇒_
 
 
--- Syntax
+-- Relations and functions
 
 Proposition = Formula
 proposition : String → Proposition
@@ -61,22 +63,36 @@ binaryrelation : String → BinaryRelation
 binaryrelation s = λ σ → (λ τ → (atomic ((2)-aryrelationsymbol s) (σ ∷ τ ∷ [])))
 
 
+
+Constant = Term
+constant : String → Constant
+constant s = constantterm (constantsymbol s)
+
+UnaryFunction = Term → Term
+unaryfunction : String → UnaryFunction
+unaryfunction s = λ n → (functionterm ((1)-aryfunctionsymbol s) (n ∷ []))
+
+BinaryFunction = Term → Term → Term
+binaryfunction : String → BinaryFunction
+binaryfunction s = λ n → (λ m → (functionterm ((2)-aryfunctionsymbol s) (n ∷ m ∷ [])))
+
 -- Examples
 
 x y : Term
-x = variableTerm (variable "x")
-y = variableTerm (variable "y")
-∃x ∃y ∀x ∀y : Formula → Formula
-∃x a = ∃[ variable "x" ] a
-∃y a = ∃[ variable "y" ] a
+x = variableterm (variable "x")
+y = variableterm (variable "y")
+
+∀x ∃x ∀y ∃y : Formula → Formula
 ∀x a = ∀[ variable "x" ] a
+∃x a = ∃[ variable "x" ] a
 ∀y a = ∀[ variable "y" ] a
+∃y a = ∃[ variable "y" ] a
 
 s t : Term
-s = constantTerm (constant "s")
-t = constantTerm (constant "t")
+s = constant "s"
+t = constant "t"
 
-f = (2)-aryfunctionsymbol "f"
+f = binaryfunction "f"
 
 P : Predicate
 P = predicate "P"
@@ -89,4 +105,4 @@ R = binaryrelation "R"
 
 
 α : Formula
-α = ∀x (P x) ∨ ∃y (∀x (R x t) ⇒ Q) ∧ (P t ∨ (R x x))
+α = ∀x (P x) ∨ ∃y (∀x (R x t) ⇒ Q) ∧ (P (f t y) ∨ (R x x))
