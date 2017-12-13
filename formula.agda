@@ -2,7 +2,6 @@ open import common
 
 module formula where
 
-
 --------------------------------------------------------------------------------
 -- Relation symbols
 --------------------------------------------------------------------------------
@@ -14,7 +13,6 @@ data _-aryRelationSymbol : ℕ → Set where
 Propsymbol = (zero)-aryRelationSymbol
 propsymbol : String → Propsymbol
 propsymbol s = (zero)-aryrelationsymbol s
-
 
 --------------------------------------------------------------------------------
 -- Terms
@@ -98,41 +96,41 @@ binaryfunction : String → BinaryFunction
 binaryfunction s = λ n m → (functionterm ((2)-aryfunctionsymbol s) (n ∷ m ∷ []))
 
 
+⊥ = proposition "⊥"
+¬ : Formula → Formula
+¬ α = α ⇒ ⊥
+
+
 --------------------------------------------------------------------------------
--- Examples
+-- Equality
 --------------------------------------------------------------------------------
 
-x : Term
-x = variableterm (variable "x")
+_=variable=_ : Variable → Variable → Bool
+variable x =variable= variable y = x === y
 
-∀x ∃x : Formula → Formula
-∀x = universal   (variable "x")
-∃x = existential (variable "x")
+_=functionsymbol=_ : ∀{n m}
+                     → (n)-aryFunctionSymbol
+                     → (m)-aryFunctionSymbol
+                     → Bool
+(n -aryfunctionsymbol x) =functionsymbol= (m -aryfunctionsymbol y)
+  = (n == m) and (x === y)
+
+_=term=_ : Term → Term → Bool
+variableterm x    =term= variableterm y   = x =variable= y
+variableterm _    =term= functionterm _ _ = false
+functionterm _ _  =term= variableterm _   = false
+functionterm f ζ =term= functionterm g χ = {!   !}
 
 
-y : Term
-y = variableterm (variable "y")
 
-∀y ∃y : Formula → Formula
-∀y = universal   (variable "y")
-∃y = existential (variable "y")
+--------------------------------------------------------------------------------
+-- Substitution
+--------------------------------------------------------------------------------
 
-s t : Term
-s = constant "s"
-t = constant "t"
-
-f : BinaryFunction
-f = binaryfunction "f"
-
-P : Predicate
-P = predicate "P"
-
-Q : Proposition
-Q = proposition "Q"
-
-R : BinaryRelation
-R = binaryrelation "R"
-
-α : Formula
-α = ∀x (P x) ∨ ∃y (∀x (R x t) ⇒ Q) ∧ (P (f t y) ∨ (R x x))
-
+_[_/_] : Formula → Term → Term → Formula
+atomic f ζs [ σ / τ ]     = {!   !}
+(α ⇒ β) [ σ / τ ]         = (α [ σ / τ ]) ⇒ (β [ σ / τ ])
+(α ∧ β) [ σ / τ ]         = (α [ σ / τ ]) ∧ (β [ σ / τ ])
+(α ∨ β) [ σ / τ ]         = (α [ σ / τ ]) ∨ (β [ σ / τ ])
+universal ζ α [ σ / τ ]   = {!   !}
+existential ζ α [ σ / τ ] = {!   !}
