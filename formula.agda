@@ -128,15 +128,24 @@ functionterm f ζ =term= functionterm g χ
 (z ∷ ζ) =vectorterm= (x ∷ χ) = (x =term= z) and (ζ =vectorterm= χ)
 _ =vectorterm= _ = false
 
+substituteone : Term → Term → Term → Term
 
+substitute : ∀{n} → Vector Term n → Term → Term → Vector Term n
+substitute [] σ τ = []
+substitute (ζ ∷ ζs) σ τ = {! (substituteone ζ σ τ) ∷ (substitute ζs σ τ)  !}
 
+substituteone ζ σ τ with (ζ =term= σ)
+...               | true = τ
+...               | false with ζ
+...                     | variableterm x = ζ
+...                     | functionterm x xs = functionterm x (substitute xs σ τ)
 
 --------------------------------------------------------------------------------
 -- Substitution
 --------------------------------------------------------------------------------
 
 _[_/_] : Formula → Term → Term → Formula
-atomic r ζs [ σ / τ ]     = {!   !}
+atomic r ζs [ σ / τ ]     = atomic r (substitute ζs σ τ)
 (α ⇒ β) [ σ / τ ]         = (α [ σ / τ ]) ⇒ (β [ σ / τ ])
 (α ∧ β) [ σ / τ ]         = (α [ σ / τ ]) ∧ (β [ σ / τ ])
 (α ∨ β) [ σ / τ ]         = (α [ σ / τ ]) ∨ (β [ σ / τ ])
