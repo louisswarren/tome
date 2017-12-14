@@ -115,11 +115,19 @@ _=functionsymbol=_ : ∀{n m}
 (n -aryfunctionsymbol x) =functionsymbol= (m -aryfunctionsymbol y)
   = (n == m) and (x === y)
 
+_=vectorterm=_ : ∀{n m} → Vector Term n → Vector Term m → Bool
+
 _=term=_ : Term → Term → Bool
 variableterm x    =term= variableterm y   = x =variable= y
 variableterm _    =term= functionterm _ _ = false
 functionterm _ _  =term= variableterm _   = false
-functionterm f ζ =term= functionterm g χ = {!   !}
+functionterm f ζ =term= functionterm g χ
+  = (f =functionsymbol= g) and (ζ =vectorterm= χ)
+
+[] =vectorterm= [] = true
+(z ∷ ζ) =vectorterm= (x ∷ χ) = (x =term= z) and (ζ =vectorterm= χ)
+_ =vectorterm= _ = false
+
 
 
 
@@ -128,9 +136,16 @@ functionterm f ζ =term= functionterm g χ = {!   !}
 --------------------------------------------------------------------------------
 
 _[_/_] : Formula → Term → Term → Formula
-atomic f ζs [ σ / τ ]     = {!   !}
+atomic r ζs [ σ / τ ]     = {!   !}
 (α ⇒ β) [ σ / τ ]         = (α [ σ / τ ]) ⇒ (β [ σ / τ ])
 (α ∧ β) [ σ / τ ]         = (α [ σ / τ ]) ∧ (β [ σ / τ ])
 (α ∨ β) [ σ / τ ]         = (α [ σ / τ ]) ∨ (β [ σ / τ ])
-universal ζ α [ σ / τ ]   = {!   !}
-existential ζ α [ σ / τ ] = {!   !}
+universal ζ α [ σ@(variableterm x) / τ ] with (ζ =variable= x)
+...                                      | true = universal ζ α
+...                                      | false = universal ζ (α [ σ / τ ])
+universal ζ α [ σ@(functionterm _ _) / τ ] = universal ζ (α [ σ / τ ])
+existential ζ α [ σ@(variableterm x) / τ ] with (ζ =variable= x)
+...                                      | true = existential ζ α
+...                                      | false = existential ζ (α [ σ / τ ])
+existential ζ α [ σ@(functionterm _ _) / τ ] = existential ζ (α [ σ / τ ])
+
