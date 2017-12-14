@@ -1,5 +1,7 @@
 module common where
 
+data _≡_ {A : Set}(x : A) : A → Set where
+  refl : x ≡ x
 
 ----------------------------------------
 
@@ -61,50 +63,50 @@ max (suc n) (suc m) = suc (max n m)
 ----------------------------------------
 
 data List (A : Set) : Set where
-  []   : List A
-  _::_ : A → List A → List A
+  []  : List A
+  _∷_ : A → List A → List A
 
 
 [_] : {A : Set} → A → List A
-[ x ] = x :: []
+[ x ] = x ∷ []
 
 _++_ : {A : Set} → List A → List A → List A
 [] ++ ys        = ys
-(x :: xs) ++ ys = x :: (xs ++ ys)
+(x ∷ xs) ++ ys = x ∷ (xs ++ ys)
 
 infixr 10 _++_
-infixr 20 _::_
+infixr 20 _∷_
 
 all : {A : Set} → (A → Bool) → List A → Bool
 all _ []        = true
-all f (x :: xs) = (f x) and (all f xs)
+all f (x ∷ xs) = (f x) and (all f xs)
 
 any : {A : Set} → (A → Bool) → List A → Bool
 any _ []        = false
-any f (x :: xs) = (f x) or (any f xs)
+any f (x ∷ xs) = (f x) or (any f xs)
 
 map : {A B : Set} → (A → B) → List A → List B
 map _ []        = []
-map f (x :: xs) = (f x) :: (map f xs)
+map f (x ∷ xs) = (f x) ∷ (map f xs)
 
 len : {A : Set} → List A → ℕ
 len []        = zero
-len (x :: xs) = suc (len xs)
+len (x ∷ xs) = suc (len xs)
 
 ----------------------------------------
 
 data Vector (A : Set) : (n : ℕ) → Set where
   []   : Vector A 0
-  _::_ : {n : ℕ} → A → Vector A n → Vector A (suc n)
+  _∷_ : {n : ℕ} → A → Vector A n → Vector A (suc n)
 
 _+/+_ : ∀{A n m} → Vector A n → Vector A m → Vector A (n + m)
 [] +/+ ys        = ys
-(x :: xs) +/+ ys = x :: (xs +/+ ys)
+(x ∷ xs) +/+ ys = x ∷ (xs +/+ ys)
 
 
 listtovec : {A : Set} → (xs : List A) → Vector A (len xs)
 listtovec [] = []
-listtovec (x :: xs) = x :: (listtovec xs)
+listtovec (x ∷ xs) = x ∷ (listtovec xs)
 
 
 ----------------------------------------
@@ -127,6 +129,6 @@ _===_ = primStringEquality
 
 join : String → List String → String
 join _     []                 = ""
-join _     (x :: [])          = x
-join delim (x :: xs@(y :: _)) = x >> delim >> (join delim xs)
+join _     (x ∷ [])          = x
+join delim (x ∷ xs@(y ∷ _)) = x >> delim >> (join delim xs)
 
