@@ -15,13 +15,12 @@ SchemeProof scm pf = (λ p → conclusion (pf p)) is scm
 exs : Formula → Formula
 exs p = ((p ⇒ p) ⇒ p) ⇒ p
 
-postulate magic : ∀{p α}
-                  → Deduction
-                      (((p ⇒ p) ⇒ p :: ([] ++ [ p ] ∖ p)) ∖ ((p ⇒ p) ⇒ p)) α
+postulate magic : ∀{x y α}
+                  → Deduction ((x :: ([ y ] ∖ y)) ∖ x) α
                   → Deduction [] α
 
 pf : (p : Formula) → Deduction [] (exs p)
-pf p = magic {p} (ArrowIntro (ArrowElim (Assume ((p ⇒ p) ⇒ p))
+pf p = magic {(p ⇒ p) ⇒ p} {p} (ArrowIntro (ArrowElim (Assume ((p ⇒ p) ⇒ p))
                               (ArrowIntro (Assume p) p)) ((p ⇒ p) ⇒ p))
 
 
