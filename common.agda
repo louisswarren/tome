@@ -26,6 +26,9 @@ not : Bool → Bool
 not true  = false
 not false = true
 
+if_then_else_ : {A : Set} → Bool → A → A → A
+if true  then x else _ = x
+if false then _ else y = y
 
 data False  : Set where
 record True : Set where

@@ -3,6 +3,11 @@ open import formula
 
 module deduction where
 
+_∖_ : List Formula → Formula → List Formula
+[] ∖ _ = []
+(x ∷ xs) ∖ a = if {! x =formula= a  !} then {!   !} else {!   !}
+
+infixl 200 ∖
 
 data Proof : List Formula → Formula →  Set
 data Deduction : List Formula → Formula → Set
@@ -33,7 +38,7 @@ data Deduction where
   ConjElim    : ∀{Γ₁ Γ₂ α β γ}
                 → Deduction Γ₁ (α ∧ β)
                 → Deduction Γ₂ γ
-                → Deduction (Γ₁ ++ (Γ₂ ∖ α ∖ β)) γ
+                → Deduction (Γ₁ ++ ((Γ₂ ∖ α) ∖ β)) γ
 
   DisjIntro₁  : ∀{Γ α}
                 → Deduction Γ α
@@ -52,28 +57,29 @@ data Deduction where
                 → Deduction (Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β)) γ
 
   UnivIntro   : ∀{Γ α}
-                → (x : Term)
+                → (x : Variable)
                 → Deduction Γ α
-                → {_ : x notfreein Γ}
-                → Deduction Γ (Α x α)
+                → {_ : x NotFreeIn Γ}
+                → Deduction Γ (universal x α)
 
   UnivElim    : ∀{Γ α x}
                 → (t : Term)
-                → Deduction Γ (Α x α)
-                → Deduction Γ (α [ x / t ])
+                → Deduction Γ (universal x α)
+                → Deduction Γ (α [ variableterm x / t ])
 
   ExistIntro  : ∀{Γ α}
-                → (x : Term)
+                → (t : Term)
+                → (x : Variable)
                 → Deduction Γ α
-                → Deduction Γ (Ε x α)
+                → Deduction Γ (existential x α [ t / variableterm x ])
 
   ExistElim   : ∀{Γ₁ Γ₂ α β x}
-                → (t : Term)
-                → Deduction Γ₁ (Ε x α)
+                → (a : Variable)
+                → Deduction Γ₁ (existential x α)
                 → Deduction Γ₂ β
-                → {_ : t notfreein [ β ]}
-                → {_ : t notfreein (Γ₂ ∖ (α [ x / t ]))}
-                → Deduction (Γ₁ ++ (Γ₂ ∖ (α [ x / t ]))) β
+                → {_ : a NotFreeIn [ β ]}
+                → {_ : a NotFreeIn (Γ₂ ∖ (α [ variableterm x / variableterm a ]))}
+                → Deduction (Γ₁ ++ (Γ₂ ∖ (α [ variableterm x / variableterm a ]))) β
 
   ClassAbsurd : ∀{Γ}
                 → (α : Formula)
@@ -131,7 +137,7 @@ isMinimal (DisjElim      T₁ T₂ T₃  ) = isMinimal T₁
                                          and isMinimal T₂ and isMinimal T₃
 isMinimal (UnivIntro   _ T         ) = isMinimal T
 isMinimal (UnivElim    _ T         ) = isMinimal T
-isMinimal (ExistIntro  _ T         ) = isMinimal T
+isMinimal (ExistIntro _  _ T         ) = isMinimal T
 isMinimal (ExistElim   _ T₁ T₂     ) = isMinimal T₁ and isMinimal T₂
 isMinimal (ClassAbsurd _ T         ) = false
 isMinimal (IntAbsurd   _ T         ) = false
@@ -155,7 +161,7 @@ isIntuitionistic (DisjElim      T₁ T₂ T₃  ) = isIntuitionistic T₁
                                                 and isIntuitionistic T₃
 isIntuitionistic (UnivIntro   _ T         ) = isIntuitionistic T
 isIntuitionistic (UnivElim    _ T         ) = isIntuitionistic T
-isIntuitionistic (ExistIntro  _ T         ) = isIntuitionistic T
+isIntuitionistic (ExistIntro _  _ T         ) = isIntuitionistic T
 isIntuitionistic (ExistElim   _ T₁ T₂     ) = isIntuitionistic T₁
                                                 and isIntuitionistic T₂
 isIntuitionistic (ClassAbsurd _ T         ) = false

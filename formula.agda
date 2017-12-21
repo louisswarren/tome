@@ -128,11 +128,21 @@ functionterm f ζ =term= functionterm g χ
 (z ∷ ζ) =vectorterm= (x ∷ χ) = (x =term= z) and (ζ =vectorterm= χ)
 _ =vectorterm= _ = false
 
+
+_=formula=_ : Formula → Formula → Bool
+atomic f ζ =formula= atomic x x₁ = {!   !}
+φ =formula= (ψ ⇒ ψ₁) = {!   !}
+φ =formula= (ψ ∧ ψ₁) = {!   !}
+φ =formula= (ψ ∨ ψ₁) = {!   !}
+φ =formula= universal x ψ = {!   !}
+φ =formula= existential x ψ = {!   !}
+
 substituteone : Term → Term → Term → Term
 
+{-# NON_TERMINATING #-}
 substitute : ∀{n} → Vector Term n → Term → Term → Vector Term n
 substitute [] σ τ = []
-substitute (ζ ∷ ζs) σ τ = {! (substituteone ζ σ τ) ∷ (substitute ζs σ τ)  !}
+substitute (ζ ∷ ζs) σ τ = substituteone ζ σ τ ∷ substitute ζs σ τ
 
 substituteone ζ σ τ with (ζ =term= σ)
 ...               | true = τ
@@ -158,3 +168,26 @@ existential ζ α [ σ@(variableterm x) / τ ] with (ζ =variable= x)
 ...                                      | false = existential ζ (α [ σ / τ ])
 existential ζ α [ σ@(functionterm _ _) / τ ] = existential ζ (α [ σ / τ ])
 
+
+
+--------------------------------------------------------------------------------
+-- Free variables
+--------------------------------------------------------------------------------
+
+isfreevec : ∀{n} → Variable → Vector Term n → Bool
+isfreevec x [] = false
+isfreevec x (variableterm y ∷ ζs) = (x =variable= y) or isfreevec x ζs
+isfreevec x (functionterm _ _ ∷ ζs) = isfreevec x ζs
+
+
+isfree : Variable → Formula → Bool
+isfree x (atomic _ ζs)     = isfreevec x ζs
+isfree x (φ ⇒ ψ)           = isfree x φ or isfree x ψ
+isfree x (φ ∧ ψ)           = isfree x φ or isfree x ψ
+isfree x (φ ∨ ψ)           = isfree x φ or isfree x ψ
+isfree x (universal y φ)   = not (x =variable= y) and isfree x φ
+isfree x (existential y φ) = not (x =variable= y) and isfree x φ
+
+
+_NotFreeIn_ : Variable → List Formula → Set
+x NotFreeIn Γ = isTrue (not (any (isfree x) Γ))
