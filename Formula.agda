@@ -62,3 +62,36 @@ propatom p = atom p []
 
 ¬ : Formula → Formula
 ¬ Φ = Φ ⇒ ⊥
+
+
+height : Formula → ℕ
+height (atom r ts) = zero
+height (a ⇒ b)     = suc (maxℕ (height a) (height b))
+height (a ∧ b)     = suc (maxℕ (height a) (height b))
+height (a ∨ b)     = suc (maxℕ (height a) (height b))
+height (Λ x a)     = suc (height a)
+height (V x a)     = suc (height a)
+
+
+
+_-formula : ℕ → Set
+(n)-formula = index height n
+
+
+extract : ∀{n} → (n)-formula → Formula
+extract (Φ , _) = Φ
+
+open import Agda.Builtin.Equality
+
+
+classify : Formula → Σ ℕ _-formula
+classify Φ = height Φ , (Φ , refl)
+
+
+undo : Formula → Formula
+undo Φ with classify Φ
+...    | n , nf = extract nf
+
+undo' : ∀{n} → (n)-formula → (n)-formula
+undo' nf with classify (extract nf)
+undo' nf | fst , a = {!   !} , {!   !}
