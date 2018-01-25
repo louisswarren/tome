@@ -1,5 +1,6 @@
 module Formula where
 
+open import Agda.Builtin.Bool
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 open import common
@@ -72,26 +73,27 @@ height (a ∨ b)     = suc (maxℕ (height a) (height b))
 height (Λ x a)     = suc (height a)
 height (V x a)     = suc (height a)
 
+relationcmp : ∀{n m} → (n)-aryRelationSymbol → (m)-aryRelationSymbol → Bool
+relationcmp (mkrel n x) (mkrel m y) = n == m and primStringEquality x y
 
+funccmp : ∀{n m} → (n)-aryFunctionSymbol → (m)-aryFunctionSymbol → Bool
+funccmp (mkfunc n x) (mkfunc m y) = n == m and primStringEquality x y
 
-_-formula : ℕ → Set
-(n)-formula = index height n
+termveccmp : ∀{n m} → Vec Term n → Vec Term m → Bool
 
+termcmp : Term → Term → Bool
+termcmp (varterm (var x)) (varterm (var y)) = primStringEquality x y
+termcmp (functerm x xs) (functerm y ys)     = (funccmp x y) and termveccmp xs ys
+termcmp _                 _                 = false
 
-extract : ∀{n} → (n)-formula → Formula
-extract (Φ , _) = Φ
+termveccmp []       []       = true
+termveccmp (x ∷ xs) (y ∷ ys) = termcmp x y and termveccmp xs ys
+termveccmp _        _        = false
 
-open import Agda.Builtin.Equality
+formulacmp : Formula → Formula → Bool
+formulacmp (atom r xs) (atom s ys) = (relationcmp r s) and (termveccmp xs ys)
+formulacmp (a ⇒ b) (c ⇒ d) = (formulacmp a c) and (formulacmp b d)
+formulacmp (a ∧ b) (c ∧ d) = (formulacmp a c) and (formulacmp b d)
+formulacmp (a ∨ b) (c ∨ d) = (formulacmp a c) and (formulacmp b d)
+formulacmp _       _       = false
 
-
-classify : Formula → Σ ℕ _-formula
-classify Φ = height Φ , (Φ , refl)
-
-
-undo : Formula → Formula
-undo Φ with classify Φ
-...    | n , nf = extract nf
-
-undo' : ∀{n} → (n)-formula → (n)-formula
-undo' nf with classify (extract nf)
-undo' nf | fst , a = {!   !} , {!   !}
