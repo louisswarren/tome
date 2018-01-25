@@ -38,3 +38,8 @@ record Σ (I : Set)(I→S : I → Set) : Set where
 _×_ : (S T : Set) → Set
 S × T = Σ S (λ _ → T)
 
+_and_ : Bool → Bool → Bool
+false and b = false
+true  and b = b
+
+infixr 3 _and_

@@ -56,6 +56,10 @@ data Formula : Set where
   Λ   : Variable → Formula → Formula
   V   : Variable → Formula → Formula
 
+infixr 105 _⇒_
+infixr 106 _∨_
+infixr 107 _∧_
+
 propatom : PropositionalSymbol → Formula
 propatom p = atom p []
 
