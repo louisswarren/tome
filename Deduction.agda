@@ -13,6 +13,8 @@ _++_ : {A : Set} → List A → List A → List A
 []       ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
 
+infixr 4 _++_
+
 remove : {A : Set} → (A → A → Bool) → A → List A → List A
 remove cmp y [] = []
 remove cmp y (x ∷ xs) with cmp y x
@@ -36,7 +38,7 @@ data _⊢_ : List Formula → Formula → Set where
                                                  --------------------------- ⇒⁻
                                       →                 (Γ₁ ++ Γ₂) ⊢ β
 
-  conjintro  : ∀{Γ₁ Γ₂ α β}           →           Γ₁ ⊢ α        →    Γ₂ ⊢ β
+  conjintro  : ∀{Γ₁ Γ₂ α β}           →           Γ₁ ⊢ α      →      Γ₂ ⊢ β
                                                  --------------------------- ∧⁺
                                       →                 (Γ₁ ++ Γ₂) ⊢ α ∧ β
 
@@ -47,3 +49,15 @@ data _⊢_ : List Formula → Formula → Set where
   conjelim₂  : ∀{Γ α β}               →                      Γ ⊢ α ∧ β
                                                             ----------- ∧⁻₂
                                       →                        Γ ⊢ β
+
+  disjintro₁ : ∀{Γ α} → (β : Formula) →                      Γ ⊢ α
+                                                          ----------- ∨⁺₁
+                                      →                    Γ ⊢ α ∨ β
+
+  disjintro₂ : ∀{Γ β} → (α : Formula) →                      Γ ⊢ β
+                                                          ----------- ∨⁺₂
+                                      →                    Γ ⊢ α ∨ β
+
+  disjelim   : ∀{Γ₁ Γ₂ Γ₃ α β γ}      → Γ₁ ⊢ α ∨ β   →   Γ₂ ⊢ γ   →   Γ₃ ⊢ γ
+                                       -------------------------------------- ∨⁻
+                                      →     Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β) ⊢ γ
