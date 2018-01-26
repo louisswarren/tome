@@ -43,3 +43,17 @@ false and b = false
 true  and b = b
 
 infixr 3 _and_
+
+_or_ : Bool → Bool → Bool
+true  or b = true
+false or b = b
+
+infixr 2 _or_
+
+not : Bool → Bool
+not false = true
+not true  = false
+
+vecany : ∀{n} → {A : Set} → (A → Bool) → Vec A n → Bool
+vecany f [] = false
+vecany f (x ∷ xs) = f x or vecany f xs

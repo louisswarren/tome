@@ -56,12 +56,12 @@ data Formula : Set where
   Λ   : Variable → Formula → Formula
   V   : Variable → Formula → Formula
 
+propatom : PropositionalSymbol → Formula
+propatom p = atom p []
+
 infixr 105 _⇒_
 infixr 106 _∨_
 infixr 107 _∧_
-
-propatom : PropositionalSymbol → Formula
-propatom p = atom p []
 
 ⊥ = propatom (mkprop "⊥")
 
@@ -77,11 +77,19 @@ height (a ∨ b)     = suc (maxℕ (height a) (height b))
 height (Λ x a)     = suc (height a)
 height (V x a)     = suc (height a)
 
+
+--------------------------------------------------------------------------------
+-- Clumsy way of defining extensional equality of formulae as just being as
+-- intensional equality
+
 relationcmp : ∀{n m} → (n)-aryRelationSymbol → (m)-aryRelationSymbol → Bool
 relationcmp (mkrel n x) (mkrel m y) = n == m and primStringEquality x y
 
 funccmp : ∀{n m} → (n)-aryFunctionSymbol → (m)-aryFunctionSymbol → Bool
 funccmp (mkfunc n x) (mkfunc m y) = n == m and primStringEquality x y
+
+varcmp : Variable → Variable → Bool
+varcmp (var x) (var y) = primStringEquality x y
 
 termveccmp : ∀{n m} → Vec Term n → Vec Term m → Bool
 
@@ -101,3 +109,15 @@ formulacmp (a ∧ b) (c ∧ d) = (formulacmp a c) and (formulacmp b d)
 formulacmp (a ∨ b) (c ∨ d) = (formulacmp a c) and (formulacmp b d)
 formulacmp _       _       = false
 
+
+--------------------------------------------------------------------------------
+
+
+
+isfree : Variable → Formula → Bool
+isfree x (atom x₁ x₂) = {!   !}
+isfree x (Φ ⇒ Ψ) = isfree x Φ or isfree x Ψ
+isfree x (Φ ∧ Ψ) = isfree x Φ or isfree x Ψ
+isfree x (Φ ∨ Ψ) = isfree x Φ or isfree x Ψ
+isfree x (Λ y Φ) = not (varcmp x y) and isfree x Φ
+isfree x (V y Φ) = not (varcmp x y) and isfree x Φ
