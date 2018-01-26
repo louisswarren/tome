@@ -26,6 +26,10 @@ infixr 6 _∖_
 _∖_ : List Formula → Formula → List Formula
 xs ∖ y = remove formulacmp y xs
 
+postulate _isNotFreeIn_ : Variable → List Formula → Set
+
+postulate _[_/_] : Formula → Term → Term → Formula
+
 infix 1 _⊢_
 data _⊢_ : List Formula → Formula → Set where
   assume     : (α : Formula)          →                     [ α ] ⊢ α
@@ -61,3 +65,22 @@ data _⊢_ : List Formula → Formula → Set where
   disjelim   : ∀{Γ₁ Γ₂ Γ₃ α β γ}      → Γ₁ ⊢ α ∨ β   →   Γ₂ ⊢ γ   →   Γ₃ ⊢ γ
                                        -------------------------------------- ∨⁻
                                       →     Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β) ⊢ γ
+
+  univintro  : ∀{Γ α} → (x : Variable) → {_ : x isNotFreeIn Γ}
+                                      →                      Γ ⊢ α
+                                                          ----------- ∀⁺
+                                      →                    Γ ⊢ V x α
+
+  univelim   : ∀{Γ α x} → (r : Term)  →                  Γ ⊢ V x α
+                                                      ---------------- ∀⁻
+                                      →                Γ ⊢ α [ (varterm x) / r ]
+
+  existintro : ∀{Γ α} → (r : Term) → (x : Variable) →    Γ ⊢ α
+                                              ------------------------------- ∃⁺
+                                      →        Γ ⊢ Λ x α [ r / (varterm x) ]
+
+  existelim  : ∀{Γ₁ Γ₂ α β x } → {_ : x isNotFreeIn (β ∷ (Γ₂ ∖ α))}
+                                      →           Γ₁ ⊢ Λ x α   →   Γ₂ ⊢ β
+                                                 ------------------------- ∃⁻
+                                      →              Γ₁ ++ (Γ₂ ∖ α) ⊢ β
+
