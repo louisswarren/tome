@@ -28,6 +28,9 @@ map : {A B : Set} → (A → B) → List A → List B
 map f [] = []
 map f (x ∷ xs) = f x ∷ map f xs
 
+vecmap : ∀{n} → {A B : Set} → (A → B) → Vec A n → Vec B n
+vecmap f [] = []
+vecmap f (x ∷ xs) = f x ∷ vecmap f xs
 
 _and_ : Bool → Bool → Bool
 false and b = false
