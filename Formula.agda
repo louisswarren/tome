@@ -67,8 +67,9 @@ infixr 107 _∧_
 
 ⊥ = propatom (mkprop "⊥")
 
-¬ : Formula → Formula
+¬ ¬¬ : Formula → Formula
 ¬ Φ = Φ ⇒ ⊥
+¬¬ Φ = ¬(¬ Φ)
 
 
 height : Formula → ℕ
