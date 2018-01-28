@@ -134,4 +134,34 @@ isfree x (V y Φ) = not (varcmp x y) and isfree x Φ
 _isNotFreeIn_ : (x : Variable) → (Φs : List Formula) → Set
 x isNotFreeIn Φs = all (isfree x) Φs ≡ true
 
-postulate _[_/_] : Formula → Term → Term → Formula
+
+{-# NON_TERMINATING #-}
+-- Todo: of course this terminates
+sub_for_inside_ : Term → Term → Term → Term
+suball : ∀{n} → Vec Term n → Term → Term → Vec Term n
+
+sub (varterm x) for t inside r@(varterm y) with varcmp x y
+...                                        | false = r
+...                                        | true = t
+sub (functerm _ _) for t inside r@(varterm x) = r
+sub s@(varterm x) for t inside functerm f rs = functerm f (suball rs s t)
+sub s@(functerm g qs) for t inside functerm f rs
+                                       with (funccmp g f) and (termveccmp qs rs)
+...                                    | false = functerm f (suball rs s t)
+...                                    | true = t
+
+suball xs s t = vecmap (sub_for_inside_ s t) xs
+
+_[_/_] : Formula → Term → Term → Formula
+atom r rs [ s / t ] = atom r (suball rs s t)
+(α ⇒ β) [ s / t ] = (α [ s / t ]) ⇒ (β [ s / t ])
+(α ∧ β) [ s / t ] = (α [ s / t ]) ∧ (β [ s / t ])
+(α ∨ β) [ s / t ] = (α [ s / t ]) ∨ (β [ s / t ])
+Λ x α [ s@(varterm y) / t ] with varcmp x y
+...                         | false = Λ x (α [ s / t ])
+...                         | true = Λ x α
+Λ x α [ s@(functerm _ ss) / t ] = Λ x (α [ s / t ])
+V x α [ s@(varterm y) / t ] with varcmp x y
+...                         | false = V x (α [ s / t ])
+...                         | true = V x α
+V x α [ s@(functerm _ ss) / t ] = V x (α [ s / t ])
