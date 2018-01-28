@@ -23,7 +23,7 @@ remove cmp y (x ∷ xs) with cmp y x
 ...                   | true  = remove cmp y xs
 
 
-infixr 6 _∖_
+infixl 6 _∖_
 _∖_ : List Formula → Formula → List Formula
 xs ∖ y = remove formulacmp y xs
 
@@ -58,15 +58,10 @@ data _,_⊢_ where
                                   ------------------------------- ∧⁺
                →                       Ω , (Γ₁ ++ Γ₂) ⊢ α ∧ β
 
-  conjelim₁  : ∀{Ω Γ α β}
-               →                           Ω , Γ ⊢ α ∧ β
-                                          --------------- ∧⁻₁
-               →                             Ω , Γ ⊢ α
-
-  conjelim₂  : ∀{Ω Γ α β}
-               →                           Ω , Γ ⊢ α ∧ β
-                                          --------------- ∧⁻₂
-               →                             Ω , Γ ⊢ β
+  conjelim   : ∀{Ω Γ₁ Γ₂ α β γ}
+               →                 Ω , Γ₁ ⊢ α ∧ β    →    Ω , Γ₂ ⊢ γ
+                                ----------------------------------- ∧⁻
+               →                     Ω , Γ₁ ++ (Γ₂ ∖ α ∖ β) ⊢ γ
 
   disjintro₁ : ∀{Ω Γ α} → (β : Formula)
                →                             Ω , Γ ⊢ α
