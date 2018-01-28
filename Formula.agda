@@ -11,7 +11,7 @@ open import common
 
 -- "Let a countably infinite set {vi | i ∈ N} of variables be given."
 data Variable : Set where
-  var : String → Variable
+  mkvar : String → Variable
 
 
 
@@ -61,9 +61,12 @@ data Formula : Set where
 propatom : PropositionalSymbol → Formula
 propatom p = atom p []
 
-infixr 105 _⇒_
+infixr 105 _⇒_ _⇔_
 infixr 106 _∨_
 infixr 107 _∧_
+
+_⇔_ : Formula → Formula → Formula
+Φ ⇔ Ψ = (Φ ⇒ Ψ) ∧ (Ψ ⇒ Φ)
 
 ⊥ = propatom (mkprop "⊥")
 
@@ -92,12 +95,12 @@ funccmp : ∀{n m} → (n)-aryFunctionSymbol → (m)-aryFunctionSymbol → Bool
 funccmp (mkfunc n x) (mkfunc m y) = n == m and primStringEquality x y
 
 varcmp : Variable → Variable → Bool
-varcmp (var x) (var y) = primStringEquality x y
+varcmp (mkvar x) (mkvar y) = primStringEquality x y
 
 termveccmp : ∀{n m} → Vec Term n → Vec Term m → Bool
 
 termcmp : Term → Term → Bool
-termcmp (varterm (var x)) (varterm (var y)) = primStringEquality x y
+termcmp (varterm (mkvar x)) (varterm (mkvar y)) = primStringEquality x y
 termcmp (functerm x xs) (functerm y ys)     = (funccmp x y) and termveccmp xs ys
 termcmp _                 _                 = false
 
