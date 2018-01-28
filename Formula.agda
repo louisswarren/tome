@@ -1,6 +1,8 @@
 module Formula where
 
 open import Agda.Builtin.Bool
+open import Agda.Builtin.Equality
+open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 open import common
@@ -112,12 +114,24 @@ formulacmp _       _       = false
 
 --------------------------------------------------------------------------------
 
+{-# NON_TERMINATING #-}
+-- Todo: of course this terminates
+appearsin : Variable → Term → Bool
+appearsin x (varterm y) = varcmp x y
+appearsin x (functerm _ ys) = vecany (appearsin x) ys
+
 
 
 isfree : Variable → Formula → Bool
-isfree x (atom x₁ x₂) = {!   !}
+isfree x (atom _ ts) = vecany (appearsin x) ts
 isfree x (Φ ⇒ Ψ) = isfree x Φ or isfree x Ψ
 isfree x (Φ ∧ Ψ) = isfree x Φ or isfree x Ψ
 isfree x (Φ ∨ Ψ) = isfree x Φ or isfree x Ψ
 isfree x (Λ y Φ) = not (varcmp x y) and isfree x Φ
 isfree x (V y Φ) = not (varcmp x y) and isfree x Φ
+
+
+_isNotFreeIn_ : (x : Variable) → (Φs : List Formula) → Set
+x isNotFreeIn Φs = all (isfree x) Φs ≡ true
+
+postulate _[_/_] : Formula → Term → Term → Formula

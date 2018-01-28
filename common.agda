@@ -29,15 +29,6 @@ map f [] = []
 map f (x ∷ xs) = f x ∷ map f xs
 
 
-record Σ (I : Set)(I→S : I → Set) : Set where
-  constructor _,_
-  field
-    fst : I
-    snd : I→S fst
-
-_×_ : (S T : Set) → Set
-S × T = Σ S (λ _ → T)
-
 _and_ : Bool → Bool → Bool
 false and b = false
 true  and b = b
@@ -54,6 +45,25 @@ not : Bool → Bool
 not false = true
 not true  = false
 
+all : {A : Set} → (A → Bool) → List A → Bool
+all f [] = true
+all f (x ∷ xs) = f x and all f xs
+
+any : {A : Set} → (A → Bool) → List A → Bool
+any f [] = false
+any f (x ∷ xs) = f x or any f xs
+
 vecany : ∀{n} → {A : Set} → (A → Bool) → Vec A n → Bool
 vecany f [] = false
 vecany f (x ∷ xs) = f x or vecany f xs
+
+
+data False : Set where
+record True : Set where
+
+isTrue : Bool → Set
+isTrue false = False
+isTrue true  = True
+
+membership : {A : Set} → (A → A → Bool) → A → List A → Set
+membership equality x xs = isTrue (any (equality x) xs)

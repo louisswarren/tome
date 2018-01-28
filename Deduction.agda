@@ -5,6 +5,7 @@ open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 
 open import Formula
+open import common
 
 [_] : {A : Set} → A → List A
 [ x ] = x ∷ []
@@ -26,71 +27,78 @@ infixr 6 _∖_
 _∖_ : List Formula → Formula → List Formula
 xs ∖ y = remove formulacmp y xs
 
-postulate _isNotFreeIn_ : Variable → List Formula → Set
+data _,_⊢_ : List Formula → List Formula → Formula → Set
 
-postulate _[_/_] : Formula → Term → Term → Formula
+_⊢_ : List Formula → Formula → Set
+Γ ⊢ α = [] , Γ ⊢ α
 
-infix 1 _⊢_
-data _⊢_ : List Formula → Formula → Set where
-  assume     : (α : Formula)
-               →                    [ α ] ⊢ α
 
-  arrowintro : ∀{Γ β} → (α : Formula)
-               →                      Γ ⊢ β
+_∈_ = membership formulacmp
+
+infix 1 _⊢_ _,_⊢_
+data _,_⊢_ where
+  axiom      : ∀{Ω} → (α : Formula) → {_ : α ∈ Ω}
+               →                   Ω , [] ⊢ α
+
+  assume     : ∀{Ω} → (α : Formula)
+               →              Ω , [ α ] ⊢ α
+
+  arrowintro : ∀{Ω Γ β} → (α : Formula)
+               →                  Ω , Γ ⊢ β
                                  --------------- ⇒⁺ α
-               →                  Γ ∖ α ⊢ α ⇒ β
+               →             Ω , Γ ∖ α ⊢ α ⇒ β
 
-  arrowelim  : ∀{Γ₁ Γ₂ α β}
-               →            Γ₁ ⊢ α ⇒ β    →    Γ₂ ⊢ α
+  arrowelim  : ∀{Ω Γ₁ Γ₂ α β}
+               →       Ω , Γ₁ ⊢ α ⇒ β    → Ω , Γ₂ ⊢ α
                            --------------------------- ⇒⁻
                →                  (Γ₁ ++ Γ₂) ⊢ β
 
-  conjintro  : ∀{Γ₁ Γ₂ α β}
-               →            Γ₁ ⊢ α      →      Γ₂ ⊢ β
+  conjintro  : ∀{Ω Γ₁ Γ₂ α β}
+               →       Ω , Γ₁ ⊢ α      →  Ω , Γ₂ ⊢ β
                            --------------------------- ∧⁺
-               →                (Γ₁ ++ Γ₂) ⊢ α ∧ β
+               →           Ω , (Γ₁ ++ Γ₂) ⊢ α ∧ β
 
-  conjelim₁  : ∀{Γ α β}
-               →                    Γ ⊢ α ∧ β
+  conjelim₁  : ∀{Ω Γ α β}
+               →              Ω , Γ ⊢ α ∧ β
                                    ----------- ∧⁻₁
-               →                      Γ ⊢ α
+               →                 Ω , Γ ⊢ α
 
-  conjelim₂  : ∀{Γ α β}
-               →                    Γ ⊢ α ∧ β
+  conjelim₂  : ∀{Ω Γ α β}
+               →                Ω , Γ ⊢ α ∧ β
                                    ----------- ∧⁻₂
-               →                      Γ ⊢ β
+               →                  Ω , Γ ⊢ β
 
-  disjintro₁ : ∀{Γ α} → (β : Formula)
-               →                      Γ ⊢ α
+  disjintro₁ : ∀{Ω Γ α} → (β : Formula)
+               →                  Ω , Γ ⊢ α
                                    ----------- ∨⁺₁
-               →                    Γ ⊢ α ∨ β
+               →                Ω , Γ ⊢ α ∨ β
 
-  disjintro₂ : ∀{Γ β} → (α : Formula)
-               →                      Γ ⊢ β
+  disjintro₂ : ∀{Ω Γ β} → (α : Formula)
+               →                  Ω , Γ ⊢ β
                                    ----------- ∨⁺₂
-               →                    Γ ⊢ α ∨ β
+               →                Ω , Γ ⊢ α ∨ β
 
-  disjelim   : ∀{Γ₁ Γ₂ Γ₃ α β γ}
-               →     Γ₁ ⊢ α ∨ β    →    Γ₂ ⊢ γ    →    Γ₃ ⊢ γ
-                    ------------------------------------------ ∨⁻
-               →          Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β) ⊢ γ
+  disjelim   : ∀{Ω Γ₁ Γ₂ Γ₃ α β γ}
+               →  Ω , Γ₁ ⊢ α ∨ β    →    Ω , Γ₂ ⊢ γ    →    Ω , Γ₃ ⊢ γ
+                 ------------------------------------------------------  ∨⁻
+               →      Ω , Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β) ⊢ γ
 
-  univintro  : ∀{Γ α} → (x : Variable) → {_ : x isNotFreeIn Γ}
-               →                      Γ ⊢ α
-                                   ----------- ∀⁺
-               →                    Γ ⊢ V x α
+  univintro  : ∀{Ω Γ α} → (x : Variable) → {_ : x isNotFreeIn Γ}
+               →                    Ω , Γ ⊢ α
+                                 --------------- ∀⁺
+               →                  Ω , Γ ⊢ V x α
 
-  univelim   : ∀{Γ α x} → (r : Term)
-               →                    Γ ⊢ V x α
-                           --------------------------- ∀⁻
-               →            Γ ⊢ α [ (varterm x) / r ]
+  univelim   : ∀{Ω Γ α x} → (r : Term)
+               →                 Ω , Γ ⊢ V x α
+                         ------------------------------- ∀⁻
+               →          Ω , Γ ⊢ α [ (varterm x) / r ]
 
-  existintro : ∀{Γ α} → (r : Term) → (x : Variable)
-               →                      Γ ⊢ α
-                         ------------------------------- ∃⁺
-               →          Γ ⊢ Λ x α [ r / (varterm x) ]
+  existintro : ∀{Ω Γ α} → (r : Term) → (x : Variable)
+               →                    Ω , Γ ⊢ α
+                       ----------------------------------- ∃⁺
+               →        Ω , Γ ⊢ Λ x α [ r / (varterm x) ]
 
-  existelim  : ∀{Γ₁ Γ₂ α β x } → {_ : x isNotFreeIn (β ∷ (Γ₂ ∖ α))}
-               →            Γ₁ ⊢ Λ x α    →    Γ₂ ⊢ β
-                           --------------------------- ∃⁻
-               →                Γ₁ ++ (Γ₂ ∖ α) ⊢ β
+  existelim  : ∀{Ω Γ₁ Γ₂ α β x } → {_ : x isNotFreeIn (β ∷ (Γ₂ ∖ α))}
+               →        Ω , Γ₁ ⊢ Λ x α    →    Ω , Γ₂ ⊢ β
+                       ----------------------------------- ∃⁻
+               →              Ω , Γ₁ ++ (Γ₂ ∖ α) ⊢ β
