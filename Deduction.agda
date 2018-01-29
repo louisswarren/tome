@@ -7,31 +7,10 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Formula
 open import common
 
-[_] : {A : Set} → A → List A
-[ x ] = x ∷ []
-
-_++_ : {A : Set} → List A → List A → List A
-[]       ++ ys = ys
-(x ∷ xs) ++ ys = x ∷ (xs ++ ys)
-
-infixr 4 _++_
-
-remove : {A : Set} → (A → A → Bool) → A → List A → List A
-remove cmp y [] = []
-remove cmp y (x ∷ xs) with cmp y x
-...                   | false = x ∷ remove cmp y xs
-...                   | true  = remove cmp y xs
-
-
-infixl 6 _∖_
-_∖_ : List Formula → Formula → List Formula
-xs ∖ y = remove formulacmp y xs
-
 data _,_⊢_ : List Formula → List Formula → Formula → Set
 
 _⊢_ : List Formula → Formula → Set
 Γ ⊢ α = [] , Γ ⊢ α
-
 
 _∈_ = membership formulacmp
 

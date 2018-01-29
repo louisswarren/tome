@@ -169,3 +169,9 @@ V x α [ s@(varterm y) / t ] with varcmp x y
 ...                         | false = V x (α [ s / t ])
 ...                         | true = V x α
 V x α [ s@(functerm _ ss) / t ] = V x (α [ s / t ])
+
+
+_∖_ : List Formula → Formula → List Formula
+xs ∖ y = remove formulacmp y xs
+
+infixl 6 _∖_

@@ -13,6 +13,22 @@ data Vec (A : Set) : ℕ → Set where
 
 infixr 5 _∷_
 
+[_] : {A : Set} → A → List A
+[ x ] = x ∷ []
+
+_++_ : {A : Set} → List A → List A → List A
+[]       ++ ys = ys
+(x ∷ xs) ++ ys = x ∷ (xs ++ ys)
+
+infixr 4 _++_
+
+remove : {A : Set} → (A → A → Bool) → A → List A → List A
+remove cmp y [] = []
+remove cmp y (x ∷ xs) with cmp y x
+...                   | false = x ∷ remove cmp y xs
+...                   | true  = remove cmp y xs
+
+
 maxℕ : ℕ → ℕ → ℕ
 maxℕ zero    m       = m
 maxℕ n       zero    = n
