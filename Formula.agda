@@ -113,12 +113,14 @@ formulacmp (atom r xs) (atom s ys) = (relationcmp r s) and (termveccmp xs ys)
 formulacmp (a ⇒ b) (c ⇒ d) = (formulacmp a c) and (formulacmp b d)
 formulacmp (a ∧ b) (c ∧ d) = (formulacmp a c) and (formulacmp b d)
 formulacmp (a ∨ b) (c ∨ d) = (formulacmp a c) and (formulacmp b d)
+formulacmp (V x a) (V y b) = (varcmp x y) and (formulacmp a b)
+formulacmp (Λ x a) (Λ y b) = (varcmp x y) and (formulacmp a b)
 formulacmp _       _       = false
 
 
 --------------------------------------------------------------------------------
 
-{-# NON_TERMINATING #-}
+{-# TERMINATING #-}
 -- Todo: of course this terminates
 appearsin : Variable → Term → Bool
 appearsin x (varterm y) = varcmp x y
@@ -139,7 +141,7 @@ _isNotFreeIn_ : (x : Variable) → (Φs : List Formula) → Set
 x isNotFreeIn Φs = all (isfree x) Φs ≡ true
 
 
-{-# NON_TERMINATING #-}
+{-# TERMINATING #-}
 -- Todo: of course this terminates
 sub_for_inside_ : Term → Term → Term → Term
 suball : ∀{n} → Vec Term n → Term → Term → Vec Term n
