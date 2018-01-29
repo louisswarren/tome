@@ -138,7 +138,7 @@ isfree x (V y Φ) = not (varcmp x y) and isfree x Φ
 
 
 _isNotFreeIn_ : (x : Variable) → (Φs : List Formula) → Set
-x isNotFreeIn Φs = all (isfree x) Φs ≡ true
+x isNotFreeIn Φs = isTrue (not (any (isfree x) Φs))
 
 
 {-# TERMINATING #-}
