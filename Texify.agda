@@ -1,3 +1,4 @@
+open import Agda.Builtin.Bool
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 
@@ -41,9 +42,12 @@ parenformula p@(V _ _) = texformula p
 
 
 texformula (atom (mkrel n f) ts) with n
-...                              | zero  = f
-...                              | suc _ = f >> lp >> textermvec ts >> rp
-texformula (a ⇒ b) = parenformula a >> " \\Timp " >> parenformula b
+...                              | zero     = f
+...                              | suc zero = f >> textermvec ts
+...                              | suc _    = f >> lp >> textermvec ts >> rp
+texformula (a ⇒ b) with (formulacmp b ⊥)
+...                | false = parenformula a >> " \\Timp " >> parenformula b
+...                | true  = "\\Tneg " >> parenformula a
 texformula (a ∧ b) = parenformula a >> " \\Tand " >> parenformula b
 texformula (a ∨ b) = parenformula a >> " \\Tor " >> parenformula b
 texformula (Λ x a) = "\\Tforall_{" >> texvar x >> "} " >> parenformula a
