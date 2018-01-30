@@ -5,13 +5,8 @@ open import Agda.Builtin.String
 
 open import Formula
 open import Deduction
+open import Texify
 open import common
-
-conclusion : ∀{Ω Γ α} → Ω , Γ ⊢ α → Formula
-conclusion {_} {_} {α} _ = α
-
-assumptions : ∀{Ω Γ α} → Ω , Γ ⊢ α → List Formula
-assumptions {_} {Γ} {_} _ = Γ
 
 Q = propatom (mkprop "Q")
 
@@ -64,4 +59,4 @@ dp⊃gmp = arrowintro (¬∀x Px)
              (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))
            )
 
-
+s = texify dp⊃gmp
