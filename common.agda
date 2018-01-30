@@ -84,5 +84,8 @@ isTrue : Bool → Set
 isTrue false = False
 isTrue true  = True
 
-membership : {A : Set} → (A → A → Bool) → A → List A → Set
-membership equality x xs = isTrue (any (equality x) xs)
+membership : {A : Set} → (A → A → Bool) → A → List A → Bool
+membership equality x xs = any (equality x) xs
+
+Membership : {A : Set} → (A → A → Bool) → A → List A → Set
+Membership equality x xs = isTrue (membership equality x xs)

@@ -12,7 +12,7 @@ data _,_⊢_ : List Formula → List Formula → Formula → Set
 _⊢_ : List Formula → Formula → Set
 Γ ⊢ α = [] , Γ ⊢ α
 
-_∈_ = membership formulacmp
+_∈_ = Membership formulacmp
 
 infix 1 _⊢_ _,_⊢_
 data _,_⊢_ where
@@ -79,3 +79,12 @@ data _,_⊢_ where
 
 _⊃_ : List Formula → Formula → Set
 Ω ⊃ Φ = Ω , [] ⊢ Φ
+
+conclusion : ∀{Ω Γ α} → Ω , Γ ⊢ α → Formula
+conclusion {_} {_} {α} _ = α
+
+assumptions : ∀{Ω Γ α} → Ω , Γ ⊢ α → List Formula
+assumptions {_} {Γ} {_} _ = Γ
+
+isclosed : ∀{Γ α Ω} → Formula → Ω , Γ ⊢ α → Bool
+isclosed {Γ} α d = membership formulacmp α Γ
