@@ -1,0 +1,51 @@
+\documentclass{article}
+
+\newcommand{\Tarrowintro}{$\rightarrow$I}
+\newcommand{\Tarrowelim}{$\rightarrow$E}
+\newcommand{\Tconjintro}{$\land$I}
+\newcommand{\Tconjelim}{$\land$E}
+\newcommand{\Tdisjintro}{$\lor$I}
+\newcommand{\Tdisjelim}{$\lor$E}
+\newcommand{\Tunivintro}{$\forall$I}
+\newcommand{\Tunivelim}{$\forall$E}
+\newcommand{\Texistintro}{$\exists$I}
+\newcommand{\Texistelim}{$\exists$E}
+
+\newcommand{\Tarrow}{\rightarrow}
+\newcommand{\Tand}{\land}
+\newcommand{\Tor}{\lor}
+\newcommand{\Tforall}{\forall}
+\newcommand{\Texists}{\exists}
+\newcommand{\Tneg}{\lnot}
+
+\usepackage{bussproofs}
+\begin{document}
+\begin{prooftree}
+
+
+\AxiomC{}
+\RightLabel{$\Texists_{y} \left(Py \Tarrow \Tforall_{x} Px\right)$}
+\UnaryInfC{$\Texists_{y} \left(Py \Tarrow \Tforall_{x} Px\right)$}
+	\AxiomC{}
+	\UnaryInfC{$\Tneg{\Tforall_{x} Px}$}
+		\AxiomC{}
+		\UnaryInfC{$Py \Tarrow \Tforall_{x} Px$}
+			\AxiomC{}
+			\UnaryInfC{$Py$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\Tforall_{x} Px$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{Py}$}
+	\RightLabel{\Texistintro}
+	\UnaryInfC{$\Texists_{x} \Tneg{Px}$}
+\RightLabel{\Texistelim}
+\BinaryInfC{$\Texists_{x} \Tneg{Px}$}
+\RightLabel{\Tarrowintro}
+\UnaryInfC{$\Tneg{\Tforall_{x} Px} \Tarrow \Texists_{x} \Tneg{Px}$}
+
+
+\end{prooftree}
+
+\end{document}
