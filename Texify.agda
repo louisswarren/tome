@@ -30,74 +30,96 @@ textermvec (t ∷ ts@(_ ∷ _)) = texterm t >> ", " >> textermvec ts
 
 
 
-tform : Formula → String
+texformula : Formula → String
 
 parenformula : Formula → String
-parenformula p@(atom _ _) = tform p
-parenformula p@(_ ⇒ _) = lp >> tform p >> rp
-parenformula p@(_ ∧ _) = lp >> tform p >> rp
-parenformula p@(_ ∨ _) = lp >> tform p >> rp
-parenformula p@(Λ _ _) = tform p
-parenformula p@(V _ _) = tform p
+parenformula p@(atom _ _) = texformula p
+parenformula p@(_ ⇒ _) = lp >> texformula p >> rp
+parenformula p@(_ ∧ _) = lp >> texformula p >> rp
+parenformula p@(_ ∨ _) = lp >> texformula p >> rp
+parenformula p@(Λ _ _) = texformula p
+parenformula p@(V _ _) = texformula p
 
 
 
-tform (atom (mkrel n f) ts) with n
+texformula (atom (mkrel n f) ts) with n
 ...                         | zero     = f
 ...                         | suc zero = f >> textermvec ts
 ...                         | suc _    = f >> lp >> textermvec ts >> rp
-tform (a ⇒ b) with (formulacmp b ⊥)
+texformula (a ⇒ b) with (formulacmp b ⊥)
 ...           | false = parenformula a >> " \\Timp " >> parenformula b
 ...           | true  = "\\Tneg" >> parenformula a
-tform (a ∧ b) = parenformula a >> " \\Tand " >> parenformula b
-tform (a ∨ b) = parenformula a >> " \\Tor " >> parenformula b
-tform (Λ x a) = "\\Tforall_{" >> texvar x >> "} " >> parenformula a
-tform (V x a) = "\\Texists_{" >> texvar x >> "} " >> parenformula a
+texformula (a ∧ b) = parenformula a >> " \\Tand " >> parenformula b
+texformula (a ∨ b) = parenformula a >> " \\Tor " >> parenformula b
+texformula (Λ x a) = "\\texformula{" >> texvar x >> "} " >> parenformula a
+texformula (V x a) = "\\Texists_{" >> texvar x >> "} " >> parenformula a
 
 
-indent : ℕ → String
-indent zero = ""
-indent (suc i) = "\\t" >> indent i
+data Textree : Set where
+  openax      : Formula → Textree
+  closedax    : Formula → String → Textree
+  unaryinf    : Formula → String → Textree → Textree
+  binaryinf   : Formula → String → Textree → Textree → Textree
+  trinaryinf  : Formula → String → Textree → Textree → Textree → Textree
 
-inf : ℕ → ℕ → Formula → String
-inf i 0 α = indent i >> "\\AxiomC{" >> (tform α) >> "}\\n"
-inf i 1 α = indent i >> "\\UnaryInfC{" >> (tform α) >> "}\\n"
-inf i 2 α = indent i >> "\\Binary{" >> (tform α) >> "}\\n"
-inf i 3 α = indent i >> "\\TrinaryInfC{" >> (tform α) >> "}\\n"
-inf _ _ _ = ""
+line : ℕ → String → String
+line zero s = s >> "\\n"
+line (suc n) s = "\\t" >> line n s
 
-closed : ℕ → String
-closed i = indent i >> "\\AxiomC{}\\n"
+tag : String → String → String
+tag f s = "\\" >> f >> "{" >> s >> "}"
 
 label : ℕ → String → String
-label i s = indent i >> "\\RightLabel{" >> s >> "}\\n"
+label i s = line i (tag "RightLabel" s)
 
-tded : ∀{α Ω Γ} → (List Formula) → ℕ → Ω , Γ ⊢ α → String
-tded {α} o i (axiom _)           = closed i >> label i (tform α) >> inf i 1 α
-tded {α} o i (assume _) with (membership formulacmp α o)
-...                     | false  = closed i >> inf i 1 α
-...                     | true   = inf i 0 α
-tded {α} o i (arrowintro p d)    = tded o i d
-                                       >> label i ("\\Tarrowintro" >> tform p)
-                                       >> inf i 1 α
-tded {α} o i (arrowelim d₁ d₂)   = tded o i d₁ >> tded o (i + 1) d₂
-                                       >> label i "\\Tarrowelim"
-                                       >> inf i 2 α
-tded {α} o i (conjintro d₁ d₂)   = tded o i d₁ >> tded o (i + 1) d₂
-                                       >> label i "\\Tconjintro"
-                                       >> inf i 2 α
-tded {α} o i (conjelim d₁ d₂)    = tded o i d₁ >> tded o (i + 1) d₂
-                                       >> label i "\\Tconjelim"
-                                       >> inf i 2 α
-tded {α} o i (disjintro₁ b d)    = tded o i d
-                                       >> label i "\\Tdisjintro"
-                                       >> inf i 1 α
-tded {α} o i (disjintro₂ a d)    = tded o i d
-                                       >> label i "\\Tdisjintro"
-                                       >> inf i 1 α
-tded {α} o i (disjelim d₁ d₂ d₃) = {!   !}
-tded {α} o i (univintro x d)     = {!   !}
-tded {α} o i (univelim r d)      = {!   !}
-tded {α} o i (existintro r x d)  = {!   !}
-tded {α} o i (existelim d₁ d₂)   = {! tded o i d₁ >> tded o (i + 1) d₂ >> ? !}
+inf : ℕ → String → Formula → String
+inf i s x = line i (tag s (texformula x))
 
+texifytree : ℕ → Textree → String
+texifytree i (openax x)               = inf i "AxiomC" x
+texifytree i (closedax x s) with (primStringEquality s "")
+...                         | false   = line i "\\AxiomC{}"
+                                        >> label i s
+                                        >> inf i "UnaryInfC" x
+...                         | true    = line i "\\AxiomC{}"
+                                        >> inf i "UnaryInfC" x
+texifytree i (unaryinf x s T)         = texifytree i T
+                                        >> label i s
+                                        >> inf i "UnaryInfC" x
+texifytree i (binaryinf x s T₁ T₂)     = texifytree i T₁
+                                        >> texifytree (i + 1) T₂
+                                        >> label i s
+                                        >> inf i "BinaryInfC" x
+texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
+                                        >> texifytree (i + 1) T₂
+                                        >> texifytree (i + 2) T₃
+                                        >> label i s
+                                        >> inf i "TrinaryInfC" x
+
+
+
+dtot : ∀{α Ω Γ} → List Formula → Ω , Γ ⊢ α → Textree
+dtot {α} o (axiom a)           = closedax α (texformula a)
+dtot {α} o (assume a) with (membership formulacmp a o)
+...                   | false  = closedax   α ""
+...                   | true   = openax     α
+dtot {α} o (arrowintro a d)    = unaryinf   α "\\Tarrowintro" (dtot o d)
+dtot {α} o (arrowelim d₁ d₂)   = binaryinf  α "\\Tarrowelim"  (dtot o d₁)
+                                                                   (dtot o d₂)
+dtot {α} o (conjintro d₁ d₂)   = binaryinf  α "\\Tconjintro"  (dtot o d₁)
+                                                                   (dtot o d₂)
+dtot {α} o (conjelim d₁ d₂)    = binaryinf  α "\\Tconjelim"   (dtot o d₁)
+                                                                   (dtot o d₂)
+dtot {α} o (disjintro₁ b d)    = unaryinf   α "\\Tdisjintro"  (dtot o d)
+dtot {α} o (disjintro₂ a d)    = unaryinf   α "\\Tdisjintro"  (dtot o d)
+dtot {α} o (disjelim d₁ d₂ d₃) = trinaryinf α "\\Tdisjelim"   (dtot o d₁)
+                                                                   (dtot o d₂)
+                                                                   (dtot o d₃)
+dtot {α} o (univintro x d)     = unaryinf   α "\\Tunivintro"  (dtot o d)
+dtot {α} o (univelim r d)      = unaryinf   α "\\Tunivelim"   (dtot o d)
+dtot {α} o (existintro r x d)  = unaryinf   α "\\Texistintro" (dtot o d)
+dtot {α} o (existelim d₁ d₂)   = binaryinf  α "\\Texistelim"  (dtot o d₁)
+                                                                   (dtot o d₂)
+
+texify : ∀{Γ Ω α} → Ω , Γ ⊢ α → String
+texify {Γ} d = texifytree 0 (dtot Γ d)
