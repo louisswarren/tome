@@ -34,24 +34,28 @@ texformula : Formula → String
 
 parenformula : Formula → String
 parenformula p@(atom _ _) = texformula p
-parenformula p@(_ ⇒ _) = lp >> texformula p >> rp
+parenformula p@(_ ⇒ b) with formulacmp b ⊥
+...                    | false = lp >> texformula p >> rp
+...                    | true = texformula p
 parenformula p@(_ ∧ _) = lp >> texformula p >> rp
 parenformula p@(_ ∨ _) = lp >> texformula p >> rp
 parenformula p@(Λ _ _) = texformula p
 parenformula p@(V _ _) = texformula p
 
 
-
-texformula (atom (mkrel n f) ts) with n
-...                         | zero     = f
-...                         | suc zero = f >> textermvec ts
-...                         | suc _    = f >> lp >> textermvec ts >> rp
-texformula (a ⇒ b) with (formulacmp b ⊥)
-...           | false = parenformula a >> " \\Timp " >> parenformula b
-...           | true  = "\\Tneg" >> parenformula a
+texformula a@(atom f ts) with formulacmp a ⊥
+...                              | true = "\\bot"
+texformula (atom (mkrel n f) ts) | false with n
+...                                      | zero        = f
+...                                      | suc zero    = f >> textermvec ts
+...                                      | suc (suc _) = f >> lp
+                                                         >> textermvec ts >> rp
+texformula (a ⇒ b) with formulacmp b ⊥
+...           | false = parenformula a >> " \\Tarrow " >> parenformula b
+...           | true  = "\\Tneg{" >> parenformula a >> "}"
 texformula (a ∧ b) = parenformula a >> " \\Tand " >> parenformula b
 texformula (a ∨ b) = parenformula a >> " \\Tor " >> parenformula b
-texformula (Λ x a) = "\\texformula{" >> texvar x >> "} " >> parenformula a
+texformula (Λ x a) = "\\Tforall_{" >> texvar x >> "} " >> parenformula a
 texformula (V x a) = "\\Texists_{" >> texvar x >> "} " >> parenformula a
 
 
@@ -63,8 +67,8 @@ data Textree : Set where
   trinaryinf  : Formula → String → Textree → Textree → Textree → Textree
 
 line : ℕ → String → String
-line zero s = s >> "\\n"
-line (suc n) s = "\\t" >> line n s
+line zero s = s >> "\n"
+line (suc n) s = "\t" >> line n s
 
 tag : String → String → String
 tag f s = "\\" >> f >> "{" >> s >> "}"
@@ -73,7 +77,7 @@ label : ℕ → String → String
 label i s = line i (tag "RightLabel" s)
 
 inf : ℕ → String → Formula → String
-inf i s x = line i (tag s (texformula x))
+inf i s x = line i (tag s ("$" >> (texformula x) >> "$"))
 
 texifytree : ℕ → Textree → String
 texifytree i (openax x)               = inf i "AxiomC" x
@@ -99,7 +103,7 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
 
 
 dtot : ∀{α Ω Γ} → List Formula → Ω , Γ ⊢ α → Textree
-dtot {α} o (axiom a)           = closedax α (texformula a)
+dtot {α} o (axiom a)           = closedax α ("$" >> texformula a >> "$")
 dtot {α} o (assume a) with (membership formulacmp a o)
 ...                   | false  = closedax   α ""
 ...                   | true   = openax     α
