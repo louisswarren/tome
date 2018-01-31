@@ -1,13 +1,15 @@
 module Deduction where
 
 open import Agda.Builtin.Bool
+open import Agda.Builtin.Equality
 open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 
 open import Formula
+open import Scheme
 open import common
 
-data _,_⊢_ : List Formula → List Formula → Formula → Set
+data _,_⊢_ : ∀{m} → Vec ΣScheme m → List Formula → Formula → Set
 
 _⊢_ : List Formula → Formula → Set
 Γ ⊢ α = [] , Γ ⊢ α
@@ -16,75 +18,77 @@ _∈_ = Membership formulacmp
 
 infix 1 _⊢_ _,_⊢_
 data _,_⊢_ where
-  axiom      : ∀{Ω} → (α : Formula) → {_ : α ∈ Ω}
-               →                             Ω , [] ⊢ α
+  axiom      : ∀{m} → {Ω : Vec ΣScheme m} → (k : ℕ)
+               → {pf : isTrue (k < m)}
+               → (x : Vec Formula (Σ.fst ((Ω ! k) {pf})))
+               → Ω , [] ⊢ (_-aryScheme.func (Σ.snd (Ω ! k))) x
 
-  assume     : ∀{Ω} → (α : Formula)
+  assume     : ∀{n} → {Ω : Vec ΣScheme n} → (α : Formula)
                →                           Ω , [ α ] ⊢ α
 
-  arrowintro : ∀{Ω Γ β} → (α : Formula)
+  arrowintro : ∀{n Γ β} → {Ω : Vec ΣScheme n} → (α : Formula)
                →                             Ω , Γ ⊢ β
                                         ------------------- ⇒⁺ α
                →                         Ω , Γ ∖ α ⊢ α ⇒ β
 
-  arrowelim  : ∀{Ω Γ₁ Γ₂ α β}
+  arrowelim  : ∀{n Γ₁ Γ₂ α β} → {Ω : Vec ΣScheme n}
                →                 Ω , Γ₁ ⊢ α ⇒ β    →    Ω , Γ₂ ⊢ α
                                 ----------------------------------- ⇒⁻
                →                         Ω , (Γ₁ ++ Γ₂) ⊢ β
 
-  conjintro  : ∀{Ω Γ₁ Γ₂ α β}
+  conjintro  : ∀{n Γ₁ Γ₂ α β} → {Ω : Vec ΣScheme n}
                →                   Ω , Γ₁ ⊢ α    →    Ω , Γ₂ ⊢ β
                                   ------------------------------- ∧⁺
                →                       Ω , (Γ₁ ++ Γ₂) ⊢ α ∧ β
 
-  conjelim   : ∀{Ω Γ₁ Γ₂ α β γ}
+  conjelim   : ∀{n Γ₁ Γ₂ α β γ} → {Ω : Vec ΣScheme n}
                →                 Ω , Γ₁ ⊢ α ∧ β    →    Ω , Γ₂ ⊢ γ
                                 ----------------------------------- ∧⁻
                →                     Ω , Γ₁ ++ (Γ₂ ∖ α ∖ β) ⊢ γ
 
-  disjintro₁ : ∀{Ω Γ α} → (β : Formula)
+  disjintro₁ : ∀{n Γ α} → {Ω : Vec ΣScheme n} → (β : Formula)
                →                             Ω , Γ ⊢ α
                                           --------------- ∨⁺₁
                →                           Ω , Γ ⊢ α ∨ β
 
-  disjintro₂ : ∀{Ω Γ β} → (α : Formula)
+  disjintro₂ : ∀{n Γ β} → {Ω : Vec ΣScheme n} → (α : Formula)
                →                             Ω , Γ ⊢ β
                                           --------------- ∨⁺₂
                →                           Ω , Γ ⊢ α ∨ β
 
-  disjelim   : ∀{Ω Γ₁ Γ₂ Γ₃ α β γ}
+  disjelim   : ∀{n Γ₁ Γ₂ Γ₃ α β γ} → {Ω : Vec ΣScheme n}
                →        Ω , Γ₁ ⊢ α ∨ β    →    Ω , Γ₂ ⊢ γ    →    Ω , Γ₃ ⊢ γ
                        ------------------------------------------------------ ∨⁻
                →                 Ω , Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β) ⊢ γ
 
-  univintro  : ∀{Ω Γ α} → (x : Variable) → {_ : x isNotFreeIn Γ}
+  univintro  : ∀{n Γ α} → {Ω : Vec ΣScheme n} → (x : Variable) → {_ : x isNotFreeIn Γ}
                →                             Ω , Γ ⊢ α
                                           --------------- ∀⁺
                →                           Ω , Γ ⊢ Λ x α
 
-  univelim   : ∀{Ω Γ α x} → (r : Term)
+  univelim   : ∀{n Γ α x} → {Ω : Vec ΣScheme n} → (r : Term)
                →                           Ω , Γ ⊢ Λ x α
                                   ------------------------------- ∀⁻
                →                   Ω , Γ ⊢ α [ (varterm x) / r ]
 
-  existintro : ∀{Ω Γ α} → (r : Term) → (x : Variable)
+  existintro : ∀{n Γ α} → {Ω : Vec ΣScheme n} → (r : Term) → (x : Variable)
                →                             Ω , Γ ⊢ α
                                 ----------------------------------- ∃⁺
                →                 Ω , Γ ⊢ V x α [ r / (varterm x) ]
 
-  existelim  : ∀{Ω Γ₁ Γ₂ α β x } → {_ : x isNotFreeIn (β ∷ (Γ₂ ∖ α))}
+  existelim  : ∀{n Γ₁ Γ₂ α β x } → {Ω : Vec ΣScheme n} → {_ : x isNotFreeIn (β ∷ (Γ₂ ∖ α))}
                →                 Ω , Γ₁ ⊢ V x α    →    Ω , Γ₂ ⊢ β
                                 ----------------------------------- ∃⁻
                →                       Ω , Γ₁ ++ (Γ₂ ∖ α) ⊢ β
 
-_⊃_ : List Formula → Formula → Set
+_⊃_ : ∀{n} → Vec ΣScheme n → Formula → Set
 Ω ⊃ Φ = Ω , [] ⊢ Φ
 
-conclusion : ∀{Ω Γ α} → Ω , Γ ⊢ α → Formula
+conclusion : ∀{n Γ α} {Ω : Vec ΣScheme n} → Ω , Γ ⊢ α → Formula
 conclusion {_} {_} {α} _ = α
 
-assumptions : ∀{Ω Γ α} → Ω , Γ ⊢ α → List Formula
+assumptions : ∀{n Γ α} {Ω : Vec ΣScheme n} → Ω , Γ ⊢ α → List Formula
 assumptions {_} {Γ} {_} _ = Γ
 
-isclosed : ∀{Γ α Ω} → Formula → Ω , Γ ⊢ α → Bool
+isclosed : ∀{Γ α n} {Ω : Vec ΣScheme n} → Formula → Ω , Γ ⊢ α → Bool
 isclosed {Γ} α d = membership formulacmp α Γ
