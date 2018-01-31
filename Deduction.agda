@@ -18,9 +18,9 @@ _∈_ = Membership formulacmp
 
 infix 1 _⊢_ _,_⊢_
 data _,_⊢_ where
-  axiom      : ∀{m} → {Ω : Vec ΣScheme m} → (k : ℕ)
-               → {pf : isTrue (k < m)}
-               → (x : Vec Formula (Σ.fst ((Ω ! k) {pf})))
+  axiom      : ∀{n} → {Ω : Vec ΣScheme n} → (k : ℕ)
+               → {indexable : isTrue (k < n)}
+               → (x : Vec Formula (Σ.fst ((Ω ! k) {indexable})))
                → Ω , [] ⊢ (_-aryScheme.func (Σ.snd (Ω ! k))) x
 
   assume     : ∀{n} → {Ω : Vec ΣScheme n} → (α : Formula)
