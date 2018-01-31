@@ -1,3 +1,5 @@
+module Texify where
+
 open import Agda.Builtin.Bool
 open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
