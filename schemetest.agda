@@ -6,6 +6,7 @@ open import Agda.Builtin.String
 open import Formula
 open import Deduction
 open import Scheme
+open import Texify
 open import common
 
 Q = propatom (mkprop "Q")
@@ -72,3 +73,5 @@ pf2 = arrowintro (¬∀x Px)
             (arrowelim (assume (¬∀x Px))
              (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))
            )
+
+s = texify pf2

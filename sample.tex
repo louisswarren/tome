@@ -48,4 +48,28 @@
 
 \end{prooftree}
 
+\section{Schemes}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{DP}
+\UnaryInfC{$\Texists_{y} \left(Py \Tarrow \Tforall_{x} Px\right)$}
+	\AxiomC{}
+	\UnaryInfC{$\Tneg{\Tforall_{x} Px}$}
+		\AxiomC{}
+		\UnaryInfC{$Py \Tarrow \Tforall_{x} Px$}
+			\AxiomC{}
+			\UnaryInfC{$Py$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\Tforall_{x} Px$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{Py}$}
+	\RightLabel{\Texistintro}
+	\UnaryInfC{$\Texists_{x} \Tneg{Px}$}
+\RightLabel{\Texistelim}
+\BinaryInfC{$\Texists_{x} \Tneg{Px}$}
+\RightLabel{\Tarrowintro}
+\UnaryInfC{$\Tneg{\Tforall_{x} Px} \Tarrow \Texists_{x} \Tneg{Px}$}
+\end{prooftree}
 \end{document}
