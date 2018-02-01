@@ -25,7 +25,7 @@ _-aryPred : (n : ℕ) → Set
 P : (1)-aryPred
 P t = atom (mkrel 1 "P") (t ∷ [])
 Px = P x
-Py = Px [ x / y ]
+Py = P y
 
 ∀x ¬∀x ∃x ¬∃x : Formula → Formula
 ∀x Φ = Λ xvar Φ
