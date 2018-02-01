@@ -75,3 +75,28 @@ pf2 = arrowintro (¬∀x Px)
            )
 
 s = texify pf2
+
+
+
+
+-- Let's do that again, but not assume that x is the free variable
+
+dpsf : Variable → Vec Formula 1 → Formula
+dpsf v (α ∷ []) = ∃y ((α [ varterm v / y ]) ⇒ (∀x (α [ varterm v / x ])))
+dps : Variable → (1)-aryScheme
+dps v = record { name = "DP"; func = (dpsf v) }
+
+gmpsf : Variable → Vec Formula 1 → Formula
+gmpsf v (α ∷ []) = ¬ (∀x (α [ varterm v / x ])) ⇒ ∃x (¬ (α [ varterm v / x ]))
+gmps : Variable → (1)-aryScheme
+gmps v = record { name = "GMP"; func = (gmpsf v) }
+
+
+pf3 : Ax (dps xvar) [] , [] ⊢ gmpsf xvar (P x ∷ [])
+pf3 = arrowintro (¬∀x Px)
+          (existelim
+           (axiom 0 (Px ∷ []))
+           (existintro y xvar (arrowintro Py
+            (arrowelim (assume (¬∀x Px))
+             (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))
+           )
