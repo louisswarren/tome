@@ -5,7 +5,6 @@ open import Agda.Builtin.String
 
 open import Formula
 open import Deduction
-open import Scheme
 open import Texify
 open import common
 

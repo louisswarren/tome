@@ -177,3 +177,10 @@ _∖_ : List Formula → Formula → List Formula
 xs ∖ y = remove formulacmp y xs
 
 infixl 6 _∖_
+
+
+record Scheme : Set where
+  field
+    arity : ℕ
+    name  : String
+    func  : (Vec Formula arity) → Formula

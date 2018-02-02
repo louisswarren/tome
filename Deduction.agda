@@ -6,7 +6,6 @@ open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 
 open import Formula
-open import Scheme
 open import common
 
 data _,_⊢_ : ∀{m} → Vec Scheme m → List Formula → Formula → Set
@@ -61,7 +60,8 @@ data _,_⊢_ where
                        ------------------------------------------------------ ∨⁻
                →                 Ω , Γ₁ ++ (Γ₂ ∖ α) ++ (Γ₃ ∖ β) ⊢ γ
 
-  univintro  : ∀{n Γ α} → {Ω : Vec Scheme n} → (x : Variable) → {_ : x isNotFreeIn Γ}
+  univintro  : ∀{n Γ α} → {Ω : Vec Scheme n} → (x : Variable)
+               → {_ : x isNotFreeIn Γ}
                →                             Ω , Γ ⊢ α
                                           --------------- ∀⁺
                →                           Ω , Γ ⊢ Λ x α
@@ -76,7 +76,8 @@ data _,_⊢_ where
                                 ----------------------------------- ∃⁺
                →                 Ω , Γ ⊢ V x α [ r / (varterm x) ]
 
-  existelim  : ∀{n Γ₁ Γ₂ α β x } → {Ω : Vec Scheme n} → {_ : x isNotFreeIn (β ∷ (Γ₂ ∖ α))}
+  existelim  : ∀{n Γ₁ Γ₂ α β x } → {Ω : Vec Scheme n}
+               → {_ : x isNotFreeIn (β ∷ (Γ₂ ∖ α))}
                →                 Ω , Γ₁ ⊢ V x α    →    Ω , Γ₂ ⊢ β
                                 ----------------------------------- ∃⁻
                →                       Ω , Γ₁ ++ (Γ₂ ∖ α) ⊢ β

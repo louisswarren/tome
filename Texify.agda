@@ -7,7 +7,6 @@ open import Agda.Builtin.String
 
 open import Deduction
 open import Formula
-open import Scheme
 open import common
 
 _>>_ = primStringAppend
