@@ -8,7 +8,7 @@ open import Deduction
 open import Texify
 open import common
 
-Q = propatom (mkprop "Q")
+Q = atom (mkprop "Q") []
 P : Term → Formula
 P t = atom (mkrel 1 "P") (t ∷ [])
 

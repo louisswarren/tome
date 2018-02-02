@@ -10,25 +10,31 @@ open import common
 
 
 -- "Let a countably infinite set {vi | i ∈ N} of variables be given."
-data Variable : Set where
-  mkvar : String → Variable
+record Variable : Set where
+  constructor mkvar
+  field
+    name : String
 
 
 
 -- "For every natural number n ≥ 0 a ... set of n-ary relation symbols."
-data _-aryRelationSymbol : ℕ → Set where
-  mkrel : (n : ℕ) → String → (n)-aryRelationSymbol
+record RelationSymbol : Set where
+  constructor mkrel
+  field
+    arity : ℕ
+    name  : String
 
-PropositionalSymbol = (zero)-aryRelationSymbol
-mkprop : String → PropositionalSymbol
+mkprop : String → RelationSymbol
 mkprop s = mkrel zero s
 
 -- "For every natural number n ≥ 0 a ... set of n-ary function symbols."
-data _-aryFunctionSymbol : ℕ → Set where
-  mkfunc : (n : ℕ) → String → (n)-aryFunctionSymbol
+record FunctionSymbol : Set where
+  constructor mkfunc
+  field
+    arity : ℕ
+    name  : String
 
-Constant = (zero)-aryFunctionSymbol
-mkconst : String → Constant
+mkconst : String → FunctionSymbol
 mkconst s = mkfunc zero s
 
 
@@ -41,25 +47,19 @@ mkconst s = mkfunc zero s
 
 data Term : Set where
   varterm  : Variable → Term
-  functerm : ∀{n} → (n)-aryFunctionSymbol → Vec Term n → Term
-
-constterm : Constant → Term
-constterm c = functerm c []
+  functerm : (x : FunctionSymbol) → Vec Term (FunctionSymbol.arity x) → Term
 
 
 -- "If t1, . . . , tn are terms and R is an n-ary relation symbol, then
 --  R(t1, . . . , tn ) is a prime formula ... Formulas are inductively defined
 --- from prime formulas.
 data Formula : Set where
-  atom : ∀{n} → (n)-aryRelationSymbol → Vec Term n → Formula
+  atom : (x : RelationSymbol) → Vec Term (RelationSymbol.arity x) → Formula
   _⇒_ : Formula → Formula → Formula
   _∧_ : Formula → Formula → Formula
   _∨_ : Formula → Formula → Formula
   Λ   : Variable → Formula → Formula
   V   : Variable → Formula → Formula
-
-propatom : PropositionalSymbol → Formula
-propatom p = atom p []
 
 infixr 105 _⇒_ _⇔_
 infixr 106 _∨_
@@ -68,7 +68,7 @@ infixr 107 _∧_
 _⇔_ : Formula → Formula → Formula
 Φ ⇔ Ψ = (Φ ⇒ Ψ) ∧ (Ψ ⇒ Φ)
 
-⊥ = propatom (mkprop "⊥")
+⊥ = atom (mkprop "⊥") []
 
 ¬ ¬¬ : Formula → Formula
 ¬ Φ = Φ ⇒ ⊥
@@ -88,10 +88,10 @@ height (V x a)     = suc (height a)
 -- Clumsy way of defining extensional equality of formulae as just being as
 -- intensional equality
 
-relationcmp : ∀{n m} → (n)-aryRelationSymbol → (m)-aryRelationSymbol → Bool
+relationcmp : RelationSymbol → RelationSymbol → Bool
 relationcmp (mkrel n x) (mkrel m y) = n == m and primStringEquality x y
 
-funccmp : ∀{n m} → (n)-aryFunctionSymbol → (m)-aryFunctionSymbol → Bool
+funccmp : FunctionSymbol → FunctionSymbol → Bool
 funccmp (mkfunc n x) (mkfunc m y) = n == m and primStringEquality x y
 
 varcmp : Variable → Variable → Bool
