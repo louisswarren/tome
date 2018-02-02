@@ -105,8 +105,8 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
 
 
 
-dtot : ∀{α Γ n} → {Ω : Vec ΣScheme n}  → List Formula → Ω , Γ ⊢ α → Textree
-dtot {α} {_} {_} {Ω} o (axiom n {pf} v)     = closedax α (_-aryScheme.name (Σ.snd ((Ω ! n) {pf})))
+dtot : ∀{α Γ n} → {Ω : Vec Scheme n}  → List Formula → Ω , Γ ⊢ α → Textree
+dtot {α} {_} {_} {Ω} o (axiom n {pf} v)     = closedax α (Scheme.name ((Ω ! n) {pf}))
 dtot {α} o (assume a) with (membership formulacmp a o)
 ...                   | false  = closedax   α ""
 ...                   | true   = openax     α
@@ -128,5 +128,5 @@ dtot {α} o (existintro r x d)  = unaryinf   α "\\Texistintro" (dtot o d)
 dtot {α} o (existelim d₁ d₂)   = binaryinf  α "\\Texistelim"  (dtot o d₁)
                                                                    (dtot o d₂)
 
-texify : ∀{Γ n α} → {Ω : Vec ΣScheme n} → Ω , Γ ⊢ α → String
+texify : ∀{Γ n α} → {Ω : Vec Scheme n} → Ω , Γ ⊢ α → String
 texify {Γ} d = texifytree 0 (dtot Γ d)

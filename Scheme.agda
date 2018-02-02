@@ -9,19 +9,9 @@ open import Agda.Builtin.String
 open import Formula
 open import common
 
-
-record Σ (S : Set)(T : S → Set) : Set where
-  constructor _↦_
+record Scheme : Set where
   field
-    fst : S
-    snd : T fst
-
-record _-aryScheme (n : ℕ) : Set where
-  field
-    name : String
-    func : (Vec Formula n) → Formula
-
-
-ΣScheme : Set
-ΣScheme = Σ ℕ _-aryScheme
+    arity : ℕ
+    name  : String
+    func  : (Vec Formula arity) → Formula
 

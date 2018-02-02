@@ -39,33 +39,30 @@ Py = P y
 
 lemf : Vec Formula 1 → Formula
 lemf (α ∷ []) = α ∨ ¬ α
-lem : (1)-aryScheme
-lem = record { name = "LEM"; func = lemf }
+lem : Scheme
+lem = record { arity = 1; name = "LEM"; func = lemf }
 
 dgpf : Vec Formula 2 → Formula
 dgpf (α ∷ β ∷ []) = (α ⇒ β) ∨ (β ⇒ α)
-dgp : (2)-aryScheme
-dgp = record { name = "DGP"; func = dgpf }
+dgp : Scheme
+dgp = record { arity = 2; name = "DGP"; func = dgpf }
 
 dpf : Vec Formula 1 → Formula
 dpf (α ∷ []) = ∃y ((α [ x / y ]) ⇒ (∀x α))
-dp : (1)-aryScheme
-dp = record { name = "DP"; func = dpf }
+dp : Scheme
+dp = record { arity = 1; name = "DP"; func = dpf }
 
 gmpf : Vec Formula 1 → Formula
 gmpf (α ∷ []) = ¬ (∀x α) ⇒ ∃x (¬ α)
-gmp : (1)-aryScheme
-gmp = record { name = "GMP"; func = gmpf }
-
-Ax : ∀{n k} → (n)-aryScheme → Vec ΣScheme k → Vec ΣScheme (suc k)
-Ax {n} x xs = (n ↦ x) ∷ xs
+gmp : Scheme
+gmp = record { arity = 1; name = "GMP"; func = gmpf }
 
 
-pf : Ax dgp (Ax lem []) , [] ⊢ Q ∨ ¬ Q
+pf : dgp ∷ lem ∷ [] , [] ⊢ Q ∨ ¬ Q
 pf = axiom 1 (Q ∷ [])
 
 
-pf2 : Ax dp [] , [] ⊢ gmpf (P x ∷ [])
+pf2 : dp ∷ [] , [] ⊢ gmpf (P x ∷ [])
 pf2 = arrowintro (¬∀x Px)
           (existelim
            (axiom 0 (Px ∷ []))
@@ -83,16 +80,16 @@ s = texify pf2
 
 dpsf : Variable → Vec Formula 1 → Formula
 dpsf v (α ∷ []) = ∃y ((α [ varterm v / y ]) ⇒ (∀x (α [ varterm v / x ])))
-dps : Variable → (1)-aryScheme
+dps : Variable → Scheme
 dps v = record { name = "DP"; func = (dpsf v) }
 
 gmpsf : Variable → Vec Formula 1 → Formula
 gmpsf v (α ∷ []) = ¬ (∀x (α [ varterm v / x ])) ⇒ ∃x (¬ (α [ varterm v / x ]))
-gmps : Variable → (1)-aryScheme
+gmps : Variable → Scheme
 gmps v = record { name = "GMP"; func = (gmpsf v) }
 
 
-pf3 : Ax (dps xvar) [] , [] ⊢ gmpsf xvar (P x ∷ [])
+pf3 : (dps xvar) ∷ [] , [] ⊢ gmpsf xvar (P x ∷ [])
 pf3 = arrowintro (¬∀x Px)
           (existelim
            (axiom 0 (Px ∷ []))
