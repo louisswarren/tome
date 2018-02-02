@@ -90,7 +90,11 @@ membership equality x xs = any (equality x) xs
 Membership : {A : Set} → (A → A → Bool) → A → List A → Set
 Membership equality x xs = isTrue (membership equality x xs)
 
-_!_ : ∀{n} → {A : Set} → Vec A n → (k : ℕ) → {_ : isTrue (k < n)} → A
+len : {A : Set} → List A → ℕ
+len [] = zero
+len (_ ∷ xs) = suc (len xs)
+
+_!_ : {A : Set} → (xs : List A) → (k : ℕ) → {_ : isTrue (k < (len xs))} → A
 ([] ! k) {()}
 (x ∷ xs) ! zero = x
 ((x ∷ xs) ! suc k) {pf} = (xs ! k) {pf}
