@@ -8,7 +8,7 @@ open import Deduction
 open import Texify
 open import common
 
-Q = propatom (mkprop "Q")
+Q = atom (mkprop "Q") []
 
 xvar yvar : Variable
 xvar = mkvar "x"
