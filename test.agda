@@ -9,6 +9,8 @@ open import Texify
 open import common
 
 Q = propatom (mkprop "Q")
+P : Term → Formula
+P t = atom (mkrel 1 "P") (t ∷ [])
 
 xvar yvar : Variable
 xvar = mkvar "x"
@@ -17,16 +19,7 @@ yvar = mkvar "y"
 x = varterm xvar
 y = varterm yvar
 
-_-aryPred : (n : ℕ) → Set
-(0)-aryPred = Formula
-(suc n)-aryPred = Term → (n)-aryPred
-
-
-P : (1)-aryPred
-P t = atom (mkrel 1 "P") (t ∷ [])
-Px = P x
-Py = P y
-
+--------------------------------------------------------------------------------
 ∀x ¬∀x ∃x ¬∃x : Formula → Formula
 ∀x Φ = Λ xvar Φ
 ∃x Φ = V xvar Φ
@@ -39,24 +32,67 @@ Py = P y
 ¬∀y Φ = ¬(∀y Φ)
 ¬∃y Φ = ¬(∃y Φ)
 
-lem wlem : Formula → Formula
-lem Φ = Φ ∨ ¬ Φ
-wlem Φ = ¬ Φ ∨ ¬¬ Φ
+Px = P x
+Py = P y
+--------------------------------------------------------------------------------
 
-lem⊃wlem : [ lem (¬ Q) ] ⊃ wlem Q
-lem⊃wlem = axiom (lem (¬ Q))
+lemf : Vec Formula 1 → Formula
+lemf (α ∷ []) = α ∨ ¬ α
+lem : Scheme
+lem = record { arity = 1; name = "LEM"; func = lemf }
 
-dp gmp : (1)-aryPred → Formula
-dp p = ∃y ((p y) ⇒ ∀x (p x))
-gmp p = ¬∀x (p x) ⇒ ∃x (¬(p x))
+dgpf : Vec Formula 2 → Formula
+dgpf (α ∷ β ∷ []) = (α ⇒ β) ∨ (β ⇒ α)
+dgp : Scheme
+dgp = record { arity = 2; name = "DGP"; func = dgpf }
 
-dp⊃gmp : [ dp P ] ⊃ gmp P
-dp⊃gmp = arrowintro (¬∀x Px)
+dpf : Vec Formula 1 → Formula
+dpf (α ∷ []) = ∃y ((α [ x / y ]) ⇒ (∀x α))
+dp : Scheme
+dp = record { arity = 1; name = "DP"; func = dpf }
+
+gmpf : Vec Formula 1 → Formula
+gmpf (α ∷ []) = ¬ (∀x α) ⇒ ∃x (¬ α)
+gmp : Scheme
+gmp = record { arity = 1; name = "GMP"; func = gmpf }
+
+
+pf : dgp ∷ lem ∷ [] , [] ⊢ Q ∨ ¬ Q
+pf = axiom 1 (Q ∷ [])
+
+
+pf2 : dp ∷ [] , [] ⊢ gmpf (P x ∷ [])
+pf2 = arrowintro (¬∀x Px)
           (existelim
-           (axiom (dp P))
+           (axiom 0 (Px ∷ []))
            (existintro y xvar (arrowintro Py
             (arrowelim (assume (¬∀x Px))
              (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))
            )
 
-s = texify dp⊃gmp
+s = texify pf2
+
+
+
+
+-- Let's do that again, but not assume that x is the free variable
+
+dpsf : Variable → Vec Formula 1 → Formula
+dpsf v (α ∷ []) = ∃y ((α [ varterm v / y ]) ⇒ (∀x (α [ varterm v / x ])))
+dps : Variable → Scheme
+dps v = record { name = "DP"; func = (dpsf v) }
+
+gmpsf : Variable → Vec Formula 1 → Formula
+gmpsf v (α ∷ []) = ¬ (∀x (α [ varterm v / x ])) ⇒ ∃x (¬ (α [ varterm v / x ]))
+gmps : Variable → Scheme
+gmps v = record { name = "GMP"; func = (gmpsf v) }
+
+
+pf3 : (dps xvar) ∷ [] , [] ⊢ gmpsf xvar (P x ∷ [])
+pf3 = arrowintro (¬∀x Px)
+          (existelim
+           (axiom 0 (Px ∷ []))
+           (existintro y xvar (arrowintro Py
+            (arrowelim (assume (¬∀x Px))
+             (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))
+           )
