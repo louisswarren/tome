@@ -98,3 +98,8 @@ _!_ : {A : Set} → (xs : List A) → (k : ℕ) → {_ : isTrue (k < (len xs))} 
 ([] ! k) {()}
 (x ∷ xs) ! zero = x
 ((x ∷ xs) ! suc k) {pf} = (xs ! k) {pf}
+
+_!!_ : ∀{n} → {A : Set} → (xs : Vec A n) → (k : ℕ) → {_ : isTrue (k < n)} → A
+([] !! k) {()}
+(x ∷ xs) !! zero = x
+((x ∷ xs) !! suc k) {pf} = (xs !! k) {pf}
