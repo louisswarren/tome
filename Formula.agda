@@ -180,7 +180,11 @@ infixl 6 _∖_
 
 
 record Scheme : Set where
+  constructor scheme
   field
     arity : ℕ
     name  : String
     func  : (Vec Formula arity) → Formula
+
+nullaryscheme : String → Formula → Scheme
+nullaryscheme s α = scheme zero s λ _ → α
