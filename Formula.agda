@@ -185,12 +185,3 @@ record Scheme : Set where
     arity : ℕ
     name  : String
     func  : (Vec Formula arity) → Formula
-
-nullaryscheme : String → Formula → Scheme
-nullaryscheme s α = scheme zero s λ _ → α
-
-unaryscheme : String → (Formula → Formula) → Scheme
-unaryscheme s f = scheme 1 s λ xs → f (xs !! 0)
-
-binaryscheme : String → (Formula → Formula → Formula) → Scheme
-binaryscheme s f = scheme 2 s λ xs → f (xs !! 0) (xs !! 1)

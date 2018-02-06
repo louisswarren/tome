@@ -6,37 +6,10 @@ open import Agda.Builtin.String
 open import Formula
 open import Deduction
 open import Texify
+
 open import common
+open import sugar
 
-xvar yvar zvar : Variable
-xvar = mkvar "x"
-yvar = mkvar "y"
-zvar = mkvar "z"
-
-x = varterm xvar
-y = varterm yvar
-z = varterm zvar
-
---------------------------------------------------------------------------------
-∀x ¬∀x ∃x ¬∃x : Formula → Formula
-∀x Φ = Λ xvar Φ
-∃x Φ = V xvar Φ
-¬∀x Φ = ¬(∀x Φ)
-¬∃x Φ = ¬(∃x Φ)
-
-∀y ¬∀y ∃y ¬∃y : Formula → Formula
-∀y Φ = Λ yvar Φ
-∃y Φ = V yvar Φ
-¬∀y Φ = ¬(∀y Φ)
-¬∃y Φ = ¬(∃y Φ)
-
-∀z ¬∀z ∃z ¬∃z : Formula → Formula
-∀z Φ = Λ zvar Φ
-∃z Φ = V zvar Φ
-¬∀z Φ = ¬(∀z Φ)
-¬∃z Φ = ¬(∃z Φ)
-
---------------------------------------------------------------------------------
 
 -- Peano primatives
 ppzero  = mkconst "zero"
