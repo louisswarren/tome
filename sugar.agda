@@ -1,5 +1,6 @@
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
+open import Agda.Builtin.List
 
 open import Formula
 
@@ -9,13 +10,13 @@ _[!_/_] : Formula → Variable → Term → Formula
 α [! v / t ] = α [ varterm v / t ]
 
 nullaryscheme : String → Formula → Scheme
-nullaryscheme s α = scheme zero s λ _ → α
+nullaryscheme s α = scheme zero s (λ _ → α) []
 
 unaryscheme : String → (Formula → Formula) → Scheme
-unaryscheme s f = scheme 1 s λ xs → f (xs !! 0)
+unaryscheme s f = scheme 1 s (λ xs → f (xs !! 0)) ([] ∷ [])
 
 binaryscheme : String → (Formula → Formula → Formula) → Scheme
-binaryscheme s f = scheme 2 s λ xs → f (xs !! 0) (xs !! 1)
+binaryscheme s f = scheme 2 s (λ xs → f (xs !! 0) (xs !! 1)) ([] ∷ [] ∷ [])
 
 xvar yvar zvar : Variable
 xvar = mkvar "x"

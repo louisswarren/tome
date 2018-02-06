@@ -7,30 +7,11 @@ open import Formula
 open import Deduction
 open import Texify
 open import common
+open import sugar
 
 Q = atom (mkprop "Q") []
 P : Term → Formula
 P t = atom (mkrel 1 "P") (t ∷ [])
-
-xvar yvar : Variable
-xvar = mkvar "x"
-yvar = mkvar "y"
-
-x = varterm xvar
-y = varterm yvar
-
---------------------------------------------------------------------------------
-∀x ¬∀x ∃x ¬∃x : Formula → Formula
-∀x Φ = Λ xvar Φ
-∃x Φ = V xvar Φ
-¬∀x Φ = ¬(∀x Φ)
-¬∃x Φ = ¬(∃x Φ)
-
-∀y ¬∀y ∃y ¬∃y : Formula → Formula
-∀y Φ = Λ yvar Φ
-∃y Φ = V yvar Φ
-¬∀y Φ = ¬(∀y Φ)
-¬∃y Φ = ¬(∃y Φ)
 
 Px = P x
 Py = P y
@@ -39,22 +20,22 @@ Py = P y
 lemf : Vec Formula 1 → Formula
 lemf (α ∷ []) = α ∨ ¬ α
 lem : Scheme
-lem = record { arity = 1; name = "LEM"; func = lemf }
+lem = scheme 1 "LEM" lemf ([] ∷ [])
 
 dgpf : Vec Formula 2 → Formula
 dgpf (α ∷ β ∷ []) = (α ⇒ β) ∨ (β ⇒ α)
 dgp : Scheme
-dgp = record { arity = 2; name = "DGP"; func = dgpf }
+dgp = scheme 2 "DGP" dgpf ([] ∷ [] ∷ [])
 
 dpf : Vec Formula 1 → Formula
 dpf (α ∷ []) = ∃y ((α [ x / y ]) ⇒ (∀x α))
 dp : Scheme
-dp = record { arity = 1; name = "DP"; func = dpf }
+dp = scheme 1 "DP" dpf ([] ∷ [])
 
 gmpf : Vec Formula 1 → Formula
 gmpf (α ∷ []) = ¬ (∀x α) ⇒ ∃x (¬ α)
 gmp : Scheme
-gmp = record { arity = 1; name = "GMP"; func = gmpf }
+gmp = scheme 1 "GMP" gmpf ([] ∷ [])
 
 
 pf : dgp ∷ lem ∷ [] , [] ⊢ Q ∨ ¬ Q
@@ -80,12 +61,12 @@ s = texify pf2
 dpsf : Variable → Vec Formula 1 → Formula
 dpsf v (α ∷ []) = ∃y ((α [ varterm v / y ]) ⇒ (∀x (α [ varterm v / x ])))
 dps : Variable → Scheme
-dps v = record { name = "DP"; func = (dpsf v) }
+dps v = scheme 1 "DP" (dpsf v) ([] ∷ [])
 
 gmpsf : Variable → Vec Formula 1 → Formula
 gmpsf v (α ∷ []) = ¬ (∀x (α [ varterm v / x ])) ⇒ ∃x (¬ (α [ varterm v / x ]))
 gmps : Variable → Scheme
-gmps v = record { name = "GMP"; func = (gmpsf v) }
+gmps v = scheme 1 "GMP" (gmpsf v) ([] ∷ [])
 
 
 pf3 : (dps xvar) ∷ [] , [] ⊢ gmpsf xvar (P x ∷ [])

@@ -72,6 +72,10 @@ any : {A : Set} → (A → Bool) → List A → Bool
 any f [] = false
 any f (x ∷ xs) = f x or any f xs
 
+vecall : ∀{n} → {A : Set} → (A → Bool) → Vec A n → Bool
+vecall f [] = true
+vecall f (x ∷ xs) = f x and vecall f xs
+
 vecany : ∀{n} → {A : Set} → (A → Bool) → Vec A n → Bool
 vecany f [] = false
 vecany f (x ∷ xs) = f x or vecany f xs
