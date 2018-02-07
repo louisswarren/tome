@@ -1,3 +1,4 @@
+open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 
@@ -21,6 +22,9 @@ glpo  v f = ∀x ¬Φ ∨ ∃x Φ                        where Φ = f [! v / x ]
 glpoa v f = ∀x Φ ∨ ∃x ¬Φ                        where Φ = f [! v / x ]; ¬Φ = ¬ Φ
 gmp   v f = ¬∀x Φ ⇒ ∃x ¬Φ                       where Φ = f [! v / x ]; ¬Φ = ¬ Φ
 
--- Requires that {_ : v isNotFreeIn [ Ψ ]}
+-- Requires that v isNotFreeIn [ Ψ ]
 uds : (v : Variable) → Formula → (Ψ : Formula) → Formula
 uds v f Ψ = ∀x (Φ ∨ Ψ) ⇒ (∀x Φ ∨ Ψ)             where Φ = f [! v / x ]; ¬Φ = ¬ Φ
+
+ud : Variable →  Scheme
+ud v = scheme 2 "UD" (vecfunc2 (uds v)) ([] ∷ [ v ] ∷ [])

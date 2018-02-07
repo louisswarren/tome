@@ -77,3 +77,18 @@ pf3 = arrowintro (¬∀x Px)
             (arrowelim (assume (¬∀x Px))
              (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))
            )
+
+-- Requires that {_ : v isNotFreeIn [ Ψ ]}
+uds : (v : Variable) → Formula → (Ψ : Formula) → Formula
+uds v f Ψ = ∀x (Φ ∨ Ψ) ⇒ (∀x Φ ∨ Ψ)             where Φ = f [! v / x ]; ¬Φ = ¬ Φ
+
+ud : Variable →  Scheme
+ud v = scheme 2 "UD" (vecfunc2 (uds v)) ([] ∷ [ v ] ∷ [])
+
+
+reqtest : [ ud xvar ] , [] ⊢ uds xvar (P x) Q
+reqtest = axiom 0 (P x ∷ Q ∷ [])
+
+-- This won't work: Agda can't prove that x is not free in Px (since it's false)
+-- reqtest2 : [ ud xvar ] , [] ⊢ uds xvar Q (P x)
+-- reqtest2 = axiom 0 (Q ∷ P x ∷ [])
