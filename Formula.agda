@@ -185,15 +185,3 @@ record Scheme : Set where
     arity : ℕ
     name  : String
     func  : (Vec Formula arity) → Formula
-    req   : Vec (List Variable) arity
-
-
-pairwise : ∀{n} → {A B C : Set} → (A → B → C) → Vec A n → Vec B n → Vec C n
-pairwise f [] [] = []
-pairwise f (x ∷ xs) (y ∷ ys) = f x y ∷ pairwise f xs ys
-
-validarg : Formula → List Variable → Bool
-validarg f vs = all (λ v → not (isfree v f)) vs
-
-isValidApp : (a : Scheme) → (Vec Formula (Scheme.arity a)) → Set
-isValidApp (scheme _ _ _ req) xs = isTrue (vecall (λ x → x) (pairwise validarg xs req))

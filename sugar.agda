@@ -9,17 +9,14 @@ open import common
 _[!_/_] : Formula → Variable → Term → Formula
 α [! v / t ] = α [ varterm v / t ]
 
-vecfunc2 : {A B : Set} → (A → A → B) → Vec A 2 → B
-vecfunc2 f = λ xs → f (xs !! 0) (xs !! 1)
-
 nullaryscheme : String → Formula → Scheme
-nullaryscheme s α = scheme zero s (λ _ → α) []
+nullaryscheme s α = scheme zero s (λ _ → α)
 
 unaryscheme : String → (Formula → Formula) → Scheme
-unaryscheme s f = scheme 1 s (λ xs → f (xs !! 0)) ([] ∷ [])
+unaryscheme s f = scheme 1 s (λ xs → f (xs !! 0))
 
 binaryscheme : String → (Formula → Formula → Formula) → Scheme
-binaryscheme s f = scheme 2 s (λ xs → f (xs !! 0) (xs !! 1)) ([] ∷ [] ∷ [])
+binaryscheme s f = scheme 2 s (λ xs → f (xs !! 0) (xs !! 1))
 
 
 

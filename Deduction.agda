@@ -19,7 +19,6 @@ infix 1 _⊢_ _,_⊢_
 data _,_⊢_ where
   axiom      : ∀{Ω} → (k : ℕ) → {indexable : isTrue (k < (len Ω))}
                → (x : Vec Formula (Scheme.arity ((Ω ! k) {indexable})))
-               → {_ : isValidApp (Ω ! k) x}
                →                  Ω , [] ⊢ (Scheme.func (Ω ! k)) x
 
   assume     : ∀{Ω} → (α : Formula)

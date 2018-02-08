@@ -37,10 +37,7 @@ GLPO  v = unaryscheme "GLPO"  (glpo v)
 GLPOA v = unaryscheme "GLPOA" (glpoa v)
 GMP   v = unaryscheme "GMP"   (gmp v)
 
+ud : Variable → Formula → Formula → Formula
+ud v f Ψ = ∀x (Φ ∨ Ψ) ⇒ (∀x Φ ∨ Ψ)              where Φ = f [! v / x ]; ¬Φ = ¬ Φ
 
-
--- Requires that v isNotFreeIn [ Ψ ]
-ud : (v : Variable) → Formula → (Ψ : Formula) → Formula
-ud v f Ψ = ∀x (Φ ∨ Ψ) ⇒ (∀x Φ ∨ Ψ)             where Φ = f [! v / x ]; ¬Φ = ¬ Φ
-
-UD v = scheme 2 "UD" (vecfunc2 (ud v)) ([] ∷ [ v ] ∷ [])
+UD v = binaryscheme "UD" (ud v)
