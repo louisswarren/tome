@@ -77,3 +77,29 @@ IP v = binaryscheme "IP" (ud v)
 
 
 
+
+Q = atom (mkprop "Q") []
+P : Term → Formula
+P t = atom (mkrel 1 "P") (t ∷ [])
+
+Px = P x
+Py = P y
+
+¬Q = ¬ Q
+¬Px = ¬ Px
+¬Py = ¬ Py
+
+-- Equivalences
+lem⊃glpo : [ LEM ] ⊃ (glpo xvar Px)
+lem⊃glpo = disjelim (axiom 0 (∃x Px ∷ []))
+            (disjintro₂ (∀x ¬Px) (assume (∃x Px)) )
+            (disjintro₁ (∃x Px) (univintro xvar
+             (arrowintro Px (arrowelim (assume (¬∃x Px))
+                             (existintro x xvar (assume Px))))))
+
+glpo⊃lem : [ GLPO xvar ] ⊃ (lem Q)
+glpo⊃lem = disjelim (axiom 0 (Q ∷ []))
+            (disjintro₂ Q (univelim x (assume (∀x ¬Q))))
+            (disjintro₁ ¬Q (existelim (assume (∃x Q)) (assume Q)))
+
+
