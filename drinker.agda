@@ -52,10 +52,10 @@ he  v f = ∃y(∃x Φx ⇒ Φy)              where Φx = f [! v / x ]; Φy = f 
 dpn v f = dp v (¬ f)
 hen v f = he v (¬ f)
 
-DP  v = unaryscheme "DP"  (glpo v)
-HE  v = unaryscheme "HE"  (glpo v)
-DPN v = unaryscheme "DPN" (glpo v)
-HEN v = unaryscheme "HEN" (glpo v)
+DP  v = unaryscheme "DP"  (dp v)
+HE  v = unaryscheme "HE"  (he v)
+DPN v = unaryscheme "DPN" (dpn v)
+HEN v = unaryscheme "HEN" (hen v)
 
 
 
@@ -89,17 +89,48 @@ Py = P y
 ¬Px = ¬ Px
 ¬Py = ¬ Py
 
+¬¬Q = ¬¬ Q
+¬¬Px = ¬¬ Px
+¬¬Py = ¬¬ Py
+
+-- Lemmae and macros
+
+-- A macro cannot (with the current system) be proved discharge assumptions in
+-- general, but when applied, Agda can prove its effect for a given case
+macro-dni : ∀{α Ω Γ} → Ω , Γ ⊢ α → Ω , _ ⊢ (¬¬ α)
+macro-dni {α} T = arrowintro (¬ α) (arrowelim (assume (¬ α)) T)
+
+macro-contra : ∀{α β Ω Γ} → Ω , Γ ⊢ α ⇒ β → Ω , _ ⊢ (¬ β) ⇒ (¬ α)
+macro-contra {α} {β} T = arrowintro (¬ β) (arrowintro α
+                          (arrowelim (assume (¬ β)) (arrowelim T (assume α))))
+
+macro-tne : ∀{α Ω Γ} → Ω , Γ ⊢ ¬¬(¬ α) → Ω , _ ⊢ ¬ α
+macro-tne {α} T = arrowintro α (arrowelim T (macro-dni (assume α)))
+
+-- Didn't need to prove this
+--lemma01 : ⊢ (¬∃x ¬¬Px ⇒ (∃x ¬Px))
+--lemma01 = arrowintro (¬∃x ¬¬Px) (existintro x xvar
+--           (arrowintro Px (arrowelim (assume (¬∃x ¬¬Px))
+--            (existintro x xvar (macro-dni (assume Px))))))
+
 -- Equivalences
-lem⊃glpo : [ LEM ] ⊃ (glpo xvar Px)
+lem⊃glpo : [ LEM ] ⊃ glpo xvar Px
 lem⊃glpo = disjelim (axiom 0 (∃x Px ∷ []))
             (disjintro₂ (∀x ¬Px) (assume (∃x Px)) )
             (disjintro₁ (∃x Px) (univintro xvar
              (arrowintro Px (arrowelim (assume (¬∃x Px))
                              (existintro x xvar (assume Px))))))
 
-glpo⊃lem : [ GLPO xvar ] ⊃ (lem Q)
+glpo⊃lem : [ GLPO xvar ] ⊃ lem Q
 glpo⊃lem = disjelim (axiom 0 (Q ∷ []))
             (disjintro₂ Q (univelim x (assume (∀x ¬Q))))
             (disjintro₁ ¬Q (existelim (assume (∃x Q)) (assume Q)))
 
+dpn⊃hen : [ DPN xvar ] ⊃ hen xvar Px
+dpn⊃hen = existelim (axiom 0 (¬ Px ∷ [])) (existintro y yvar
+           (arrowintro (∃x ¬Px) (macro-tne (arrowelim
+            (macro-contra (assume (¬¬Py ⇒ ∀x ¬¬Px)))
+            (arrowintro (∀x ¬¬Px) (existelim
+             (assume (∃x ¬Px))
+             (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))))
 

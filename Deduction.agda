@@ -83,6 +83,9 @@ data _,_⊢_ where
 _⊃_ : List Scheme → Formula → Set
 Ω ⊃ Φ = Ω , [] ⊢ Φ
 
+⊢ : Formula → Set
+⊢ α = ∀{Ω} → Ω , [] ⊢ α
+
 conclusion : ∀{Ω Γ α} → Ω , Γ ⊢ α → Formula
 conclusion {_} {_} {α} _ = α
 
