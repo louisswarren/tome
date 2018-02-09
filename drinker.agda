@@ -127,10 +127,18 @@ glpo⊃lem = disjelim (axiom 0 (Q ∷ []))
             (disjintro₁ ¬Q (existelim (assume (∃x Q)) (assume Q)))
 
 dpn⊃hen : [ DPN xvar ] ⊃ hen xvar Px
-dpn⊃hen = existelim (axiom 0 (¬ Px ∷ [])) (existintro y yvar
+dpn⊃hen = existelim (axiom 0 (¬Px ∷ [])) (existintro y yvar
            (arrowintro (∃x ¬Px) (macro-tne (arrowelim
             (macro-contra (assume (¬¬Py ⇒ ∀x ¬¬Px)))
             (arrowintro (∀x ¬¬Px) (existelim
              (assume (∃x ¬Px))
              (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))))
 
+hen⊃dpn : [ HEN xvar ] ⊃ dpn xvar Px
+hen⊃dpn = existelim (axiom 0 (¬Px ∷ []))
+          (existintro y yvar (arrowintro ¬Py (univintro xvar (arrowintro Px
+           (arrowelim
+            (arrowelim
+             (macro-contra (assume (∃x ¬¬Px ⇒ ¬¬Py)))
+             (macro-dni (assume ¬Py)))
+            (existintro x xvar (macro-dni (assume Px))))))))
