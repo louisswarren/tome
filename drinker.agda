@@ -63,8 +63,8 @@ dnsu dnse : Variable → Formula → Formula
 dnsu v f = ∀x(¬¬ Φx) ⇒ ¬¬(∀x Φx)                         where Φx = f [! v / x ]
 dnse v f = ¬¬(∃x Φx) ⇒ ∃x (¬¬ Φx)                        where Φx = f [! v / x ]
 
-DNSU v = unaryscheme "DNSU" (glpo v)
-DNSE v = unaryscheme "DNSE" (glpo v)
+DNSU v = unaryscheme "DNSU" (dnsu v)
+DNSE v = unaryscheme "DNSE" (dnse v)
 
 
 
@@ -73,7 +73,7 @@ ud v f Ψ = ∀x (Φx ∨ Ψ) ⇒ (∀x Φx ∨ Ψ)                     where Φ
 ip v f Ψ = (Ψ ⇒ ∃x Φx) ⇒ ∃x(Ψ ⇒ Φx)                      where Φx = f [! v / x ]
 
 UD v = binaryscheme "UD" (ud v)
-IP v = binaryscheme "IP" (ud v)
+IP v = binaryscheme "IP" (ip v)
 
 
 
