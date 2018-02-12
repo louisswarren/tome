@@ -1,4 +1,5 @@
-\documentclass{article}
+\documentclass[landscape]{article}
+\usepackage[a4paper,margin=1in,landscape]{geometry}
 
 \newcommand{\Tarrowintro}{$\rightarrow$I}
 \newcommand{\Tarrowelim}{$\rightarrow$E}
@@ -72,4 +73,110 @@
 \RightLabel{\Tarrowintro}
 \UnaryInfC{$\Tneg{\Tforall_{x} Px} \Tarrow \Texists_{x} \Tneg{Px}$}
 \end{prooftree}
+
+
+\clearpage
+\section{HE$\lnot \vdash$ DP$\lnot$ using simple contrapositive macro}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{HEN}
+\UnaryInfC{$\Texists_{y} \left(\Texists_{x} \Tneg{\Tneg{Px}} \Tarrow \Tneg{\Tneg{Py}}\right)$}
+	\AxiomC{}
+	\UnaryInfC{$\Tneg{\Tneg{\Tneg{Py}}}$}
+		\AxiomC{}
+		\UnaryInfC{$\Texists_{x} \Tneg{\Tneg{Px}} \Tarrow \Tneg{\Tneg{Py}}$}
+			\AxiomC{}
+			\UnaryInfC{$\Texists_{x} \Tneg{\Tneg{Px}}$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\Tneg{\Tneg{Py}}$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{\Texists_{x} \Tneg{\Tneg{Px}}}$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{\Tneg{\Tneg{Py}}} \Tarrow \Tneg{\Texists_{x} \Tneg{\Tneg{Px}}}$}
+		\AxiomC{}
+		\UnaryInfC{$\Tneg{\Tneg{Py}}$}
+			\AxiomC{}
+			\UnaryInfC{$\Tneg{Py}$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\bot$}
+		\RightLabel{\Tarrowintro}
+		\UnaryInfC{$\Tneg{\Tneg{\Tneg{Py}}}$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\Tneg{\Texists_{x} \Tneg{\Tneg{Px}}}$}
+		\AxiomC{}
+		\UnaryInfC{$\Tneg{Px}$}
+			\AxiomC{}
+			\UnaryInfC{$Px$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\bot$}
+		\RightLabel{\Tarrowintro}
+		\UnaryInfC{$\Tneg{\Tneg{Px}}$}
+		\RightLabel{\Texistintro}
+		\UnaryInfC{$\Texists_{x} \Tneg{\Tneg{Px}}$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{Px}$}
+	\RightLabel{\Tunivintro}
+	\UnaryInfC{$\Tforall_{x} \Tneg{Px}$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{Py} \Tarrow \Tforall_{x} \Tneg{Px}$}
+	\RightLabel{\Texistintro}
+	\UnaryInfC{$\Texists_{y} \left(\Tneg{Py} \Tarrow \Tforall_{x} \Tneg{Px}\right)$}
+\RightLabel{\Texistelim}
+\BinaryInfC{$\Texists_{y} \left(\Tneg{Py} \Tarrow \Tforall_{x} \Tneg{Px}\right)$}
+\end{prooftree}
+
+
+\section{HE$\lnot \vdash$ DP$\lnot$ using better contrapositive macro}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{HEN}
+\UnaryInfC{$\Texists_{y} \left(\Texists_{x} \Tneg{\Tneg{Px}} \Tarrow \Tneg{\Tneg{Py}}\right)$}
+	\AxiomC{}
+	\UnaryInfC{$\Tneg{\Tneg{Py}}$}
+		\AxiomC{}
+		\UnaryInfC{$\Tneg{Py}$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{\Tneg{\Tneg{Py}}}$}
+		\AxiomC{}
+		\UnaryInfC{$\Texists_{x} \Tneg{\Tneg{Px}} \Tarrow \Tneg{\Tneg{Py}}$}
+			\AxiomC{}
+			\UnaryInfC{$\Texists_{x} \Tneg{\Tneg{Px}}$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\Tneg{\Tneg{Py}}$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{\Texists_{x} \Tneg{\Tneg{Px}}}$}
+		\AxiomC{}
+		\UnaryInfC{$\Tneg{Px}$}
+			\AxiomC{}
+			\UnaryInfC{$Px$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\bot$}
+		\RightLabel{\Tarrowintro}
+		\UnaryInfC{$\Tneg{\Tneg{Px}}$}
+		\RightLabel{\Texistintro}
+		\UnaryInfC{$\Texists_{x} \Tneg{\Tneg{Px}}$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{Px}$}
+	\RightLabel{\Tunivintro}
+	\UnaryInfC{$\Tforall_{x} \Tneg{Px}$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{Py} \Tarrow \Tforall_{x} \Tneg{Px}$}
+	\RightLabel{\Texistintro}
+	\UnaryInfC{$\Texists_{y} \left(\Tneg{Py} \Tarrow \Tforall_{x} \Tneg{Px}\right)$}
+\RightLabel{\Texistelim}
+\BinaryInfC{$\Texists_{y} \left(\Tneg{Py} \Tarrow \Tforall_{x} \Tneg{Px}\right)$}
+
+\end{prooftree}
+
+
 \end{document}
