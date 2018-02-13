@@ -99,13 +99,23 @@ Py = P y
 macro-dni : ∀{α Ω Γ} → Ω , Γ ⊢ α → Ω , _ ⊢ (¬¬ α)
 macro-dni {α} T = arrowintro (¬ α) (arrowelim (assume (¬ α)) T)
 
-macro-contra' : ∀{α β Ω Γ} → Ω , Γ ⊢ α ⇒ β → Ω , _ ⊢ (¬ β) ⇒ (¬ α)
-macro-contra' {α} {β} T = arrowintro (¬ β) (arrowintro α
+
+
+macro-contra : ∀{α β Ω Γ} → Ω , Γ ⊢ α ⇒ β → Ω , _ ⊢ (¬ β) ⇒ (¬ α)
+macro-contra {α} {β} T = arrowintro (¬ β) (arrowintro α
                           (arrowelim (assume (¬ β)) (arrowelim T (assume α))))
 
-macro-contra : ∀{α β Ω Γ₁ Γ₂} → Ω , Γ₁ ⊢ α ⇒ β → Ω , Γ₂ ⊢ ¬ β → Ω , _ ⊢ ¬ α
-macro-contra {α} {β} T₁ T₂ = arrowintro α (arrowelim T₂
+macro-tollens : ∀{α β Ω Γ₁ Γ₂} → Ω , Γ₁ ⊢ α ⇒ β → Ω , Γ₂ ⊢ ¬ β → Ω , _ ⊢ ¬ α
+macro-tollens {α} {β} T₁ T₂ = arrowintro α (arrowelim T₂
                               (arrowelim T₁ (assume α)))
+
+macro-incons : ∀{α β Ω Γ₁ Γ₂ Γ₃}
+               → Ω , Γ₁ ⊢ α ⇒ β
+               → Ω , Γ₂ ⊢ ¬ β
+               → Ω , Γ₃  ⊢ α
+               → Ω , Γ₂ ++ Γ₁ ++ Γ₃ ⊢ ⊥
+macro-incons {α} {β} T₁ T₂ T₃ = arrowelim T₂ (arrowelim T₁ T₃)
+
 
 macro-tne : ∀{α Ω Γ} → Ω , Γ ⊢ ¬¬(¬ α) → Ω , _ ⊢ ¬ α
 macro-tne {α} T = arrowintro α (arrowelim T (macro-dni (assume α)))
@@ -132,7 +142,7 @@ glpo⊃lem = disjelim (axiom 0 (Q ∷ []))
 dpn⊃hen : [ DPN ] ⊃ hen Px
 dpn⊃hen = existelim (axiom 0 (¬Px ∷ [])) (existintro y yvar
            (arrowintro (∃x ¬Px) (macro-tne (arrowelim
-            (macro-contra' (assume (¬¬Py ⇒ ∀x ¬¬Px)))
+            (macro-contra (assume (¬¬Py ⇒ ∀x ¬¬Px)))
             (arrowintro (∀x ¬¬Px) (existelim
              (assume (∃x ¬Px))
              (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))))
@@ -141,9 +151,8 @@ hen⊃dpn : [ HEN ] ⊃ dpn Px
 hen⊃dpn = existelim (axiom 0 (¬Px ∷ []))
           (existintro y yvar (arrowintro ¬Py (univintro xvar
            (arrowintro Px (arrowelim
-            (macro-contra
-             (assume (∃x ¬¬Px ⇒ ¬¬Py))
-             (macro-dni (assume ¬Py)))
-            (existintro x xvar (macro-dni (assume Px))))))))
+            (arrowelim (assume (∃x ¬¬Px ⇒ ¬¬Py))
+             (existintro x xvar (macro-dni (assume Px))))
+            (assume ¬Py))
+           ))))
 
-s = texify hen⊃dpn
