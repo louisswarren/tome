@@ -147,6 +147,7 @@ macro-∀sub {v} {α} w T {pf} = arrowelim
 --macro-∃sub {v} {α} w T = existelim T
 --                          (existintro (varterm v) {! w  !} ?)
 
+
 -- Equivalences
 he⊃ip : [ HE ] ⊃ ip Px Q
 he⊃ip = arrowintro (Q ⇒ ∃x Px) (existelim (axiom 0 (Px ∷ []))
@@ -213,6 +214,12 @@ wmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
 lem⊃wlem : [ LEM ] ⊃ wlem Q
 lem⊃wlem = axiom 0 (¬Q ∷ [])
 
+dp⊃dpn : [ DP ] ⊃ dpn Px
+dp⊃dpn = axiom 0 (¬Px ∷ [])
+
+he⊃hen : [ HE ] ⊃ hen Px
+he⊃hen = axiom 0 (¬Px ∷ [])
+
 glpoa⊃lem : [ GLPOA ] ⊃ lem Q
 glpoa⊃lem = disjelim (axiom 0 (Q ∷ []))
              (disjintro₁ ¬Q (univelim x (assume (∀x Q))))
@@ -234,3 +241,25 @@ glpo⊃dpn = disjelim (axiom 0 (Px ∷ []))
              (existintro x yvar (arrowintro ¬Px
               (macro-∀sub xvar (univintro zvar
                (arrowintro Pz (arrowelim (assume ¬Px) (assume Px))))))))
+
+he⊃dnse : [ HE ] ⊃ dnse Px
+he⊃dnse = arrowintro (¬¬ (∃x Px)) (existelim (axiom 0 (Px ∷ []))
+           (existintro y xvar (arrowintro ¬Py
+            (arrowelim (assume (¬¬ (∃x Px))) (arrowintro (∃x Px)
+             (arrowelim (assume ¬Py)
+              (arrowelim (assume (∃x Px ⇒ Py)) (assume (∃x Px)))))))))
+
+glpo⊃dnse : [ GLPO ] ⊃ dnse Px
+glpo⊃dnse = arrowintro (¬¬ (∃x Px)) (disjelim (axiom 0 (Px ∷ []))
+             (existintro x xvar (arrowintro ¬Px
+              (arrowelim (assume (¬¬ (∃x Px)))
+               (arrowintro (∃x Px) (existelim (assume (∃x Px))
+                (arrowelim (univelim x (assume (∀x ¬Px))) (assume Px)))))))
+             (existelim (assume (∃x Px)) (existintro x xvar
+              (macro-dni (assume Px)))))
+
+gmp⊃dnse : [ GMP ] ⊃ dnse Px
+gmp⊃dnse = arrowintro (¬¬ (∃x Px)) (arrowelim (axiom 0 (¬Px ∷ []))
+            (arrowintro (∀x ¬Px) (arrowelim (assume (¬¬ (∃x Px)))
+             (arrowintro (∃x Px) (existelim (assume (∃x Px))
+              (arrowelim (univelim x (assume (∀x ¬Px))) (assume Px)))))))
