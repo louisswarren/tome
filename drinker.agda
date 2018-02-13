@@ -101,25 +101,25 @@ macro-dni {α} T = arrowintro (¬ α) (arrowelim (assume (¬ α)) T)
 
 
 
-macro-contra : ∀{α β Ω Γ} → Ω , Γ ⊢ α ⇒ β → Ω , _ ⊢ (¬ β) ⇒ (¬ α)
-macro-contra {α} {β} T = arrowintro (¬ β) (arrowintro α
-                          (arrowelim (assume (¬ β)) (arrowelim T (assume α))))
-
-macro-tollens : ∀{α β Ω Γ₁ Γ₂} → Ω , Γ₁ ⊢ α ⇒ β → Ω , Γ₂ ⊢ ¬ β → Ω , _ ⊢ ¬ α
-macro-tollens {α} {β} T₁ T₂ = arrowintro α (arrowelim T₂
-                              (arrowelim T₁ (assume α)))
-
-macro-incons : ∀{α β Ω Γ₁ Γ₂ Γ₃}
-               → Ω , Γ₁ ⊢ α ⇒ β
-               → Ω , Γ₂ ⊢ ¬ β
-               → Ω , Γ₃  ⊢ α
-               → Ω , Γ₂ ++ Γ₁ ++ Γ₃ ⊢ ⊥
-macro-incons {α} {β} T₁ T₂ T₃ = arrowelim T₂ (arrowelim T₁ T₃)
-
-
-macro-tne : ∀{α Ω Γ} → Ω , Γ ⊢ ¬¬(¬ α) → Ω , _ ⊢ ¬ α
-macro-tne {α} T = arrowintro α (arrowelim T (macro-dni (assume α)))
-
+-- macro-contra : ∀{α β Ω Γ} → Ω , Γ ⊢ α ⇒ β → Ω , _ ⊢ (¬ β) ⇒ (¬ α)
+-- macro-contra {α} {β} T = arrowintro (¬ β) (arrowintro α
+--                           (arrowelim (assume (¬ β)) (arrowelim T (assume α))))
+--
+-- macro-tollens : ∀{α β Ω Γ₁ Γ₂} → Ω , Γ₁ ⊢ α ⇒ β → Ω , Γ₂ ⊢ ¬ β → Ω , _ ⊢ ¬ α
+-- macro-tollens {α} {β} T₁ T₂ = arrowintro α (arrowelim T₂
+--                               (arrowelim T₁ (assume α)))
+--
+-- macro-incons : ∀{α β Ω Γ₁ Γ₂ Γ₃}
+--                → Ω , Γ₁ ⊢ α ⇒ β
+--                → Ω , Γ₂ ⊢ ¬ β
+--                → Ω , Γ₃  ⊢ α
+--                → Ω , Γ₂ ++ Γ₁ ++ Γ₃ ⊢ ⊥
+-- macro-incons {α} {β} T₁ T₂ T₃ = arrowelim T₂ (arrowelim T₁ T₃)
+--
+--
+-- macro-tne : ∀{α Ω Γ} → Ω , Γ ⊢ ¬¬(¬ α) → Ω , _ ⊢ ¬ α
+-- macro-tne {α} T = arrowintro α (arrowelim T (macro-dni (assume α)))
+--
 -- Didn't need to prove this
 --lemma01 : ⊢ (¬∃x ¬¬Px ⇒ (∃x ¬Px))
 --lemma01 = arrowintro (¬∃x ¬¬Px) (existintro x xvar
@@ -156,4 +156,21 @@ hen⊃dpn = existelim (axiom 0 (¬Px ∷ []))
             (assume ¬Py))
            ))))
 
-s = texify dpn⊃hen
+dnsu⊃wgmp : [ DNSU ] ⊃ wgmp Px
+dnsu⊃wgmp = arrowintro (¬∀x Px) (arrowintro (¬∃x ¬Px)
+             (arrowelim
+              (arrowelim
+               (axiom 0 (Px ∷ []))
+               (univintro xvar (arrowintro ¬Px
+                (arrowelim
+                 (assume (¬∃x ¬Px))
+                 (existintro x xvar (assume ¬Px))))))
+              (assume (¬∀x Px))))
+
+wmp⊃dnsu : [ WGMP ] ⊃ dnsu Px
+wmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
+            (arrowelim
+             (arrowelim (axiom 0 (Px ∷ [])) (assume (¬∀x Px)))
+             (arrowintro (∃x ¬Px) (existelim
+              (assume (∃x ¬Px))
+              (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))
