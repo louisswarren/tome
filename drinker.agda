@@ -140,7 +140,27 @@ macro-∀sub {v} {α} w T {pf} = arrowelim
                                  (assume (Λ v α)))))
                                T
 
+--macro-∃sub : ∀{v α Ω Γ}
+--             → (w : Variable)
+--             → Ω , Γ ⊢ V v α
+--             → Ω , _ ⊢ V w (α [ varterm v / varterm w ])
+--macro-∃sub {v} {α} w T = existelim T
+--                          (existintro (varterm v) {! w  !} ?)
+
 -- Equivalences
+he⊃ip : [ HE ] ⊃ ip Px Q
+he⊃ip = arrowintro (Q ⇒ ∃x Px) (existelim (axiom 0 (Px ∷ []))
+         (existintro y xvar (arrowintro Q
+          (arrowelim (assume (∃x Px ⇒ Py))
+           (arrowelim (assume (Q ⇒ ∃x Px)) (assume Q))))))
+
+ip⊃he : [ IP ] ⊃ he Px
+ip⊃he = existelim
+         (arrowelim
+          (axiom 0 (Px ∷ ∃x Px ∷ []))
+          (arrowintro (∃x Px) (assume (∃x Px))))
+         (existintro x yvar (assume (∃x Px ⇒ Px)))
+
 lem⊃glpo : [ LEM ] ⊃ glpo Px
 lem⊃glpo = disjelim (axiom 0 (∃x Px ∷ []))
             (disjintro₂ (∀x ¬Px) (assume (∃x Px)) )
