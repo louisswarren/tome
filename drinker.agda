@@ -83,14 +83,17 @@ P t = atom (mkrel 1 "P") (t ∷ [])
 
 Px = P x
 Py = P y
+Pz = P z
 
 ¬Q = ¬ Q
 ¬Px = ¬ Px
 ¬Py = ¬ Py
+¬Pz = ¬ Pz
 
 ¬¬Q = ¬¬ Q
 ¬¬Px = ¬¬ Px
 ¬¬Py = ¬¬ Py
+¬¬Pz = ¬¬ Pz
 
 -- Lemmae and macros
 
@@ -125,6 +128,17 @@ macro-dni {α} T = arrowintro (¬ α) (arrowelim (assume (¬ α)) T)
 --lemma01 = arrowintro (¬∃x ¬¬Px) (existintro x xvar
 --           (arrowintro Px (arrowelim (assume (¬∃x ¬¬Px))
 --            (existintro x xvar (macro-dni (assume Px))))))
+
+macro-∀sub : ∀{v α Ω Γ}
+             → (w : Variable)
+             → Ω , Γ ⊢ Λ v α
+             → {_ : w isNotFreeIn [ Λ v α ]}
+             → Ω , _ ⊢ Λ w (α [ varterm v / varterm w ])
+macro-∀sub {v} {α} w T {pf} = arrowelim
+                               (arrowintro (Λ v α)
+                                (univintro w {pf} (univelim (varterm w)
+                                 (assume (Λ v α)))))
+                               T
 
 -- Equivalences
 lem⊃glpo : [ LEM ] ⊃ glpo Px
@@ -174,3 +188,29 @@ wmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
              (arrowintro (∃x ¬Px) (existelim
               (assume (∃x ¬Px))
               (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))
+
+-- Proofs
+lem⊃wlem : [ LEM ] ⊃ wlem Q
+lem⊃wlem = axiom 0 (¬Q ∷ [])
+
+glpoa⊃lem : [ GLPOA ] ⊃ lem Q
+glpoa⊃lem = disjelim (axiom 0 (Q ∷ []))
+             (disjintro₁ ¬Q (univelim x (assume (∀x Q))))
+             (disjintro₂ Q (existelim (assume (∃x ¬Q)) (assume ¬Q)))
+
+dp⊃dnsu : [ DP ] ⊃ dnsu Px
+dp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
+           (existelim (axiom 0 (Px ∷ []))
+            (arrowelim
+             (univelim y (assume (∀x ¬¬Px)))
+             (arrowintro Py (arrowelim
+              (assume (¬∀x Px))
+              (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))))
+
+glpo⊃dpn : [ GLPO ] ⊃ dpn Px
+glpo⊃dpn = disjelim (axiom 0 (Px ∷ []))
+            (existintro y yvar (arrowintro ¬Py (assume (∀x ¬Px))))
+            (existelim (assume (∃x Px))
+             (existintro x yvar (arrowintro ¬Px
+              (macro-∀sub xvar (univintro zvar
+               (arrowintro Pz (arrowelim (assume ¬Px) (assume Px))))))))
