@@ -220,6 +220,19 @@ dp⊃dpn = axiom 0 (¬Px ∷ [])
 he⊃hen : [ HE ] ⊃ hen Px
 he⊃hen = axiom 0 (¬Px ∷ [])
 
+gmp⊃wgmp : [ GMP ] ⊃ wgmp Px
+gmp⊃wgmp = arrowintro (¬∀x Px) (macro-dni (arrowelim
+            (axiom 0 (Px ∷ []))
+            (assume (¬∀x Px))))
+
+dgp⊃wlem : [ DGP ] ⊃ wlem Q
+dgp⊃wlem = disjelim (axiom 0 (Q ∷ ¬Q ∷ []))
+            (disjintro₁ ¬¬Q (arrowintro Q (arrowelim
+             (arrowelim (assume (Q ⇒ ¬Q)) (assume Q))
+             (assume Q))))
+            (disjintro₂ ¬Q (arrowintro ¬Q (arrowelim (assume ¬Q)
+             (arrowelim (assume (¬Q ⇒ Q)) (assume ¬Q)))))
+
 glpoa⊃lem : [ GLPOA ] ⊃ lem Q
 glpoa⊃lem = disjelim (axiom 0 (Q ∷ []))
              (disjintro₁ ¬Q (univelim x (assume (∀x Q))))
@@ -263,3 +276,19 @@ gmp⊃dnse = arrowintro (¬¬ (∃x Px)) (arrowelim (axiom 0 (¬Px ∷ []))
             (arrowintro (∀x ¬Px) (arrowelim (assume (¬¬ (∃x Px)))
              (arrowintro (∃x Px) (existelim (assume (∃x Px))
               (arrowelim (univelim x (assume (∀x ¬Px))) (assume Px)))))))
+
+dpn⊃dnse : [ DPN ] ⊃ dnse Px
+dpn⊃dnse = arrowintro (¬¬ (∃x Px)) (existelim (axiom 0 (Px ∷ []))
+            (existintro y xvar (arrowintro ¬Py (arrowelim
+             (assume (¬¬ (∃x Px)))
+             (arrowintro (∃x Px) (existelim (assume (∃x Px))
+              (arrowelim
+               (univelim x (arrowelim (assume (¬Py ⇒ ∀x ¬Px)) (assume ¬Py)))
+               (assume Px))))))))
+
+glpoa⊃wgmp : [ GLPOA ] ⊃ wgmp Px
+glpoa⊃wgmp = disjelim (axiom 0 (Px ∷ []))
+              (arrowintro (¬∀x Px) (arrowintro (¬∃x ¬Px)
+               (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
+              (arrowintro (¬∀x Px) (macro-dni (assume (∃x ¬Px))))
+
