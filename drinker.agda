@@ -202,13 +202,13 @@ dnsu⊃wgmp = arrowintro (¬∀x Px) (arrowintro (¬∃x ¬Px)
                  (existintro x xvar (assume ¬Px))))))
               (assume (¬∀x Px))))
 
-wmp⊃dnsu : [ WGMP ] ⊃ dnsu Px
-wmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
-            (arrowelim
-             (arrowelim (axiom 0 (Px ∷ [])) (assume (¬∀x Px)))
-             (arrowintro (∃x ¬Px) (existelim
-              (assume (∃x ¬Px))
-              (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))
+wgmp⊃dnsu : [ WGMP ] ⊃ dnsu Px
+wgmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
+             (arrowelim
+              (arrowelim (axiom 0 (Px ∷ [])) (assume (¬∀x Px)))
+              (arrowintro (∃x ¬Px) (existelim
+               (assume (∃x ¬Px))
+               (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))
 
 -- Proofs
 lem⊃wlem : [ LEM ] ⊃ wlem Q
@@ -238,14 +238,26 @@ glpoa⊃lem = disjelim (axiom 0 (Q ∷ []))
              (disjintro₁ ¬Q (univelim x (assume (∀x Q))))
              (disjintro₂ Q (existelim (assume (∃x ¬Q)) (assume ¬Q)))
 
-dp⊃dnsu : [ DP ] ⊃ dnsu Px
-dp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
-           (existelim (axiom 0 (Px ∷ []))
-            (arrowelim
-             (univelim y (assume (∀x ¬¬Px)))
-             (arrowintro Py (arrowelim
-              (assume (¬∀x Px))
-              (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))))
+glpoa⊃gmp : [ GLPOA ] ⊃ gmp Px
+glpoa⊃gmp = arrowintro (¬∀x Px) (disjelim (axiom 0 (Px ∷ []))
+             (existintro x xvar (arrowintro Px
+              (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
+             (assume (∃x ¬Px)))
+
+dp⊃gmp : [ DP ] ⊃ gmp Px
+dp⊃gmp = arrowintro (¬∀x Px) (existelim (axiom 0 (Px ∷ []))
+          (existintro y xvar (arrowintro Py (arrowelim (assume (¬∀x Px))
+           (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py))))))
+
+-- Redundant by transitivity
+-- dp⊃dnsu : [ DP ] ⊃ dnsu Px
+-- dp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
+--            (existelim (axiom 0 (Px ∷ []))
+--             (arrowelim
+--              (univelim y (assume (∀x ¬¬Px)))
+--              (arrowintro Py (arrowelim
+--               (assume (¬∀x Px))
+--               (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))))
 
 glpo⊃dpn : [ GLPO ] ⊃ dpn Px
 glpo⊃dpn = disjelim (axiom 0 (Px ∷ []))
