@@ -244,6 +244,12 @@ glpoa⊃gmp = arrowintro (¬∀x Px) (disjelim (axiom 0 (Px ∷ []))
               (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
              (assume (∃x ¬Px)))
 
+dp⊃ud : [ DP ] ⊃ ud Px Q
+dp⊃ud = arrowintro (∀x (Px ∨ Q)) (existelim (axiom 0 (Px ∷ []))
+         (disjelim (univelim y (assume (∀x (Px ∨ Q))))
+          (disjintro₁ Q (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
+          (disjintro₂ (∀x Px) (assume Q))))
+
 dp⊃gmp : [ DP ] ⊃ gmp Px
 dp⊃gmp = arrowintro (¬∀x Px) (existelim (axiom 0 (Px ∷ []))
           (existintro y xvar (arrowintro Py (arrowelim (assume (¬∀x Px))
