@@ -30,6 +30,9 @@ infixr 1000 _≈_
 pisnat : Term → Formula
 pisnat t = atom ppisnat (t ∷ [])
 
+∀x∈ℕ ∀y∈ℕ : Formula → Formula
+∀x∈ℕ Φ = ∀x (pisnat x ⇒ Φ)
+∀y∈ℕ Φ = ∀y (pisnat y ⇒ Φ)
 
 -- Peano axioms
 -- All but induction are 0-ary schemes
@@ -46,10 +49,8 @@ pax8 = nullaryscheme "Pinfi" (∀x (¬ (psuc x ≈ pzero)))
 
 induction : Variable → Vec Formula 1 → Formula
 induction v (α ∷ []) = (α [ varterm v / pzero ])
-                       ⇒ V v (pisnat (varterm v)
-                              ⇒ α
-                              ⇒ (α [ varterm v / psuc (varterm v) ]))
-                       ⇒ V v α
+                       ⇒ Λ v (α ⇒ (α [ varterm v / psuc (varterm v) ]))
+                       ⇒ Λ v α
 pax9fv : Variable → Scheme
 pax9fv v = scheme 1 "Pindu" (induction v)
 
@@ -57,3 +58,18 @@ pax9 = pax9fv xvar
 
 -- Axiom required in minimal logic for collapsing arithmetic absurdities
 paxm = nullaryscheme "Pmini" (∀x (psuc x ≈ pzero ⇒ psuc pzero ≈ pzero))
+
+
+zero∨suc : pax9 ∷ pax2 ∷ pax7 ∷ [] , [] ⊢ (∀x (x ≈ pzero ∨ ∃y (x ≈ psuc y)))
+zero∨suc = arrowelim
+            (arrowelim (axiom 0 (x ≈ pzero ∨ ∃y (x ≈ psuc y) ∷ []))
+             (disjintro₁ (∃y (pzero ≈ psuc y)) (univelim pzero (axiom 1 []))))
+            (univintro xvar (arrowintro (x ≈ pzero ∨ ∃y (x ≈ psuc y))
+             (disjelim (assume (x ≈ pzero ∨ ∃y (x ≈ psuc y)))
+              (disjintro₂ (psuc x ≈ pzero) (existintro pzero yvar
+               (arrowelim (univelim pzero
+                (univelim x (axiom 2 []))) (assume (x ≈ pzero)))))
+              (disjintro₂ (psuc x ≈ pzero) (existelim (assume (∃y (x ≈ psuc y)))
+               (existintro (psuc y) yvar (arrowelim
+                (univelim (psuc y) (univelim x (axiom 2 [])))
+                (assume (x ≈ psuc y)))))))))
