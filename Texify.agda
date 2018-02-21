@@ -47,12 +47,20 @@ parenformula p@(_ ∨ _) = lp >> texformula p >> rp
 parenformula p@(Λ _ _) = texformula p
 parenformula p@(V _ _) = texformula p
 
+--``texformula (atom (mkrel n f) ts) | false with n
+--``...                                      | zero        = f
+--``...                                      | suc zero    = f >> textermvec ts
+--``...                                      | suc (suc _) = f >> lp
+--``                                                         >> textermvec ts >> rp
 
 texformula a@(atom f ts) with formulacmp a ⊥
 ...                              | true = "\\bot"
 texformula (atom (mkrel n f) ts) | false with n
-...                                      | zero        = f
-...                                      | suc zero    = f >> textermvec ts
+...                                      | zero = f
+...                                      | suc zero = f >> textermvec ts
+texformula (atom (mkrel n f) (x ∷ y ∷ []))
+                                 | false | suc (suc zero)
+                                                   = texterm x >> f >> texterm y
 ...                                      | suc (suc _) = f >> lp
                                                          >> textermvec ts >> rp
 texformula (a ⇒ b) with formulacmp b ⊥
