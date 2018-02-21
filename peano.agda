@@ -12,9 +12,9 @@ open import sugar
 
 
 -- Peano primatives
-ppzero  = mkconst "zero"
-ppsuc   = mkfunc 1 "suc"
-ppeqs   = mkrel 2 "eq"
+ppzero  = mkconst "0"
+ppsuc   = mkfunc 1 "S"
+ppeqs   = mkrel 2 "="
 ppisnat = mkrel 1 "isnat"
 
 -- Peano syntax sugar

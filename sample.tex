@@ -1,5 +1,5 @@
 \documentclass[landscape]{article}
-\usepackage[a4paper,margin=1in,landscape]{geometry}
+\usepackage[a4paper,margin=0.5in,landscape]{geometry}
 
 \newcommand{\Tarrowintro}{$\rightarrow$I}
 \newcommand{\Tarrowelim}{$\rightarrow$E}
@@ -339,4 +339,74 @@
 \RightLabel{\Texistelim}
 \BinaryInfC{$\Texists_{y} \left(\Texists_{x} \Tneg{Px} \Tarrow \Tneg{Py}\right)$}
 \end{prooftree}
+
+
+
+
+\clearpage
+\small
+
+?0: $\left({0}={0} \Tor \Texists_{y} {0}={S\left({y}\right)}\right) \Tarrow \left(\Tforall_{x} \left(\left({x}={0} \Tor \Texists_{y} {x}={S\left({y}\right)}\right) \Tarrow \left({S\left({x}\right)}={0} \Tor \Texists_{y} {S\left({x}\right)}={S\left({y}\right)}\right)\right) \Tarrow \Tforall_{x} \left({x}={0} \Tor \Texists_{y} {x}={S\left({y}\right)}\right)\right)$
+
+?1: $\Tforall_{x} \left(\left({x}={0} \Tor \Texists_{y} {x}={S\left({y}\right)}\right) \Tarrow \left({S\left({x}\right)}={0} \Tor \Texists_{y} {S\left({x}\right)}={S\left({y}\right)}\right)\right) \Tarrow \Tforall_{x} \left({x}={0} \Tor \Texists_{y} {x}={S\left({y}\right)}\right)$
+\begin{prooftree}
+
+\AxiomC{}
+\RightLabel{Pindu}
+\UnaryInfC{?0}
+	\AxiomC{}
+	\RightLabel{Prefl}
+	\UnaryInfC{$\Tforall_{x} {x}={x}$}
+	\RightLabel{\Tunivelim}
+	\UnaryInfC{${0}={0}$}
+	\RightLabel{\Tdisjintro}
+	\UnaryInfC{${0}={0} \Tor \Texists_{y} {0}={S\left({y}\right)}$}
+\RightLabel{\Tarrowelim}
+\BinaryInfC{?1}
+	\AxiomC{}
+	\UnaryInfC{${x}={0} \Tor \Texists_{y} {x}={S\left({y}\right)}$}
+		\AxiomC{}
+		\RightLabel{Psucc}
+		\UnaryInfC{$\Tforall_{x} \Tforall_{y} \left({x}={y} \Tarrow {S\left({x}\right)}={S\left({y}\right)}\right)$}
+		\RightLabel{\Tunivelim}
+		\UnaryInfC{$\Tforall_{y} \left({x}={y} \Tarrow {S\left({x}\right)}={S\left({y}\right)}\right)$}
+		\RightLabel{\Tunivelim}
+		\UnaryInfC{${x}={0} \Tarrow {S\left({x}\right)}={S\left({0}\right)}$}
+			\AxiomC{}
+			\UnaryInfC{${x}={0}$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{${S\left({x}\right)}={S\left({0}\right)}$}
+		\RightLabel{\Texistintro}
+		\UnaryInfC{$\Texists_{y} {S\left({x}\right)}={S\left({y}\right)}$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{${S\left({x}\right)}={0} \Tor \Texists_{y} {S\left({x}\right)}={S\left({y}\right)}$}
+			\AxiomC{}
+			\UnaryInfC{$\Texists_{y} {x}={S\left({y}\right)}$}
+				\AxiomC{}
+				\RightLabel{Psucc}
+				\UnaryInfC{$\Tforall_{x} \Tforall_{y} \left({x}={y} \Tarrow {S\left({x}\right)}={S\left({y}\right)}\right)$}
+				\RightLabel{\Tunivelim}
+				\UnaryInfC{$\Tforall_{y} \left({x}={y} \Tarrow {S\left({x}\right)}={S\left({y}\right)}\right)$}
+				\RightLabel{\Tunivelim}
+				\UnaryInfC{${x}={S\left({y}\right)} \Tarrow {S\left({x}\right)}={S\left({S\left({y}\right)}\right)}$}
+					\AxiomC{}
+					\UnaryInfC{${x}={S\left({y}\right)}$}
+				\RightLabel{\Tarrowelim}
+				\BinaryInfC{${S\left({x}\right)}={S\left({S\left({y}\right)}\right)}$}
+				\RightLabel{\Texistintro}
+				\UnaryInfC{$\Texists_{y} {S\left({x}\right)}={S\left({y}\right)}$}
+			\RightLabel{\Texistelim}
+			\BinaryInfC{$\Texists_{y} {S\left({x}\right)}={S\left({y}\right)}$}
+			\RightLabel{\Tdisjintro}
+			\UnaryInfC{${S\left({x}\right)}={0} \Tor \Texists_{y} {S\left({x}\right)}={S\left({y}\right)}$}
+	\RightLabel{\Tdisjelim}
+	\TrinaryInfC{${S\left({x}\right)}={0} \Tor \Texists_{y} {S\left({x}\right)}={S\left({y}\right)}$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\left({x}={0} \Tor \Texists_{y} {x}={S\left({y}\right)}\right) \Tarrow \left({S\left({x}\right)}={0} \Tor \Texists_{y} {S\left({x}\right)}={S\left({y}\right)}\right)$}
+	\RightLabel{\Tunivintro}
+	\UnaryInfC{$\Tforall_{x} \left(\left({x}={0} \Tor \Texists_{y} {x}={S\left({y}\right)}\right) \Tarrow \left({S\left({x}\right)}={0} \Tor \Texists_{y} {S\left({x}\right)}={S\left({y}\right)}\right)\right)$}
+\RightLabel{\Tarrowelim}
+\BinaryInfC{$\Tforall_{x} \left({x}={0} \Tor \Texists_{y} {x}={S\left({y}\right)}\right)$}
+\end{prooftree}
+
 \end{document}
