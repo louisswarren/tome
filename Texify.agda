@@ -15,16 +15,19 @@ infixr 1 _>>_
 lp = "\\left("
 rp = "\\right)"
 
+wrap : String → String
+wrap s = "{" >> s >> "}"
+
 texvar : Variable → String
 texvar (mkvar s) = s
 
 texterm : Term → String
 textermvec : ∀{n} → Vec Term n → String
 
-texterm (varterm x) = texvar x
+texterm (varterm x) = wrap (texvar x)
 texterm (functerm (mkfunc n f) ts) with n
-...                                | zero = f
-...                                | suc _ = lp >> textermvec ts >> rp
+...                              | zero = wrap f
+...                              | suc _ = wrap (f >> lp >> textermvec ts >> rp)
 
 textermvec [] = ""
 textermvec (t ∷ []) = texterm t
