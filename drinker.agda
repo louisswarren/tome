@@ -95,6 +95,17 @@ Pz = P z
 ¬¬Py = ¬¬ Py
 ¬¬Pz = ¬¬ Pz
 
+
+-- Semantically, at least one term exists. Giving two names for terms does not
+-- assert that these terms are actually different.
+t⁰ = functerm (mkconst "0") []
+t¹ = functerm (mkconst "1") []
+
+
+-- For these terms to be different, there must be a predicate which
+-- distinguishes them
+
+
 -- Lemmae and macros
 
 -- A macro cannot (with the current system) be proved discharge assumptions in
@@ -309,4 +320,5 @@ glpoa⊃wgmp = disjelim (axiom 0 (Px ∷ []))
               (arrowintro (¬∀x Px) (arrowintro (¬∃x ¬Px)
                (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
               (arrowintro (¬∀x Px) (macro-dni (assume (∃x ¬Px))))
+
 
