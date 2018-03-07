@@ -13,6 +13,8 @@ open import sugar
 -- in which the schemes' quantifiers are not free.
 
 LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP : Scheme
+FIN∀ FIN∃ : Scheme
+
 
 
 
@@ -77,7 +79,8 @@ IP = binaryscheme "IP" ip
 
 
 
-Q = atom (mkprop "Q") []
+A = atom (mkprop "A") []
+B = atom (mkprop "B") []
 P : Term → Formula
 P t = atom (mkrel 1 "P") (t ∷ [])
 
@@ -85,12 +88,14 @@ Px = P x
 Py = P y
 Pz = P z
 
-¬Q = ¬ Q
+¬A = ¬ A
+¬B = ¬ B
 ¬Px = ¬ Px
 ¬Py = ¬ Py
 ¬Pz = ¬ Pz
 
-¬¬Q = ¬¬ Q
+¬¬A = ¬¬ A
+¬¬B = ¬¬ B
 ¬¬Px = ¬¬ Px
 ¬¬Py = ¬¬ Py
 ¬¬Pz = ¬¬ Pz
@@ -103,8 +108,52 @@ t¹ = functerm (mkconst "1") []
 
 
 -- For these terms to be different, there must be a predicate which
--- distinguishes them
+-- distinguishes them.
+D : Term → Formula
+D t = atom (mkrel 1 "D") (t ∷ [])
+Dt⁰ = D t⁰
+Dt¹ = D t¹
+¬Dt¹ = ¬ Dt¹
+Dx  = D x
+¬Dx = ¬ Dx
+[TT] : List Scheme
+[TT] = nullaryscheme "D0" (Dt⁰)
+     ∷ nullaryscheme "\\Tneg{D1}" (¬Dt¹)
+     ∷ nullaryscheme "D" (∀x (D x ∨ ¬ (D x)))
+     ∷ []
 
+
+-- Use this to apply predicative schemes to propositional problems
+fin∀ fin∃ : Formula → Formula → Formula
+fin∀ Φ Ψ = ∀x ((Dx ⇒ Φ) ∧ (¬Dx ⇒ Ψ)) ⇒ (Φ ∧ Ψ)
+FIN∀ = binaryscheme "FIN\\forall" fin∀
+
+fin∃ Φ Ψ = ∃x ((Dx ⇒ Φ) ∧ (¬Dx ⇒ Ψ)) ⇒ (Φ ∨ Ψ)
+FIN∃ = binaryscheme "FIN\\exists" fin∃
+
+
+tt-fin∀ : [TT] ⊃ (fin∀ A B)
+tt-fin∀ = arrowintro (∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))
+           (conjintro
+            (arrowelim
+             (conjelim
+              (univelim t⁰ (assume (∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))))
+              (assume (Dt⁰ ⇒ A)))
+             (axiom 0 []))
+            (arrowelim
+             (conjelim
+              (univelim t¹ (assume (∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))))
+              (assume (¬Dt¹ ⇒ B)))
+             (axiom 1 [])))
+
+tt-fin∃ : [TT] ⊃ (fin∃ A B)
+tt-fin∃ = arrowintro (∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))
+           (existelim (assume (∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B))))
+            (conjelim (assume ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))
+             (disjelim
+              (univelim x (axiom 2 []))
+              (disjintro₁ B (arrowelim (assume (Dx ⇒ A)) (assume Dx)))
+              (disjintro₂ A (arrowelim (assume (¬Dx ⇒ B)) (assume ¬Dx))))))
 
 -- Lemmae and macros
 
@@ -160,11 +209,11 @@ macro-∀sub {v} {α} w T {pf} = arrowelim
 
 
 -- Equivalences
-he⊃ip : [ HE ] ⊃ ip Px Q
-he⊃ip = arrowintro (Q ⇒ ∃x Px) (existelim (axiom 0 (Px ∷ []))
-         (existintro y xvar (arrowintro Q
+he⊃ip : [ HE ] ⊃ ip Px A
+he⊃ip = arrowintro (A ⇒ ∃x Px) (existelim (axiom 0 (Px ∷ []))
+         (existintro y xvar (arrowintro A
           (arrowelim (assume (∃x Px ⇒ Py))
-           (arrowelim (assume (Q ⇒ ∃x Px)) (assume Q))))))
+           (arrowelim (assume (A ⇒ ∃x Px)) (assume A))))))
 
 ip⊃he : [ IP ] ⊃ he Px
 ip⊃he = existelim
@@ -180,10 +229,10 @@ lem⊃glpo = disjelim (axiom 0 (∃x Px ∷ []))
              (arrowintro Px (arrowelim (assume (¬∃x Px))
                              (existintro x xvar (assume Px))))))
 
-glpo⊃lem : [ GLPO ] ⊃ lem Q
-glpo⊃lem = disjelim (axiom 0 (Q ∷ []))
-            (disjintro₂ Q (univelim x (assume (∀x ¬Q))))
-            (disjintro₁ ¬Q (existelim (assume (∃x Q)) (assume Q)))
+glpo⊃lem : [ GLPO ] ⊃ lem A
+glpo⊃lem = disjelim (axiom 0 (A ∷ []))
+            (disjintro₂ A (univelim x (assume (∀x ¬A))))
+            (disjintro₁ ¬A (existelim (assume (∃x A)) (assume A)))
 
 dpn⊃hen : [ DPN ] ⊃ hen Px
 dpn⊃hen = existelim (axiom 0 (¬Px ∷ [])) (existintro y yvar
@@ -222,8 +271,8 @@ wgmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
                (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))
 
 -- Proofs
-lem⊃wlem : [ LEM ] ⊃ wlem Q
-lem⊃wlem = axiom 0 (¬Q ∷ [])
+lem⊃wlem : [ LEM ] ⊃ wlem A
+lem⊃wlem = axiom 0 (¬A ∷ [])
 
 dp⊃dpn : [ DP ] ⊃ dpn Px
 dp⊃dpn = axiom 0 (¬Px ∷ [])
@@ -236,18 +285,18 @@ gmp⊃wgmp = arrowintro (¬∀x Px) (macro-dni (arrowelim
             (axiom 0 (Px ∷ []))
             (assume (¬∀x Px))))
 
-dgp⊃wlem : [ DGP ] ⊃ wlem Q
-dgp⊃wlem = disjelim (axiom 0 (Q ∷ ¬Q ∷ []))
-            (disjintro₁ ¬¬Q (arrowintro Q (arrowelim
-             (arrowelim (assume (Q ⇒ ¬Q)) (assume Q))
-             (assume Q))))
-            (disjintro₂ ¬Q (arrowintro ¬Q (arrowelim (assume ¬Q)
-             (arrowelim (assume (¬Q ⇒ Q)) (assume ¬Q)))))
+dgp⊃wlem : [ DGP ] ⊃ wlem A
+dgp⊃wlem = disjelim (axiom 0 (A ∷ ¬A ∷ []))
+            (disjintro₁ ¬¬A (arrowintro A (arrowelim
+             (arrowelim (assume (A ⇒ ¬A)) (assume A))
+             (assume A))))
+            (disjintro₂ ¬A (arrowintro ¬A (arrowelim (assume ¬A)
+             (arrowelim (assume (¬A ⇒ A)) (assume ¬A)))))
 
-glpoa⊃lem : [ GLPOA ] ⊃ lem Q
-glpoa⊃lem = disjelim (axiom 0 (Q ∷ []))
-             (disjintro₁ ¬Q (univelim x (assume (∀x Q))))
-             (disjintro₂ Q (existelim (assume (∃x ¬Q)) (assume ¬Q)))
+glpoa⊃lem : [ GLPOA ] ⊃ lem A
+glpoa⊃lem = disjelim (axiom 0 (A ∷ []))
+             (disjintro₁ ¬A (univelim x (assume (∀x A))))
+             (disjintro₂ A (existelim (assume (∃x ¬A)) (assume ¬A)))
 
 glpoa⊃gmp : [ GLPOA ] ⊃ gmp Px
 glpoa⊃gmp = arrowintro (¬∀x Px) (disjelim (axiom 0 (Px ∷ []))
@@ -255,11 +304,11 @@ glpoa⊃gmp = arrowintro (¬∀x Px) (disjelim (axiom 0 (Px ∷ []))
               (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
              (assume (∃x ¬Px)))
 
-dp⊃ud : [ DP ] ⊃ ud Px Q
-dp⊃ud = arrowintro (∀x (Px ∨ Q)) (existelim (axiom 0 (Px ∷ []))
-         (disjelim (univelim y (assume (∀x (Px ∨ Q))))
-          (disjintro₁ Q (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
-          (disjintro₂ (∀x Px) (assume Q))))
+dp⊃ud : [ DP ] ⊃ ud Px A
+dp⊃ud = arrowintro (∀x (Px ∨ A)) (existelim (axiom 0 (Px ∷ []))
+         (disjelim (univelim y (assume (∀x (Px ∨ A))))
+          (disjintro₁ A (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
+          (disjintro₂ (∀x Px) (assume A))))
 
 dp⊃gmp : [ DP ] ⊃ gmp Px
 dp⊃gmp = arrowintro (¬∀x Px) (existelim (axiom 0 (Px ∷ []))
