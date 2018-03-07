@@ -59,17 +59,35 @@ pax9 = pax9fv xvar
 -- Axiom required in minimal logic for collapsing arithmetic absurdities
 paxm = nullaryscheme "Pmini" (∀x (psuc x ≈ pzero ⇒ psuc pzero ≈ pzero))
 
+PEANO = pax1 ∷ pax2 ∷ pax3 ∷ pax4 ∷ pax5 ∷ pax6 ∷ pax7 ∷ pax8 ∷ pax9 ∷ []
 
-zero∨suc : pax9 ∷ pax2 ∷ pax7 ∷ [] , [] ⊢ (∀x (x ≈ pzero ∨ ∃y (x ≈ psuc y)))
+zero∨suc : PEANO , [] ⊢ (∀x (x ≈ pzero ∨ ∃y (x ≈ psuc y)))
 zero∨suc = arrowelim
-            (arrowelim (axiom 0 (x ≈ pzero ∨ ∃y (x ≈ psuc y) ∷ []))
+            (arrowelim (axiom 8 (x ≈ pzero ∨ ∃y (x ≈ psuc y) ∷ []))
              (disjintro₁ (∃y (pzero ≈ psuc y)) (univelim pzero (axiom 1 []))))
             (univintro xvar (arrowintro (x ≈ pzero ∨ ∃y (x ≈ psuc y))
              (disjelim (assume (x ≈ pzero ∨ ∃y (x ≈ psuc y)))
               (disjintro₂ (psuc x ≈ pzero) (existintro pzero yvar
                (arrowelim (univelim pzero
-                (univelim x (axiom 2 []))) (assume (x ≈ pzero)))))
+                (univelim x (axiom 6 []))) (assume (x ≈ pzero)))))
               (disjintro₂ (psuc x ≈ pzero) (existelim (assume (∃y (x ≈ psuc y)))
                (existintro (psuc y) yvar (arrowelim
-                (univelim (psuc y) (univelim x (axiom 2 [])))
+                (univelim (psuc y) (univelim x (axiom 6 [])))
                 (assume (x ≈ psuc y)))))))))
+
+
+lift : ∀{Ω Γ α} → (ω : Scheme) → Ω , Γ ⊢ α → (ω ∷ Ω) , Γ ⊢ α
+lift ω (axiom k xs) = axiom (suc k) xs
+lift ω (assume α) = assume α
+lift ω (arrowintro α T) = arrowintro α (lift ω T)
+lift ω (arrowelim T₁ T₂) = arrowelim (lift ω T₁) (lift ω T₂)
+lift ω (conjintro T₁ T₂) = conjintro (lift ω T₁) (lift ω T₂)
+lift ω (conjelim T₁ T₂) = conjelim (lift ω T₁) (lift ω T₂)
+lift ω (disjintro₁ β T) = disjintro₁ β (lift ω T)
+lift ω (disjintro₂ α T) = disjintro₂ α (lift ω T)
+lift ω (disjelim T₁ T₂ T₃) = disjelim (lift ω T₁) (lift ω T₂) (lift ω T₃)
+lift ω (univintro v {pf}  T) = univintro v {pf} (lift ω T)
+lift ω (univelim r T) = univelim r (lift ω T)
+lift ω (existintro r v T) = existintro r v (lift ω T)
+lift ω (existelim {_} {_} {_} {_} {_} {_} {pf} T₁ T₂)
+      = existelim {_} {_} {_} {_} {_} {_} {pf} (lift ω T₁) (lift ω T₂)

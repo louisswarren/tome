@@ -321,4 +321,3 @@ glpoa⊃wgmp = disjelim (axiom 0 (Px ∷ []))
                (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
               (arrowintro (¬∀x Px) (macro-dni (assume (∃x ¬Px))))
 
-
