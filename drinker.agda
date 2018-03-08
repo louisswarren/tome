@@ -126,10 +126,10 @@ Dx  = D x
 -- Use this to apply predicative schemes to propositional problems
 fin∀ fin∃ : Formula → Formula → Formula
 fin∀ Φ Ψ = ∀x ((Dx ⇒ Φ) ∧ (¬Dx ⇒ Ψ)) ⇒ (Φ ∧ Ψ)
-FIN∀ = binaryscheme "FIN\\forall" fin∀
+FIN∀ = binaryscheme "FIN$\\forall$" fin∀
 
 fin∃ Φ Ψ = ∃x ((Dx ⇒ Φ) ∧ (¬Dx ⇒ Ψ)) ⇒ (Φ ∨ Ψ)
-FIN∃ = binaryscheme "FIN\\exists" fin∃
+FIN∃ = binaryscheme "FIN$\\exists$" fin∃
 
 
 tt-fin∀ : [TT] ⊃ (fin∀ A B)
