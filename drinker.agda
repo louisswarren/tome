@@ -124,7 +124,7 @@ Dy  = D y
 ¬Dy = ¬ Dy
 [TT] : List Scheme
 [TT] = nullaryscheme "D0" (Dt⁰)
-     ∷ nullaryscheme "\\Tneg{D1}" (¬Dt¹)
+     ∷ nullaryscheme "$\\Tneg{D1}$" (¬Dt¹)
      ∷ nullaryscheme "D" (∀x (D x ∨ ¬ (D x)))
      ∷ []
 
@@ -405,4 +405,3 @@ dp,efq,tt⊃dgp = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ B) ⇒ ∀x ((Dx ⇒ A) ∧ 
                              (arrowelim (assume ¬Dy) (assume Dy))))
                            (arrowintro ¬Dy (assume B)))))
                         (arrowelim (assume (Dt⁰ ⇒ A)) (axiom 2 []))))))
-

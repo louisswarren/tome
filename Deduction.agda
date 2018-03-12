@@ -83,6 +83,8 @@ data _,_⊢_ where
 _⊃_ : List Scheme → Formula → Set
 Ω ⊃ Φ = Ω , [] ⊢ Φ
 
+infixr 1 _⊃_
+
 ⊢ : Formula → Set
 ⊢ α = ∀{Ω} → Ω , [] ⊢ α
 
