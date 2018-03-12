@@ -12,10 +12,14 @@ open import sugar
 -- Without loss of generality, assume that schemes are applied only to formulae
 -- in which the schemes' quantifiers are not free.
 
-LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP : Scheme
+EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP : Scheme
 FIN∀ FIN∃ : Scheme
 
 
+efq : Formula → Formula
+efq Φ = ⊥ ⇒ Φ
+
+EFQ = unaryscheme "EFQ" efq
 
 
 lem wlem : Formula → Formula
@@ -116,6 +120,8 @@ Dt¹ = D t¹
 ¬Dt¹ = ¬ Dt¹
 Dx  = D x
 ¬Dx = ¬ Dx
+Dy  = D y
+¬Dy = ¬ Dy
 [TT] : List Scheme
 [TT] = nullaryscheme "D0" (Dt⁰)
      ∷ nullaryscheme "\\Tneg{D1}" (¬Dt¹)
@@ -155,7 +161,8 @@ tt-fin∃ = arrowintro (∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))
               (disjintro₁ B (arrowelim (assume (Dx ⇒ A)) (assume Dx)))
               (disjintro₂ A (arrowelim (assume (¬Dx ⇒ B)) (assume ¬Dx))))))
 
-[FIN] = fin∀ ∷ fin∃ ∷ []
+[FIN] : List Scheme
+[FIN] = FIN∀ ∷ FIN∃ ∷ []
 
 -- Lemmae and macros
 
@@ -164,7 +171,8 @@ tt-fin∃ = arrowintro (∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))
 macro-dni : ∀{α Ω Γ} → Ω , Γ ⊢ α → Ω , _ ⊢ (¬¬ α)
 macro-dni {α} T = arrowintro (¬ α) (arrowelim (assume (¬ α)) T)
 
-
+macro-efq-helper : ∀{ω Ω Γ} → ∀ α → ω ∷ EFQ ∷ Ω , Γ ⊢ ⊥ → ω ∷ EFQ ∷ Ω , Γ ⊢ α
+macro-efq-helper α T = arrowelim (axiom 1 (α ∷ [])) T
 
 -- macro-contra : ∀{α β Ω Γ} → Ω , Γ ⊢ α ⇒ β → Ω , _ ⊢ (¬ β) ⇒ (¬ α)
 -- macro-contra {α} {β} T = arrowintro (¬ β) (arrowintro α
@@ -373,5 +381,28 @@ glpoa⊃wgmp = disjelim (axiom 0 (Px ∷ []))
               (arrowintro (¬∀x Px) (macro-dni (assume (∃x ¬Px))))
 
 
-dp,fin⊃dgp : (DP ∷ [FIN]) ⊃ dgp A B
-dp,fin⊃dgp = ?
+dp,efq,tt⊃dgp : DP ∷ EFQ ∷ [TT] ⊃ dgp A B
+dp,efq,tt⊃dgp = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ B) ⇒ ∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B))
+                in  existelim (axiom 0 ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ∷ []))
+                     (disjelim (univelim y (axiom 4 []))
+                      (disjintro₁ (B ⇒ A) (arrowintro A
+                       (conjelim
+                        (univelim t¹
+                         (arrowelim (assume Φ)
+                          (conjintro
+                           (arrowintro Dy (assume A))
+                           (arrowintro ¬Dy
+                            (macro-efq-helper B
+                             (arrowelim (assume ¬Dy) (assume Dy)))))))
+                        (arrowelim (assume (¬Dt¹ ⇒ B)) (axiom 3 [])))))
+                      (disjintro₂ (A ⇒ B) (arrowintro B
+                       (conjelim
+                        (univelim t⁰
+                         (arrowelim (assume Φ)
+                          (conjintro
+                           (arrowintro Dy
+                            (macro-efq-helper A
+                             (arrowelim (assume ¬Dy) (assume Dy))))
+                           (arrowintro ¬Dy (assume B)))))
+                        (arrowelim (assume (Dt⁰ ⇒ A)) (axiom 2 []))))))
+
