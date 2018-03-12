@@ -140,3 +140,30 @@ dtot {α} o (existelim d₁ d₂)   = binaryinf  α "\\Texistelim"  (dtot o d₁
 
 texify : ∀{Γ α} → {Ω : List Scheme} → Ω , Γ ⊢ α → String
 texify {Γ} d = texifytree 0 (dtot Γ d)
+
+
+quicktexify : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+quicktexify d = "\\documentclass[landscape]{article}\n"
+             >> "\\usepackage[a4paper,margin=0.5in,landscape]{geometry}\n"
+             >> "\\newcommand{\\Tarrowintro}{$\\rightarrow$I}\n"
+             >> "\\newcommand{\\Tarrowelim}{$\\rightarrow$E}\n"
+             >> "\\newcommand{\\Tconjintro}{$\\land$I}\n"
+             >> "\\newcommand{\\Tconjelim}{$\\land$E}\n"
+             >> "\\newcommand{\\Tdisjintro}{$\\lor$I}\n"
+             >> "\\newcommand{\\Tdisjelim}{$\\lor$E}\n"
+             >> "\\newcommand{\\Tunivintro}{$\\forall$I}\n"
+             >> "\\newcommand{\\Tunivelim}{$\\forall$E}\n"
+             >> "\\newcommand{\\Texistintro}{$\\exists$I}\n"
+             >> "\\newcommand{\\Texistelim}{$\\exists$E}\n"
+             >> "\\newcommand{\\Tarrow}{\\rightarrow}\n"
+             >> "\\newcommand{\\Tand}{\\land}\n"
+             >> "\\newcommand{\\Tor}{\\lor}\n"
+             >> "\\newcommand{\\Tforall}{\\forall}\n"
+             >> "\\newcommand{\\Texists}{\\exists}\n"
+             >> "\\newcommand{\\Tneg}{\\lnot}\n"
+             >> "\\usepackage{bussproofs}\n"
+             >> "\\begin{document}\n"
+             >> "\\begin{prooftree}\n"
+             >> texify d
+             >> "\\end{prooftree}\n"
+             >> "\\end{document}\n"
