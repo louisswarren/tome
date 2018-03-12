@@ -155,6 +155,8 @@ tt-fin∃ = arrowintro (∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))
               (disjintro₁ B (arrowelim (assume (Dx ⇒ A)) (assume Dx)))
               (disjintro₂ A (arrowelim (assume (¬Dx ⇒ B)) (assume ¬Dx))))))
 
+[FIN] = fin∀ ∷ fin∃ ∷ []
+
 -- Lemmae and macros
 
 -- A macro cannot (with the current system) be proved discharge assumptions in
@@ -370,3 +372,6 @@ glpoa⊃wgmp = disjelim (axiom 0 (Px ∷ []))
                (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
               (arrowintro (¬∀x Px) (macro-dni (assume (∃x ¬Px))))
 
+
+dp,fin⊃dgp : (DP ∷ [FIN]) ⊃ dgp A B
+dp,fin⊃dgp = ?
