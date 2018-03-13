@@ -440,26 +440,26 @@ dp,tt⊃wlem = let Φ = (Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A) ⇒ ∀x ((Dx ⇒ ¬¬
                       (arrowelim (assume (Dt⁰ ⇒ ¬¬A)) (axiom 1 []))
                       (assume ¬A))))))
 
-he',efq,tt⊃dgp : HE' ∷ EFQ ∷ [TT] , _ ⊢ dgp A B
-he',efq,tt⊃dgp = let Φ = ∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ⇒ ((Dy ⇒ A) ∧ (¬Dy ⇒ B)))
+he,efq,tt⊃dgp : HE ∷ EFQ ∷ [TT] ⊃ dgp A B
+he,efq,tt⊃dgp = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) ∧ (¬Dy ⇒ B))
                  in  existelim (axiom 0 ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ∷ []))
                       (disjelim (univelim y (axiom 4 []))
                        (disjintro₂ (A ⇒ B) (arrowintro B
                         (conjelim
-                         (arrowelim
-                          (univelim t¹ (assume Φ))
-                          (conjintro
-                           (arrowintro Dt¹ (macro-efq-helper A
-                            (arrowelim (axiom 3 []) (assume Dt¹))))
-                           (arrowintro ¬Dt¹ (assume B))))
+                         (arrowelim (assume Φ)
+                          (existintro t¹ xvar
+                           (conjintro
+                            (arrowintro Dt¹ (macro-efq-helper A
+                             (arrowelim (axiom 3 []) (assume Dt¹))))
+                            (arrowintro ¬Dt¹ (assume B)))))
                          (arrowelim (assume (Dy ⇒ A)) (assume Dy)))))
                        (disjintro₁ (B ⇒ A) (arrowintro A
                         (conjelim
-                         (arrowelim (univelim t⁰ (assume Φ))
-                          (conjintro
-                           (arrowintro Dt⁰ (assume A))
-                           (arrowintro ¬Dt⁰ (macro-efq-helper B (arrowelim
-                            (assume ¬Dt⁰) (axiom 2 []))))))
+                         (arrowelim (assume Φ)
+                          (existintro t⁰ xvar
+                           (conjintro
+                            (arrowintro Dt⁰ (assume A))
+                            (arrowintro ¬Dt⁰ (macro-efq-helper B (arrowelim
+                             (assume ¬Dt⁰) (axiom 2 [])))))))
                          (arrowelim (assume (¬Dy ⇒ B)) (assume ¬Dy))))))
 
-p = quicktexify he',efq,tt⊃dgp 
