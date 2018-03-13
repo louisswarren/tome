@@ -405,3 +405,20 @@ dp,efq,tt⊃dgp = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ B) ⇒ ∀x ((Dx ⇒ A) ∧ 
                              (arrowelim (assume ¬Dy) (assume Dy))))
                            (arrowintro ¬Dy (assume B)))))
                         (arrowelim (assume (Dt⁰ ⇒ A)) (axiom 2 []))))))
+
+dp,tt⊃wlem : DP ∷ [TT] ⊃ wlem A
+dp,tt⊃wlem = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ ¬A) ⇒ ∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ ¬A))
+             in  existelim (axiom 0 ((Dx ⇒ A) ∧ (¬Dx ⇒ ¬A) ∷ []))
+                  (disjelim (univelim y (axiom 3 []))
+                   (disjintro₁ ¬¬A (arrowintro A
+                    (conjelim
+                     (univelim t¹
+                      (arrowelim (assume Φ)
+                       (conjintro
+                        (arrowintro Dy (assume A))
+                         (arrowintro ¬Dy (arrowintro A
+                          (arrowelim (assume ¬Dy) (assume Dy)))))))
+                     (arrowelim
+                      (arrowelim (assume (¬Dt¹ ⇒ ¬A)) (axiom 2 []))
+                      (assume A)))))
+                   {!   !})
