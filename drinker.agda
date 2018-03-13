@@ -12,7 +12,7 @@ open import sugar
 -- Without loss of generality, assume that schemes are applied only to formulae
 -- in which the schemes' quantifiers are not free.
 
-EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP : Scheme
+EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DP' HE' DPN HEN DNSU DNSE UD IP : Scheme
 FIN∀ FIN∃ : Scheme
 
 
@@ -51,14 +51,18 @@ WGMP  = unaryscheme "WGMP"  wgmp
 
 
 
-dp he dpn hen : Formula → Formula
+dp he dp' he' dpn hen : Formula → Formula
 dp  Φx = ∃y(Φy ⇒ ∀x Φx)                                  where Φy = Φx [ x / y ]
 he  Φx = ∃y(∃x Φx ⇒ Φy)                                  where Φy = Φx [ x / y ]
+dp' Φx = ∃y(∀x(Φy ⇒ Φx))                                 where Φy = Φx [ x / y ]
+he' Φx = ∃y(∀x(Φx ⇒ Φy))                                 where Φy = Φx [ x / y ]
 dpn Φx = dp (¬ Φx)
 hen Φx = he (¬ Φx)
 
 DP  = unaryscheme "DP"  dp
 HE  = unaryscheme "HE"  he
+DP' = unaryscheme "DP'" dp'
+HE' = unaryscheme "HE'" he'
 DPN = unaryscheme "DPN" dpn
 HEN = unaryscheme "HEN" hen
 
@@ -72,7 +76,9 @@ DNSU = unaryscheme "DNSU" dnsu
 DNSE = unaryscheme "DNSE" dnse
 
 
-
+-- BE VERY CAREFUL ABOUT USING THESE
+-- x must not be free in Ψ
+-- This restriction has not been added for simplicity. Perhaps add it later.
 ud ip : Formula → Formula → Formula
 ud Φx Ψ = ∀x (Φx ∨ Ψ) ⇒ (∀x Φx ∨ Ψ)
 ip Φx Ψ = (Ψ ⇒ ∃x Φx) ⇒ ∃x(Ψ ⇒ Φx)
@@ -117,6 +123,7 @@ D : Term → Formula
 D t = atom (mkrel 1 "D") (t ∷ [])
 Dt⁰ = D t⁰
 Dt¹ = D t¹
+¬Dt⁰ = ¬ Dt⁰
 ¬Dt¹ = ¬ Dt¹
 Dx  = D x
 ¬Dx = ¬ Dx
@@ -433,3 +440,26 @@ dp,tt⊃wlem = let Φ = (Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A) ⇒ ∀x ((Dx ⇒ ¬¬
                       (arrowelim (assume (Dt⁰ ⇒ ¬¬A)) (axiom 1 []))
                       (assume ¬A))))))
 
+he',efq,tt⊃dgp : HE' ∷ EFQ ∷ [TT] , _ ⊢ dgp A B
+he',efq,tt⊃dgp = let Φ = ∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ⇒ ((Dy ⇒ A) ∧ (¬Dy ⇒ B)))
+                 in  existelim (axiom 0 ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ∷ []))
+                      (disjelim (univelim y (axiom 4 []))
+                       (disjintro₂ (A ⇒ B) (arrowintro B
+                        (conjelim
+                         (arrowelim
+                          (univelim t¹ (assume Φ))
+                          (conjintro
+                           (arrowintro Dt¹ (macro-efq-helper A
+                            (arrowelim (axiom 3 []) (assume Dt¹))))
+                           (arrowintro ¬Dt¹ (assume B))))
+                         (arrowelim (assume (Dy ⇒ A)) (assume Dy)))))
+                       (disjintro₁ (B ⇒ A) (arrowintro A
+                        (conjelim
+                         (arrowelim (univelim t⁰ (assume Φ))
+                          (conjintro
+                           (arrowintro Dt⁰ (assume A))
+                           (arrowintro ¬Dt⁰ (macro-efq-helper B (arrowelim
+                            (assume ¬Dt⁰) (axiom 2 []))))))
+                         (arrowelim (assume (¬Dy ⇒ B)) (assume ¬Dy))))))
+
+p = quicktexify he',efq,tt⊃dgp 
