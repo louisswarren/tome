@@ -757,6 +757,128 @@ we have HE, EFQ, TT $\supset$ DGP:
 	\TrinaryInfC{$\left(A \Tarrow B\right) \Tor \left(B \Tarrow A\right)$}
 \RightLabel{\Texistelim}
 \BinaryInfC{$\left(A \Tarrow B\right) \Tor \left(B \Tarrow A\right)$}
+\end{prooftree}
+
+\clearpage
+
+\section{HE, TT $\supset$ WLEM}
+\vspace{1cm}
+Where T1 is the tree
+\vspace{-\baselineskip}
+\begin{prooftree}
+		\AxiomC{}
+		\UnaryInfC{$\Texists_{x} \left(\left(D{x} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{x}} \Tarrow \Tneg{A}\right)\right) \Tarrow \left(\left(D{y} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{y}} \Tarrow \Tneg{A}\right)\right)$}
+			\AxiomC{}
+			\RightLabel{$\Tneg{D1}$}
+			\UnaryInfC{$\Tneg{D{1}}$}
+				\AxiomC{}
+				\UnaryInfC{$D{1}$}
+			\RightLabel{\Tarrowelim}
+			\BinaryInfC{$\bot$}
+			\RightLabel{\Tarrowintro}
+			\UnaryInfC{$\Tneg{\Tneg{A}}$}
+			\RightLabel{\Tarrowintro}
+			\UnaryInfC{$D{1} \Tarrow \Tneg{\Tneg{A}}$}
+				\AxiomC{}
+				\UnaryInfC{$\Tneg{A}$}
+				\RightLabel{\Tarrowintro}
+				\UnaryInfC{$\Tneg{D{1}} \Tarrow \Tneg{A}$}
+			\RightLabel{\Tconjintro}
+			\BinaryInfC{$\left(D{1} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{1}} \Tarrow \Tneg{A}\right)$}
+			\RightLabel{\Texistintro}
+			\UnaryInfC{$\Texists_{x} \left(\left(D{x} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{x}} \Tarrow \Tneg{A}\right)\right)$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\left(D{y} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{y}} \Tarrow \Tneg{A}\right)$}
+			\AxiomC{}
+			\UnaryInfC{$D{y} \Tarrow \Tneg{\Tneg{A}}$}
+%				\AxiomC{}
+%				\UnaryInfC{$D{y}$}
+				\AxiomC{$D{y}$}
+			\RightLabel{\Tarrowelim}
+			\BinaryInfC{$\Tneg{\Tneg{A}}$}
+				\AxiomC{}
+				\UnaryInfC{$\Tneg{A}$}
+			\RightLabel{\Tarrowelim}
+			\BinaryInfC{$\bot$}
+		\RightLabel{\Tconjelim}
+		\BinaryInfC{$\bot$}
+		\RightLabel{\Tarrowintro}
+		\UnaryInfC{$\Tneg{\Tneg{A}}$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{$\Tneg{A} \Tor \Tneg{\Tneg{A}}$}
+\end{prooftree}
+\vspace{1cm}
+and T2 is the tree
+\vspace{-\baselineskip}
+\begin{prooftree}
+			\AxiomC{}
+			\UnaryInfC{$\Texists_{x} \left(\left(D{x} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{x}} \Tarrow \Tneg{A}\right)\right) \Tarrow \left(\left(D{y} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{y}} \Tarrow \Tneg{A}\right)\right)$}
+				\AxiomC{}
+				\UnaryInfC{$\Tneg{A}$}
+					\AxiomC{}
+					\UnaryInfC{$A$}
+				\RightLabel{\Tarrowelim}
+				\BinaryInfC{$\bot$}
+				\RightLabel{\Tarrowintro}
+				\UnaryInfC{$\Tneg{\Tneg{A}}$}
+				\RightLabel{\Tarrowintro}
+				\UnaryInfC{$D{0} \Tarrow \Tneg{\Tneg{A}}$}
+					\AxiomC{}
+					\UnaryInfC{$\Tneg{D{0}}$}
+						\AxiomC{}
+						\RightLabel{D0}
+						\UnaryInfC{$D{0}$}
+					\RightLabel{\Tarrowelim}
+					\BinaryInfC{$\bot$}
+					\RightLabel{\Tarrowintro}
+					\UnaryInfC{$\Tneg{A}$}
+					\RightLabel{\Tarrowintro}
+					\UnaryInfC{$\Tneg{D{0}} \Tarrow \Tneg{A}$}
+				\RightLabel{\Tconjintro}
+				\BinaryInfC{$\left(D{0} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{0}} \Tarrow \Tneg{A}\right)$}
+				\RightLabel{\Texistintro}
+				\UnaryInfC{$\Texists_{x} \left(\left(D{x} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{x}} \Tarrow \Tneg{A}\right)\right)$}
+			\RightLabel{\Tarrowelim}
+			\BinaryInfC{$\left(D{y} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{y}} \Tarrow \Tneg{A}\right)$}
+				\AxiomC{}
+				\UnaryInfC{$\Tneg{D{y}} \Tarrow \Tneg{A}$}
+%					\AxiomC{}
+%					\UnaryInfC{$\Tneg{D{y}}$}
+					\AxiomC{$\Tneg{D{y}}$}
+				\RightLabel{\Tarrowelim}
+				\BinaryInfC{$\Tneg{A}$}
+					\AxiomC{}
+					\UnaryInfC{$A$}
+				\RightLabel{\Tarrowelim}
+				\BinaryInfC{$\bot$}
+			\RightLabel{\Tconjelim}
+			\BinaryInfC{$\bot$}
+			\RightLabel{\Tarrowintro}
+			\UnaryInfC{$\Tneg{A}$}
+			\RightLabel{\Tdisjintro}
+			\UnaryInfC{$\Tneg{A} \Tor \Tneg{\Tneg{A}}$}
+\end{prooftree}
+\vspace{1cm}
+we have HE, TT $\supset$ WLEM:
+\vspace{-\baselineskip}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{HE}
+\UnaryInfC{$\Texists_{y} \left(\Texists_{x} \left(\left(D{x} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{x}} \Tarrow \Tneg{A}\right)\right) \Tarrow \left(\left(D{y} \Tarrow \Tneg{\Tneg{A}}\right) \Tand \left(\Tneg{D{y}} \Tarrow \Tneg{A}\right)\right)\right)$}
+	\AxiomC{}
+	\RightLabel{D}
+	\UnaryInfC{$\Tforall_{x} \left(D{x} \Tor \Tneg{D{x}}\right)$}
+	\RightLabel{\Tunivelim}
+	\UnaryInfC{$D{y} \Tor \Tneg{D{y}}$}
+		\AxiomC{}
+		\UnaryInfC{T1}
+			\AxiomC{}
+			\UnaryInfC{T2}
+	\RightLabel{\Tdisjelim}
+	\TrinaryInfC{$\Tneg{A} \Tor \Tneg{\Tneg{A}}$}
+\RightLabel{\Texistelim}
+\BinaryInfC{$\Tneg{A} \Tor \Tneg{\Tneg{A}}$}
 
 \end{prooftree}
 \end{document}
+
