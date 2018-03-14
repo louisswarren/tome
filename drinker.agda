@@ -463,3 +463,32 @@ he,efq,tt⊃dgp = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) �
                              (assume ¬Dt⁰) (axiom 2 [])))))))
                          (arrowelim (assume (¬Dy ⇒ B)) (assume ¬Dy))))))
 
+he,tt⊃wlem : HE ∷ [TT] ⊃ wlem A
+he,tt⊃wlem = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A))
+             in  existelim (axiom 0 ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A) ∷ []))
+                  (disjelim (univelim y (axiom 3 []))
+                   (disjintro₂ ¬A (arrowintro ¬A
+                    (conjelim
+                     (arrowelim (assume Φ)
+                      (existintro t¹ xvar
+                       (conjintro
+                        (arrowintro Dt¹
+                         (arrowintro ¬A (arrowelim (axiom 2 []) (assume Dt¹))))
+                        (arrowintro ¬Dt¹ (assume ¬A)))))
+                     (arrowelim
+                      (arrowelim
+                       (assume (Dy ⇒ ¬¬A))
+                       (assume Dy))
+                      (assume ¬A)))))
+                   (disjintro₁ ¬¬A (arrowintro A
+                    (conjelim
+                     (arrowelim (assume Φ)
+                      (existintro t⁰ xvar
+                       (conjintro
+                        (arrowintro Dt⁰ (macro-dni (assume A)))
+                        (arrowintro ¬Dt⁰
+                         (arrowintro A
+                          (arrowelim (assume ¬Dt⁰) (axiom 1 [])))))))
+                     (arrowelim
+                      (arrowelim (assume (¬Dy ⇒ ¬A)) (assume ¬Dy))
+                      (assume A))))))
