@@ -492,3 +492,30 @@ he,tt⊃wlem = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬
                      (arrowelim
                       (arrowelim (assume (¬Dy ⇒ ¬A)) (assume ¬Dy))
                       (assume A))))))
+
+gmp,tt⊃wlem : GMP ∷ [TT] ⊃ wlem A
+gmp,tt⊃wlem = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                  Ψ = ¬((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+              in existelim
+                  (arrowelim
+                   (axiom 0 ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A) ∷ []))
+                   (arrowintro Φ (arrowelim
+                    (conjelim
+                     (univelim t⁰ (assume Φ))
+                     (arrowelim (assume (Dt⁰ ⇒ ¬¬A)) (axiom 1 [])))
+                    (conjelim
+                     (univelim t¹ (assume Φ))
+                     (arrowelim (assume (¬Dt¹ ⇒ ¬A)) (axiom 2 []))))))
+                  (disjelim (univelim x (axiom 3 []))
+                   (disjintro₁ ¬¬A (arrowintro A
+                    (arrowelim (assume Ψ)
+                     (conjintro
+                      (arrowintro Dx (macro-dni (assume A)))
+                      (arrowintro ¬Dx (arrowintro A
+                       (arrowelim (assume ¬Dx) (assume Dx))))))))
+                   (disjintro₂ ¬A (arrowintro ¬A
+                    (arrowelim (assume Ψ)
+                     (conjintro
+                      (arrowintro Dx (arrowintro ¬A
+                       (arrowelim (assume ¬Dx) (assume Dx))))
+                      (arrowintro ¬Dx (assume ¬A)))))))
