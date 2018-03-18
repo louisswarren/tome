@@ -6,41 +6,43 @@ open import Deduction
 
 open import common
 
-record Branch (A : Set) : Set where
-  constructor branch
-  field
-    stem : A
-    leaves : List A
+module hierarchy where
 
-_∈ℕ_ : ℕ → List ℕ → Bool
-a ∈ℕ [] = false
-a ∈ℕ (x ∷ xs) with (a == x)
-...            | false = a ∈ℕ xs
-...            | true = true
+module Hierarchy (A : Set)(_≈_ : A → A → Bool) where
+  record Branch (A : Set) : Set where
+    constructor branch
+    field
+      stem : A
+      leaves : List A
 
-_⊂ℕ_ : List ℕ → List ℕ → Bool
-xs ⊂ℕ ys = all (λ n → n ∈ℕ ys) xs
+  _∈A_ : A → List A → Bool
+  a ∈A [] = false
+  a ∈A (x ∷ xs) with (a ≈ x)
+  ...            | false = a ∈A xs
+  ...            | true = true
 
-explode : Branch ℕ → List ℕ → List ℕ
-explode (branch stem leaves) xs with (leaves ⊂ℕ xs)
-...                             | false = []
-...                             | true = stem ∷ []
+  _⊂A_ : List A → List A → Bool
+  xs ⊂A ys = all (λ n → n ∈A ys) xs
 
-explodeall : List (Branch ℕ) → List ℕ → List ℕ
-explodeall [] xs = xs
-explodeall (branch stem _ ∷ bs) xs  with stem ∈ℕ xs
-explodeall (b@(branch _ _) ∷ bs) xs | false = explode b xs ++ explodeall bs xs
-explodeall (branch stem _ ∷ bs) xs  | true = explodeall bs xs
+  explode : Branch A → List A → List A
+  explode (branch stem leaves) xs with (leaves ⊂A xs)
+  ...                             | false = []
+  ...                             | true = stem ∷ []
 
-{-# TERMINATING #-}
-clhelp : List (Branch ℕ) → List ℕ → List ℕ → List ℕ
-clhelp bs xs exs with (len xs < len exs)
-clhelp bs xs exs | false = xs
-clhelp bs xs exs | true = clhelp bs exs (explodeall bs exs)
+  explodeall : List (Branch A) → List A → List A
+  explodeall [] xs = xs
+  explodeall (branch stem _ ∷ bs) xs  with stem ∈A xs
+  explodeall (b@(branch _ _) ∷ bs) xs | false = explode b xs ++ explodeall bs xs
+  explodeall (branch stem _ ∷ bs) xs  | true = explodeall bs xs
 
-closure : List (Branch ℕ) → List ℕ → List ℕ
-closure bs xs = clhelp bs xs (explodeall bs xs)
+  {-# TERMINATING #-}
+  clhelp : List (Branch A) → List A → List A → List A
+  clhelp bs xs exs with (len xs < len exs)
+  clhelp bs xs exs | false = xs
+  clhelp bs xs exs | true = clhelp bs exs (explodeall bs exs)
 
+  closure : List (Branch A) → List A → List A
+  closure bs xs = clhelp bs xs (explodeall bs xs)
 
 -- proofs : List (Branch ℕ)
 -- proofs =
