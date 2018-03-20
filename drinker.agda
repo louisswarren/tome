@@ -76,12 +76,13 @@ DNSU = unaryscheme "DNSU" dnsu
 DNSE = unaryscheme "DNSE" dnse
 
 
--- BE VERY CAREFUL ABOUT USING THESE
--- x must not be free in Ψ
--- This restriction has not been added for simplicity. Perhaps add it later.
+-- These are usually stated with Ψ instead of ∃x Ψ, but this is a simple way of
+-- adding bounded variable requirements as x is certainly not free in ∃x Ψ.
+-- If x is in fact not free in Ψ, then the existential can be eliminated
+-- separately.
 ud ip : Formula → Formula → Formula
-ud Φx Ψ = ∀x (Φx ∨ Ψ) ⇒ (∀x Φx ∨ Ψ)
-ip Φx Ψ = (Ψ ⇒ ∃x Φx) ⇒ ∃x(Ψ ⇒ Φx)
+ud Φx Ψ = ∀x (Φx ∨ (∃x Ψ)) ⇒ (∀x Φx ∨ ∃x Ψ)
+ip Φx Ψ = (∃x Ψ ⇒ ∃x Φx) ⇒ ∃x(∃x Ψ ⇒ Φx)
 
 UD = binaryscheme "UD" ud
 IP = binaryscheme "IP" ip
@@ -227,15 +228,15 @@ macro-∀sub {v} {α} w T {pf} = arrowelim
 
 -- Equivalences
 he⊃ip : [ HE ] ⊃ ip Px A
-he⊃ip = arrowintro (A ⇒ ∃x Px) (existelim (axiom 0 (Px ∷ []))
-         (existintro y xvar (arrowintro A
+he⊃ip = arrowintro (∃x A ⇒ ∃x Px) (existelim (axiom 0 (Px ∷ []))
+         (existintro y xvar (arrowintro (∃x A)
           (arrowelim (assume (∃x Px ⇒ Py))
-           (arrowelim (assume (A ⇒ ∃x Px)) (assume A))))))
+           (arrowelim (assume (∃x A ⇒ ∃x Px)) (assume (∃x A)))))))
 
 ip⊃he : [ IP ] ⊃ he Px
 ip⊃he = existelim
          (arrowelim
-          (axiom 0 (Px ∷ ∃x Px ∷ []))
+          (axiom 0 (Px ∷ Px ∷ []))
           (arrowintro (∃x Px) (assume (∃x Px))))
          (existintro x yvar (assume (∃x Px ⇒ Px)))
 
@@ -322,10 +323,10 @@ glpoa⊃gmp = arrowintro (¬∀x Px) (disjelim (axiom 0 (Px ∷ []))
              (assume (∃x ¬Px)))
 
 dp⊃ud : [ DP ] ⊃ ud Px A
-dp⊃ud = arrowintro (∀x (Px ∨ A)) (existelim (axiom 0 (Px ∷ []))
-         (disjelim (univelim y (assume (∀x (Px ∨ A))))
-          (disjintro₁ A (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
-          (disjintro₂ (∀x Px) (assume A))))
+dp⊃ud = arrowintro (∀x (Px ∨ ∃x A)) (existelim (axiom 0 (Px ∷ []))
+         (disjelim (univelim y (assume (∀x (Px ∨ ∃x A))))
+          (disjintro₁ (∃x A) (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
+          (disjintro₂ (∀x Px) (assume (∃x A)))))
 
 dp⊃gmp : [ DP ] ⊃ gmp Px
 dp⊃gmp = arrowintro (¬∀x Px) (existelim (axiom 0 (Px ∷ []))
