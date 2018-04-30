@@ -520,3 +520,9 @@ gmp,tt⊃wlem = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
                       (arrowintro Dx (arrowintro ¬A
                        (arrowelim (assume ¬Dx) (assume Dx))))
                       (arrowintro ¬Dx (assume ¬A)))))))
+
+dp,lem⊃glpoa : DP ∷ LEM ∷ [] ⊃ glpoa Px
+dp,lem⊃glpoa = existelim (axiom 0 (Px ∷ [])) (disjelim (axiom 1 (Py ∷ []))
+                (disjintro₁ (∃x ¬Px)
+                 (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
+                (disjintro₂ (∀x Px) (existintro y xvar (assume ¬Py))))
