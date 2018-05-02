@@ -313,6 +313,12 @@ wgmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
                (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))
 
 -- Proofs
+
+classical-dp : [LEM,EFQ] ⊃ dp Px
+classical-dp = disjelim (axiom 0 (∀x Px ∷ []))
+                {!   !}
+                {!   !}
+
 lem⊃wlem : [ LEM ] ⊃ wlem A
 lem⊃wlem = axiom 0 (¬A ∷ [])
 

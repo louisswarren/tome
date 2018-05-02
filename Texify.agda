@@ -34,7 +34,6 @@ textermvec (t ∷ []) = texterm t
 textermvec (t ∷ ts@(_ ∷ _)) = texterm t >> ", " >> textermvec ts
 
 
-
 texformula : Formula → String
 
 parenformula : Formula → String
@@ -71,8 +70,14 @@ texformula (a ∨ b) = parenformula a >> " \\Tor " >> parenformula b
 texformula (Λ x a) = "\\Tforall_{" >> texvar x >> "} " >> parenformula a
 texformula (V x a) = "\\Texists_{" >> texvar x >> "} " >> parenformula a
 
+texformulae : List Formula → String
+texformulae [] = ""
+texformulae (f ∷ []) = texformula f
+texformulae (f ∷ fs@(_ ∷ _)) = texformula f >> ", " >> texformulae fs
+
 
 data Textree : Set where
+  cut         : ∀{Ω Γ α} → Ω , Γ ⊢ α → Textree
   openax      : Formula → Textree
   closedax    : Formula → String → Textree
   unaryinf    : Formula → String → Textree → Textree
@@ -92,7 +97,14 @@ label i s = line i (tag "RightLabel" s)
 inf : ℕ → String → Formula → String
 inf i s x = line i (tag s ("$" >> (texformula x) >> "$"))
 
+cuttex : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+cuttex {Ω} {Γ} {α} d = tag "UnaryInfC" ("$"
+                       >> texformulae Γ
+                       >> " \\vdash " >> texformula α >> "$")
+
 texifytree : ℕ → Textree → String
+texifytree i (cut d)                  = line i "\\AxiomC{}"
+                                        >> line i (cuttex d)
 texifytree i (openax x)               = inf i "AxiomC" x
 texifytree i (closedax x s) with (primStringEquality s "")
 ...                         | false   = line i "\\AxiomC{}"
@@ -116,6 +128,7 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
 
 
 dtot : ∀{α Γ} → {Ω : List Scheme}  → List Formula → Ω , Γ ⊢ α → Textree
+dtot {α} o (subproof d)        = cut d
 dtot {α} {_} {Ω} o (axiom n {pf} v)     = closedax α (Scheme.name ((Ω ! n) {pf}))
 dtot {α} o (assume a) with (membership formulacmp a o)
 ...                   | false  = closedax   α ""
