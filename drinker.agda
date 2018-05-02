@@ -12,9 +12,13 @@ open import sugar
 -- Without loss of generality, assume that schemes are applied only to formulae
 -- in which the schemes' quantifiers are not free.
 
-EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DP' HE' DPN HEN DNSU DNSE UD IP : Scheme
+DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DP' HE' DPN HEN DNSU DNSE UD IP : Scheme
 FIN∀ FIN∃ : Scheme
 
+dne : Formula → Formula
+dne Φ = ¬¬ Φ ⇒ Φ
+
+DNE = unaryscheme "DNE" dne
 
 efq : Formula → Formula
 efq Φ = ⊥ ⇒ Φ
@@ -227,6 +231,26 @@ macro-∀sub {v} {α} w T {pf} = arrowelim
 
 
 -- Equivalences
+-- We will use these together instead of (but equivalently to) DNE
+[LEM,EFQ] : List Scheme
+[LEM,EFQ] = LEM ∷ EFQ ∷ []
+
+dne⊃lem : [ DNE ] ⊃ lem A
+dne⊃lem = arrowelim (axiom 0 (lem A ∷ [])) (arrowintro (¬ (lem A))
+           (arrowelim (assume (¬ (lem A)))
+            (disjintro₂ A (arrowintro A
+             (arrowelim (assume (¬ (lem A))) (disjintro₁ ¬A (assume A)))))))
+
+dne⊃efq : [ DNE ] ⊃ efq A
+dne⊃efq = arrowintro ⊥ (arrowelim (axiom 0 (A ∷ [])) (arrowintro ¬A (assume ⊥)))
+
+lem,dfq⊃dne : [LEM,EFQ] ⊃ dne A
+lem,dfq⊃dne = arrowintro ¬¬A (disjelim (axiom 0 (A ∷ []))
+               (assume A)
+               (arrowelim
+                (axiom 1 (A ∷ []))
+                (arrowelim (assume ¬¬A) (assume ¬A))))
+
 he⊃ip : [ HE ] ⊃ ip Px A
 he⊃ip = arrowintro (∃x A ⇒ ∃x Px) (existelim (axiom 0 (Px ∷ []))
          (existintro y xvar (arrowintro (∃x A)
