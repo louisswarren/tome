@@ -17,7 +17,7 @@ _∈_ = Membership formulacmp
 
 infix 1 _⊢_ _,_⊢_
 data _,_⊢_ where
-  subproof   : ∀{Ω Γ α} → Ω , Γ ⊢ α → Ω , Γ ⊢ α
+  lemma      : ∀{Ω Γ α} → Ω , Γ ⊢ α → Ω , Γ ⊢ α
 
   axiom      : ∀{Ω} → (k : ℕ) → {indexable : isTrue (k < (len Ω))}
                → (x : Vec Formula (Scheme.arity ((Ω ! k) {indexable})))

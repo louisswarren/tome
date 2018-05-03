@@ -128,7 +128,7 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
 
 
 dtot : ∀{α Γ} → {Ω : List Scheme}  → List Formula → Ω , Γ ⊢ α → Textree
-dtot {α} o (subproof d)        = cut d
+dtot {α} o (lemma d)           = cut d
 dtot {α} {_} {Ω} o (axiom n {pf} v)     = closedax α (Scheme.name ((Ω ! n) {pf}))
 dtot {α} o (assume a) with (membership formulacmp a o)
 ...                   | false  = closedax   α ""

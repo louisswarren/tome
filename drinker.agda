@@ -232,8 +232,8 @@ macro-∀sub {v} {α} w T {pf} = arrowelim
 
 -- Equivalences
 -- We will use these together instead of (but equivalently to) DNE
-[LEM,EFQ] : List Scheme
-[LEM,EFQ] = LEM ∷ EFQ ∷ []
+[DNE,LEM,EFQ] : List Scheme
+[DNE,LEM,EFQ] = DNE ∷ LEM ∷ EFQ ∷ []
 
 dne⊃lem : [ DNE ] ⊃ lem A
 dne⊃lem = arrowelim (axiom 0 (lem A ∷ [])) (arrowintro (¬ (lem A))
@@ -244,7 +244,7 @@ dne⊃lem = arrowelim (axiom 0 (lem A ∷ [])) (arrowintro (¬ (lem A))
 dne⊃efq : [ DNE ] ⊃ efq A
 dne⊃efq = arrowintro ⊥ (arrowelim (axiom 0 (A ∷ [])) (arrowintro ¬A (assume ⊥)))
 
-lem,dfq⊃dne : [LEM,EFQ] ⊃ dne A
+lem,dfq⊃dne : LEM ∷ EFQ ∷ [] ⊃ dne A
 lem,dfq⊃dne = arrowintro ¬¬A (disjelim (axiom 0 (A ∷ []))
                (assume A)
                (arrowelim
@@ -314,10 +314,28 @@ wgmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
 
 -- Proofs
 
-classical-dp : [LEM,EFQ] ⊃ dp Px
-classical-dp = disjelim (axiom 0 (∀x Px ∷ []))
-                {!   !}
-                {!   !}
+lemma:¬∀xPx⊢∃x¬Px : [DNE,LEM,EFQ] , ¬∀x Px ∷ [] ⊢ ∃x ¬Px
+lemma:¬∀xPx⊢∃x¬Px = (arrowelim
+                  (axiom 0 (∃x ¬Px ∷ []))
+                  (arrowintro (¬∃x ¬Px)
+                   (arrowelim
+                    (assume (¬∀x Px))
+                    (univintro xvar (arrowelim
+                     (axiom 0 (Px ∷ []))
+                     (arrowintro ¬Px (arrowelim
+                      (assume (¬∃x ¬Px))
+                      (existintro x xvar (assume ¬Px)))))))))
+
+classical-dp : [DNE,LEM,EFQ] ⊃ dp Px
+classical-dp = disjelim (axiom 1 (∀x Px ∷ []))
+                (existintro y yvar (arrowintro Py (assume (∀x Px))))
+                (existelim
+                 (lemma lemma:¬∀xPx⊢∃x¬Px)
+                 (existintro x yvar
+                 (arrowintro Px
+                  (arrowelim
+                   (axiom 2 (∀x Px ∷ []))
+                   (arrowelim (assume ¬Px) (assume Px))))))
 
 lem⊃wlem : [ LEM ] ⊃ wlem A
 lem⊃wlem = axiom 0 (¬A ∷ [])
