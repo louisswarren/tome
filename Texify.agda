@@ -152,7 +152,9 @@ dtot {α} o (existelim d₁ d₂)   = binaryinf  α "\\Texistelim"  (dtot o d₁
                                                                    (dtot o d₂)
 
 texify : ∀{Γ α} → {Ω : List Scheme} → Ω , Γ ⊢ α → String
-texify {Γ} d = texifytree 0 (dtot Γ d)
+texify {Γ} d = "\\begin{prooftree}\n"
+               >> texifytree 0 (dtot Γ d)
+               >> "\\end{prooftree}\n"
 
 
 quicktexify : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
@@ -176,7 +178,5 @@ quicktexify d = "\\documentclass[landscape]{article}\n"
              >> "\\newcommand{\\Tneg}{\\lnot}\n"
              >> "\\usepackage{bussproofs}\n"
              >> "\\begin{document}\n"
-             >> "\\begin{prooftree}\n"
              >> texify d
-             >> "\\end{prooftree}\n"
              >> "\\end{document}\n"
