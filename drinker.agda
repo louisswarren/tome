@@ -326,6 +326,9 @@ lemma:¬∀xPx⊢∃x¬Px = (arrowelim
                       (assume (¬∃x ¬Px))
                       (existintro x xvar (assume ¬Px)))))))))
 
+classical-gmp : [DNE,LEM,EFQ] ⊃ gmp Px
+classical-gmp = arrowintro (¬∀x Px) lemma:¬∀xPx⊢∃x¬Px
+
 classical-dp : [DNE,LEM,EFQ] ⊃ dp Px
 classical-dp = disjelim (axiom 1 (∀x Px ∷ []))
                 (existintro y yvar (arrowintro Py (assume (∀x Px))))
