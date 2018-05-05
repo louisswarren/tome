@@ -312,6 +312,33 @@ wgmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
                (assume (∃x ¬Px))
                (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))
 
+
+-- Reformulations
+
+dp⊢dp' : [] , (dp Px) ∷ [] ⊢ dp' Px
+dp⊢dp' = existelim (assume (dp Px))
+          (existintro y yvar
+          (univintro xvar (arrowintro Py (univelim x
+           (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py))))))
+
+dp'⊢dp : [] , (dp' Px) ∷ [] ⊢ dp Px
+dp'⊢dp = existelim (assume (dp' Px))
+          (existintro y yvar
+          (arrowintro Py (univintro xvar
+           (arrowelim (univelim x (assume (∀x (Py ⇒ Px)))) (assume Py)))))
+
+he⊢he' : [] , (he Px) ∷ [] ⊢ he' Px
+he⊢he' = existelim (assume (he Px))
+          (existintro y yvar
+           (univintro xvar (arrowintro Px (arrowelim
+            (assume (∃x Px ⇒ Py)) (existintro x xvar (assume Px))))))
+
+he'⊢he : [] , (he' Px) ∷ [] ⊢ he Px
+he'⊢he = existelim (assume (he' Px))
+          (existintro y yvar
+           (arrowintro (∃x Px) (existelim (assume (∃x Px))
+            (arrowelim (univelim x (assume (∀x (Px ⇒ Py)))) (assume Px)))))
+
 -- Proofs
 
 lemma:¬∀xPx⊢∃x¬Px : [DNE,LEM,EFQ] , ¬∀x Px ∷ [] ⊢ ∃x ¬Px
