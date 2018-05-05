@@ -151,10 +151,26 @@ dtot {α} o (existintro r x d)  = unaryinf   α "\\Texistintro" (dtot o d)
 dtot {α} o (existelim d₁ d₂)   = binaryinf  α "\\Texistelim"  (dtot o d₁)
                                                                    (dtot o d₂)
 
-texify : ∀{Γ α} → {Ω : List Scheme} → Ω , Γ ⊢ α → String
-texify {Γ} d = "\\begin{prooftree}\n"
-               >> texifytree 0 (dtot Γ d)
-               >> "\\end{prooftree}\n"
+texify : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+texify {Γ} d = texifytree 0 (dtot Γ d)
+
+texifypf : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+texifypf d = >> "\\begin{proof}\n"
+             >> "\\begin{deduction}\n"
+             >> texify d
+             >> "\\end{deduction}\n"
+             >> "\\end{proof}\n"
+
+texifypfs : ∀{Ω₁ Ω₂ Γ₁ Γ₂ α₁ α₂} → Ω₁ , Γ₁ ⊢ α₁ → Ω₂ , Γ₂ ⊢ α₂ →  String
+texifypfs d₁ d₂ = "\\begin{proof}\n"
+                  >> "$(\implies)$\n"
+                  >> "\\begin{deduction}[nonfinal]\n"
+                  >> texify d₁
+                  >> "\\end{deduction}\n"
+                  >> "\\begin{deduction}\n"
+                  >> texify d₂
+                  >> "\\end{deduction}\n"
+                  >> "\\end{proof}\n"
 
 
 quicktexify : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
