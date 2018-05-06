@@ -15,7 +15,7 @@ infixr 1 _>>_
 printlist : {A : Set} → String → (A → String) → List A → String
 printlist delim f [] = ""
 printlist delim f (x ∷ []) = f x
-printlist delim f (x ∷ xs@(_ ∷ _)) = f x >> printlist delim f xs
+printlist delim f (x ∷ xs@(_ ∷ _)) = f x >> delim >> printlist delim f xs
 
 lp = "\\left("
 rp = "\\right)"
@@ -162,6 +162,11 @@ dtot {α} o (existelim d₁ d₂)   = binaryinf  α "\\Texistelim"  (dtot o d₁
 texify : ∀{Γ Ω α} → Ω , Γ ⊢ α → String
 texify {Γ} d = texifytree 0 (dtot Γ d)
 
+texifyded : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+texifyded d = "\\begin{deduction}\n"
+              >> texify d
+              >> "\\end{deduction}\n"
+
 texifypf : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
 texifypf d = "\\begin{proof}\n"
              >> "\\begin{deduction}\n"
@@ -181,26 +186,34 @@ texifypfs d₁ d₂ = "\\begin{proof}\n"
                   >> "\\end{proof}\n"
 
 
-texifyreduce : ∀{As B xs} → (As ⊃ B) xs → String
-texifyreduce {As} {B} d = "\\begin{proposition} "
-                            >> "\\label{prop:"
-                            >> printlist "," Scheme.name As
-                            >> "->" >> Scheme.name B >> "}\n"
-                          >> "$" >> printlist ", " Scheme.name As
-                          >> " \\reduces " >> Scheme.name B  >> "$"
-                          >> texifypf d
-                          >> "\\end{proposition}\n"
+texifyreducewith : ∀ As B xs → String → (As ⊃ B) xs → String
+texifyreducewith As B xs s d = "\\begin{proposition} "
+                                    >> "\\label{prop:"
+                                    >> printlist "," Scheme.name As
+                                    >> "->" >> Scheme.name B >> "}\n"
+                                  >> "$\\" >> printlist "s, \\" Scheme.name As
+                                  >> "s \\reduces \\" >> Scheme.name B  >> "s$"
+                                  >> "\n"
+                                  >> "\\begin{proof}\n"
+                                  >> s
+                                  >> texifyded d
+                                  >> "\\end{proof}\n"
+                                  >> "\\end{proposition}\n"
+
+texifyreduce : ∀ As B xs → (As ⊃ B) xs → String
+texifyreduce As B xs d = texifyreducewith As B xs "" d
 
 texifyequivalence : ∀{A B xs ys} → ([ A ] ⊃ B) xs → ([ B ] ⊃ A) ys → String
 texifyequivalence {A} {B} d₁ d₂ = "\\begin{proposition} "
                                     >> "\\label{prop:"
                                     >> Scheme.name A >> "=" >> Scheme.name B
                                     >> "}\n"
-                                  >> "$" >> Scheme.name A
-                                  >> " \\reduces " >> Scheme.name B  >> "$"
+                                  >> "$\\" >> Scheme.name A
+                                  >> "s \\reduces \\" >> Scheme.name B  >> "s$"
                                   >> " and "
-                                  >> "$" >> Scheme.name B
-                                  >> " \\reduces " >> Scheme.name A  >> "$"
+                                  >> "$\\" >> Scheme.name B
+                                  >> "s \\reduces \\" >> Scheme.name A  >> "s$"
+                                  >> "\\n"
                                   >> texifypfs d₁ d₂
                                   >> "\\end{proposition}\n"
 

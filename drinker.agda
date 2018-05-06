@@ -367,19 +367,36 @@ classical-dp = disjelim (axiom 1 (∀x Px ∷ []))
                    (axiom 2 (∀x Px ∷ []))
                    (arrowelim (assume ¬Px) (assume Px))))))
 
+prop-classical-dp = texifyreducewith [DNE,LEM,EFQ] DP (Px ∷ [])
+                     ("First\n" >> texifyded lemma:¬∀xPx⊢∃x¬Px >> "Now,\n")
+                     classical-dp
+
+
 lem⊃wlem : ([ LEM ] ⊃ WLEM) (A ∷ [])
 lem⊃wlem = axiom 0 (¬A ∷ [])
+
+prop-lem-wlem = texifyreduce [ LEM ] WLEM (A ∷ []) lem⊃wlem
+
 
 dp⊃dpn : ([ DP ] ⊃ DPN) (Px ∷ [])
 dp⊃dpn = axiom 0 (¬Px ∷ [])
 
+prop-dp-dpn = texifyreduce [ DP ] DPN (Px ∷ []) dp⊃dpn
+
+
 he⊃hen : ([ HE ] ⊃ HEN) (Px ∷ [])
 he⊃hen = axiom 0 (¬Px ∷ [])
+
+prop-he-hen = texifyreduce [ HE ] HEN (Px ∷ []) he⊃hen
+
 
 gmp⊃wgmp : ([ GMP ] ⊃ WGMP) (Px ∷ [])
 gmp⊃wgmp = arrowintro (¬∀x Px) (macro-dni (arrowelim
             (axiom 0 (Px ∷ []))
             (assume (¬∀x Px))))
+
+prop-gmp-wgmp = texifyreduce [ GMP ] WGMP (Px ∷ []) gmp⊃wgmp
+
 
 dgp⊃wlem : ([ DGP ] ⊃ WLEM) (A ∷ [])
 dgp⊃wlem = disjelim (axiom 0 (A ∷ ¬A ∷ []))
@@ -389,10 +406,16 @@ dgp⊃wlem = disjelim (axiom 0 (A ∷ ¬A ∷ []))
             (disjintro₂ ¬A (arrowintro ¬A (arrowelim (assume ¬A)
              (arrowelim (assume (¬A ⇒ A)) (assume ¬A)))))
 
+prop-dgp-wlem = texifyreduce [ DGP ] WLEM (A ∷ []) dgp⊃wlem
+
+
 glpoa⊃lem : ([ GLPOA ] ⊃ LEM) (A ∷ [])
 glpoa⊃lem = disjelim (axiom 0 (A ∷ []))
              (disjintro₁ ¬A (univelim x (assume (∀x A))))
              (disjintro₂ A (existelim (assume (∃x ¬A)) (assume ¬A)))
+
+prop-glpoa-lem = texifyreduce [ GLPOA ] LEM (A ∷ []) glpoa⊃lem
+
 
 glpoa⊃gmp : ([ GLPOA ] ⊃ GMP) (Px ∷ [])
 glpoa⊃gmp = arrowintro (¬∀x Px) (disjelim (axiom 0 (Px ∷ []))
@@ -400,16 +423,25 @@ glpoa⊃gmp = arrowintro (¬∀x Px) (disjelim (axiom 0 (Px ∷ []))
               (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
              (assume (∃x ¬Px)))
 
+prop-glpoa-gmp = texifyreduce [ GLPOA ] GMP (Px ∷ []) glpoa⊃gmp
+
+
 dp⊃ud : ([ DP ] ⊃ UD) (Px ∷ A ∷ [])
 dp⊃ud = arrowintro (∀x (Px ∨ ∃x A)) (existelim (axiom 0 (Px ∷ []))
          (disjelim (univelim y (assume (∀x (Px ∨ ∃x A))))
           (disjintro₁ (∃x A) (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
           (disjintro₂ (∀x Px) (assume (∃x A)))))
 
+prop-dp-ud = texifyreduce [ DP ] UD (Px ∷ A ∷ []) dp⊃ud
+
+
 dp⊃gmp : ([ DP ] ⊃ GMP) (Px ∷ [])
 dp⊃gmp = arrowintro (¬∀x Px) (existelim (axiom 0 (Px ∷ []))
           (existintro y xvar (arrowintro Py (arrowelim (assume (¬∀x Px))
            (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py))))))
+
+prop-dp-gmp = texifyreduce [ DP ] GMP (Px ∷ []) dp⊃gmp
+
 
 -- Redundant by transitivity
 -- dp⊃dnsu : [ DP ] ⊃ dnsu Px
@@ -429,12 +461,18 @@ glpo⊃dpn = disjelim (axiom 0 (Px ∷ []))
               (macro-∀sub xvar (univintro zvar
                (arrowintro Pz (arrowelim (assume ¬Px) (assume Px))))))))
 
+prop-glpo-dpn = texifyreduce [ GLPO ] DPN (Px ∷ []) glpo⊃dpn
+
+
 he⊃dnse : ([ HE ] ⊃ DNSE) (Px ∷ [])
 he⊃dnse = arrowintro (¬¬ (∃x Px)) (existelim (axiom 0 (Px ∷ []))
            (existintro y xvar (arrowintro ¬Py
             (arrowelim (assume (¬¬ (∃x Px))) (arrowintro (∃x Px)
              (arrowelim (assume ¬Py)
               (arrowelim (assume (∃x Px ⇒ Py)) (assume (∃x Px)))))))))
+
+prop-he-dnse = texifyreduce [ HE ] DNSE (Px ∷ []) he⊃dnse
+
 
 glpo⊃dnse : ([ GLPO ] ⊃ DNSE) (Px ∷ [])
 glpo⊃dnse = arrowintro (¬¬ (∃x Px)) (disjelim (axiom 0 (Px ∷ []))
@@ -445,11 +483,17 @@ glpo⊃dnse = arrowintro (¬¬ (∃x Px)) (disjelim (axiom 0 (Px ∷ []))
              (existelim (assume (∃x Px)) (existintro x xvar
               (macro-dni (assume Px)))))
 
+prop-glpo-dnse = texifyreduce [ GLPO ] DNSE (Px ∷ []) glpo⊃dnse
+
+
 gmp⊃dnse : ([ GMP ] ⊃ DNSE) (Px ∷ [])
 gmp⊃dnse = arrowintro (¬¬ (∃x Px)) (arrowelim (axiom 0 (¬Px ∷ []))
             (arrowintro (∀x ¬Px) (arrowelim (assume (¬¬ (∃x Px)))
              (arrowintro (∃x Px) (existelim (assume (∃x Px))
               (arrowelim (univelim x (assume (∀x ¬Px))) (assume Px)))))))
+
+prop-gmp-dnse = texifyreduce [ GMP ] DNSE (Px ∷ []) gmp⊃dnse
+
 
 dpn⊃dnse : ([ DPN ] ⊃ DNSE) (Px ∷ [])
 dpn⊃dnse = arrowintro (¬¬ (∃x Px)) (existelim (axiom 0 (Px ∷ []))
@@ -460,11 +504,17 @@ dpn⊃dnse = arrowintro (¬¬ (∃x Px)) (existelim (axiom 0 (Px ∷ []))
                (univelim x (arrowelim (assume (¬Py ⇒ ∀x ¬Px)) (assume ¬Py)))
                (assume Px))))))))
 
+prop-dpn-dnse = texifyreduce [ DPN ] DNSE (Px ∷ []) dpn⊃dnse
+
+
 glpoa⊃wgmp : ([ GLPOA ] ⊃ WGMP) (Px ∷ [])
 glpoa⊃wgmp = disjelim (axiom 0 (Px ∷ []))
               (arrowintro (¬∀x Px) (arrowintro (¬∃x ¬Px)
                (arrowelim (assume (¬∀x Px)) (assume (∀x Px)))))
               (arrowintro (¬∀x Px) (macro-dni (assume (∃x ¬Px))))
+
+prop-glpoa-wgmp = texifyreduce [ GLPOA ] WGMP (Px ∷ []) glpoa⊃wgmp
+
 
 
 dp,efq,tt⊃dgp : (DP ∷ EFQ ∷ [TT] ⊃ DGP) (A ∷ B ∷ [])
@@ -604,3 +654,25 @@ dp,lem⊃glpoa = existelim (axiom 0 (Px ∷ [])) (disjelim (axiom 1 (Py ∷ []))
                 (disjintro₁ (∃x ¬Px)
                  (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
                 (disjintro₂ (∀x Px) (existintro y xvar (assume ¬Py))))
+
+
+
+-- printouts
+appendix : String
+appendix = ""
+           >> "\n" >> prop-classical-dp
+           >> "\n" >> prop-lem-wlem
+           >> "\n" >> prop-dp-dpn
+           >> "\n" >> prop-he-hen
+           >> "\n" >> prop-gmp-wgmp
+           >> "\n" >> prop-dgp-wlem
+           >> "\n" >> prop-glpoa-lem
+           >> "\n" >> prop-glpoa-gmp
+           >> "\n" >> prop-dp-ud
+           >> "\n" >> prop-dp-gmp
+           >> "\n" >> prop-glpo-dpn
+           >> "\n" >> prop-he-dnse
+           >> "\n" >> prop-glpo-dnse
+           >> "\n" >> prop-gmp-dnse
+           >> "\n" >> prop-dpn-dnse
+           >> "\n" >> prop-glpoa-wgmp
