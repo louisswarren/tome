@@ -12,6 +12,11 @@ open import common
 _>>_ = primStringAppend
 infixr 1 _>>_
 
+printlist : {A : Set} → String → (A → String) → List A → String
+printlist delim f [] = ""
+printlist delim f (x ∷ []) = f x
+printlist delim f (x ∷ xs@(_ ∷ _)) = f x >> printlist delim f xs
+
 lp = "\\left("
 rp = "\\right)"
 
@@ -71,10 +76,15 @@ texformula (Λ x a) = "\\Tforall_{" >> texvar x >> "} " >> parenformula a
 texformula (V x a) = "\\Texists_{" >> texvar x >> "} " >> parenformula a
 
 texformulae : List Formula → String
-texformulae [] = ""
-texformulae (f ∷ []) = texformula f
-texformulae (f ∷ fs@(_ ∷ _)) = texformula f >> ", " >> texformulae fs
+texformulae forms = printlist ", " texformula forms
 
+texdeduction : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+texdeduction {Ω} {Γ} {α} d = "$"
+                             >> texformulae Γ
+                             >> " \\vdash_{"
+                                >> printlist ", " Scheme.name Ω
+                                >> "} "
+                             >> texformula α >> "$"
 
 data Textree : Set where
   cut         : ∀{Ω Γ α} → Ω , Γ ⊢ α → Textree
@@ -98,9 +108,7 @@ inf : ℕ → String → Formula → String
 inf i s x = line i (tag s ("$" >> (texformula x) >> "$"))
 
 cuttex : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
-cuttex {Ω} {Γ} {α} d = tag "UnaryInfC" ("$"
-                       >> texformulae Γ
-                       >> " \\vdash " >> texformula α >> "$")
+cuttex {Ω} {Γ} {α} d = tag "UnaryInfC" (texdeduction d)
 
 texifytree : ℕ → Textree → String
 texifytree i (cut d)                  = line i "\\AxiomC{}"
@@ -151,11 +159,11 @@ dtot {α} o (existintro r x d)  = unaryinf   α "\\Texistintro" (dtot o d)
 dtot {α} o (existelim d₁ d₂)   = binaryinf  α "\\Texistelim"  (dtot o d₁)
                                                                    (dtot o d₂)
 
-texify : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+texify : ∀{Γ Ω α} → Ω , Γ ⊢ α → String
 texify {Γ} d = texifytree 0 (dtot Γ d)
 
 texifypf : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
-texifypf d = >> "\\begin{proof}\n"
+texifypf d = "\\begin{proof}\n"
              >> "\\begin{deduction}\n"
              >> texify d
              >> "\\end{deduction}\n"
@@ -163,7 +171,7 @@ texifypf d = >> "\\begin{proof}\n"
 
 texifypfs : ∀{Ω₁ Ω₂ Γ₁ Γ₂ α₁ α₂} → Ω₁ , Γ₁ ⊢ α₁ → Ω₂ , Γ₂ ⊢ α₂ →  String
 texifypfs d₁ d₂ = "\\begin{proof}\n"
-                  >> "$(\implies)$\n"
+                  >> "$(\\implies)$\n"
                   >> "\\begin{deduction}[nonfinal]\n"
                   >> texify d₁
                   >> "\\end{deduction}\n"
@@ -172,6 +180,29 @@ texifypfs d₁ d₂ = "\\begin{proof}\n"
                   >> "\\end{deduction}\n"
                   >> "\\end{proof}\n"
 
+
+texifyreduce : ∀{As B xs} → (As ⊃ B) xs → String
+texifyreduce {As} {B} d = "\\begin{proposition} "
+                            >> "\\label{prop:"
+                            >> printlist "," Scheme.name As
+                            >> "->" >> Scheme.name B >> "}\n"
+                          >> "$" >> printlist ", " Scheme.name As
+                          >> " \\reduces " >> Scheme.name B  >> "$"
+                          >> texifypf d
+                          >> "\\end{proposition}\n"
+
+texifyequivalence : ∀{A B xs ys} → ([ A ] ⊃ B) xs → ([ B ] ⊃ A) ys → String
+texifyequivalence {A} {B} d₁ d₂ = "\\begin{proposition} "
+                                    >> "\\label{prop:"
+                                    >> Scheme.name A >> "=" >> Scheme.name B
+                                    >> "}\n"
+                                  >> "$" >> Scheme.name A
+                                  >> " \\reduces " >> Scheme.name B  >> "$"
+                                  >> " and "
+                                  >> "$" >> Scheme.name B
+                                  >> " \\reduces " >> Scheme.name A  >> "$"
+                                  >> texifypfs d₁ d₂
+                                  >> "\\end{proposition}\n"
 
 quicktexify : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
 quicktexify d = "\\documentclass[landscape]{article}\n"

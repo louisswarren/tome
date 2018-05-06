@@ -82,8 +82,8 @@ data _,_⊢_ where
                                 ----------------------------------- ∃⁻
                →                       Ω , Γ₁ ++ (Γ₂ ∖ α) ⊢ β
 
-_⊃_ : List Scheme → Formula → Set
-Ω ⊃ Φ = Ω , [] ⊢ Φ
+_⊃_ : List Scheme → (s : Scheme) → Vec Formula (Scheme.arity s)  → Set
+(Ω ⊃ Φ) xs = Ω , [] ⊢ Scheme.func Φ xs
 
 infixr 1 _⊃_
 
@@ -98,3 +98,8 @@ assumptions {_} {Γ} {_} _ = Γ
 
 isclosed : ∀{Ω Γ α} → Formula → Ω , Γ ⊢ α → Bool
 isclosed {_} {Γ} α d = membership formulacmp α Γ
+
+open import Agda.Builtin.String
+
+conc : ∀{a b c} → (a ⊃ b) c → String
+conc {a} {b} d = Scheme.name b
