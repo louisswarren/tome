@@ -137,7 +137,7 @@ Dy  = D y
 [TT] : List Scheme
 [TT] = nullaryscheme "D0" (Dt⁰)
      ∷ nullaryscheme "$\\Tneg{D1}$" (¬Dt¹)
-     ∷ nullaryscheme "D" (∀x (D x ∨ ¬ (D x)))
+     ∷ nullaryscheme "Dx" (∀x (D x ∨ ¬ (D x)))
      ∷ []
 
 
@@ -175,6 +175,20 @@ tt-fin∃ = arrowintro (∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)))
 
 [FIN] : List Scheme
 [FIN] = FIN∀ ∷ FIN∃ ∷ []
+
+-- Tex the rules
+ax-d0 : [TT] , [] ⊢ _
+ax-d0 = axiom 0 []
+
+ax-d1 : [TT] , [] ⊢ _
+ax-d1 = axiom 1 []
+
+ax-d : [TT] , [] ⊢ _
+ax-d = axiom 2 []
+
+rule-d0 = texifyded ax-d0
+rule-d1 = texifyded ax-d1
+rule-d  = texifyded ax-d
 
 -- Lemmae and macros
 
