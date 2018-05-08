@@ -135,9 +135,9 @@ Dx  = D x
 Dy  = D y
 ¬Dy = ¬ Dy
 [TT] : List Scheme
-[TT] = nullaryscheme "D0" (Dt⁰)
-     ∷ nullaryscheme "$\\Tneg{D1}$" (¬Dt¹)
-     ∷ nullaryscheme "Dx" (∀x (D x ∨ ¬ (D x)))
+[TT] = nullaryscheme "DZ" (Dt⁰)
+     ∷ nullaryscheme "DO" (¬Dt¹)
+     ∷ nullaryscheme "DX" (∀x (D x ∨ ¬ (D x)))
      ∷ []
 
 
@@ -255,21 +255,33 @@ dne⊃lem = arrowelim (axiom 0 (lem A ∷ [])) (arrowintro (¬ (lem A))
             (disjintro₂ A (arrowintro A
              (arrowelim (assume (¬ (lem A))) (disjintro₁ ¬A (assume A)))))))
 
+prop-dne-lem = texifyreduce [ DNE ] LEM (A ∷ []) dne⊃lem
+
+
 dne⊃efq : ([ DNE ] ⊃ EFQ) (A ∷ [])
 dne⊃efq = arrowintro ⊥ (arrowelim (axiom 0 (A ∷ [])) (arrowintro ¬A (assume ⊥)))
 
-lem,dfq⊃dne : (LEM ∷ EFQ ∷ [] ⊃ DNE) (A ∷ [])
-lem,dfq⊃dne = arrowintro ¬¬A (disjelim (axiom 0 (A ∷ []))
+prop-dne-efq = texifyreduce [ DNE ] EFQ (A ∷ []) dne⊃efq
+
+
+lem,efq⊃dne : (LEM ∷ EFQ ∷ [] ⊃ DNE) (A ∷ [])
+lem,efq⊃dne = arrowintro ¬¬A (disjelim (axiom 0 (A ∷ []))
                (assume A)
                (arrowelim
                 (axiom 1 (A ∷ []))
                 (arrowelim (assume ¬¬A) (assume ¬A))))
+
+prop-lem,efq-dne = texifyreduce (LEM ∷ EFQ ∷ []) DNE (A ∷ []) lem,efq⊃dne
+
 
 he⊃ip : ([ HE ] ⊃ IP) (Px ∷ A ∷ [])
 he⊃ip = arrowintro (∃x A ⇒ ∃x Px) (existelim (axiom 0 (Px ∷ []))
          (existintro y xvar (arrowintro (∃x A)
           (arrowelim (assume (∃x Px ⇒ Py))
            (arrowelim (assume (∃x A ⇒ ∃x Px)) (assume (∃x A)))))))
+
+prop-he-ip = texifyreduce [ HE ] IP (Px ∷ A ∷ []) he⊃ip
+
 
 ip⊃he : ([ IP ] ⊃ HE) (Px ∷ [])
 ip⊃he = existelim
@@ -278,6 +290,9 @@ ip⊃he = existelim
           (arrowintro (∃x Px) (assume (∃x Px))))
          (existintro x yvar (assume (∃x Px ⇒ Px)))
 
+prop-ip-he = texifyreduce [ IP ] HE (Px ∷ []) ip⊃he
+
+
 lem⊃glpo : ([ LEM ] ⊃ GLPO) (Px ∷ [])
 lem⊃glpo = disjelim (axiom 0 (∃x Px ∷ []))
             (disjintro₂ (∀x ¬Px) (assume (∃x Px)) )
@@ -285,10 +300,16 @@ lem⊃glpo = disjelim (axiom 0 (∃x Px ∷ []))
              (arrowintro Px (arrowelim (assume (¬∃x Px))
                              (existintro x xvar (assume Px))))))
 
+prop-lem-glpo = texifyreduce [ LEM ] GLPO (Px ∷ []) lem⊃glpo
+
+
 glpo⊃lem : ([ GLPO ] ⊃ LEM) (A ∷ [])
 glpo⊃lem = disjelim (axiom 0 (A ∷ []))
             (disjintro₂ A (univelim x (assume (∀x ¬A))))
             (disjintro₁ ¬A (existelim (assume (∃x A)) (assume A)))
+
+prop-glpo-lem = texifyreduce [ GLPO ] LEM (A ∷ []) glpo⊃lem
+
 
 dpn⊃hen : ([ DPN ] ⊃ HEN) (Px ∷ [])
 dpn⊃hen = existelim (axiom 0 (¬Px ∷ [])) (existintro y yvar
@@ -298,6 +319,9 @@ dpn⊃hen = existelim (axiom 0 (¬Px ∷ [])) (existintro y yvar
               (assume (¬¬Py ⇒ ∀x ¬¬Px)) (macro-dni (assume Py))))
              (assume ¬Px)))) ))
 
+--prop-dpn-hen = texifyreduce [ DPN ] HEN (Px ∷ [])
+
+
 hen⊃dpn : ([ HEN ] ⊃ DPN) (Px ∷ [])
 hen⊃dpn = existelim (axiom 0 (¬Px ∷ []))
           (existintro y yvar (arrowintro ¬Py (univintro xvar
@@ -306,6 +330,9 @@ hen⊃dpn = existelim (axiom 0 (¬Px ∷ []))
              (existintro x xvar (macro-dni (assume Px))))
             (assume ¬Py))
            ))))
+
+--prop-hen-dpn = texifyreduce [ HEN ] DPN (Px ∷ [])
+
 
 dnsu⊃wgmp : ([ DNSU ] ⊃ WGMP) (Px ∷ [])
 dnsu⊃wgmp = arrowintro (¬∀x Px) (arrowintro (¬∃x ¬Px)
@@ -318,6 +345,9 @@ dnsu⊃wgmp = arrowintro (¬∀x Px) (arrowintro (¬∃x ¬Px)
                  (existintro x xvar (assume ¬Px))))))
               (assume (¬∀x Px))))
 
+prop-dnsu-wgmp = texifyreduce [ DNSU ] WGMP (Px ∷ []) dnsu⊃wgmp
+
+
 wgmp⊃dnsu : ([ WGMP ] ⊃ DNSU) (Px ∷ [])
 wgmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
              (arrowelim
@@ -325,6 +355,9 @@ wgmp⊃dnsu = arrowintro (∀x ¬¬Px) (arrowintro (¬∀x Px)
               (arrowintro (∃x ¬Px) (existelim
                (assume (∃x ¬Px))
                (arrowelim (univelim x (assume (∀x ¬¬Px))) (assume ¬Px))))))
+
+prop-wgmp-dnsu = texifyreduce [ WGMP ] DNSU (Px ∷ []) wgmp⊃dnsu
+
 
 
 -- Reformulations
@@ -341,6 +374,11 @@ dp'⊢dp = existelim (assume (dp' Px))
           (arrowintro Py (univintro xvar
            (arrowelim (univelim x (assume (∀x (Py ⇒ Px)))) (assume Py)))))
 
+prop-dp-alt = "\\begin{proposition} \\label{prop:dpalt}\n"
+              >> "$\\DPi{P}$ is equivalent to $" >> texformula (dp' Px) >> "$\n"
+              >> texifypfs dp⊢dp' dp'⊢dp
+              >> "\\end{proposition}\n"
+
 he⊢he' : [] , (he Px) ∷ [] ⊢ he' Px
 he⊢he' = existelim (assume (he Px))
           (existintro y yvar
@@ -353,6 +391,10 @@ he'⊢he = existelim (assume (he' Px))
            (arrowintro (∃x Px) (existelim (assume (∃x Px))
             (arrowelim (univelim x (assume (∀x (Px ⇒ Py)))) (assume Px)))))
 
+prop-he-alt = "\\begin{proposition} \\label{prop:healt}\n"
+              >> "$\\HEi{P}$ is equivalent to $" >> texformula (he' Px) >> "$\n"
+              >> texifypfs he⊢he' he'⊢he
+              >> "\\end{proposition}\n"
 -- Proofs
 
 lemma:¬∀xPx⊢∃x¬Px : [DNE,LEM,EFQ] , ¬∀x Px ∷ [] ⊢ ∃x ¬Px
@@ -395,13 +437,13 @@ prop-lem-wlem = texifyreduce [ LEM ] WLEM (A ∷ []) lem⊃wlem
 dp⊃dpn : ([ DP ] ⊃ DPN) (Px ∷ [])
 dp⊃dpn = axiom 0 (¬Px ∷ [])
 
-prop-dp-dpn = texifyreduce [ DP ] DPN (Px ∷ []) dp⊃dpn
+--prop-dp-dpn = texifyreduce [ DP ] DPN (Px ∷ []) dp⊃dpn
 
 
 he⊃hen : ([ HE ] ⊃ HEN) (Px ∷ [])
 he⊃hen = axiom 0 (¬Px ∷ [])
 
-prop-he-hen = texifyreduce [ HE ] HEN (Px ∷ []) he⊃hen
+--prop-he-hen = texifyreduce [ HE ] HEN (Px ∷ []) he⊃hen
 
 
 gmp⊃wgmp : ([ GMP ] ⊃ WGMP) (Px ∷ [])
@@ -475,7 +517,7 @@ glpo⊃dpn = disjelim (axiom 0 (Px ∷ []))
               (macro-∀sub xvar (univintro zvar
                (arrowintro Pz (arrowelim (assume ¬Px) (assume Px))))))))
 
-prop-glpo-dpn = texifyreduce [ GLPO ] DPN (Px ∷ []) glpo⊃dpn
+--prop-glpo-dpn = texifyreduce [ GLPO ] DPN (Px ∷ []) glpo⊃dpn
 
 
 he⊃dnse : ([ HE ] ⊃ DNSE) (Px ∷ [])
@@ -518,7 +560,7 @@ dpn⊃dnse = arrowintro (¬¬ (∃x Px)) (existelim (axiom 0 (Px ∷ []))
                (univelim x (arrowelim (assume (¬Py ⇒ ∀x ¬Px)) (assume ¬Py)))
                (assume Px))))))))
 
-prop-dpn-dnse = texifyreduce [ DPN ] DNSE (Px ∷ []) dpn⊃dnse
+--prop-dpn-dnse = texifyreduce [ DPN ] DNSE (Px ∷ []) dpn⊃dnse
 
 
 glpoa⊃wgmp : ([ GLPOA ] ⊃ WGMP) (Px ∷ [])
@@ -556,6 +598,9 @@ dp,efq,tt⊃dgp = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ B) ⇒ ∀x ((Dx ⇒ A) ∧ 
                            (arrowintro ¬Dy (assume B)))))
                         (arrowelim (assume (Dt⁰ ⇒ A)) (axiom 2 []))))))
 
+prop-dp,efq,tt-dgp = texifyreduce (DP ∷ EFQ ∷ [TT]) DGP (A ∷ B ∷ []) dp,efq,tt⊃dgp
+
+
 dp,tt⊃wlem : (DP ∷ [TT] ⊃ WLEM) (A ∷ [])
 dp,tt⊃wlem = let Φ = (Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A) ⇒ ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
              in  existelim (axiom 0 ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A) ∷ []))
@@ -583,6 +628,9 @@ dp,tt⊃wlem = let Φ = (Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A) ⇒ ∀x ((Dx ⇒ ¬¬
                       (arrowelim (assume (Dt⁰ ⇒ ¬¬A)) (axiom 1 []))
                       (assume ¬A))))))
 
+prop-dp,tt-wlem = texifyreduce (DP ∷ [TT]) WLEM (A ∷ []) dp,tt⊃wlem
+
+
 he,efq,tt⊃dgp : (HE ∷ EFQ ∷ [TT] ⊃ DGP) (A ∷ B ∷ [])
 he,efq,tt⊃dgp = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) ∧ (¬Dy ⇒ B))
                  in  existelim (axiom 0 ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ∷ []))
@@ -605,6 +653,9 @@ he,efq,tt⊃dgp = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) �
                             (arrowintro ¬Dt⁰ (macro-efq-helper B (arrowelim
                              (assume ¬Dt⁰) (axiom 2 [])))))))
                          (arrowelim (assume (¬Dy ⇒ B)) (assume ¬Dy))))))
+
+prop-he,efq,tt-dgp = texifyreduce (HE ∷ EFQ ∷ [TT]) DGP (A ∷ B ∷ []) he,efq,tt⊃dgp
+
 
 he,tt⊃wlem : (HE ∷ [TT] ⊃ WLEM) (A ∷ [])
 he,tt⊃wlem = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A))
@@ -636,6 +687,9 @@ he,tt⊃wlem = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬
                       (arrowelim (assume (¬Dy ⇒ ¬A)) (assume ¬Dy))
                       (assume A))))))
 
+prop-he,tt-wlem = texifyreduce (HE ∷ [TT]) WLEM (A ∷ []) he,tt⊃wlem
+
+
 gmp,tt⊃wlem : (GMP ∷ [TT] ⊃ WLEM) (A ∷ [])
 gmp,tt⊃wlem = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
                   Ψ = ¬((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
@@ -663,30 +717,49 @@ gmp,tt⊃wlem = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
                        (arrowelim (assume ¬Dx) (assume Dx))))
                       (arrowintro ¬Dx (assume ¬A)))))))
 
+prop-gmp,tt-wlem = texifyreduce (GMP ∷ [TT]) WLEM (A ∷ []) gmp,tt⊃wlem
+
+
 dp,lem⊃glpoa : (DP ∷ LEM ∷ [] ⊃ GLPOA) (Px ∷ [])
 dp,lem⊃glpoa = existelim (axiom 0 (Px ∷ [])) (disjelim (axiom 1 (Py ∷ []))
                 (disjintro₁ (∃x ¬Px)
                  (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))
                 (disjintro₂ (∀x Px) (existintro y xvar (assume ¬Py))))
 
+prop-dp,lem-glpoa = texifyreduce (DP ∷ LEM ∷ []) GLPOA (Px ∷ []) dp,lem⊃glpoa
+
+
 
 
 -- printouts
 appendix : String
 appendix = ""
+           >> "\n" >> prop-dne-lem
+           >> "\n" >> prop-dne-efq
+           >> "\n" >> prop-lem,efq-dne
+           >> "\n" >> prop-he-ip
+           >> "\n" >> prop-ip-he
+           >> "\n" >> prop-lem-glpo
+           >> "\n" >> prop-glpo-lem
+           >> "\n" >> prop-dnsu-wgmp
+           >> "\n" >> prop-wgmp-dnsu
+           >> "\n" >> prop-dp-alt
+           >> "\n" >> prop-he-alt
            >> "\n" >> prop-classical-dp
            >> "\n" >> prop-lem-wlem
-           >> "\n" >> prop-dp-dpn
-           >> "\n" >> prop-he-hen
            >> "\n" >> prop-gmp-wgmp
            >> "\n" >> prop-dgp-wlem
            >> "\n" >> prop-glpoa-lem
            >> "\n" >> prop-glpoa-gmp
            >> "\n" >> prop-dp-ud
            >> "\n" >> prop-dp-gmp
-           >> "\n" >> prop-glpo-dpn
            >> "\n" >> prop-he-dnse
            >> "\n" >> prop-glpo-dnse
            >> "\n" >> prop-gmp-dnse
-           >> "\n" >> prop-dpn-dnse
            >> "\n" >> prop-glpoa-wgmp
+           >> "\n" >> prop-dp,efq,tt-dgp
+           >> "\n" >> prop-dp,tt-wlem
+           >> "\n" >> prop-he,efq,tt-dgp
+           >> "\n" >> prop-he,tt-wlem
+           >> "\n" >> prop-gmp,tt-wlem
+           >> "\n" >> prop-dp,lem-glpoa
