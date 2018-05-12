@@ -190,6 +190,21 @@ texifypfs d₁ d₂ = "\\begin{proof}\n"
                   >> "\\end{deduction}\n"
                   >> "\\end{proof}\n"
 
+extractlemmas : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+extractlemmas (lemma d) = extractlemmas d >> "Lemma:\n" >> texifypt d
+extractlemmas (axiom k x) = ""
+extractlemmas (assume α) = ""
+extractlemmas (arrowintro α d) = extractlemmas d
+extractlemmas (arrowelim d d₁) = extractlemmas d >> extractlemmas d₁
+extractlemmas (conjintro d d₁) = extractlemmas d >> extractlemmas d₁
+extractlemmas (conjelim d d₁) = extractlemmas d >> extractlemmas d₁
+extractlemmas (disjintro₁ β d) = extractlemmas d
+extractlemmas (disjintro₂ α d) = extractlemmas d
+extractlemmas (disjelim d d₁ d₂) = extractlemmas d >> extractlemmas d₁ >> extractlemmas d₂
+extractlemmas (univintro x d) = extractlemmas d
+extractlemmas (univelim r d) = extractlemmas d
+extractlemmas (existintro r x d) = extractlemmas d
+extractlemmas (existelim d d₁) = extractlemmas d >> extractlemmas d₁
 
 texifyreducewith : ∀ As B xs → String → (As ⊃ B) xs → String
 texifyreducewith As B xs s d = "\\begin{proposition} "

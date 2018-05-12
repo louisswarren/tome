@@ -607,47 +607,56 @@ dp,efq,tt⊃dgp = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ B) ⇒ ∀x ((Dx ⇒ A) ∧ 
                       (lemma lemma:dp,efq,tt⊃dgp2))
 
 prop-dp,efq,tt-dgp = texifyreducewith (DP ∷ EFQ ∷ [TT]) DGP (A ∷ B ∷ [])
-                      ("First\n" >> texifypt lemma:dp,efq,tt⊃dgp2 >>
+                      ("First\n" >> texifypt lemma:dp,efq,tt⊃dgp1 >>
                        vspace >> "and\n" >> texifypt lemma:dp,efq,tt⊃dgp2 >>
                        vspace >> "Now,\n")
                       dp,efq,tt⊃dgp
 
 
+lemma:dp,tt⊃wlem1 : (DP ∷ [TT]) , _ ⊢ _
+lemma:dp,tt⊃wlem1 = let Φ = (Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A) ⇒ ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                    in (disjintro₁ ¬¬A (arrowintro A
+                        (conjelim
+                         (univelim t¹
+                          (arrowelim (assume Φ)
+                           (conjintro
+                            (arrowintro Dy (macro-dni (assume A)))
+                            (arrowintro ¬Dy (arrowintro A
+                             (arrowelim (assume ¬Dy) (assume Dy)))))))
+                         (arrowelim
+                          (arrowelim (assume (¬Dt¹ ⇒ ¬A)) (axiom 2 []))
+                          (assume A)))))
+
+lemma:dp,tt⊃wlem2 : (DP ∷ [TT]) , _ ⊢ _
+lemma:dp,tt⊃wlem2 = let Φ = (Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A) ⇒ ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                    in (disjintro₂ ¬A (arrowintro ¬A
+                        (conjelim
+                         (univelim t⁰
+                          (arrowelim (assume Φ)
+                           (conjintro
+                            (arrowintro Dy (arrowintro ¬A
+                             (arrowelim (assume ¬Dy) (assume Dy))))
+                            (arrowintro ¬Dy (assume ¬A)))))
+                         (arrowelim
+                          (arrowelim (assume (Dt⁰ ⇒ ¬¬A)) (axiom 1 []))
+                          (assume ¬A)))))
+
 dp,tt⊃wlem : (DP ∷ [TT] ⊃ WLEM) (A ∷ [])
 dp,tt⊃wlem = let Φ = (Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A) ⇒ ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
              in  existelim (axiom 0 ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A) ∷ []))
                   (disjelim (univelim y (axiom 3 []))
-                   (disjintro₁ ¬¬A (arrowintro A
-                    (conjelim
-                     (univelim t¹
-                      (arrowelim (assume Φ)
-                       (conjintro
-                        (arrowintro Dy (macro-dni (assume A)))
-                        (arrowintro ¬Dy (arrowintro A
-                         (arrowelim (assume ¬Dy) (assume Dy)))))))
-                     (arrowelim
-                      (arrowelim (assume (¬Dt¹ ⇒ ¬A)) (axiom 2 []))
-                      (assume A)))))
-                   (disjintro₂ ¬A (arrowintro ¬A
-                    (conjelim
-                     (univelim t⁰
-                      (arrowelim (assume Φ)
-                       (conjintro
-                        (arrowintro Dy (arrowintro ¬A
-                         (arrowelim (assume ¬Dy) (assume Dy))))
-                        (arrowintro ¬Dy (assume ¬A)))))
-                     (arrowelim
-                      (arrowelim (assume (Dt⁰ ⇒ ¬¬A)) (axiom 1 []))
-                      (assume ¬A))))))
+                   (lemma lemma:dp,tt⊃wlem1)
+                   (lemma lemma:dp,tt⊃wlem2))
 
-prop-dp,tt-wlem = texifyreduce (DP ∷ [TT]) WLEM (A ∷ []) dp,tt⊃wlem
+prop-dp,tt-wlem = texifyreducewith (DP ∷ [TT]) WLEM (A ∷ [])
+                   ("First\n" >> texifypt lemma:dp,tt⊃wlem1 >>
+                    vspace >> "and\n" >> texifypt lemma:dp,tt⊃wlem2 >>
+                    vspace >> "Now,\n")
+                    dp,tt⊃wlem
 
-
-he,efq,tt⊃dgp : (HE ∷ EFQ ∷ [TT] ⊃ DGP) (A ∷ B ∷ [])
-he,efq,tt⊃dgp = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) ∧ (¬Dy ⇒ B))
-                 in  existelim (axiom 0 ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ∷ []))
-                      (disjelim (univelim y (axiom 4 []))
-                       (disjintro₂ (A ⇒ B) (arrowintro B
+lemma:he,efq,tt⊃dgp1 : HE ∷ EFQ ∷ [TT] , _ ⊢ _
+lemma:he,efq,tt⊃dgp1 = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) ∧ (¬Dy ⇒ B))
+                       in (disjintro₂ (A ⇒ B) (arrowintro B
                         (conjelim
                          (arrowelim (assume Φ)
                           (existintro t¹ xvar
@@ -656,7 +665,10 @@ he,efq,tt⊃dgp = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) �
                              (arrowelim (axiom 3 []) (assume Dt¹))))
                             (arrowintro ¬Dt¹ (assume B)))))
                          (arrowelim (assume (Dy ⇒ A)) (assume Dy)))))
-                       (disjintro₁ (B ⇒ A) (arrowintro A
+
+lemma:he,efq,tt⊃dgp2 : HE ∷ EFQ ∷ [TT] , _ ⊢ _
+lemma:he,efq,tt⊃dgp2 = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) ∧ (¬Dy ⇒ B))
+                       in (disjintro₁ (B ⇒ A) (arrowintro A
                         (conjelim
                          (arrowelim (assume Φ)
                           (existintro t⁰ xvar
@@ -664,9 +676,21 @@ he,efq,tt⊃dgp = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) �
                             (arrowintro Dt⁰ (assume A))
                             (arrowintro ¬Dt⁰ (macro-efq-helper B (arrowelim
                              (assume ¬Dt⁰) (axiom 2 [])))))))
-                         (arrowelim (assume (¬Dy ⇒ B)) (assume ¬Dy))))))
+                         (arrowelim (assume (¬Dy ⇒ B)) (assume ¬Dy)))))
 
-prop-he,efq,tt-dgp = texifyreduce (HE ∷ EFQ ∷ [TT]) DGP (A ∷ B ∷ []) he,efq,tt⊃dgp
+he,efq,tt⊃dgp : (HE ∷ EFQ ∷ [TT] ⊃ DGP) (A ∷ B ∷ [])
+he,efq,tt⊃dgp = let Φ = ∃x ((Dx ⇒ A) ∧ (¬Dx ⇒ B)) ⇒ ((Dy ⇒ A) ∧ (¬Dy ⇒ B))
+                 in  existelim (axiom 0 ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ∷ []))
+                      (disjelim (univelim y (axiom 4 []))
+                        (lemma lemma:he,efq,tt⊃dgp1)
+                        (lemma lemma:he,efq,tt⊃dgp2)
+                       )
+
+prop-he,efq,tt-dgp = texifyreducewith (HE ∷ EFQ ∷ [TT]) DGP (A ∷ B ∷ [])
+                   ("First\n" >> texifypt lemma:he,efq,tt⊃dgp1 >>
+                    vspace >> "and\n" >> texifypt lemma:he,efq,tt⊃dgp2 >>
+                    vspace >> "Now,\n")
+                    he,efq,tt⊃dgp
 
 
 he,tt⊃wlem : (HE ∷ [TT] ⊃ WLEM) (A ∷ [])
