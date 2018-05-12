@@ -692,12 +692,9 @@ prop-he,efq,tt-dgp = texifyreducewith (HE ∷ EFQ ∷ [TT]) DGP (A ∷ B ∷ [])
                     vspace >> "Now,\n")
                     he,efq,tt⊃dgp
 
-
-he,tt⊃wlem : (HE ∷ [TT] ⊃ WLEM) (A ∷ [])
-he,tt⊃wlem = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A))
-             in  existelim (axiom 0 ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A) ∷ []))
-                  (disjelim (univelim y (axiom 3 []))
-                   (disjintro₂ ¬A (arrowintro ¬A
+lemma:he,tt⊃wlem1 : HE ∷ [TT] , _ ⊢ _
+lemma:he,tt⊃wlem1 = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A))
+                    in (disjintro₂ ¬A (arrowintro ¬A
                     (conjelim
                      (arrowelim (assume Φ)
                       (existintro t¹ xvar
@@ -710,7 +707,10 @@ he,tt⊃wlem = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬
                        (assume (Dy ⇒ ¬¬A))
                        (assume Dy))
                       (assume ¬A)))))
-                   (disjintro₁ ¬¬A (arrowintro A
+
+lemma:he,tt⊃wlem2 : HE ∷ [TT] , _ ⊢ _
+lemma:he,tt⊃wlem2 = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A))
+                    in (disjintro₁ ¬¬A (arrowintro A
                     (conjelim
                      (arrowelim (assume Φ)
                       (existintro t⁰ xvar
@@ -721,10 +721,48 @@ he,tt⊃wlem = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬
                           (arrowelim (assume ¬Dt⁰) (axiom 1 [])))))))
                      (arrowelim
                       (arrowelim (assume (¬Dy ⇒ ¬A)) (assume ¬Dy))
-                      (assume A))))))
+                      (assume A)))))
 
-prop-he,tt-wlem = texifyreduce (HE ∷ [TT]) WLEM (A ∷ []) he,tt⊃wlem
+he,tt⊃wlem : (HE ∷ [TT] ⊃ WLEM) (A ∷ [])
+he,tt⊃wlem = let Φ = ∃x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A)) ⇒ ((Dy ⇒ ¬¬A) ∧ (¬Dy ⇒ ¬A))
+             in  existelim (axiom 0 ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A) ∷ []))
+                  (disjelim (univelim y (axiom 3 []))
+                        (lemma lemma:he,tt⊃wlem1)
+                        (lemma lemma:he,tt⊃wlem2))
 
+prop-he,tt-wlem = texifyreducewith (HE ∷ [TT]) WLEM (A ∷ []) (extractlemmas he,tt⊃wlem) he,tt⊃wlem
+
+
+lemma:gmp,tt⊃wlem1 : GMP ∷ [TT] , _ ⊢ _
+lemma:gmp,tt⊃wlem1 = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                         Ψ = ¬((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                     in (arrowintro Φ (arrowelim
+                    (conjelim
+                     (univelim t⁰ (assume Φ))
+                     (arrowelim (assume (Dt⁰ ⇒ ¬¬A)) (axiom 1 [])))
+                    (conjelim
+                     (univelim t¹ (assume Φ))
+                     (arrowelim (assume (¬Dt¹ ⇒ ¬A)) (axiom 2 [])))))
+
+lemma:gmp,tt⊃wlem2 : GMP ∷ [TT] , _ ⊢ _
+lemma:gmp,tt⊃wlem2 = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                         Ψ = ¬((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                     in (disjintro₁ ¬¬A (arrowintro A
+                    (arrowelim (assume Ψ)
+                     (conjintro
+                      (arrowintro Dx (macro-dni (assume A)))
+                      (arrowintro ¬Dx (arrowintro A
+                       (arrowelim (assume ¬Dx) (assume Dx))))))))
+
+lemma:gmp,tt⊃wlem3 : GMP ∷ [TT] , _ ⊢ _
+lemma:gmp,tt⊃wlem3 = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                         Ψ = ¬((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                     in (disjintro₂ ¬A (arrowintro ¬A
+                    (arrowelim (assume Ψ)
+                     (conjintro
+                      (arrowintro Dx (arrowintro ¬A
+                       (arrowelim (assume ¬Dx) (assume Dx))))
+                      (arrowintro ¬Dx (assume ¬A))))))
 
 gmp,tt⊃wlem : (GMP ∷ [TT] ⊃ WLEM) (A ∷ [])
 gmp,tt⊃wlem = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
@@ -732,28 +770,12 @@ gmp,tt⊃wlem = let Φ = ∀x ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
               in existelim
                   (arrowelim
                    (axiom 0 ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A) ∷ []))
-                   (arrowintro Φ (arrowelim
-                    (conjelim
-                     (univelim t⁰ (assume Φ))
-                     (arrowelim (assume (Dt⁰ ⇒ ¬¬A)) (axiom 1 [])))
-                    (conjelim
-                     (univelim t¹ (assume Φ))
-                     (arrowelim (assume (¬Dt¹ ⇒ ¬A)) (axiom 2 []))))))
+                   (lemma lemma:gmp,tt⊃wlem1))
                   (disjelim (univelim x (axiom 3 []))
-                   (disjintro₁ ¬¬A (arrowintro A
-                    (arrowelim (assume Ψ)
-                     (conjintro
-                      (arrowintro Dx (macro-dni (assume A)))
-                      (arrowintro ¬Dx (arrowintro A
-                       (arrowelim (assume ¬Dx) (assume Dx))))))))
-                   (disjintro₂ ¬A (arrowintro ¬A
-                    (arrowelim (assume Ψ)
-                     (conjintro
-                      (arrowintro Dx (arrowintro ¬A
-                       (arrowelim (assume ¬Dx) (assume Dx))))
-                      (arrowintro ¬Dx (assume ¬A)))))))
+                   (lemma lemma:gmp,tt⊃wlem2)
+                   (lemma lemma:gmp,tt⊃wlem3))
 
-prop-gmp,tt-wlem = texifyreduce (GMP ∷ [TT]) WLEM (A ∷ []) gmp,tt⊃wlem
+prop-gmp,tt-wlem = texifyreducewith (GMP ∷ [TT]) WLEM (A ∷ []) (extractlemmas gmp,tt⊃wlem) gmp,tt⊃wlem
 
 
 dp,lem⊃glpoa : (DP ∷ LEM ∷ [] ⊃ GLPOA) (Px ∷ [])
