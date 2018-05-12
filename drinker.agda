@@ -424,7 +424,8 @@ classical-dp = disjelim (axiom 1 (∀x Px ∷ []))
                    (arrowelim (assume ¬Px) (assume Px))))))
 
 prop-classical-dp = texifyreducewith [DNE,LEM,EFQ] DP (Px ∷ [])
-                     ("First\n" >> texifyded lemma:¬∀xPx⊢∃x¬Px >> "Now,\n")
+                     ("First\n" >> texifypt lemma:¬∀xPx⊢∃x¬Px
+                      >> vspace >> "Now,\n")
                      classical-dp
 
 
@@ -572,33 +573,44 @@ glpoa⊃wgmp = disjelim (axiom 0 (Px ∷ []))
 prop-glpoa-wgmp = texifyreduce [ GLPOA ] WGMP (Px ∷ []) glpoa⊃wgmp
 
 
+lemma:dp,efq,tt⊃dgp1 : DP ∷ EFQ ∷ [TT] , _ ⊢ (A ⇒ B) ∨ (B ⇒ A)
+lemma:dp,efq,tt⊃dgp1 = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ B) ⇒ ∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B))
+                       in (disjintro₁ (B ⇒ A) (arrowintro A
+                           (conjelim
+                            (univelim t¹
+                             (arrowelim (assume Φ)
+                              (conjintro
+                               (arrowintro Dy (assume A))
+                               (arrowintro ¬Dy
+                                (macro-efq-helper B
+                                 (arrowelim (assume ¬Dy) (assume Dy)))))))
+                            (arrowelim (assume (¬Dt¹ ⇒ B)) (axiom 3 [])))))
+
+lemma:dp,efq,tt⊃dgp2 : DP ∷ EFQ ∷ [TT] , _ ⊢ (A ⇒ B) ∨ (B ⇒ A)
+lemma:dp,efq,tt⊃dgp2 = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ B) ⇒ ∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B))
+                       in (disjintro₂ (A ⇒ B) (arrowintro B
+                           (conjelim
+                            (univelim t⁰
+                             (arrowelim (assume Φ)
+                              (conjintro
+                               (arrowintro Dy
+                                (macro-efq-helper A
+                                 (arrowelim (assume ¬Dy) (assume Dy))))
+                               (arrowintro ¬Dy (assume B)))))
+                            (arrowelim (assume (Dt⁰ ⇒ A)) (axiom 2 [])))))
 
 dp,efq,tt⊃dgp : (DP ∷ EFQ ∷ [TT] ⊃ DGP) (A ∷ B ∷ [])
 dp,efq,tt⊃dgp = let Φ = (Dy ⇒ A) ∧ (¬Dy ⇒ B) ⇒ ∀x ((Dx ⇒ A) ∧ (¬Dx ⇒ B))
                 in  existelim (axiom 0 ((Dx ⇒ A) ∧ (¬Dx ⇒ B) ∷ []))
                      (disjelim (univelim y (axiom 4 []))
-                      (disjintro₁ (B ⇒ A) (arrowintro A
-                       (conjelim
-                        (univelim t¹
-                         (arrowelim (assume Φ)
-                          (conjintro
-                           (arrowintro Dy (assume A))
-                           (arrowintro ¬Dy
-                            (macro-efq-helper B
-                             (arrowelim (assume ¬Dy) (assume Dy)))))))
-                        (arrowelim (assume (¬Dt¹ ⇒ B)) (axiom 3 [])))))
-                      (disjintro₂ (A ⇒ B) (arrowintro B
-                       (conjelim
-                        (univelim t⁰
-                         (arrowelim (assume Φ)
-                          (conjintro
-                           (arrowintro Dy
-                            (macro-efq-helper A
-                             (arrowelim (assume ¬Dy) (assume Dy))))
-                           (arrowintro ¬Dy (assume B)))))
-                        (arrowelim (assume (Dt⁰ ⇒ A)) (axiom 2 []))))))
+                      (lemma lemma:dp,efq,tt⊃dgp1)
+                      (lemma lemma:dp,efq,tt⊃dgp2))
 
-prop-dp,efq,tt-dgp = texifyreduce (DP ∷ EFQ ∷ [TT]) DGP (A ∷ B ∷ []) dp,efq,tt⊃dgp
+prop-dp,efq,tt-dgp = texifyreducewith (DP ∷ EFQ ∷ [TT]) DGP (A ∷ B ∷ [])
+                      ("First\n" >> texifypt lemma:dp,efq,tt⊃dgp2 >>
+                       vspace >> "and\n" >> texifypt lemma:dp,efq,tt⊃dgp2 >>
+                       vspace >> "Now,\n")
+                      dp,efq,tt⊃dgp
 
 
 dp,tt⊃wlem : (DP ∷ [TT] ⊃ WLEM) (A ∷ [])
@@ -730,6 +742,10 @@ prop-dp,lem-glpoa = texifyreduce (DP ∷ LEM ∷ []) GLPOA (Px ∷ []) dp,lem⊃
 
 
 
+decidable : [ LEM ] , [] ⊢ ∀x (Px ∨ ¬Px)
+decidable = univintro xvar (axiom 0 (Px ∷ []))
+
+clearpage = "\\clearpage\n"
 
 -- printouts
 appendix : String
@@ -737,29 +753,29 @@ appendix = ""
            >> "\n" >> prop-dne-lem
            >> "\n" >> prop-dne-efq
            >> "\n" >> prop-lem,efq-dne
-           >> "\n" >> prop-he-ip
+           >> "\n" >> prop-he-ip >> clearpage
            >> "\n" >> prop-ip-he
            >> "\n" >> prop-lem-glpo
            >> "\n" >> prop-glpo-lem
-           >> "\n" >> prop-dnsu-wgmp
+           >> "\n" >> prop-dnsu-wgmp >> clearpage
            >> "\n" >> prop-wgmp-dnsu
-           >> "\n" >> prop-dp-alt
+           >> "\n" >> prop-dp-alt >> clearpage
            >> "\n" >> prop-he-alt
            >> "\n" >> prop-classical-dp
-           >> "\n" >> prop-lem-wlem
+           >> "\n" >> prop-lem-wlem >> clearpage
            >> "\n" >> prop-gmp-wgmp
            >> "\n" >> prop-dgp-wlem
            >> "\n" >> prop-glpoa-lem
            >> "\n" >> prop-glpoa-gmp
-           >> "\n" >> prop-dp-ud
+           >> "\n" >> prop-dp-ud >> clearpage
            >> "\n" >> prop-dp-gmp
            >> "\n" >> prop-he-dnse
-           >> "\n" >> prop-glpo-dnse
+           >> "\n" >> prop-glpo-dnse >> clearpage
            >> "\n" >> prop-gmp-dnse
-           >> "\n" >> prop-glpoa-wgmp
-           >> "\n" >> prop-dp,efq,tt-dgp
-           >> "\n" >> prop-dp,tt-wlem
-           >> "\n" >> prop-he,efq,tt-dgp
-           >> "\n" >> prop-he,tt-wlem
-           >> "\n" >> prop-gmp,tt-wlem
+           >> "\n" >> prop-glpoa-wgmp >> clearpage
+           >> "\n" >> prop-dp,efq,tt-dgp >> clearpage
+           >> "\n" >> prop-dp,tt-wlem >> clearpage
+           >> "\n" >> prop-he,efq,tt-dgp >> clearpage
+           >> "\n" >> prop-he,tt-wlem >> clearpage
+           >> "\n" >> prop-gmp,tt-wlem >> clearpage
            >> "\n" >> prop-dp,lem-glpoa

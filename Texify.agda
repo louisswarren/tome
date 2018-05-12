@@ -167,6 +167,11 @@ texifyded d = "\\begin{deduction}\n"
               >> texify d
               >> "\\end{deduction}\n"
 
+texifypt : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
+texifypt d = "\\vspace{-\\baselineskip}\n\\begin{prooftree}\n"
+             >> texify d
+             >> "\\end{prooftree}\n"
+
 texifypf : ∀{Ω Γ α} → Ω , Γ ⊢ α → String
 texifypf d = "\\begin{proof}\n"
              >> "\\begin{deduction}\n"
@@ -240,3 +245,5 @@ quicktexify d = "\\documentclass[landscape]{article}\n"
              >> "\\begin{document}\n"
              >> texify d
              >> "\\end{document}\n"
+
+vspace = "\\vspace{\\baselineskip}"
