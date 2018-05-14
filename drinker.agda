@@ -789,18 +789,20 @@ prop-dp,lem-glpoa = texifyreduce (DP ∷ LEM ∷ []) GLPOA (Px ∷ []) dp,lem⊃
 
 lemma:dnse,tt⊃wlem1 : DNSE ∷ [TT] , _ ⊢ _
 lemma:dnse,tt⊃wlem1 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
-                      in arrowintro (¬∃x Φ) (arrowelim
-                          (arrowintro ¬¬A (arrowelim
-                           (arrowintro ((Dt⁰ ⇒ ¬¬A) ∧ (¬Dt⁰ ⇒ ¬A))
-                            (arrowelim
-                             (assume (¬∃x Φ))
-                             (existintro t⁰ xvar
-                              (assume ((Dt⁰ ⇒ ¬¬A) ∧ (¬Dt⁰ ⇒ ¬A))))))
-                           (conjintro
-                            (arrowintro Dt⁰ (assume ¬¬A))
-                            (arrowintro ¬Dt⁰ (arrowintro A
-                             (arrowelim (assume ¬Dt⁰) (axiom 1 [])))))))
-                          (arrowintro ¬A (arrowelim
+                      in (arrowintro ¬¬A (arrowelim
+                          (arrowintro ((Dt⁰ ⇒ ¬¬A) ∧ (¬Dt⁰ ⇒ ¬A))
+                           (arrowelim
+                            (assume (¬∃x Φ))
+                            (existintro t⁰ xvar
+                             (assume ((Dt⁰ ⇒ ¬¬A) ∧ (¬Dt⁰ ⇒ ¬A))))))
+                          (conjintro
+                           (arrowintro Dt⁰ (assume ¬¬A))
+                           (arrowintro ¬Dt⁰ (arrowintro A
+                            (arrowelim (assume ¬Dt⁰) (axiom 1 [])))))))
+
+lemma:dnse,tt⊃wlem2 : DNSE ∷ [TT] , _ ⊢ _
+lemma:dnse,tt⊃wlem2 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                      in (arrowintro ¬A (arrowelim
                            (arrowintro ((Dt¹ ⇒ ¬¬A) ∧ (¬Dt¹ ⇒ ¬A))
                             (arrowelim
                              (assume (¬∃x Φ))
@@ -809,17 +811,19 @@ lemma:dnse,tt⊃wlem1 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
                            (conjintro
                             (arrowintro Dt¹ (arrowintro ¬A
                              (arrowelim (axiom 2 []) (assume Dt¹))))
-                            (arrowintro ¬Dt¹ (assume ¬A))))))
+                            (arrowintro ¬Dt¹ (assume ¬A)))))
 
-lemma:dnse,tt⊃wlem2 : DNSE ∷ [TT] , _ ⊢ _
-lemma:dnse,tt⊃wlem2 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
-                      in disjelim (univelim x (axiom 3 []))
-                         (disjintro₂ ¬A (arrowintro ¬A
+lemma:dnse,tt⊃wlem3 : DNSE ∷ [TT] , _ ⊢ _
+lemma:dnse,tt⊃wlem3 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                      in (disjintro₂ ¬A (arrowintro ¬A
                           (arrowelim
                            (assume (¬¬ Φ))
                            (arrowintro Φ (conjelim (assume Φ)
                             (arrowelim (arrowelim (assume (Dx ⇒ ¬¬A)) (assume Dx)) (assume ¬A)))))))
-                         (disjintro₁ ¬¬A (arrowintro A
+
+lemma:dnse,tt⊃wlem4 : DNSE ∷ [TT] , _ ⊢ _
+lemma:dnse,tt⊃wlem4 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                      in (disjintro₁ ¬¬A (arrowintro A
                           (arrowelim
                            (assume (¬¬ Φ))
                            (arrowintro Φ (conjelim (assume Φ)
@@ -828,9 +832,10 @@ lemma:dnse,tt⊃wlem2 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
 dnse,tt⊃wlem : (DNSE ∷ [TT] ⊃ WLEM) (A ∷ [])
 dnse,tt⊃wlem = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
                in existelim (arrowelim (axiom 0 (Φ ∷ []))
-                   (lemma lemma:dnse,tt⊃wlem1))
-                   (lemma lemma:dnse,tt⊃wlem2)
+                   (arrowintro (¬∃x Φ) (arrowelim (lemma lemma:dnse,tt⊃wlem1) (lemma lemma:dnse,tt⊃wlem2))))
+                   (disjelim (univelim x (axiom 3 [])) (lemma lemma:dnse,tt⊃wlem3) (lemma lemma:dnse,tt⊃wlem4))
 
+prop-dnse,tt-wlem = texifyreducewith (DNSE ∷ [TT]) WLEM (A ∷ []) (extractlemmas dnse,tt⊃wlem) dnse,tt⊃wlem
 
 decidable : [ LEM ] , [] ⊢ ∀x (Px ∨ ¬Px)
 decidable = univintro xvar (axiom 0 (Px ∷ []))
@@ -868,4 +873,5 @@ appendix = ""
            >> "\n" >> prop-he,efq,tt-dgp >> clearpage
            >> "\n" >> prop-he,tt-wlem >> clearpage
            >> "\n" >> prop-gmp,tt-wlem >> clearpage
-           >> "\n" >> prop-dp,lem-glpoa
+           >> "\n" >> prop-dp,lem-glpoa >> clearpage
+           >> "\n" >> prop-dnse,tt-wlem
