@@ -787,6 +787,50 @@ dp,lem⊃glpoa = existelim (axiom 0 (Px ∷ [])) (disjelim (axiom 1 (Py ∷ []))
 prop-dp,lem-glpoa = texifyreduce (DP ∷ LEM ∷ []) GLPOA (Px ∷ []) dp,lem⊃glpoa
 
 
+lemma:dnse,tt⊃wlem1 : DNSE ∷ [TT] , _ ⊢ _
+lemma:dnse,tt⊃wlem1 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                      in arrowintro (¬∃x Φ) (arrowelim
+                          (arrowintro ¬¬A (arrowelim
+                           (arrowintro ((Dt⁰ ⇒ ¬¬A) ∧ (¬Dt⁰ ⇒ ¬A))
+                            (arrowelim
+                             (assume (¬∃x Φ))
+                             (existintro t⁰ xvar
+                              (assume ((Dt⁰ ⇒ ¬¬A) ∧ (¬Dt⁰ ⇒ ¬A))))))
+                           (conjintro
+                            (arrowintro Dt⁰ (assume ¬¬A))
+                            (arrowintro ¬Dt⁰ (arrowintro A
+                             (arrowelim (assume ¬Dt⁰) (axiom 1 [])))))))
+                          (arrowintro ¬A (arrowelim
+                           (arrowintro ((Dt¹ ⇒ ¬¬A) ∧ (¬Dt¹ ⇒ ¬A))
+                            (arrowelim
+                             (assume (¬∃x Φ))
+                             (existintro t¹ xvar
+                              (assume ((Dt¹ ⇒ ¬¬A) ∧ (¬Dt¹ ⇒ ¬A))))))
+                           (conjintro
+                            (arrowintro Dt¹ (arrowintro ¬A
+                             (arrowelim (axiom 2 []) (assume Dt¹))))
+                            (arrowintro ¬Dt¹ (assume ¬A))))))
+
+lemma:dnse,tt⊃wlem2 : DNSE ∷ [TT] , _ ⊢ _
+lemma:dnse,tt⊃wlem2 = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+                      in disjelim (univelim x (axiom 3 []))
+                         (disjintro₂ ¬A (arrowintro ¬A
+                          (arrowelim
+                           (assume (¬¬ Φ))
+                           (arrowintro Φ (conjelim (assume Φ)
+                            (arrowelim (arrowelim (assume (Dx ⇒ ¬¬A)) (assume Dx)) (assume ¬A)))))))
+                         (disjintro₁ ¬¬A (arrowintro A
+                          (arrowelim
+                           (assume (¬¬ Φ))
+                           (arrowintro Φ (conjelim (assume Φ)
+                            (arrowelim (macro-dni (assume A)) (arrowelim (assume (¬Dx ⇒ ¬A)) (assume ¬Dx))))))))
+
+dnse,tt⊃wlem : (DNSE ∷ [TT] ⊃ WLEM) (A ∷ [])
+dnse,tt⊃wlem = let Φ = ((Dx ⇒ ¬¬A) ∧ (¬Dx ⇒ ¬A))
+               in existelim (arrowelim (axiom 0 (Φ ∷ []))
+                   (lemma lemma:dnse,tt⊃wlem1))
+                   (lemma lemma:dnse,tt⊃wlem2)
+
 
 decidable : [ LEM ] , [] ⊢ ∀x (Px ∨ ¬Px)
 decidable = univintro xvar (axiom 0 (Px ∷ []))
