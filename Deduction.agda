@@ -9,7 +9,7 @@ open import Formula
 open import common
 
 
-_∈_ = Membership formulacmp
+_∈_ = Membership (_≈_ {formula})
 
 infix 1 _⊢_ _,_⊢_
 data _,_⊢_ (Ω : List Scheme) : List Formula → Formula → Set where
@@ -96,7 +96,7 @@ assumptions : ∀{Ω Γ α} → Ω , Γ ⊢ α → List Formula
 assumptions {_} {Γ} {_} _ = Γ
 
 isclosed : ∀{Ω Γ α} → Formula → Ω , Γ ⊢ α → Bool
-isclosed {_} {Γ} α d = membership formulacmp α Γ
+isclosed {_} {Γ} α d = membership _≈_ α Γ
 
 open import Agda.Builtin.String
 

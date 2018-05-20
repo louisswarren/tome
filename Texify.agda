@@ -43,7 +43,7 @@ texformula : Formula → String
 
 parenformula : Formula → String
 parenformula p@(atom _ _) = texformula p
-parenformula p@(_ ⇒ b) with formulacmp b ⊥
+parenformula p@(_ ⇒ b) with b ≈ ⊥
 ...                    | false = lp >> texformula p >> rp
 ...                    | true = texformula p
 parenformula p@(_ ∧ _) = lp >> texformula p >> rp
@@ -57,7 +57,7 @@ parenformula p@(V _ _) = texformula p
 --``...                                      | suc (suc _) = f >> lp
 --``                                                         >> textermvec ts >> rp
 
-texformula a@(atom f ts) with formulacmp a ⊥
+texformula a@(atom f ts) with a ≈ ⊥
 ...                              | true = "\\bot"
 texformula (atom (mkrel n f) ts) | false with n
 ...                                      | zero = f
@@ -67,7 +67,7 @@ texformula (atom (mkrel n f) (x ∷ y ∷ []))
                                                    = texterm x >> f >> texterm y
 ...                                      | suc (suc _) = f >> lp
                                                          >> textermvec ts >> rp
-texformula (a ⇒ b) with formulacmp b ⊥
+texformula (a ⇒ b) with b ≈ ⊥
 ...           | false = parenformula a >> " \\Tarrow " >> parenformula b
 ...           | true  = "\\Tneg{" >> parenformula a >> "}"
 texformula (a ∧ b) = parenformula a >> " \\Tand " >> parenformula b
@@ -138,7 +138,7 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
 dtot : ∀{α Γ} → {Ω : List Scheme}  → List Formula → Ω , Γ ⊢ α → Textree
 dtot {α} o (lemma d)           = cut d
 dtot {α} {_} {Ω} o (axiom n {pf} v)     = closedax α (Scheme.name ((Ω ! n) {pf}))
-dtot {α} o (assume a) with (membership formulacmp a o)
+dtot {α} o (assume a) with (membership _≈_ a o)
 ...                   | false  = closedax   α ""
 ...                   | true   = openax     α
 dtot {α} o (arrowintro a d)    = unaryinf   α "\\Tarrowintro" (dtot o d)

@@ -7,6 +7,12 @@ open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 
+data Inspect {A : Set}(x : A) : Set where
+  with≡ : (y : A) → x ≡ y → Inspect x
+
+inspect : {A : Set} → (x : A) → Inspect x
+inspect x = with≡ x refl
+
 data Vec (A : Set) : ℕ → Set where
   []  : Vec A zero
   _∷_ : ∀{n} → A → Vec A n → Vec A (suc n)
