@@ -12,14 +12,19 @@ _∈_ = Membership (_≈_ {formula})
 
 infix 1 _⊢_ _⊢_
 data _⊢_ : List Formula → Formula → Set where
-  assume     : ∀{Γ₋ Γ₊} → (α : Formula)
-               →                           Γ₋ ++ α ∷ Γ₊ ⊢ α
+  assume     : (α : Formula)
+               →                              [ α ] ⊢ α
 
   -- Doesn't allow vacuous introduction
   arrowintro : ∀{Γ₋ Γ₊ β} → (α : Formula)
                →                           Γ₋ ++ α ∷ Γ₊ ⊢ β
                                         ------------------- ⇒⁺ α
                →                           Γ₋ ++ Γ₊ ⊢ α ⇒ β
+
+--  irrowintro : ∀{Γ β} → (α : Formula)
+--               →                                  Γ ⊢ β
+--                                        ------------------- ⇒⁺ α
+--               →                                  Γ ⊢ α ⇒ β
 
   arrowelim  : ∀{Γ₁ Γ₂ α β}
                →                     Γ₁ ⊢ α ⇒ β    →        Γ₂ ⊢ α
@@ -35,6 +40,9 @@ reorder p q r = arrowintro {p ⇒ q ⇒ r ∷ []} {[]} q
                  (arrowintro {p ⇒ q ⇒ r ∷ []} {q ∷ []} p
                   (arrowelim
                    (arrowelim
-                    (assume {[]} {[]} (p ⇒ q ⇒ r))
-                    (assume {[]} {[]} p))
-                   (assume {[]} {[]} q)))
+                    (assume (p ⇒ q ⇒ r))
+                    (assume p))
+                   (assume q)))
+
+vac : ∀ p q → [] ⊢ q → [] ⊢ p ⇒ q
+vac p q d = arrowintro {[]} {[]} p (arrowelim (arrowintro {{! p ∷ []   !}} {[]} q (assume q)) d)
