@@ -12,22 +12,29 @@ _∈_ = Membership (_≈_ {formula})
 
 infix 1 _⊢_ _⊢_
 data _⊢_ : List Formula → Formula → Set where
-  assume     : (α : Formula)
-               →                               [ α ] ⊢ α
+  assume     : ∀{Γ₋ Γ₊} → (α : Formula)
+               →                           Γ₋ ++ α ∷ Γ₊ ⊢ α
 
-  arrowintro : ∀{Δ Γ β} → (α : Formula) → {_ : (Δ ∖ α) ≡ Γ}
-               →                                 Δ ⊢ β
+  -- Doesn't allow vacuous introduction
+  arrowintro : ∀{Γ₋ Γ₊ β} → (α : Formula)
+               →                           Γ₋ ++ α ∷ Γ₊ ⊢ β
                                         ------------------- ⇒⁺ α
-               →                             Γ     ⊢ α ⇒ β
-
---             →                                 Γ ⊢ β
---                                      ------------------- ⇒⁺ α
---             →                             Γ ∖ α ⊢ α ⇒ β
+               →                           Γ₋ ++ Γ₊ ⊢ α ⇒ β
 
   arrowelim  : ∀{Γ₁ Γ₂ α β}
                →                     Γ₁ ⊢ α ⇒ β    →        Γ₂ ⊢ α
                                 ----------------------------------- ⇒⁻
                →                             (Γ₁ ++ Γ₂) ⊢ β
 
+lemma : ∀ p q r → (p ⇒ q ⇒ r) ∷ p ∷ q ∷ [] ⊢ r → (p ⇒ q ⇒ r) ∷ [] ⊢ (q ⇒ (p ⇒ r))
+lemma p q r d = arrowintro {p ⇒ q ⇒ r ∷ []} {[]} q (arrowintro {p ⇒ q ⇒ r ∷ []} {q ∷ []} p d)
+
 reorder : ∀ p q r → (p ⇒ (q ⇒ r)) ∷ [] ⊢ (q ⇒ (p ⇒ r))
-reorder p q r = arrowintro q {{!   !}} (arrowintro p {?} (arrowelim (arrowelim (assume (p ⇒ r ⇒ r)) (assume p)) (assume r)))
+---reorder p q r = lemma p q r (arrowelim (arrowelim (assume {[]} {[]} (p ⇒ q ⇒ r)) (assume {[]} {[]} p)) (assume {[]} {[]} q))
+reorder p q r = arrowintro {p ⇒ q ⇒ r ∷ []} {[]} q
+                 (arrowintro {p ⇒ q ⇒ r ∷ []} {q ∷ []} p
+                  (arrowelim
+                   (arrowelim
+                    (assume {[]} {[]} (p ⇒ q ⇒ r))
+                    (assume {[]} {[]} p))
+                   (assume {[]} {[]} q)))
