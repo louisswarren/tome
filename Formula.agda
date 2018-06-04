@@ -7,7 +7,7 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 open import common
 
-
+open import Deck
 
 -- "Let a countably infinite set {vi | i ∈ N} of variables be given."
 record Variable : Set where
@@ -128,6 +128,8 @@ _≈_ {formula} _           _           = false
 
 --------------------------------------------------------------------------------
 
+open import Decdeck Formula (_≈_ {formula})
+
 {-# TERMINATING #-}
 -- Todo: of course this terminates
 appearsin : Variable → Term → Bool
@@ -145,8 +147,9 @@ isfree x (Λ y Φ) = not (x ≈ y) and isfree x Φ
 isfree x (V y Φ) = not (x ≈ y) and isfree x Φ
 
 
-_isNotFreeIn_ : (x : Variable) → (Φs : List Formula) → Set
-x isNotFreeIn Φs = isTrue (not (any (isfree x) Φs))
+_isNotFreeIn_ : (x : Variable) → (Φs : Deck Formula) → Set
+x isNotFreeIn Φs = AllExcept (isTrue ∘ (not ∘ isfree x)) [] Φs
+--x isNotFreeIn Φs = isTrue (not (any (isfree x) Φs))
 
 
 {-# TERMINATING #-}

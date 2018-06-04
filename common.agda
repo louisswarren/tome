@@ -113,3 +113,9 @@ _!!_ : ∀{n} → {A : Set} → (xs : Vec A n) → (k : ℕ) → {_ : isTrue (k 
 ([] !! k) {()}
 (x ∷ xs) !! zero = x
 ((x ∷ xs) !! suc k) {pf} = (xs !! k) {pf}
+
+_∘_ : ∀{k n m}{A : Set k}{B : A → Set n}{C : (x : A) → B x → Set m}
+      → (f : {x : A} → (y : B x) → C x y)
+      → (g : (x : A) → B x)
+      → ((x : A) → C x (g x))
+(f ∘ g) x = f (g x)
