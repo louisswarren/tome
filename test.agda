@@ -13,74 +13,10 @@ open import Deck
 open import Decdeck Formula (_≈_ {formula})
 
 
-Q = atom (mkprop "Q") []
-P : Term → Formula
-P t = atom (mkrel 1 "P") (t ∷ [])
 
-Px = P x
-Py = P y
---------------------------------------------------------------------------------
-
-lemf : Vec Formula 1 → Formula
-lemf (α ∷ []) = α ∨ ¬ α
-lem : Scheme
-lem = scheme 1 "LEM" lemf
-
-dgpf : Vec Formula 2 → Formula
-dgpf (α ∷ β ∷ []) = (α ⇒ β) ∨ (β ⇒ α)
-dgp : Scheme
-dgp = scheme 2 "DGP" dgpf
-
-dpf : Vec Formula 1 → Formula
-dpf (α ∷ []) = ∃y ((α [ x / y ]) ⇒ (∀x α))
-dp : Scheme
-dp = scheme 1 "DP" dpf
-
-gmpf : Vec Formula 1 → Formula
-gmpf (α ∷ []) = ¬ (∀x α) ⇒ ∃x (¬ α)
-gmp : Scheme
-gmp = scheme 1 "GMP" gmpf
+pf⇒refl : (p : Formula) → [] , p ~ (p ∷ ∅) ⊢ (p ⇒ p)
+pf⇒refl p = arrowintro p (assume p)
 
 
-pf : dgp ∷ lem ∷ [] , ∅ ⊢ Q ∨ ¬ Q
-pf = axiom 1 (Q ∷ [])
-
-
-p-is-p : (p : Formula) → [] , p ~ (p ∷ ∅) ⊢ (p ⇒ p)
-p-is-p p = arrowintro p (assume p)
-
---pf2 : dp ∷ [] , ∅ ⊢ gmpf (P x ∷ [])
---pf2 = arrowintro (¬∀x Px)
---          (existelim
---           (axiom 0 (Px ∷ []))
---           (existintro y xvar (arrowintro Py
---            (arrowelim (assume (¬∀x Px))
---             (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))
---           )
---
-----s = texify pf2
---
---
---
---
----- Let's do that again, but not assume that x is the free variable
---
---dpsf : Variable → Vec Formula 1 → Formula
---dpsf v (α ∷ []) = ∃y ((α [ varterm v / y ]) ⇒ (∀x (α [ varterm v / x ])))
---dps : Variable → Scheme
---dps v = scheme 1 "DP" (dpsf v)
---
---gmpsf : Variable → Vec Formula 1 → Formula
---gmpsf v (α ∷ []) = ¬ (∀x (α [ varterm v / x ])) ⇒ ∃x (¬ (α [ varterm v / x ]))
---gmps : Variable → Scheme
---gmps v = scheme 1 "GMP" (gmpsf v)
---
---
-----pf3 : (dps xvar) ∷ [] , ∅ ⊢ gmpsf xvar (P x ∷ [])
-----pf3 = arrowintro (¬∀x Px)
-----          (existelim
-----           (axiom 0 (Px ∷ []))
-----           (existintro y xvar (arrowintro Py
-----            (arrowelim (assume (¬∀x Px))
-----             (arrowelim (assume (Py ⇒ ∀x Px)) (assume Py)))))
-----           )
+pf⇒order : (p q r : Formula) → [] , (p ⇒ q ⇒ r) ~ (q ~ (p ~ ((((p ⇒ q ⇒ r) ∷ ∅) ∪ (p ∷ ∅)) ∪ (q ∷ ∅)))) ⊢ (p ⇒ q ⇒ r) ⇒ (q ⇒ p ⇒ r)
+pf⇒order p q r = arrowintro (p ⇒ q ⇒ r) (arrowintro q (arrowintro p (arrowelim (arrowelim (assume (p ⇒ q ⇒ r)) (assume p)) (assume q))))
