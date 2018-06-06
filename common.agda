@@ -8,10 +8,10 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 
 data Inspect {A : Set}(x : A) : Set where
-  with≡ : (y : A) → x ≡ y → Inspect x
+  _with≡_ : (y : A) → x ≡ y → Inspect x
 
 inspect : {A : Set} → (x : A) → Inspect x
-inspect x = with≡ x refl
+inspect x = x with≡ refl
 
 data Vec (A : Set) : ℕ → Set where
   []  : Vec A zero

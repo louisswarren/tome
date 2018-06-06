@@ -7,6 +7,7 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 
 open import Formula
 open import Deck
+open import Decdeck Formula (_≈_ {formula})
 open import common
 
 
@@ -14,6 +15,7 @@ _∈_ = Membership (_≈_ {formula})
 
 infix 1 _⊢_ _,_⊢_
 data _,_⊢_ (Ω : List Scheme) : Deck Formula → Formula → Set where
+  proof      : ∀{Γ Γ' α} → Ω , Γ ⊢ α → Reduct Γ Γ' → Ω , (fromlist Γ') ⊢ α
   lemma      : ∀{Γ α} → Ω , Γ ⊢ α → Ω , Γ ⊢ α
 
   axiom      : (k : ℕ) → {indexable : isTrue (k < (len Ω))}
