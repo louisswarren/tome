@@ -28,3 +28,11 @@ pf⇒order p q r = arrowintro (p ⇒ q ⇒ r) (arrowintro q (arrowintro p (arrow
 pf⇒order' : (p q r : Formula) → [] , ∅ ⊢ (p ⇒ q ⇒ r) ⇒ (q ⇒ p ⇒ r)
 pf⇒order' p q r = proof (arrowintro (p ⇒ q ⇒ r) (arrowintro q (arrowintro p (arrowelim (arrowelim (assume (p ⇒ q ⇒ r)) (assume p)) (assume q)))))
                   (reduct~ (reduct~ (reduct~ (reduct∪ (reduct∪ (reduct∈∷ (tail (tail (head (≈refl (p ⇒ q ⇒ r))))) reduct∅) (reduct∈∷ (head (≈refl p)) reduct∅)) (reduct∈∷ (tail (head (≈refl q))) reduct∅)))))
+
+
+bound : (p : Formula) → (x : Variable) → common.isTrue (not (isfree x (Λ x p)))
+bound p x = ?
+
+
+pf-repl : (p : Formula) → (x : Variable) → [] , Λ x p ∷ ∅ ⊢ Λ x (p [ varterm x / varterm x ])
+pf-repl p x = univintro x {holds (bound p x) empty} (univelim (varterm x) (assume (Λ x p)))
