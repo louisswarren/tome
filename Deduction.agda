@@ -76,11 +76,13 @@ data _,_⊢_ (Ω : List Scheme) : Ensemble formulaEq → Formula → Set where
                                 ----------------------------------- ∃⁻
                →                       Ω , Γ₁ ∪ (Γ₂ - α) ⊢ β
 
+  close      : ∀{Γ Δ α} → Γ ⊂ Δ → Ω , Γ ⊢ α → Ω , Δ ⊢ α
+
 _⊢_ : Ensemble formulaEq → Formula → Set
 Γ ⊢ α = [] , Γ ⊢ α
 
-_⊃_ : List Scheme → (s : Scheme) → Vec Formula (Scheme.arity s)  → Set
-(Ω ⊃ Φ) xs = Ω , ∅ ⊢ Scheme.inst Φ xs
+_⊃_ : List Scheme → Scheme → Set
+(Ω ⊃ Φ) = (xs : Vec Formula (Scheme.arity Φ)) → Ω , ∅ ⊢ Scheme.inst Φ xs
 
 infixr 1 _⊃_
 
@@ -92,11 +94,3 @@ conclusion {_} {_} {α} _ = α
 
 assumptions : ∀{Ω Γ α} → Ω , Γ ⊢ α → Ensemble formulaEq
 assumptions {_} {Γ} {_} _ = Γ
-
---isclosed : ∀{Ω Γ α} → Formula → Ω , Γ ⊢ α → Bool
---isclosed {_} {Γ} α d = membership _≈_ α Γ
-
-open import Agda.Builtin.String
-
-conc : ∀{a b c} → (a ⊃ b) c → String
-conc {a} {b} d = Scheme.name b
