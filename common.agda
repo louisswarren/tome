@@ -13,11 +13,7 @@ data Inspect {A : Set}(x : A) : Set where
 inspect : {A : Set} → (x : A) → Inspect x
 inspect x = x with≡ refl
 
-data Vec (A : Set) : ℕ → Set where
-  []  : Vec A zero
-  _∷_ : ∀{n} → A → Vec A n → Vec A (suc n)
-
-infixr 5 _∷_
+open import Vec using (Vec ; [] ; _∷_) public
 
 [_] : {A : Set} → A → List A
 [ x ] = x ∷ []
