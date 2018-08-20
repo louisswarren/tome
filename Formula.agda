@@ -60,7 +60,6 @@ data Formula : Set where
   _∨_    : Formula → Formula → Formula
   Λ      : Variable → Formula → Formula
   V      : Variable → Formula → Formula
-  _[_/_] : Formula → Term → Term → Formula
 
 infixr 105 _⇒_ _⇔_
 infixr 106 _∨_
@@ -181,11 +180,53 @@ data _BoundIn_ : Term → Formula → Set where
   Λ    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn Λ x α
   V    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn V x α
 
+-- Vim macros generated this
 _isBoundIn_ : (t : Term) → (α : Formula) → Dec (t BoundIn α)
-t isBoundIn atom r x = {!   !}
-t isBoundIn (α ⇒ β) = {!   !}
-t isBoundIn (α ∧ β) = {!   !}
-t isBoundIn (α ∨ β) = {!   !}
-t isBoundIn Λ x α = {!   !}
-t isBoundIn V x α = {!   !}
-t isBoundIn (α [ s / r ]) = {!   !}
+t isBoundIn atom r xs with isTermNotIn t xs
+(t isBoundIn atom r xs) | yes x = yes (atom x)
+(t isBoundIn atom r xs) | no x = no φ
+  where φ : _
+        φ (atom x₁) = x x₁
+t isBoundIn (α ⇒ β) with t isBoundIn α
+(t isBoundIn (α ⇒ β)) | yes x with t isBoundIn β
+(t isBoundIn (α ⇒ β)) | yes x | yes x₁ = yes (x ⇒ x₁)
+(t isBoundIn (α ⇒ β)) | yes x | no x₁ = no φ
+  where φ : _
+        φ (pf ⇒ pf₁) = x₁ pf₁
+(t isBoundIn (α ⇒ β)) | no x = no φ
+  where φ : _
+        φ (pf ⇒ pf₁) = x pf
+t isBoundIn (α ∧ β) with t isBoundIn α
+(t isBoundIn (α ∧ β)) | yes x with t isBoundIn β
+(t isBoundIn (α ∧ β)) | yes x | yes x₁ = yes (x ∧ x₁)
+(t isBoundIn (α ∧ β)) | yes x | no x₁ = no φ
+  where φ : _
+        φ (pf ∧ pf₁) = x₁ pf₁
+(t isBoundIn (α ∧ β)) | no x = no φ
+  where φ : _
+        φ (pf ∧ pf₁) = x pf
+t isBoundIn (α ∨ β) with t isBoundIn α
+(t isBoundIn (α ∨ β)) | yes x with t isBoundIn β
+(t isBoundIn (α ∨ β)) | yes x | yes x₁ = yes (x ∨ x₁)
+(t isBoundIn (α ∨ β)) | yes x | no x₁ = no φ
+  where φ : _
+        φ (pf ∨ pf₁) = x₁ pf₁
+(t isBoundIn (α ∨ β)) | no x = no φ
+  where φ : _
+        φ (pf ∨ pf₁) = x pf
+t isBoundIn Λ x α with termEq t (varterm x)
+(.(varterm x) isBoundIn Λ x α) | yes refl = yes (Λ∣ x α)
+(t isBoundIn Λ x α) | no x₁ with t isBoundIn α
+(t isBoundIn Λ x α) | no x₁ | yes x₂ = yes (Λ x x₂)
+(t isBoundIn Λ x α) | no x₁ | no x₂ = no φ
+  where φ : _
+        φ (Λ∣ x α) = x₁ refl
+        φ (Λ x pf) = x₂ pf
+t isBoundIn V x α with termEq t (varterm x)
+(.(varterm x) isBoundIn V x α) | yes refl = yes (V∣ x α)
+(t isBoundIn V x α) | no x₁ with t isBoundIn α
+(t isBoundIn V x α) | no x₁ | yes x₂ = yes (V x x₂)
+(t isBoundIn V x α) | no x₁ | no x₂ = no φ
+  where φ : _
+        φ (V∣ x α) = x₁ refl
+        φ (V x pf) = x₂ pf
