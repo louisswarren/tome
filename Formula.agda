@@ -1,7 +1,9 @@
 module Formula where
 
+open import Agda.Builtin.Bool
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.Sigma
+
 
 open import Vec
 open import Decidable
@@ -9,6 +11,11 @@ open import String
 
 _×_ : Set → Set → Set
 A × B = Σ A λ _ → B
+
+vecmap : ∀{n} → {A B : Set} → (A → B) → Vec A n → Vec B n
+vecmap f [] = []
+vecmap f (x ∷ xs) = f x ∷ vecmap f xs
+
 
 -- "Let a countably infinite set {vi | i ∈ N} of variables be given."
 record Variable : Set where
@@ -96,6 +103,16 @@ private
                                         where φ : _
                                               φ refl = neq refl
 
+  relEq : Decidable≡ Relation
+  relEq (mkrel n s) (mkrel m t) with stringEq s t
+  ...                           | no  neq  = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+  ...                           | yes refl with natEq n m
+  ...                                      | yes refl = yes refl
+  ...                                      | no  neq  = no φ
+                                                        where φ : _
+                                                              φ refl = neq refl
   funcEq : Decidable≡ Function
   funcEq (mkfunc n s) (mkfunc m t) with stringEq s t
   ...                              | no  neq  = no φ
@@ -169,6 +186,8 @@ private
                                           φ (var _ _ pf)    = isin pf
                                           φ (func _ _ _ pf) = isin pf
 
+postulate formulaEq : Decidable≡ Formula
+
 data _BoundIn_ : Term → Formula → Set where
   atom : ∀{t r} {xs : Vec Term (Relation.arity r)}
                   → t TermNotIn xs → t BoundIn (atom r xs)
@@ -230,3 +249,49 @@ t isBoundIn V x α with termEq t (varterm x)
   where φ : _
         φ (V∣ x α) = x₁ refl
         φ (V x pf) = x₂ pf
+
+record Scheme : Set where
+  constructor scheme
+  field
+    name  : String
+    arity : ℕ
+    inst  : Vec Formula arity → Formula
+
+vecEqBool : ∀{n m} {A : Set} → Decidable≡ A → Vec A n → Vec A m → Bool
+vecEqBool {n} {m} eq xs ys with natEq n m
+vecEqBool {n} {.n} eq xs ys | yes refl with vecEq eq xs ys
+vecEqBool {n} {.n} eq xs ys | yes refl | yes x = true
+vecEqBool {n} {.n} eq xs ys | yes refl | no x = false
+vecEqBool {n} {m} eq xs ys | no x = false
+
+{-# TERMINATING #-}
+-- Todo: of course this terminates
+sub_for_inside_ : Term → Term → Term → Term
+suball : ∀{n} → Vec Term n → Term → Term → Vec Term n
+
+sub (varterm x) for t inside r@(varterm y) with varEq x y
+...                                        | no _ = r
+...                                        | yes _ = t
+sub (functerm _ _) for t inside r@(varterm x) = r
+sub s@(varterm x) for t inside functerm f rs = functerm f (suball rs s t)
+sub s@(functerm g qs) for t inside functerm f rs with funcEq g f
+...                                            | no x = functerm f (suball rs s t)
+...                                            | yes x with vecEqBool termEq qs rs
+...                                                    | false = functerm f (suball rs s t)
+...                                                    | true = t
+
+suball xs s t = vecmap (sub_for_inside_ s t) xs
+
+_[_/_] : Formula → Term → Term → Formula
+atom r rs [ s / t ] = atom r (suball rs s t)
+(α ⇒ β) [ s / t ] = (α [ s / t ]) ⇒ (β [ s / t ])
+(α ∧ β) [ s / t ] = (α [ s / t ]) ∧ (β [ s / t ])
+(α ∨ β) [ s / t ] = (α [ s / t ]) ∨ (β [ s / t ])
+Λ x α [ s@(varterm y) / t ] with varEq x y
+...                         | no _ = Λ x (α [ s / t ])
+...                         | yes _ = Λ x α
+Λ x α [ s@(functerm _ ss) / t ] = Λ x (α [ s / t ])
+V x α [ s@(varterm y) / t ] with varEq x y
+...                         | no _ = V x (α [ s / t ])
+...                         | yes _ = V x α
+V x α [ s@(functerm _ ss) / t ] = V x (α [ s / t ])
