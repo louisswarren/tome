@@ -28,17 +28,17 @@ data _,_⊢_ (Ω : List Scheme) : Ensemble formulaEq → Formula → Set where
   arrowelim  : ∀{Γ₁ Γ₂ α β}
                →                 Ω , Γ₁ ⊢ α ⇒ β    →    Ω , Γ₂ ⊢ α
                                 ----------------------------------- ⇒⁻
-               →                         Ω , (Γ₁ ∪  Γ₂) ⊢ β
+               →                         Ω , (Γ₁ ∪ Γ₂) ⊢ β
 
   conjintro  : ∀{Γ₁ Γ₂ α β}
                →                   Ω , Γ₁ ⊢ α    →    Ω , Γ₂ ⊢ β
                                   ------------------------------- ∧⁺
-               →                       Ω , (Γ₁ ∪  Γ₂) ⊢ α ∧ β
+               →                       Ω , (Γ₁ ∪ Γ₂) ⊢ α ∧ β
 
   conjelim   : ∀{Γ₁ Γ₂ α β γ}
                →                 Ω , Γ₁ ⊢ α ∧ β    →    Ω , Γ₂ ⊢ γ
                                 ----------------------------------- ∧⁻
-               →                    Ω , Γ₁ ∪  ((Γ₂ - α) - β) ⊢ γ
+               →                    Ω , Γ₁ ∪ ((Γ₂ - α) - β) ⊢ γ
 
   disjintro₁ : ∀{Γ α} → (β : Formula)
                →                             Ω , Γ ⊢ α
@@ -55,8 +55,7 @@ data _,_⊢_ (Ω : List Scheme) : Ensemble formulaEq → Formula → Set where
                        ------------------------------------------------------ ∨⁻
                →                 Ω , (Γ₁ ∪ (Γ₂ - α)) ∪ (Γ₃ - β) ⊢ γ
 
-  univintro  : ∀{Γ α} → (x : Variable)
-               → {_ : All (varterm x BoundIn_) Γ}
+  univintro  : ∀{Γ α} → (x : Variable) → All (varterm x BoundIn_) Γ
                →                             Ω , Γ ⊢ α
                                           --------------- ∀⁺
                →                           Ω , Γ ⊢ Λ x α
@@ -67,11 +66,11 @@ data _,_⊢_ (Ω : List Scheme) : Ensemble formulaEq → Formula → Set where
                →                   Ω , Γ ⊢ α [ (varterm x) / r ]
 
   existintro : ∀{Γ α} → (r : Term) → (x : Variable)
-               →                             Ω , Γ ⊢ α
-                                ----------------------------------- ∃⁺
-               →                 Ω , Γ ⊢ V x α [ r / (varterm x) ]
+               →                    Ω , Γ ⊢ α [ varterm x / r ]
+                                   ----------------------------- ∃⁺
+               →                           Ω , Γ ⊢ V x α
 
-  existelim  : ∀{Γ₁ Γ₂ α β x} → {_ : All (varterm x BoundIn_) (β ∷ (Γ₂ - α))}
+  existelim  : ∀{Γ₁ Γ₂ α β x} → All (varterm x BoundIn_) (β ∷ (Γ₂ - α))
                →                 Ω , Γ₁ ⊢ V x α    →    Ω , Γ₂ ⊢ β
                                 ----------------------------------- ∃⁻
                →                       Ω , Γ₁ ∪ (Γ₂ - α) ⊢ β
