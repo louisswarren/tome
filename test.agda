@@ -49,8 +49,8 @@ EqPred = mkrel 2 "Equals"
 EqFormula : Term → Term → Formula
 EqFormula s t = atom EqPred (s ∷ (t ∷ []))
 
-pf-partialex : (t : Term) → (x : Variable) → [] , EqFormula t t ∷ ∅ ⊢ V x (EqFormula (varterm x) ?)
-pf-partialex t x x≢t = existintroeq t x (atom EqPred ) (assume (EqFormula t t))
+pf-partialex : (t : Term) → (x : Variable) → (∀ s → [ t ∷ [] ][ varterm x / s ]≡ (t ∷ [])) → [] , EqFormula t t ∷ ∅ ⊢ V x (EqFormula (varterm x) t)
+pf-partialex t x xnin = existintroeq t x (atom EqPred (var≡ x (xnin t))) (assume (EqFormula t t))
 
 --pf-partialex : (s t : Term) → (x : Variable) → [] , EqFormula (sub varterm x for s inside varterm x) (sub varterm x for s inside t) ∷ ∅ ⊢ V x (EqFormula (varterm x) t)
 --pf-partialex s t x = existintro s x (assume (EqFormula (sub varterm x for s inside varterm x) (sub varterm x for s inside t)))

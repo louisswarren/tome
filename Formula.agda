@@ -285,10 +285,6 @@ data [_][_/_]≡_ : ∀{n} → Vec Term n → Term → Term → Vec Term n → S
             → [ xs ][ s / t ]≡ ys
             → [ functerm f us ∷ xs ][ s / t ]≡ (functerm f vs ∷ ys)
 
---term≢ : ∀{x n s t} {xs ys : Vec Term n} → [ xs ][ s / t ]≡ ys → s ≢ x → [ x ∷ xs ][ s / t ]≡ (x ∷ ys)
---term≢ {varterm x} rep neq = var≢ x neq rep
---term≢ {functerm f us} rep neq = {!   !}
-
 [_][_/_]′ : ∀{n} → (xs : Vec Term n) → (s t : Term) → Σ (Vec Term n) [ xs ][ s / t ]≡_
 [ [] ][ s / t ]′ = [] , []
 [ x ∷ xs ][ s / t ]′ with termEq s x
