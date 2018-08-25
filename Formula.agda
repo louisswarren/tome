@@ -250,13 +250,6 @@ t isBoundIn V x α with termEq t (varterm x)
         φ (V∣ x α) = x₁ refl
         φ (V x pf) = x₂ pf
 
-record Scheme : Set where
-  constructor scheme
-  field
-    name  : String
-    arity : ℕ
-    inst  : Vec Formula arity → Formula
-
 vecEqBool : ∀{n m} {A : Set} → Decidable≡ A → Vec A n → Vec A m → Bool
 vecEqBool {n} {m} eq xs ys with natEq n m
 vecEqBool {n} {.n} eq xs ys | yes refl with vecEq eq xs ys
@@ -295,3 +288,26 @@ V x α [ s@(varterm y) / t ] with varEq x y
 ...                         | no _ = V x (α [ s / t ])
 ...                         | yes _ = V x α
 V x α [ s@(functerm _ ss) / t ] = V x (α [ s / t ])
+
+record Scheme : Set where
+  constructor scheme
+  field
+    name  : String
+    arity : ℕ
+    inst  : Vec Formula arity → Formula
+
+data Termsub : ∀{n} → Vec Term n → Term → Term → Vec Term n → Set where
+  []  : ∀{s t} → Termsub [] s t []
+  var : ∀{n xs ys s t} → (x : Variable) → Termsub {n} xs s t ys → Termsub (varterm x ∷ xs) s t (varterm x ∷ ys)
+  func : ∀{n xs ys s t} → (f : Function) → ∀{us vs} → Termsub us s t vs → Termsub {n} xs s t ys → Termsub (functerm f us ∷ xs) s t (functerm f vs ∷ ys)
+
+
+data _[_/_]≡_ : Formula → Term → Term → Formula → Set where
+  atom : ∀{s t} → (r : Relation) → ∀{xs ys} → Termsub xs s t ys → (atom r xs) [ s / t ]≡ (atom r ys)
+  _⇒_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ⇒ β) [ s / t ]≡ (α′ ⇒ β′)
+  _∧_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∧ β) [ s / t ]≡ (α′ ∧ β′)
+  _∨_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∨ β) [ s / t ]≡ (α′ ∨ β′)
+  Λ∣   : ∀{α x t} → (Λ x α) [ varterm x / t ]≡ (Λ x α)
+  V∣   : ∀{α x t} → (V x α) [ varterm x / t ]≡ (V x α)
+  Λ    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (Λ x α) [ s / t ]≡ β
+  V    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (V x α) [ s / t ]≡ β
