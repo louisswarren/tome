@@ -75,6 +75,16 @@ infixr 107 _∧_
 _⇔_ : Formula → Formula → Formula
 Φ ⇔ Ψ = (Φ ⇒ Ψ) ∧ (Ψ ⇒ Φ)
 
+
+-- An n-ary scheme is a named n-ary function on formulae
+record Scheme : Set where
+  constructor scheme
+  field
+    name  : String
+    arity : ℕ
+    inst  : Vec Formula arity → Formula
+
+-- May not want to define these here
 bottom = atom (mkprop "⊥") []
 
 not notnot : Formula → Formula
@@ -250,60 +260,48 @@ t isBoundIn V x α with termEq t (varterm x)
         φ (V∣ x α) = x₁ refl
         φ (V x pf) = x₂ pf
 
-vecEqBool : ∀{n m} {A : Set} → Decidable≡ A → Vec A n → Vec A m → Bool
-vecEqBool {n} {m} eq xs ys with natEq n m
-vecEqBool {n} {.n} eq xs ys | yes refl with vecEq eq xs ys
-vecEqBool {n} {.n} eq xs ys | yes refl | yes x = true
-vecEqBool {n} {.n} eq xs ys | yes refl | no x = false
-vecEqBool {n} {m} eq xs ys | no x = false
 
-{-# TERMINATING #-}
--- Todo: of course this terminates
-sub_for_inside_ : Term → Term → Term → Term
-suball : ∀{n} → Vec Term n → Term → Term → Vec Term n
+-- Term replacement
 
-sub (varterm x) for t inside r@(varterm y) with varEq x y
-...                                        | no _ = r
-...                                        | yes _ = t
-sub (functerm _ _) for t inside r@(varterm x) = r
-sub s@(varterm x) for t inside functerm f rs = functerm f (suball rs s t)
-sub s@(functerm g qs) for t inside functerm f rs with funcEq g f
-...                                            | no x = functerm f (suball rs s t)
-...                                            | yes x with vecEqBool termEq qs rs
-...                                                    | false = functerm f (suball rs s t)
-...                                                    | true = t
+data [_][_/_]≡_ : ∀{n} → Vec Term n → Term → Term → Vec Term n → Set where
+  []    : ∀{s t} → [ [] ][ s / t ]≡ []
+  var≡  : ∀{n t} {xs ys : Vec Term n}
+            → (x : Variable)
+            → [ xs ][ varterm x / t ]≡ ys
+            → [ varterm x ∷ xs ][ varterm x / t ]≡ (t ∷ ys)
+  var≢  : ∀{n s t} {xs ys : Vec Term n}
+            → (x : Variable)
+            → s ≢ varterm x
+            → [ xs ][ s / t ]≡ ys
+            → [ varterm x ∷ xs ][ s / t ]≡ (varterm x ∷ ys)
+  func≡ : ∀{n t} {xs ys : Vec Term n}
+            → (f : Function) → ∀{us}
+            → [ xs ][ functerm f us / t ]≡ ys
+            → [ functerm f us ∷ xs ][ functerm f us / t ]≡ (t ∷ ys)
+  func≢ : ∀{n s t} {xs ys : Vec Term n}
+            → (f : Function) → ∀{us vs}
+            → s ≢ functerm f us
+            → [ us ][ s / t ]≡ vs
+            → [ xs ][ s / t ]≡ ys
+            → [ functerm f us ∷ xs ][ s / t ]≡ (functerm f vs ∷ ys)
 
-suball xs s t = vecmap (sub_for_inside_ s t) xs
+[_][_/_]′ : ∀{n} → (xs : Vec Term n) → (s t : Term) → Σ (Vec Term n) [ xs ][ s / t ]≡_
+[ [] ][ s / t ]′ = [] , []
+[ x ∷ xs ][ s / t ]′ with termEq s x
+[ varterm x ∷ xs ][ .(varterm x) / t ]′ | yes refl with [ xs ][ varterm x / t ]′
+[ varterm x ∷ xs ][ .(varterm x) / t ]′ | yes refl | ys , pf = (t ∷ ys) , var≡ x pf
+[ functerm f us ∷ xs ][ .(functerm f us) / t ]′ | yes refl with [ xs ][ functerm f us / t ]′
+[ functerm f us ∷ xs ][ .(functerm f us) / t ]′ | yes refl | ys , pf = (t ∷ ys) , func≡ f pf
+[ x ∷ xs ][ s / t ]′ | no neq with [ xs ][ s / t ]′
+[ varterm x ∷ xs ][ s / t ]′ | no neq | ys , pf = (varterm x ∷ ys) , var≢ x neq pf
+[ functerm f us ∷ xs ][ s / t ]′ | no neq | ys , pf with [ us ][ s / t ]′
+[ functerm f us ∷ xs ][ s / t ]′ | no neq | ys , pf | vs , pf′ = (functerm f vs ∷ ys) , func≢ f neq pf′ pf
 
-_[_/_] : Formula → Term → Term → Formula
-atom r rs [ s / t ] = atom r (suball rs s t)
-(α ⇒ β) [ s / t ] = (α [ s / t ]) ⇒ (β [ s / t ])
-(α ∧ β) [ s / t ] = (α [ s / t ]) ∧ (β [ s / t ])
-(α ∨ β) [ s / t ] = (α [ s / t ]) ∨ (β [ s / t ])
-Λ x α [ s@(varterm y) / t ] with varEq x y
-...                         | no _ = Λ x (α [ s / t ])
-...                         | yes _ = Λ x α
-Λ x α [ s@(functerm _ ss) / t ] = Λ x (α [ s / t ])
-V x α [ s@(varterm y) / t ] with varEq x y
-...                         | no _ = V x (α [ s / t ])
-...                         | yes _ = V x α
-V x α [ s@(functerm _ ss) / t ] = V x (α [ s / t ])
-
-record Scheme : Set where
-  constructor scheme
-  field
-    name  : String
-    arity : ℕ
-    inst  : Vec Formula arity → Formula
-
-data Termsub : ∀{n} → Vec Term n → Term → Term → Vec Term n → Set where
-  []  : ∀{s t} → Termsub [] s t []
-  var : ∀{n xs ys s t} → (x : Variable) → Termsub {n} xs s t ys → Termsub (varterm x ∷ xs) s t (varterm x ∷ ys)
-  func : ∀{n xs ys s t} → (f : Function) → ∀{us vs} → Termsub us s t vs → Termsub {n} xs s t ys → Termsub (functerm f us ∷ xs) s t (functerm f vs ∷ ys)
-
+[_][_/_] : ∀{n} → (xs : Vec Term n) → (s t : Term) → Vec Term n
+[ xs ][ s / t ] = fst [ xs ][ s / t ]′
 
 data _[_/_]≡_ : Formula → Term → Term → Formula → Set where
-  atom : ∀{s t} → (r : Relation) → ∀{xs ys} → Termsub xs s t ys → (atom r xs) [ s / t ]≡ (atom r ys)
+  atom : ∀{s t} → (r : Relation) → ∀{xs ys} → [ xs ][ s / t ]≡ ys → (atom r xs) [ s / t ]≡ (atom r ys)
   _⇒_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ⇒ β) [ s / t ]≡ (α′ ⇒ β′)
   _∧_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∧ β) [ s / t ]≡ (α′ ∧ β′)
   _∨_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∨ β) [ s / t ]≡ (α′ ∨ β′)
@@ -311,3 +309,24 @@ data _[_/_]≡_ : Formula → Term → Term → Formula → Set where
   V∣   : ∀{α x t} → (V x α) [ varterm x / t ]≡ (V x α)
   Λ    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (Λ x α) [ s / t ]≡ β
   V    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (V x α) [ s / t ]≡ β
+
+_[_/_]′ : (α : Formula) → (s t : Term) → Σ Formula (α [ s / t ]≡_)
+atom r xs [ s / t ]′ with [ xs ][ s / t ]′
+...                  | ys , pf = atom r ys , atom r pf
+(α ⇒ β)   [ s / t ]′ with (α [ s / t ]′) , (β [ s / t ]′)
+...                  | (α′ , αpf) , (β' , βpf) = α′ ⇒ β' , αpf ⇒ βpf
+(α ∧ β)   [ s / t ]′ with (α [ s / t ]′) , (β [ s / t ]′)
+...                  | (α′ , αpf) , (β' , βpf) = α′ ∧ β' , αpf ∧ βpf
+(α ∨ β)   [ s / t ]′ with (α [ s / t ]′) , (β [ s / t ]′)
+...                  | (α′ , αpf) , (β' , βpf) = α′ ∨ β' , αpf ∨ βpf
+Λ x α     [ s / t ]′ with termEq s (varterm x)
+...                  | yes refl = Λ x α , Λ∣
+...                  | no neq with α [ s / t ]′
+...                           | α′ , pf = α′ , Λ neq pf
+V x α     [ s / t ]′ with termEq s (varterm x)
+...                  | yes refl = V x α , V∣
+...                  | no neq with α [ s / t ]′
+...                           | α′ , pf = α′ , V neq pf
+
+_[_/_] : (α : Formula) → (s t : Term) → Formula
+α [ s / t ] = fst (α [ s / t ]′)
