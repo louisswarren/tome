@@ -1,9 +1,9 @@
-open import Agda.Builtin.Equality
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 
-open import Formula
+open import Decidable
 open import Deduction
+open import Formula
 --open import Texify
 open import common
 
@@ -42,3 +42,21 @@ pf-repl p x y y-not-free = univintro y
 
 pf-regen : (p : Formula) → (x : Variable) → [] , Λ x p ∷ ∅ ⊢ Λ x (p [ varterm x / varterm x ])
 pf-regen p x = univintro x (Λ∣ x p ∷ ∅) (univelim (varterm x) (assume (Λ x p)))
+
+
+EqPred : Relation
+EqPred = mkrel 2 "Equals"
+EqFormula : Term → Term → Formula
+EqFormula s t = atom EqPred (s ∷ (t ∷ []))
+
+pf-partialex : (t : Term) → (x : Variable) → [] , EqFormula t t ∷ ∅ ⊢ V x (EqFormula (varterm x) ?)
+pf-partialex t x x≢t = existintroeq t x (atom EqPred ) (assume (EqFormula t t))
+
+--pf-partialex : (s t : Term) → (x : Variable) → [] , EqFormula (sub varterm x for s inside varterm x) (sub varterm x for s inside t) ∷ ∅ ⊢ V x (EqFormula (varterm x) t)
+--pf-partialex s t x = existintro s x (assume (EqFormula (sub varterm x for s inside varterm x) (sub varterm x for s inside t)))
+--
+--pf-partialex' : (s t : Term) → (x : Variable) → [] , EqFormula s t ∷ ∅ ⊢ V x (EqFormula (varterm x) t)
+--pf-partialex' s t x = existintroeq s x φ (assume (EqFormula s t))
+--                      where
+--                        φ : EqFormula s t ≡ EqFormula (sub varterm x for s inside varterm x) (sub varterm x for s inside t)
+--                        φ = {! refl  !}

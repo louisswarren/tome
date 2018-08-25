@@ -5,6 +5,8 @@ open import Agda.Builtin.Equality
 open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_-_)
 
+open import Agda.Builtin.Sigma using (fst ; snd)
+
 open import Formula
 open import Deck
 open import Ensemble
@@ -76,6 +78,14 @@ data _,_⊢_ (Ω : List Scheme) : Ensemble formulaEq → Formula → Set where
                →                       Ω , Γ₁ ∪ (Γ₂ - α) ⊢ β
 
   close      : ∀{Γ Δ α} → Γ ⊂ Δ → Ω , Γ ⊢ α → Ω , Δ ⊢ α
+
+existintroeq : ∀{α β Ω Γ} → (r : Term) → (x : Variable)
+               → α [ varterm x / r ]≡ β
+               →                             Ω , Γ ⊢ β
+                                   ----------------------------- ∃⁺
+               →                           Ω , Γ ⊢ V x α
+existintroeq {α} {β} r x rep d with repWitness rep
+existintroeq {α} {.(fst (α [ varterm x / r ]′))} r x rep d | refl = existintro r x d
 
 _⊢_ : Ensemble formulaEq → Formula → Set
 Γ ⊢ α = [] , Γ ⊢ α

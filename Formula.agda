@@ -285,6 +285,10 @@ data [_][_/_]≡_ : ∀{n} → Vec Term n → Term → Term → Vec Term n → S
             → [ xs ][ s / t ]≡ ys
             → [ functerm f us ∷ xs ][ s / t ]≡ (functerm f vs ∷ ys)
 
+--term≢ : ∀{x n s t} {xs ys : Vec Term n} → [ xs ][ s / t ]≡ ys → s ≢ x → [ x ∷ xs ][ s / t ]≡ (x ∷ ys)
+--term≢ {varterm x} rep neq = var≢ x neq rep
+--term≢ {functerm f us} rep neq = {!   !}
+
 [_][_/_]′ : ∀{n} → (xs : Vec Term n) → (s t : Term) → Σ (Vec Term n) [ xs ][ s / t ]≡_
 [ [] ][ s / t ]′ = [] , []
 [ x ∷ xs ][ s / t ]′ with termEq s x
@@ -330,3 +334,9 @@ V x α     [ s / t ]′ with termEq s (varterm x)
 
 _[_/_] : (α : Formula) → (s t : Term) → Formula
 α [ s / t ] = fst (α [ s / t ]′)
+
+postulate uniqueSub : ∀ α β γ s t → α [ s / t ]≡ β → α [ s / t ]≡ γ → β ≡ γ
+
+repWitness : ∀{α β s t} → α [ s / t ]≡ β → α [ s / t ] ≡ β
+repWitness {α} {β} {s} {t} rep with α [ s / t ]′
+repWitness {α} {β} {s} {t} rep | a′ , pf = uniqueSub α a′ β s t pf rep
