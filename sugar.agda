@@ -6,17 +6,25 @@ open import Formula
 
 open import common
 
+
+⊥ : Formula
+⊥ = atom (mkprop "\\bot") []
+
+¬ ¬¬ : Formula → Formula
+¬ α = α ⇒ ⊥
+¬¬ α = ¬ (¬ α)
+
 _[!_/_] : Formula → Variable → Term → Formula
 α [! v / t ] = α [ varterm v / t ]
 
 nullaryscheme : String → Formula → Scheme
-nullaryscheme s α = scheme zero s (λ _ → α)
+nullaryscheme s α = scheme s zero (λ _ → α)
 
 unaryscheme : String → (Formula → Formula) → Scheme
-unaryscheme s f = scheme 1 s (λ xs → f (xs !! 0))
+unaryscheme s f = scheme s 1 (λ xs → f (xs !! 0))
 
 binaryscheme : String → (Formula → Formula → Formula) → Scheme
-binaryscheme s f = scheme 2 s (λ xs → f (xs !! 0) (xs !! 1))
+binaryscheme s f = scheme s 2 (λ xs → f (xs !! 0) (xs !! 1))
 
 
 

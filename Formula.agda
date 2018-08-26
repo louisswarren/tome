@@ -9,13 +9,6 @@ open import Vec
 open import Decidable
 open import String
 
-_×_ : Set → Set → Set
-A × B = Σ A λ _ → B
-
-vecmap : ∀{n} → {A B : Set} → (A → B) → Vec A n → Vec B n
-vecmap f [] = []
-vecmap f (x ∷ xs) = f x ∷ vecmap f xs
-
 
 -- "Let a countably infinite set {vi | i ∈ N} of variables be given."
 record Variable : Set where
@@ -62,9 +55,9 @@ data Term : Set where
 --- from prime formulas.
 data Formula : Set where
   atom   : (r : Relation) → Vec Term (Relation.arity r) → Formula
-  _⇒_    : Formula → Formula → Formula
-  _∧_    : Formula → Formula → Formula
-  _∨_    : Formula → Formula → Formula
+  _⇒_    : Formula  → Formula → Formula
+  _∧_    : Formula  → Formula → Formula
+  _∨_    : Formula  → Formula → Formula
   Λ      : Variable → Formula → Formula
   V      : Variable → Formula → Formula
 
@@ -84,12 +77,6 @@ record Scheme : Set where
     arity : ℕ
     inst  : Vec Formula arity → Formula
 
--- May not want to define these here
-bottom = atom (mkprop "⊥") []
-
-not notnot : Formula → Formula
-not Φ = Φ ⇒ bottom
-notnot Φ = not(not Φ)
 
 --------------------------------------------------------------------------------
 -- Surely there's something nicer than this?
