@@ -294,8 +294,8 @@ data _[_/_]≡_ : Formula → Term → Term → Formula → Set where
   _∨_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∨ β) [ s / t ]≡ (α′ ∨ β′)
   Λ∣   : ∀{α x t} → (Λ x α) [ varterm x / t ]≡ (Λ x α)
   V∣   : ∀{α x t} → (V x α) [ varterm x / t ]≡ (V x α)
-  Λ    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (Λ x α) [ s / t ]≡ β
-  V    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (V x α) [ s / t ]≡ β
+  Λ    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (Λ x α) [ s / t ]≡ (Λ x β)
+  V    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (V x α) [ s / t ]≡ (V x β)
 
 _[_/_]′ : (α : Formula) → (s t : Term) → Σ Formula (α [ s / t ]≡_)
 atom r xs [ s / t ]′ with [ xs ][ s / t ]′
@@ -309,11 +309,11 @@ atom r xs [ s / t ]′ with [ xs ][ s / t ]′
 Λ x α     [ s / t ]′ with termEq s (varterm x)
 ...                  | yes refl = Λ x α , Λ∣
 ...                  | no neq with α [ s / t ]′
-...                           | α′ , pf = α′ , Λ neq pf
+...                           | α′ , pf = Λ x α′ , Λ neq pf
 V x α     [ s / t ]′ with termEq s (varterm x)
 ...                  | yes refl = V x α , V∣
 ...                  | no neq with α [ s / t ]′
-...                           | α′ , pf = α′ , V neq pf
+...                           | α′ , pf = V x α′ , V neq pf
 
 _[_/_] : (α : Formula) → (s t : Term) → Formula
 α [ s / t ] = fst (α [ s / t ]′)
