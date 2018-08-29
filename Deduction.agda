@@ -5,6 +5,7 @@ open import Agda.Builtin.Equality
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_-_)
 
 open import Agda.Builtin.Sigma using (fst ; snd)
+open import Agda.Builtin.String
 
 open import Formula
 open import Deck
@@ -22,7 +23,7 @@ open import common
 record Scheme : Set where
   constructor scheme
   field
-    idx   : ℕ
+    idx   : String
     arity : ℕ
     inst  : Vec Formula arity → Formula
 
@@ -108,3 +109,41 @@ _⊃_ : List Scheme → Scheme → Set
 (Ω ⊃ Φ) = All[] (Derivable) Ω → Derivable Φ
 
 infixr 1 _⊃_
+
+
+⊥ : Formula
+⊥ = atom (mkprop 0) []
+
+¬ ¬¬ : Formula → Formula
+¬ α = α ⇒ ⊥
+¬¬ α = ¬ (¬ α)
+
+dne : Vec Formula 1 → Formula
+dne (x ∷ []) = ¬¬ x ⇒ x
+
+lem : Vec Formula 1 → Formula
+lem (x ∷ []) = x ∨ ¬ x
+
+DNE : Scheme
+DNE = scheme "DNE" 1 dne
+
+LEM : Scheme
+LEM = scheme "LEM" 1 lem
+
+dne→lem : (∀ αs → ⊢ (dne αs)) → ∀ αs → ⊢ (lem αs)
+dne→lem ⊢dne (α ∷ []) = close
+                                (∅ ∪  ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪;(α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                                (arrowelim
+                                 (⊢dne ((α ∨ ¬ α) ∷ []))
+                                 (arrowintro (¬ (α ∨ ¬ α))
+                                  (arrowelim
+                                   (assume (¬ (α ∨ ¬ α)))
+                                   (disjintro₂ α
+                                    (arrowintro α
+                                     (arrowelim
+                                      (assume (¬ (α ∨ ¬ α)))
+                                      (disjintro₁ (¬ α)
+                                       (assume α))))))))
+
+DNE⊃LEM : DNE ∷ [] ⊃ LEM
+DNE⊃LEM (⊢dne ∷ []) (α ∷ []) = dne→lem ⊢dne (α ∷ [])
