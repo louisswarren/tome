@@ -2,7 +2,6 @@ module Deduction where
 
 open import Agda.Builtin.Bool
 open import Agda.Builtin.Equality
-open import Agda.Builtin.List
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_-_)
 
 open import Agda.Builtin.Sigma using (fst ; snd)
@@ -10,96 +9,102 @@ open import Agda.Builtin.Sigma using (fst ; snd)
 open import Formula
 open import Deck
 open import Ensemble
+open import List
+  hiding (Any ; any)
+  renaming (
+    All        to All[]        ;
+    all        to all[]        ;
+    _∈_        to _[∈]_        ;
+    _∉_        to _[∉]_        ;
+    decide∈    to decide[∈]    )
 open import common
 
+record Scheme : Set where
+  constructor scheme
+  field
+    idx   : ℕ
+    arity : ℕ
+    inst  : Vec Formula arity → Formula
 
-infix 1 _⊢_ _,_⊢_
-data _,_⊢_ (Ω : List Scheme) : Ensemble formulaEq → Formula → Set where
-  axiom      : (k : ℕ) → {indexable : isTrue (k < (len Ω))}
-               → (x : Vec Formula (Scheme.arity ((Ω ! k) {indexable})))
-               →                  Ω , ∅  ⊢ (Scheme.inst (Ω ! k)) x
-
+infix 1 _⊢_
+data _⊢_ : Ensemble formulaEq → Formula → Set where
   assume     : (α : Formula)
-               →                           Ω , α ∷ ∅ ⊢ α
+               →                           α ∷ ∅ ⊢ α
 
   arrowintro : ∀{Γ β} → (α : Formula)
-               →                             Ω , Γ ⊢ β
+               →                             Γ ⊢ β
                                         ------------------- ⇒⁺ α
-               →                         Ω , Γ - α ⊢ α ⇒ β
+               →                         Γ - α ⊢ α ⇒ β
 
   arrowelim  : ∀{Γ₁ Γ₂ α β}
-               →                 Ω , Γ₁ ⊢ α ⇒ β    →    Ω , Γ₂ ⊢ α
+               →                 Γ₁ ⊢ α ⇒ β    →    Γ₂ ⊢ α
                                 ----------------------------------- ⇒⁻
-               →                         Ω , (Γ₁ ∪ Γ₂) ⊢ β
+               →                         (Γ₁ ∪ Γ₂) ⊢ β
 
   conjintro  : ∀{Γ₁ Γ₂ α β}
-               →                   Ω , Γ₁ ⊢ α    →    Ω , Γ₂ ⊢ β
+               →                   Γ₁ ⊢ α    →    Γ₂ ⊢ β
                                   ------------------------------- ∧⁺
-               →                       Ω , (Γ₁ ∪ Γ₂) ⊢ α ∧ β
+               →                       (Γ₁ ∪ Γ₂) ⊢ α ∧ β
 
   conjelim   : ∀{Γ₁ Γ₂ α β γ}
-               →                 Ω , Γ₁ ⊢ α ∧ β    →    Ω , Γ₂ ⊢ γ
+               →                 Γ₁ ⊢ α ∧ β    →    Γ₂ ⊢ γ
                                 ----------------------------------- ∧⁻
-               →                    Ω , Γ₁ ∪ ((Γ₂ - α) - β) ⊢ γ
+               →                    Γ₁ ∪ ((Γ₂ - α) - β) ⊢ γ
 
   disjintro₁ : ∀{Γ α} → (β : Formula)
-               →                             Ω , Γ ⊢ α
+               →                             Γ ⊢ α
                                           --------------- ∨⁺₁
-               →                           Ω , Γ ⊢ α ∨ β
+               →                           Γ ⊢ α ∨ β
 
   disjintro₂ : ∀{Γ β} → (α : Formula)
-               →                             Ω , Γ ⊢ β
+               →                             Γ ⊢ β
                                           --------------- ∨⁺₂
-               →                           Ω , Γ ⊢ α ∨ β
+               →                           Γ ⊢ α ∨ β
 
   disjelim   : ∀{Γ₁ Γ₂ Γ₃ α β γ}
-               →        Ω , Γ₁ ⊢ α ∨ β    →    Ω , Γ₂ ⊢ γ    →    Ω , Γ₃ ⊢ γ
+               →        Γ₁ ⊢ α ∨ β    →    Γ₂ ⊢ γ    →    Γ₃ ⊢ γ
                        ------------------------------------------------------ ∨⁻
-               →                 Ω , (Γ₁ ∪ (Γ₂ - α)) ∪ (Γ₃ - β) ⊢ γ
+               →                 (Γ₁ ∪ (Γ₂ - α)) ∪ (Γ₃ - β) ⊢ γ
 
   univintro  : ∀{Γ α} → (x : Variable) → All (varterm x BoundIn_) Γ
-               →                             Ω , Γ ⊢ α
+               →                             Γ ⊢ α
                                           --------------- ∀⁺
-               →                           Ω , Γ ⊢ Λ x α
+               →                           Γ ⊢ Λ x α
 
   univelim   : ∀{Γ α x} → (r : Term)
-               →                           Ω , Γ ⊢ Λ x α
+               →                           Γ ⊢ Λ x α
                                   ------------------------------- ∀⁻
-               →                   Ω , Γ ⊢ α [ (varterm x) / r ]
+               →                   Γ ⊢ α [ (varterm x) / r ]
 
   existintro : ∀{Γ α} → (r : Term) → (x : Variable)
-               →                    Ω , Γ ⊢ α [ varterm x / r ]
+               →                    Γ ⊢ α [ varterm x / r ]
                                    ----------------------------- ∃⁺
-               →                           Ω , Γ ⊢ V x α
+               →                           Γ ⊢ V x α
 
   existelim  : ∀{Γ₁ Γ₂ α β x} → All (varterm x BoundIn_) (β ∷ (Γ₂ - α))
-               →                 Ω , Γ₁ ⊢ V x α    →    Ω , Γ₂ ⊢ β
+               →                 Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
                                 ----------------------------------- ∃⁻
-               →                       Ω , Γ₁ ∪ (Γ₂ - α) ⊢ β
+               →                       Γ₁ ∪ (Γ₂ - α) ⊢ β
 
-  close      : ∀{Γ Δ α} → Γ ⊂ Δ → Ω , Γ ⊢ α → Ω , Δ ⊢ α
+  close      : ∀{Γ Δ α} → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
 
-existintroeq : ∀{α β Ω Γ} → (r : Term) → (x : Variable)
+existintroeq : ∀{α β Γ} → (r : Term) → (x : Variable)
                → α [ varterm x / r ]≡ β
-               →                             Ω , Γ ⊢ β
+               →                             Γ ⊢ β
                                    ----------------------------- ∃⁺
-               →                           Ω , Γ ⊢ V x α
+               →                           Γ ⊢ V x α
 existintroeq {α} {β} r x rep d with repWitness rep
 existintroeq {α} {.(fst (α [ varterm x / r ]′))} r x rep d | refl = existintro r x d
 
-_⊢_ : Ensemble formulaEq → Formula → Set
-Γ ⊢ α = [] , Γ ⊢ α
+
+
+⊢_ : Formula → Set
+⊢_ α = ∅ ⊢ α
+
+Derivable : Scheme → Set
+Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
 
 _⊃_ : List Scheme → Scheme → Set
-(Ω ⊃ Φ) = (xs : Vec Formula (Scheme.arity Φ)) → Ω , ∅ ⊢ Scheme.inst Φ xs
+(Ω ⊃ Φ) = All[] (Derivable) Ω → Derivable Φ
 
 infixr 1 _⊃_
-
-⊢ : Formula → Set
-⊢ α = ∀{Ω} → Ω , ∅ ⊢ α
-
-conclusion : ∀{Ω Γ α} → Ω , Γ ⊢ α → Formula
-conclusion {_} {_} {α} _ = α
-
-assumptions : ∀{Ω Γ α} → Ω , Γ ⊢ α → Ensemble formulaEq
-assumptions {_} {Γ} {_} _ = Γ
