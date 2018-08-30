@@ -132,7 +132,7 @@ LEM = scheme "LEM" 1 lem
 
 dne→lem : (∀ αs → ⊢ (dne αs)) → ∀ αs → ⊢ (lem αs)
 dne→lem ⊢dne (α ∷ []) = close
-                                (∅ ∪  ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪;(α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                                (∅ ∪  ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                                 (arrowelim
                                  (⊢dne ((α ∨ ¬ α) ∷ []))
                                  (arrowintro (¬ (α ∨ ¬ α))
@@ -147,3 +147,51 @@ dne→lem ⊢dne (α ∷ []) = close
 
 DNE⊃LEM : DNE ∷ [] ⊃ LEM
 DNE⊃LEM (⊢dne ∷ []) (α ∷ []) = dne→lem ⊢dne (α ∷ [])
+
+
+pattern xvar  = mkvar 0
+pattern yvar  = mkvar 1
+pattern zvar  = mkvar 2
+pattern var n = mkvar (suc (suc (suc n)))
+
+x = varterm xvar
+y = varterm yvar
+z = varterm zvar
+
+∀x ∃x ∀x¬ ∃x¬ ¬∀x ¬∃x ¬∀x¬ ¬∃x¬ : Formula → Formula
+∀x Φ = Λ xvar Φ
+∃x Φ = V xvar Φ
+∀x¬ Φ = ∀x (¬ Φ)
+∃x¬ Φ = ∃x (¬ Φ)
+¬∀x Φ = ¬(∀x Φ)
+¬∃x Φ = ¬(∃x Φ)
+¬∀x¬ Φ = ¬(∀x¬ Φ)
+¬∃x¬ Φ = ¬(∃x¬ Φ)
+
+∀y ∃y ∀y¬ ∃y¬ ¬∀y ¬∃y ¬∀y¬ ¬∃y¬ : Formula → Formula
+∀y Φ = Λ yvar Φ
+∃y Φ = V yvar Φ
+∀y¬ Φ = ∀y (¬ Φ)
+∃y¬ Φ = ∃y (¬ Φ)
+¬∀y Φ = ¬(∀y Φ)
+¬∃y Φ = ¬(∃y Φ)
+¬∀y¬ Φ = ¬(∀y¬ Φ)
+¬∃y¬ Φ = ¬(∃y¬ Φ)
+
+dp gmp : Formula → Formula
+dp  Φx = ∃x(Φx ⇒ ∀x Φx)
+gmp Φx = ¬∀x Φx ⇒ ∃x (¬ Φx)
+
+dp→gmp : (∀ α → ⊢ (dp α)) → ∀ α → ⊢ (gmp α)
+dp→gmp ⊢dp α = close
+                ((Λ (mkvar zero) α ⇒ atom (mkrel zero zero) []) ~  (∅ ∪   ((α ⇒ Λ (mkvar zero) α) ~ (α ~ (((α ∷ ((α ⇒ Λ (mkvar zero) α) ∷ List.[ refl ])) -∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
+                (arrowintro (¬∀x α)
+                 (existelim (V∣ (mkvar zero) (α ⇒ atom (mkrel zero zero) []) ∷  ((α ⇒ Λ (mkvar zero) α) ~   (α ~ (((Λ∣ (mkvar zero) α ⇒ atom []) ∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                  (⊢dp α)
+                  (existintroeq x xvar (reflSub (varterm (mkvar zero)) (α ⇒ atom (mkrel zero zero) []))
+                   (arrowintro α
+                    (arrowelim
+                     (assume (¬∀x α))
+                     (arrowelim
+                      (assume (α ⇒ ∀x α))
+                      (assume α)))))))
