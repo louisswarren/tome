@@ -39,20 +39,6 @@ mkconst : ℕ → Function
 mkconst n = mkfunc n zero
 
 
-private
-  data ArityUniverse : Set where
-    relation : ArityUniverse
-    function : ArityUniverse
-
-  arityType : ArityUniverse → Set
-  arityType relation = Relation
-  arityType function = Function
-
-  arity : {t : ArityUniverse} → (arityType t) → ℕ
-  arity {relation} (mkrel  idx n) = n
-  arity {function} (mkfunc idx n) = n
-
-
 -- "Terms are inductively defined as follows.
 --  (i)   Every variable is a term.
 --  (ii)  Every constant is a term.
@@ -61,14 +47,14 @@ private
 
 data Term : Set where
   varterm  : Variable → Term
-  functerm : (f : Function) → Vec Term (arity f) → Term
+  functerm : (f : Function) → Vec Term (Function.arity f) → Term
 
 
 -- "If t1, . . . , tn are terms and R is an n-ary relation symbol, then
 --  R(t1, . . . , tn ) is a prime formula ... Formulas are inductively defined
 --- from prime formulas."
 data Formula : Set where
-  atom   : (r : Relation) → Vec Term (arity r) → Formula
+  atom   : (r : Relation) → Vec Term (Relation.arity r) → Formula
   _⇒_    : Formula  → Formula → Formula
   _∧_    : Formula  → Formula → Formula
   _∨_    : Formula  → Formula → Formula
@@ -156,7 +142,7 @@ private
                                                                       φ refl = neq refl
 
 formulaEq : Decidable≡ Formula
-formulaEq (atom r xs) (atom s ys) with natEq (arity r) (arity s)
+formulaEq (atom r xs) (atom s ys) with natEq (Relation.arity r) (Relation.arity s)
 ...                               | yes refl with (relEq r s) , (vecEq termEq xs ys)
 ...                                          | yes refl , yes refl = yes refl
 ...                                          | _ , no neq = no φ
