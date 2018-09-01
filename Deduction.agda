@@ -67,7 +67,8 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
                        ------------------------------------------------------ ∨⁻
                →                 (Γ₁ ∪ (Γ₂ - α)) ∪ (Γ₃ - β) ⊢ γ
 
-  univintro  : ∀{Γ α} → (x : Variable) → All (varterm x BoundIn_) Γ
+  univintro  : ∀{Γ α} → (x : Variable)
+               → All (varterm x BoundIn_) Γ
                →                             Γ ⊢ α
                                           --------------- ∀⁺
                →                           Γ ⊢ Λ x α
@@ -77,26 +78,19 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
                                   ------------------------------- ∀⁻
                →                   Γ ⊢ α [ (varterm x) / r ]
 
-  existintro : ∀{Γ α} → (r : Term) → (x : Variable)
-               →                    Γ ⊢ α [ varterm x / r ]
+  existintro : ∀{Γ α α[x/r]} → (r : Term) → (x : Variable)
+               → (α [ varterm x / r ]≡ α[x/r])
+               →                           Γ ⊢ α[x/r]
                                    ----------------------------- ∃⁺
                →                           Γ ⊢ V x α
 
-  existelim  : ∀{Γ₁ Γ₂ α β x} → All (varterm x BoundIn_) (β ∷ (Γ₂ - α))
+  existelim  : ∀{Γ₁ Γ₂ α β x}
+               → All (varterm x BoundIn_) (β ∷ (Γ₂ - α))
                →                 Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
                                 ----------------------------------- ∃⁻
                →                       Γ₁ ∪ (Γ₂ - α) ⊢ β
 
   close      : ∀{Γ Δ α} → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
-
-existintroeq : ∀{α β Γ} → (r : Term) → (x : Variable)
-               → α [ varterm x / r ]≡ β
-               →                             Γ ⊢ β
-                                   ----------------------------- ∃⁺
-               →                           Γ ⊢ V x α
-existintroeq {α} {β} r x rep d with repWitness rep
-existintroeq {α} {.(fst (α [ varterm x / r ]′))} r x rep d | refl = existintro r x d
-
 
 
 ⊢_ : Formula → Set
@@ -182,13 +176,15 @@ dp gmp : Formula → Formula
 dp  Φx = ∃x(Φx ⇒ ∀x Φx)
 gmp Φx = ¬∀x Φx ⇒ ∃x (¬ Φx)
 
+postulate reflSub : (t : Term) → (α : Formula) → α [ t / t ]≡ α
+
 dp→gmp : (∀ α → ⊢ (dp α)) → ∀ α → ⊢ (gmp α)
 dp→gmp ⊢dp α = close
                 ((Λ (mkvar zero) α ⇒ atom (mkrel zero zero) []) ~  (∅ ∪   ((α ⇒ Λ (mkvar zero) α) ~ (α ~ (((α ∷ ((α ⇒ Λ (mkvar zero) α) ∷ List.[ refl ])) -∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
                 (arrowintro (¬∀x α)
                  (existelim (V∣ (mkvar zero) (α ⇒ atom (mkrel zero zero) []) ∷  ((α ⇒ Λ (mkvar zero) α) ~   (α ~ (((Λ∣ (mkvar zero) α ⇒ atom []) ∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (⊢dp α)
-                  (existintroeq x xvar (reflSub (varterm (mkvar zero)) (α ⇒ atom (mkrel zero zero) []))
+                  (existintro x xvar (reflSub (varterm (mkvar zero)) (α ⇒ atom (mkrel zero zero) []))
                    (arrowintro α
                     (arrowelim
                      (assume (¬∀x α))

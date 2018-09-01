@@ -52,7 +52,7 @@ data Term : Set where
 
 -- "If t1, . . . , tn are terms and R is an n-ary relation symbol, then
 --  R(t1, . . . , tn ) is a prime formula ... Formulas are inductively defined
---- from prime formulas."
+--  from prime formulas."
 data Formula : Set where
   atom   : (r : Relation) → Vec Term (Relation.arity r) → Formula
   _⇒_    : Formula  → Formula → Formula
@@ -72,17 +72,17 @@ _⇔_ : Formula → Formula → Formula
 -- Term freedom
 
 data _TermNotIn_ (t : Term) : ∀{n} → Vec Term n → Set where
-  []   : t TermNotIn []
-  var  : ∀{n} {xs : Vec Term n}
-          → (x : Variable)
-          → t ≢ (varterm x)
-          → t TermNotIn xs
-          → t TermNotIn (varterm x ∷ xs)
-  func : ∀{n} {xs : Vec Term n}
-          → (f : Function) → {ys : Vec Term (Function.arity f)} → t TermNotIn ys
-          → t ≢ functerm f ys
-          → t TermNotIn xs
-          → t TermNotIn (functerm f ys ∷ xs)
+  []    : t TermNotIn []
+  var∉  : ∀{n} {xs : Vec Term n}
+            → (x : Variable)
+            → t ≢ (varterm x)
+            → t TermNotIn xs
+            → t TermNotIn (varterm x ∷ xs)
+  func∉ : ∀{n} {xs : Vec Term n}
+            → (f : Function) → {ys : Vec Term (Function.arity f)} → t TermNotIn ys
+            → t ≢ functerm f ys
+            → t TermNotIn xs
+            → t TermNotIn (functerm f ys ∷ xs)
 
 data _BoundIn_ : Term → Formula → Set where
   atom : ∀{t r} {xs : Vec Term (Relation.arity r)}
@@ -95,44 +95,8 @@ data _BoundIn_ : Term → Formula → Set where
   Λ    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn Λ x α
   V    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn V x α
 
-
--- Term replacement
-
-data [_][_/_]≡_ : ∀{n} → Vec Term n → Term → Term → Vec Term n → Set where
-  []    : ∀{s t} → [ [] ][ s / t ]≡ []
-  var≡  : ∀{n t} {xs ys : Vec Term n}
-            → (x : Variable)
-            → [ xs ][ varterm x / t ]≡ ys
-            → [ varterm x ∷ xs ][ varterm x / t ]≡ (t ∷ ys)
-  var≢  : ∀{n s t} {xs ys : Vec Term n}
-            → (x : Variable)
-            → s ≢ varterm x
-            → [ xs ][ s / t ]≡ ys
-            → [ varterm x ∷ xs ][ s / t ]≡ (varterm x ∷ ys)
-  func≡ : ∀{n t} {xs ys : Vec Term n}
-            → (f : Function) → ∀{us}
-            → [ xs ][ functerm f us / t ]≡ ys
-            → [ functerm f us ∷ xs ][ functerm f us / t ]≡ (t ∷ ys)
-  func≢ : ∀{n s t} {xs ys : Vec Term n}
-            → (f : Function) → ∀{us vs}
-            → s ≢ functerm f us
-            → [ us ][ s / t ]≡ vs
-            → [ xs ][ s / t ]≡ ys
-            → [ functerm f us ∷ xs ][ s / t ]≡ (functerm f vs ∷ ys)
-
-data _[_/_]≡_ : Formula → Term → Term → Formula → Set where
-  atom : ∀{s t} → (r : Relation) → ∀{xs ys} → [ xs ][ s / t ]≡ ys → (atom r xs) [ s / t ]≡ (atom r ys)
-  _⇒_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ⇒ β) [ s / t ]≡ (α′ ⇒ β′)
-  _∧_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∧ β) [ s / t ]≡ (α′ ∧ β′)
-  _∨_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∨ β) [ s / t ]≡ (α′ ∨ β′)
-  Λ∣   : ∀{α x t} → (Λ x α) [ varterm x / t ]≡ (Λ x α)
-  V∣   : ∀{α x t} → (V x α) [ varterm x / t ]≡ (V x α)
-  Λ    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (Λ x α) [ s / t ]≡ (Λ x β)
-  V    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (V x α) [ s / t ]≡ (V x β)
-
-
 ----------------------------------------------------------------------------------
--- It remains to show that there is a decidable equality for formulae.
+-- Computation requires decidable equality for the types above
 -- Surely there's something nicer than this?
 
 natEq : Decidable≡ ℕ
@@ -286,3 +250,75 @@ formulaEq (V x α) (β ⇒ β₁) = no (λ ())
 formulaEq (V x α) (β ∧ β₁) = no (λ ())
 formulaEq (V x α) (β ∨ β₁) = no (λ ())
 formulaEq (V x α) (Λ x₁ β) = no (λ ())
+
+--------------------------------------------------------------------------------
+
+-- Term replacement
+
+data [_][_/_]≡_ : ∀{n} → Vec Term n → Term → Term → Vec Term n → Set where
+  []    : ∀{s t} → [ [] ][ s / t ]≡ []
+  var≡  : ∀{n t} {xs ys : Vec Term n}
+            → (x : Variable)
+            → [ xs ][ varterm x / t ]≡ ys
+            → [ varterm x ∷ xs ][ varterm x / t ]≡ (t ∷ ys)
+  var≢  : ∀{n s t} {xs ys : Vec Term n}
+            → (x : Variable)
+            → s ≢ varterm x
+            → [ xs ][ s / t ]≡ ys
+            → [ varterm x ∷ xs ][ s / t ]≡ (varterm x ∷ ys)
+  func≡ : ∀{n t} {xs ys : Vec Term n}
+            → (f : Function) → ∀{us}
+            → [ xs ][ functerm f us / t ]≡ ys
+            → [ functerm f us ∷ xs ][ functerm f us / t ]≡ (t ∷ ys)
+  func≢ : ∀{n s t} {xs ys : Vec Term n}
+            → (f : Function) → ∀{us vs}
+            → s ≢ functerm f us
+            → [ us ][ s / t ]≡ vs
+            → [ xs ][ s / t ]≡ ys
+            → [ functerm f us ∷ xs ][ s / t ]≡ (functerm f vs ∷ ys)
+
+data _[_/_]≡_ : Formula → Term → Term → Formula → Set where
+  atom : ∀{s t} → (r : Relation) → ∀{xs ys} → [ xs ][ s / t ]≡ ys → (atom r xs) [ s / t ]≡ (atom r ys)
+  _⇒_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ⇒ β) [ s / t ]≡ (α′ ⇒ β′)
+  _∧_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∧ β) [ s / t ]≡ (α′ ∧ β′)
+  _∨_  : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∨ β) [ s / t ]≡ (α′ ∨ β′)
+  Λ∣   : ∀{α x t} → (Λ x α) [ varterm x / t ]≡ (Λ x α)
+  V∣   : ∀{α x t} → (V x α) [ varterm x / t ]≡ (V x α)
+  Λ    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (Λ x α) [ s / t ]≡ (Λ x β)
+  V    : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (V x α) [ s / t ]≡ (V x β)
+
+
+-- Every formula has a replacement
+
+find[_][_/_] : ∀{n} → (xs : Vec Term n) → (s t : Term) → Σ (Vec Term n) [ xs ][ s / t ]≡_
+find[ [] ][ s / t ] = [] , []
+find[ x ∷ xs ][ s / t ] with termEq s x
+find[ varterm x ∷ xs ][ .(varterm x) / t ] | yes refl with find[ xs ][ varterm x / t ]
+find[ varterm x ∷ xs ][ .(varterm x) / t ] | yes refl | ys , pf = (t ∷ ys) , var≡ x pf
+find[ functerm f us ∷ xs ][ .(functerm f us) / t ] | yes refl with find[ xs ][ functerm f us / t ]
+find[ functerm f us ∷ xs ][ .(functerm f us) / t ] | yes refl | ys , pf = (t ∷ ys) , func≡ f pf
+find[ x ∷ xs ][ s / t ] | no neq with find[ xs ][ s / t ]
+find[ varterm x ∷ xs ][ s / t ] | no neq | ys , pf = (varterm x ∷ ys) , var≢ x neq pf
+find[ functerm f us ∷ xs ][ s / t ] | no neq | ys , pf with find[ us ][ s / t ]
+find[ functerm f us ∷ xs ][ s / t ] | no neq | ys , pf | vs , pf′ = (functerm f vs ∷ ys) , func≢ f neq pf′ pf
+
+find_[_/_] : (α : Formula) → (s t : Term) → Σ Formula (α [ s / t ]≡_)
+find atom r xs [ s / t ] with find[ xs ][ s / t ]
+...                      | ys , pf = atom r ys , atom r pf
+find (α ⇒ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
+...                      | (α′ , αpf) , (β′ , βpf) = α′ ⇒ β′ , αpf ⇒ βpf
+find (α ∧ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
+...                      | (α′ , αpf) , (β′ , βpf) = α′ ∧ β′ , αpf ∧ βpf
+find (α ∨ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
+...                      | (α′ , αpf) , (β′ , βpf) = α′ ∨ β′ , αpf ∨ βpf
+find (Λ x α)   [ s / t ] with termEq s (varterm x)
+...                      | yes refl = Λ x α , Λ∣
+...                      | no neq with find α [ s / t ]
+...                              | α′ , pf = Λ x α′ , Λ neq pf
+find (V x α)   [ s / t ] with termEq s (varterm x)
+...                      | yes refl = V x α , V∣
+...                      | no neq with find α [ s / t ]
+...                               | α′ , pf = V x α′ , V neq pf
+
+_[_/_] : Formula → Term → Term → Formula
+α [ s / t ] = fst find α [ s / t ]

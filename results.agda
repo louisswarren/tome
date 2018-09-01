@@ -5,6 +5,7 @@ open import Agda.Builtin.Sigma
 
 open import Decidable
 open import Formula
+open import Deduction
 open import Vec
 
 
@@ -16,19 +17,19 @@ isTermNotIn t (s ∷ ss) with isTermNotIn t ss
 isTermNotIn t (s ∷ ss) | yes rst with termEq t s
 ...                              | yes x = no φ
                                           where φ : _
-                                                φ (var _ neq _)    = neq x
-                                                φ (func _ _ neq _) = neq x
+                                                φ (var∉ _ neq _)    = neq x
+                                                φ (func∉ _ _ neq _) = neq x
 
-isTermNotIn t (varterm x₁ ∷ ss) | yes rst | no x = yes (var x₁ x rst)
+isTermNotIn t (varterm x₁ ∷ ss) | yes rst | no x = yes (var∉ x₁ x rst)
 isTermNotIn t (functerm f x₁ ∷ ss) | yes rst | no x with isTermNotIn t x₁
-isTermNotIn t (functerm f x₁ ∷ ss) | yes rst | no x | yes x₂ = yes (func f x₂ x rst)
+isTermNotIn t (functerm f x₁ ∷ ss) | yes rst | no x | yes x₂ = yes (func∉ f x₂ x rst)
 isTermNotIn t (functerm f x₁ ∷ ss) | yes rst | no x | no x₂ = no φ
                                                               where φ : _
-                                                                    φ (func f pf x₁ pf₁) = x₂ pf
+                                                                    φ (func∉ f pf x₁ pf₁) = x₂ pf
 isTermNotIn t (s ∷ ss) | no isin = no φ
                                   where φ : _
-                                        φ (var _ _ pf)    = isin pf
-                                        φ (func _ _ _ pf) = isin pf
+                                        φ (var∉ _ _ pf)    = isin pf
+                                        φ (func∉ _ _ _ pf) = isin pf
 
 -- Vim macros generated this
 _isBoundIn_ : (t : Term) → (α : Formula) → Dec (t BoundIn α)
@@ -82,40 +83,6 @@ t isBoundIn V x α with termEq t (varterm x)
         φ (V x pf) = x₂ pf
 
 
--- Every formula has a replacement
-
-find[_][_/_] : ∀{n} → (xs : Vec Term n) → (s t : Term) → Σ (Vec Term n) [ xs ][ s / t ]≡_
-find[ [] ][ s / t ] = [] , []
-find[ x ∷ xs ][ s / t ] with termEq s x
-find[ varterm x ∷ xs ][ .(varterm x) / t ] | yes refl with find[ xs ][ varterm x / t ]
-find[ varterm x ∷ xs ][ .(varterm x) / t ] | yes refl | ys , pf = (t ∷ ys) , var≡ x pf
-find[ functerm f us ∷ xs ][ .(functerm f us) / t ] | yes refl with find[ xs ][ functerm f us / t ]
-find[ functerm f us ∷ xs ][ .(functerm f us) / t ] | yes refl | ys , pf = (t ∷ ys) , func≡ f pf
-find[ x ∷ xs ][ s / t ] | no neq with find[ xs ][ s / t ]
-find[ varterm x ∷ xs ][ s / t ] | no neq | ys , pf = (varterm x ∷ ys) , var≢ x neq pf
-find[ functerm f us ∷ xs ][ s / t ] | no neq | ys , pf with find[ us ][ s / t ]
-find[ functerm f us ∷ xs ][ s / t ] | no neq | ys , pf | vs , pf′ = (functerm f vs ∷ ys) , func≢ f neq pf′ pf
-
-
-find_[_/_] : (α : Formula) → (s t : Term) → Σ Formula (α [ s / t ]≡_)
-find atom r xs [ s / t ] with find[ xs ][ s / t ]
-...                      | ys , pf = atom r ys , atom r pf
-find (α ⇒ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
-...                      | (α′ , αpf) , (β′ , βpf) = α′ ⇒ β′ , αpf ⇒ βpf
-find (α ∧ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
-...                      | (α′ , αpf) , (β′ , βpf) = α′ ∧ β′ , αpf ∧ βpf
-find (α ∨ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
-...                      | (α′ , αpf) , (β′ , βpf) = α′ ∨ β′ , αpf ∨ βpf
-find (Λ x α)   [ s / t ] with termEq s (varterm x)
-...                      | yes refl = Λ x α , Λ∣
-...                      | no neq with find α [ s / t ]
-...                              | α′ , pf = Λ x α′ , Λ neq pf
-find (V x α)   [ s / t ] with termEq s (varterm x)
-...                      | yes refl = V x α , V∣
-...                      | no neq with find α [ s / t ]
-...                               | α′ , pf = V x α′ , V neq pf
-
-
 -- The above substitution is actually unique
 
 uniqueVSub : ∀{n} → (xs ys zs : Vec Term n) → ∀ s t → [ xs ][ s / t ]≡ ys → [ xs ][ s / t ]≡ zs → ys ≡ zs
@@ -159,6 +126,16 @@ uniqueSub (V x α) (V x β) (V x γ) s t (V x₁ rb) (V x₂ rg)
     with uniqueSub α β γ s t rb rg
 ... | refl = refl
 
-repWitness : ∀{α β s t} → α [ s / t ]≡ β → fst (find α [ s / t ]) ≡ β
+repWitness : ∀{α β s t} → α [ s / t ]≡ β → α [ s / t ] ≡ β
 repWitness {α} {β} {s} {t} rep with find α [ s / t ]
 repWitness {α} {β} {s} {t} rep | a′ , pf = uniqueSub α a′ β s t pf rep
+
+
+
+-- An alternate (but harder to use) definition of existential introduction
+existintropos : ∀{α Γ} → (r : Term) → (x : Variable)
+               →                       Γ ⊢ α [ varterm x / r ]
+                                   ----------------------------- ∃⁺
+               →                           Γ ⊢ V x α
+existintropos {α} r x d with find α [ varterm x / r ]
+...                     | β , α[x/r]≡β = existintro r x α[x/r]≡β d
