@@ -83,7 +83,66 @@ t isBoundIn V x α with termEq t (varterm x)
         φ (V x pf) = x₂ pf
 
 
--- The above substitution is actually unique
+-- Substitution of a term with itself does nothing.
+-- While we prove this here, we give this as a constructor to aid automatic
+-- proof search
+
+identSub[] : ∀{n} → (t : Term) → (xs : Vec Term n) → [ xs ][ t / t ]≡ xs
+identSub[] t [] = []
+identSub[] t (varterm x ∷ xs) with termEq t (varterm x)
+identSub[] .(varterm x) (varterm x ∷ xs) | yes refl = var≡ x (identSub[] (varterm x) xs)
+identSub[] t (varterm x ∷ xs) | no x₁ = var≢ x x₁ (identSub[] t xs)
+identSub[] t (functerm f x ∷ xs) with termEq t (functerm f x)
+identSub[] .(functerm f x) (functerm f x ∷ xs) | yes refl = func≡ f (identSub[] (functerm f x) xs)
+identSub[] t (functerm f x ∷ xs) | no x₁ = func≢ f x₁ (identSub[] t x) (identSub[] t xs)
+
+coidentSub[] : ∀{n} → (t : Term) → (xs ys : Vec Term n) → [ xs ][ t / t ]≡ ys → xs ≡ ys
+coidentSub[] t [] .[] [] = refl
+coidentSub[] .(varterm x₁) (.(varterm x₁) ∷ xs) (varterm .x₁ ∷ ys) (var≡ x₁ x₂) with coidentSub[] (varterm x₁) xs ys x₂
+coidentSub[] .(varterm x₁) (.(varterm x₁) ∷ xs) (varterm .x₁ ∷ .xs) (var≡ x₁ x₂) | refl = refl
+coidentSub[] t (.(varterm x₁) ∷ xs) (varterm .x₁ ∷ ys) (var≢ x₁ x₂ x₃) with coidentSub[] t xs ys x₃
+coidentSub[] t (.(varterm x₁) ∷ xs) (varterm .x₁ ∷ .xs) (var≢ x₁ x₂ x₃) | refl = refl
+coidentSub[] t (.(functerm f _) ∷ xs) (functerm .f _ ∷ ys) (func≡ f x₁) with coidentSub[] t xs ys x₁
+coidentSub[] .(functerm f _) (.(functerm f _) ∷ xs) (functerm .f _ ∷ .xs) (func≡ f x₁) | refl = refl
+coidentSub[] t ((functerm .f us) ∷ xs) (functerm .f vs ∷ ys) (func≢ f x₁ x₂ x₃) with (coidentSub[] t xs ys x₃) , (coidentSub[] t us vs x₂)
+coidentSub[] t ((functerm .f us) ∷ xs) (functerm .f vs ∷ .xs) (func≢ f x₁ x₂ x₃) | refl , refl = refl
+
+identSub : (t : Term) → (α : Formula) → α [ t / t ]≡ α
+identSub t (atom r x) = atom r (identSub[] t x)
+identSub t (α ⇒ α₁) = identSub t α ⇒ identSub t α₁
+identSub t (α ∧ α₁) = identSub t α ∧ identSub t α₁
+identSub t (α ∨ α₁) = identSub t α ∨ identSub t α₁
+identSub t (Λ x α) with termEq t (varterm x)
+...               | yes refl = Λ∣
+...               | no x₁ = Λ x₁ (identSub t α)
+identSub t (V x α) with termEq t (varterm x)
+...               | yes refl = V∣
+...               | no x₁ = V x₁ (identSub t α)
+
+coidentSub : (t : Term) → (α β : Formula) → α [ t / t ]≡ β → α ≡ β
+coidentSub t (atom r₁ x₁) .(atom r₁ x₁) (ident .(atom r₁ x₁) .t) = refl
+coidentSub t (atom r₁ x₁) (atom .r₁ x₂) (atom .r₁ x₃) with coidentSub[] t x₁ x₂ x₃
+coidentSub t (atom r₁ x₁) (atom .r₁ .x₁) (atom .r₁ x₃) | refl = refl
+coidentSub t (α ⇒ α₁) .(α ⇒ α₁) (ident .(α ⇒ α₁) .t) = refl
+coidentSub t (α ⇒ α₁) (β ⇒ β₁) (r ⇒ r₁) with (coidentSub t α β r) , (coidentSub t α₁ β₁ r₁)
+coidentSub t (α ⇒ α₁) (.α ⇒ .α₁) (r ⇒ r₁) | refl , refl = refl
+coidentSub t (α ∧ α₁) .(α ∧ α₁) (ident .(α ∧ α₁) .t) = refl
+coidentSub t (α ∧ α₁) (β ∧ β₁) (r ∧ r₁) with (coidentSub t α β r) , (coidentSub t α₁ β₁ r₁)
+coidentSub t (α ∧ α₁) (.α ∧ .α₁) (r ∧ r₁) | refl , refl = refl
+coidentSub t (α ∨ α₁) .(α ∨ α₁) (ident .(α ∨ α₁) .t) = refl
+coidentSub t (α ∨ α₁) (β ∨ β₁) (r ∨ r₁) with (coidentSub t α β r) , (coidentSub t α₁ β₁ r₁)
+coidentSub t (α ∨ α₁) (.α ∨ .α₁) (r ∨ r₁) | refl , refl = refl
+coidentSub t (Λ x₁ α) .(Λ x₁ α) (ident .(Λ x₁ α) .t) = refl
+coidentSub .(varterm x₁) (Λ x₁ α) .(Λ x₁ α) Λ∣ = refl
+coidentSub t (Λ x₁ α) (Λ .x₁ β) (Λ x₂ r) with coidentSub t α β r
+coidentSub t (Λ x₁ α) (Λ .x₁ .α) (Λ x₂ r) | refl = refl
+coidentSub t (V x₁ α) .(V x₁ α) (ident .(V x₁ α) .t) = refl
+coidentSub .(varterm x₁) (V x₁ α) .(V x₁ α) V∣ = refl
+coidentSub t (V x₁ α) (V .x₁ β) (V x₂ r) with coidentSub t α β r
+coidentSub t (V x₁ α) (V .x₁ .α) (V x₂ r) | refl = refl
+
+
+-- Substitution is unique
 
 uniqueVSub : ∀{n} → (xs ys zs : Vec Term n) → ∀ s t → [ xs ][ s / t ]≡ ys → [ xs ][ s / t ]≡ zs → ys ≡ zs
 uniqueVSub [] .[] .[] s t [] [] = refl
@@ -102,6 +161,9 @@ uniqueVSub ((functerm .f us) ∷ xs) ((functerm .f vs) ∷ ys) ((functerm .f ws)
 ... | refl , refl = refl
 
 uniqueSub : ∀ α β γ s t → α [ s / t ]≡ β → α [ s / t ]≡ γ → β ≡ γ
+uniqueSub α .α γ s .s (ident .α .s) rg = coidentSub s α γ rg
+uniqueSub α β .α s .s rb (ident .α .s) with coidentSub s α β rb
+uniqueSub α .α .α s .s rb (ident .α .s) | refl = refl
 uniqueSub (atom r xs) (atom r ys) (atom r zs) s t (atom .r x) (atom .r x₁) with uniqueVSub xs ys zs s t x x₁
 uniqueSub (atom r xs) (atom r .zs) (atom r zs) s t (atom .r x) (atom .r x₁) | refl = refl
 uniqueSub (α ⇒ α₁) (β ⇒ β₁) (γ ⇒ γ₁) s t (rb ⇒ rb₁) (rg ⇒ rg₁)
@@ -129,7 +191,6 @@ uniqueSub (V x α) (V x β) (V x γ) s t (V x₁ rb) (V x₂ rg)
 repWitness : ∀{α β s t} → α [ s / t ]≡ β → α [ s / t ] ≡ β
 repWitness {α} {β} {s} {t} rep with find α [ s / t ]
 repWitness {α} {β} {s} {t} rep | a′ , pf = uniqueSub α a′ β s t pf rep
-
 
 
 -- An alternate (but harder to use) definition of existential introduction
