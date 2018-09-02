@@ -12,11 +12,24 @@ open import Vec
 ¬ α = α ⇒ ⊥
 ¬¬ α = ¬ (¬ α)
 
+
+nullaryscheme : String → Formula → Scheme
+nullaryscheme s f = scheme s 0 fs
+                    where
+                      fs : _
+                      fs [] = f
+
 unaryscheme : String → (Formula → Formula) → Scheme
 unaryscheme s f = scheme s 1 fs
                   where
                     fs : _
                     fs (α ∷ []) = f α
+
+binaryscheme : String → (Formula → Formula → Formula) → Scheme
+binaryscheme s f = scheme s 2 fs
+                   where
+                     fs : _
+                     fs (α ∷ β ∷ []) = f α β
 
 
 pattern xvar  = mkvar 0

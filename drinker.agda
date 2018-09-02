@@ -16,35 +16,15 @@ open import Vec
 
 open import sugar
 
-dne : Vec Formula 1 → Formula
-dne (x ∷ []) = ¬¬ x ⇒ x
 
-lem : Vec Formula 1 → Formula
-lem (x ∷ []) = x ∨ ¬ x
+DNE LEM DP GMP : Scheme
 
-DNE : Scheme
-DNE = scheme "DNE" 1 dne
+dne lem : Formula → Formula
+dne α = ¬¬ α ⇒ α
+lem α = α ∨ ¬ α
 
-LEM : Scheme
-LEM = scheme "LEM" 1 lem
-
-dne→lem : (∀ αs → ⊢ (dne αs)) → ∀ αs → ⊢ (lem αs)
-dne→lem ⊢dne (α ∷ []) = close
-                                (∅ ∪  ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
-                                (arrowelim
-                                 (⊢dne ((α ∨ ¬ α) ∷ []))
-                                 (arrowintro (¬ (α ∨ ¬ α))
-                                  (arrowelim
-                                   (assume (¬ (α ∨ ¬ α)))
-                                   (disjintro₂ α
-                                    (arrowintro α
-                                     (arrowelim
-                                      (assume (¬ (α ∨ ¬ α)))
-                                      (disjintro₁ (¬ α)
-                                       (assume α))))))))
-
-DNE⊃LEM : DNE ∷ [] ⊃ LEM
-DNE⊃LEM (⊢dne ∷ []) (α ∷ []) = dne→lem ⊢dne (α ∷ [])
+DNE = unaryscheme "DNE" dne
+LEM = unaryscheme "LEM" lem
 
 
 dp gmp : Formula → Formula
@@ -53,6 +33,24 @@ gmp Φx = ¬∀x Φx ⇒ ∃x (¬ Φx)
 
 DP  = unaryscheme "DP"  dp
 GMP = unaryscheme "GMP" gmp
+
+dne→lem : (∀ α → ⊢ (dne α)) → ∀ α → ⊢ (lem α)
+dne→lem ⊢dne α = close
+                  (∅ ∪  ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                  (arrowelim
+                   (⊢dne (α ∨ ¬ α))
+                   (arrowintro (¬ (α ∨ ¬ α))
+                    (arrowelim
+                     (assume (¬ (α ∨ ¬ α)))
+                     (disjintro₂ α
+                      (arrowintro α
+                       (arrowelim
+                        (assume (¬ (α ∨ ¬ α)))
+                        (disjintro₁ (¬ α)
+                         (assume α))))))))
+DNE⊃LEM : DNE ∷ [] ⊃ LEM
+DNE⊃LEM (⊢dne ∷ []) (α ∷ []) = dne→lem (λ β → ⊢dne (β ∷ [])) α
+
 
 dp→gmp : (∀ α → ⊢ (dp α)) → ∀ α → ⊢ (gmp α)
 dp→gmp ⊢dp α = close
@@ -67,6 +65,5 @@ dp→gmp ⊢dp α = close
                      (arrowelim
                       (assume (α ⇒ ∀x α))
                       (assume α)))))))
-
 DP⊃GMP : DP ∷ [] ⊃ GMP
 DP⊃GMP (⊢dp ∷ []) (α ∷ []) = dp→gmp (λ β → ⊢dp (β ∷ [])) α
