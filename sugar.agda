@@ -3,9 +3,7 @@ open import Agda.Builtin.String
 open import Agda.Builtin.List
 
 open import Formula
-
-open import common
-
+open import Vec
 
 ⊥ : Formula
 ⊥ = atom (mkprop 0) []
