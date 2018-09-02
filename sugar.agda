@@ -8,34 +8,28 @@ open import common
 
 
 ⊥ : Formula
-⊥ = atom (mkprop "\\bot") []
+⊥ = atom (mkprop 0) []
 
 ¬ ¬¬ : Formula → Formula
 ¬ α = α ⇒ ⊥
 ¬¬ α = ¬ (¬ α)
 
-_[!_/_] : Formula → Variable → Term → Formula
-α [! v / t ] = α [ varterm v / t ]
-
-nullaryscheme : String → Formula → Scheme
-nullaryscheme s α = scheme s zero (λ _ → α)
-
 unaryscheme : String → (Formula → Formula) → Scheme
-unaryscheme s f = scheme s 1 (λ xs → f (xs !! 0))
+unaryscheme s f = scheme s 1 fs
+                  where
+                    fs : _
+                    fs (α ∷ []) = f α
 
-binaryscheme : String → (Formula → Formula → Formula) → Scheme
-binaryscheme s f = scheme s 2 (λ xs → f (xs !! 0) (xs !! 1))
 
-
-
-xvar yvar zvar : Variable
-xvar = mkvar "x"
-yvar = mkvar "y"
-zvar = mkvar "z"
+pattern xvar  = mkvar 0
+pattern yvar  = mkvar 1
+pattern zvar  = mkvar 2
+pattern var n = mkvar (suc (suc (suc n)))
 
 x = varterm xvar
 y = varterm yvar
 z = varterm zvar
+
 
 ∀x ∃x ∀x¬ ∃x¬ ¬∀x ¬∃x ¬∀x¬ ¬∃x¬ : Formula → Formula
 ∀x Φ = Λ xvar Φ

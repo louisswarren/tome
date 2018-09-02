@@ -1,13 +1,11 @@
 module Formula where
 
-open import Agda.Builtin.Bool
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.Sigma
-
+open import Agda.Builtin.String
 
 open import Vec
 open import Decidable
-open import String
 
 
 -- "Let a countably infinite set {vi | i ∈ N} of variables be given."
@@ -67,6 +65,14 @@ infixr 107 _∧_
 
 _⇔_ : Formula → Formula → Formula
 Φ ⇔ Ψ = (Φ ⇒ Ψ) ∧ (Ψ ⇒ Φ)
+
+
+record Scheme : Set where
+  constructor scheme
+  field
+    idx   : String
+    arity : ℕ
+    inst  : Vec Formula arity → Formula
 
 
 -- Term freedom
