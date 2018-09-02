@@ -1,5 +1,7 @@
 module Deduction where
 
+open import Agda.Builtin.String
+
 open import Formula
 open import Ensemble
 open import List
@@ -14,6 +16,7 @@ open import List
 
 infix 1 _⊢_
 data _⊢_ : Ensemble formulaEq → Formula → Set where
+  cite       : ∀{Γ α} → String → Γ ⊢ α → Γ ⊢ α
   assume     : (α : Formula)
                →                           α ∷ ∅ ⊢ α
 
