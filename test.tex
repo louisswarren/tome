@@ -1,0 +1,87 @@
+\documentclass[landscape]{article}
+\usepackage[a4paper,margin=0.5in,landscape]{geometry}
+\newcommand{\Tarrowintro}{$\rightarrow$I}
+\newcommand{\Tarrowelim}{$\rightarrow$E}
+\newcommand{\Tconjintro}{$\land$I}
+\newcommand{\Tconjelim}{$\land$E}
+\newcommand{\Tdisjintro}{$\lor$I}
+\newcommand{\Tdisjelim}{$\lor$E}
+\newcommand{\Tunivintro}{$\forall$I}
+\newcommand{\Tunivelim}{$\forall$E}
+\newcommand{\Texistintro}{$\exists$I}
+\newcommand{\Texistelim}{$\exists$E}
+\newcommand{\Tarrow}{\rightarrow}
+\newcommand{\Tand}{\land}
+\newcommand{\Tor}{\lor}
+\newcommand{\Tforall}{\forall}
+\newcommand{\Texists}{\exists}
+\newcommand{\Tneg}{\lnot}
+\usepackage{bussproofs}
+\begin{document}
+
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{DNE}
+\UnaryInfC{$\Tneg{\Tneg{\left(A \Tor \Tneg{A}\right)}} \Tarrow \left(A \Tor \Tneg{A}\right)$}
+	\AxiomC{[$\Tneg{\left(A \Tor \Tneg{A}\right)}$]}
+		\AxiomC{[$\Tneg{\left(A \Tor \Tneg{A}\right)}$]}
+			\AxiomC{[$A$]}
+			\RightLabel{\Tdisjintro}
+			\UnaryInfC{$A \Tor \Tneg{A}$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\bot$}
+		\RightLabel{\Tarrowintro}
+		\UnaryInfC{$\Tneg{A}$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{$A \Tor \Tneg{A}$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{\Tneg{\left(A \Tor \Tneg{A}\right)}}$}
+\RightLabel{\Tarrowelim}
+\BinaryInfC{$A \Tor \Tneg{A}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{DP}
+\UnaryInfC{$\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)$}
+	\AxiomC{[$\Tneg{\Tforall_{x} P{x}}$]}
+		\AxiomC{[$P{x} \Tarrow \Tforall_{x} P{x}$]}
+			\AxiomC{[$P{x}$]}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\Tforall_{x} P{x}$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{P{x}}$}
+	\RightLabel{\Texistintro}
+	\UnaryInfC{$\Texists_{x} \Tneg{P{x}}$}
+\RightLabel{\Texistelim}
+\BinaryInfC{$\Texists_{x} \Tneg{P{x}}$}
+\RightLabel{\Tarrowintro}
+\UnaryInfC{$\Tneg{\Tforall_{x} P{x}} \Tarrow \Texists_{x} \Tneg{P{x}}$}
+\end{prooftree}
+
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{DP}
+\UnaryInfC{$\Texists_{x} \left(\left(P{x} \Tarrow Q{x}\right) \Tarrow \Tforall_{x} \left(P{x} \Tarrow Q{x}\right)\right)$}
+	\AxiomC{[$\Tneg{\Tforall_{x} \left(P{x} \Tarrow Q{x}\right)}$]}
+		\AxiomC{[$\left(P{x} \Tarrow Q{x}\right) \Tarrow \Tforall_{x} \left(P{x} \Tarrow Q{x}\right)$]}
+			\AxiomC{[$P{x} \Tarrow Q{x}$]}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\Tforall_{x} \left(P{x} \Tarrow Q{x}\right)$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{\left(P{x} \Tarrow Q{x}\right)}$}
+	\RightLabel{\Texistintro}
+	\UnaryInfC{$\Texists_{x} \Tneg{\left(P{x} \Tarrow Q{x}\right)}$}
+\RightLabel{\Texistelim}
+\BinaryInfC{$\Texists_{x} \Tneg{\left(P{x} \Tarrow Q{x}\right)}$}
+\RightLabel{\Tarrowintro}
+\UnaryInfC{$\Tneg{\Tforall_{x} \left(P{x} \Tarrow Q{x}\right)} \Tarrow \Texists_{x} \Tneg{\left(P{x} \Tarrow Q{x}\right)}$}
+\end{prooftree}
+
+\end{document}
