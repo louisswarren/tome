@@ -61,13 +61,14 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
                                           --------------- ∀⁺
                →                           Γ ⊢ Λ x α
 
-  univelim   : ∀{Γ α x} → (r : Term)
+  univelim   : ∀{Γ α x α[x/r]} → (r : Term)
+               → α [ varterm x / r ]≡ α[x/r]
                →                           Γ ⊢ Λ x α
                                   ------------------------------- ∀⁻
-               →                   Γ ⊢ α [ (varterm x) / r ]
+               →                           Γ ⊢ α[x/r]
 
   existintro : ∀{Γ α α[x/r]} → (r : Term) → (x : Variable)
-               → (α [ varterm x / r ]≡ α[x/r])
+               → α [ varterm x / r ]≡ α[x/r]
                →                           Γ ⊢ α[x/r]
                                    ----------------------------- ∃⁺
                →                           Γ ⊢ V x α

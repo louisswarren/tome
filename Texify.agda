@@ -156,7 +156,7 @@ dtot {α} o (disjelim d₁ d₂ d₃)  = trinaryinf α "\\Tdisjelim"   (dtot o d
                                                                     (dtot o d₂)
                                                                     (dtot o d₃)
 dtot {α} o (univintro x _ d)    = unaryinf   α "\\Tunivintro"  (dtot o d)
-dtot {α} o (univelim r d)       = unaryinf   α "\\Tunivelim"   (dtot o d)
+dtot {α} o (univelim r _ d)     = unaryinf   α "\\Tunivelim"   (dtot o d)
 dtot {α} o (existintro r x _ d) = unaryinf   α "\\Texistintro" (dtot o d)
 dtot {α} o (existelim _ d₁ d₂)  = binaryinf  α "\\Texistelim"  (dtot o d₁)
                                                                     (dtot o d₂)
