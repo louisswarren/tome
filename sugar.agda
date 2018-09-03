@@ -6,13 +6,14 @@ open import Formula
 open import Vec
 
 
--- Define negation
-⊥ : Formula
-⊥ = atom (mkprop 0) []
+-- We use pattern extensively so that Agda fills in the sugar
 
-¬ ¬¬ : Formula → Formula
-¬ α = α ⇒ ⊥
-¬¬ α = ¬ (¬ α)
+-- Define negation
+pattern ⊥rel = mkrel zero zero
+pattern ⊥ = atom ⊥rel []
+
+pattern ¬ α = α ⇒ ⊥
+pattern ¬¬ α = ¬ (¬ α)
 
 
 -- Easier constructors for schemes
@@ -89,33 +90,31 @@ strfunc : Function → String
 strfunc (mkfunc n k) = "f_" >> strnum n
 
 
+
 -- Nice generalisation notation
-∀x ∃x ∀x¬ ∃x¬ ¬∀x ¬∃x ¬∀x¬ ¬∃x¬ : Formula → Formula
-∀x Φ = Λ xvar Φ
-∃x Φ = V xvar Φ
-∀x¬ Φ = ∀x (¬ Φ)
-∃x¬ Φ = ∃x (¬ Φ)
-¬∀x Φ = ¬(∀x Φ)
-¬∃x Φ = ¬(∃x Φ)
-¬∀x¬ Φ = ¬(∀x¬ Φ)
-¬∃x¬ Φ = ¬(∃x¬ Φ)
+pattern ∀x Φ = Λ xvar Φ
+pattern ∃x Φ = V xvar Φ
+pattern ∀x¬ Φ = ∀x (¬ Φ)
+pattern ∃x¬ Φ = ∃x (¬ Φ)
+pattern ¬∀x Φ = ¬(∀x Φ)
+pattern ¬∃x Φ = ¬(∃x Φ)
+pattern ¬∀x¬ Φ = ¬(∀x¬ Φ)
+pattern ¬∃x¬ Φ = ¬(∃x¬ Φ)
 
-∀y ∃y ∀y¬ ∃y¬ ¬∀y ¬∃y ¬∀y¬ ¬∃y¬ : Formula → Formula
-∀y Φ = Λ yvar Φ
-∃y Φ = V yvar Φ
-∀y¬ Φ = ∀y (¬ Φ)
-∃y¬ Φ = ∃y (¬ Φ)
-¬∀y Φ = ¬(∀y Φ)
-¬∃y Φ = ¬(∃y Φ)
-¬∀y¬ Φ = ¬(∀y¬ Φ)
-¬∃y¬ Φ = ¬(∃y¬ Φ)
+pattern ∀y Φ = Λ yvar Φ
+pattern ∃y Φ = V yvar Φ
+pattern ∀y¬ Φ = ∀y (¬ Φ)
+pattern ∃y¬ Φ = ∃y (¬ Φ)
+pattern ¬∀y Φ = ¬(∀y Φ)
+pattern ¬∃y Φ = ¬(∃y Φ)
+pattern ¬∀y¬ Φ = ¬(∀y¬ Φ)
+pattern ¬∃y¬ Φ = ¬(∃y¬ Φ)
 
-∀z ∃z ∀z¬ ∃z¬ ¬∀z ¬∃z ¬∀z¬ ¬∃z¬ : Formula → Formula
-∀z Φ = Λ zvar Φ
-∃z Φ = V zvar Φ
-∀z¬ Φ = ∀z (¬ Φ)
-∃z¬ Φ = ∃z (¬ Φ)
-¬∀z Φ = ¬(∀z Φ)
-¬∃z Φ = ¬(∃z Φ)
-¬∀z¬ Φ = ¬(∀z¬ Φ)
-¬∃z¬ Φ = ¬(∃z¬ Φ)
+pattern ∀z Φ = Λ zvar Φ
+pattern ∃z Φ = V zvar Φ
+pattern ∀z¬ Φ = ∀z (¬ Φ)
+pattern ∃z¬ Φ = ∃z (¬ Φ)
+pattern ¬∀z Φ = ¬(∀z Φ)
+pattern ¬∃z Φ = ¬(∃z Φ)
+pattern ¬∀z¬ Φ = ¬(∀z¬ Φ)
+pattern ¬∃z¬ Φ = ¬(∃z¬ Φ)
