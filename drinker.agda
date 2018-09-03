@@ -97,6 +97,8 @@ dp→lpo ⊢dp α β = close
                      (disjintro₂ (∀x α)
                       (existintro x xvar (ident β (varterm xvar))
                        (assume β))))))
+DP⊃LPO : DP ∷ [] ⊃ LPO
+DP⊃LPO (⊢dp ∷ []) (α ∷ β ∷ []) = dp→lpo (λ α → ⊢dp (α ∷ [])) α β
 
 
 s : String
@@ -104,3 +106,6 @@ s = texreduce {DNE ∷ []} {LEM} DNE⊃LEM (A ∷ [])
 
 t : String
 t = texreduce {DP ∷ []} {GMP} DP⊃GMP ((P x ⇒ Q x) ∷ [])
+
+r : String
+r = texreduce {DP ∷ []} {LPO} DP⊃LPO (P x ∷ Q x ∷ [])

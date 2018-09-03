@@ -42,6 +42,7 @@
 \BinaryInfC{$A \Tor \Tneg{A}$}
 \end{prooftree}
 
+\vspace{1cm}
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{DP}
@@ -63,6 +64,7 @@
 \UnaryInfC{$\Tneg{\Tforall_{x} P{x}} \Tarrow \Texists_{x} \Tneg{P{x}}$}
 \end{prooftree}
 
+\vspace{1cm}
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{DP}
@@ -82,6 +84,33 @@
 \BinaryInfC{$\Texists_{x} \Tneg{\left(P{x} \Tarrow Q{x}\right)}$}
 \RightLabel{\Tarrowintro}
 \UnaryInfC{$\Tneg{\Tforall_{x} \left(P{x} \Tarrow Q{x}\right)} \Tarrow \Texists_{x} \Tneg{\left(P{x} \Tarrow Q{x}\right)}$}
+\end{prooftree}
+
+\vspace{1cm}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{DP}
+\UnaryInfC{$\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)$}
+	\AxiomC{[$\Tforall_{x} \left(P{x} \Tor Q{x}\right)$]}
+	\RightLabel{\Tunivelim}
+	\UnaryInfC{$P{x} \Tor Q{x}$}
+		\AxiomC{[$P{x} \Tarrow \Tforall_{x} P{x}$]}
+			\AxiomC{[$P{x}$]}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$\Tforall_{x} P{x}$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{$\Tforall_{x} P{x} \Tor \Texists_{x} Q{x}$}
+			\AxiomC{[$Q{x}$]}
+			\RightLabel{\Texistintro}
+			\UnaryInfC{$\Texists_{x} Q{x}$}
+			\RightLabel{\Tdisjintro}
+			\UnaryInfC{$\Tforall_{x} P{x} \Tor \Texists_{x} Q{x}$}
+	\RightLabel{\Tdisjelim}
+	\TrinaryInfC{$\Tforall_{x} P{x} \Tor \Texists_{x} Q{x}$}
+\RightLabel{\Texistelim}
+\BinaryInfC{$\Tforall_{x} P{x} \Tor \Texists_{x} Q{x}$}
+\RightLabel{\Tarrowintro}
+\UnaryInfC{$\Tforall_{x} \left(P{x} \Tor Q{x}\right) \Tarrow \left(\Tforall_{x} P{x} \Tor \Texists_{x} Q{x}\right)$}
 \end{prooftree}
 
 \end{document}
