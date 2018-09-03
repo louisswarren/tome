@@ -74,3 +74,6 @@ DP⊃GMP (⊢dp ∷ []) (α ∷ []) = dp→gmp (λ β → ⊢dp (β ∷ [])) α
 
 s : String
 s = texreduce DNE⊃LEM (A ∷ [])
+
+t : String
+t = texreduce {DP ∷ []} {GMP} DP⊃GMP ((P x ⇒ Q x) ∷ [])
