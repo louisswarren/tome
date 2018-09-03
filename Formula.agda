@@ -293,39 +293,3 @@ data _[_/_]≡_ : Formula → Term → Term → Formula → Set where
   V∣    : ∀{α x t} → (V x α) [ varterm x / t ]≡ (V x α)
   Λ     : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (Λ x α) [ s / t ]≡ (Λ x β)
   V     : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (V x α) [ s / t ]≡ (V x β)
-
-
--- Every formula has a replacement
-
-find[_][_/_] : ∀{n} → (xs : Vec Term n) → (s t : Term) → Σ (Vec Term n) [ xs ][ s / t ]≡_
-find[ [] ][ s / t ] = [] , []
-find[ x ∷ xs ][ s / t ] with termEq s x
-find[ varterm x ∷ xs ][ .(varterm x) / t ] | yes refl with find[ xs ][ varterm x / t ]
-find[ varterm x ∷ xs ][ .(varterm x) / t ] | yes refl | ys , pf = (t ∷ ys) , var≡ x pf
-find[ functerm f us ∷ xs ][ .(functerm f us) / t ] | yes refl with find[ xs ][ functerm f us / t ]
-find[ functerm f us ∷ xs ][ .(functerm f us) / t ] | yes refl | ys , pf = (t ∷ ys) , func≡ f pf
-find[ x ∷ xs ][ s / t ] | no neq with find[ xs ][ s / t ]
-find[ varterm x ∷ xs ][ s / t ] | no neq | ys , pf = (varterm x ∷ ys) , var≢ x neq pf
-find[ functerm f us ∷ xs ][ s / t ] | no neq | ys , pf with find[ us ][ s / t ]
-find[ functerm f us ∷ xs ][ s / t ] | no neq | ys , pf | vs , pf′ = (functerm f vs ∷ ys) , func≢ f neq pf′ pf
-
-find_[_/_] : (α : Formula) → (s t : Term) → Σ Formula (α [ s / t ]≡_)
-find atom r xs [ s / t ] with find[ xs ][ s / t ]
-...                      | ys , pf = atom r ys , atom r pf
-find (α ⇒ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
-...                      | (α′ , αpf) , (β′ , βpf) = α′ ⇒ β′ , αpf ⇒ βpf
-find (α ∧ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
-...                      | (α′ , αpf) , (β′ , βpf) = α′ ∧ β′ , αpf ∧ βpf
-find (α ∨ β)   [ s / t ] with (find α [ s / t ]) , (find β [ s / t ])
-...                      | (α′ , αpf) , (β′ , βpf) = α′ ∨ β′ , αpf ∨ βpf
-find (Λ x α)   [ s / t ] with termEq s (varterm x)
-...                      | yes refl = Λ x α , Λ∣
-...                      | no neq with find α [ s / t ]
-...                              | α′ , pf = Λ x α′ , Λ neq pf
-find (V x α)   [ s / t ] with termEq s (varterm x)
-...                      | yes refl = V x α , V∣
-...                      | no neq with find α [ s / t ]
-...                               | α′ , pf = V x α′ , V neq pf
-
-_[_/_] : Formula → Term → Term → Formula
-α [ s / t ] = fst find α [ s / t ]
