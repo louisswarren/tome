@@ -16,7 +16,7 @@ open import List
 
 infix 1 _⊢_
 data _⊢_ : Ensemble formulaEq → Formula → Set where
-  cite       : ∀{Γ α} → String → Γ ⊢ α → Γ ⊢ α
+  cite       : ∀{α} → String → ∅ ⊢ α → ∅ ⊢ α
   assume     : (α : Formula)
                →                           α ∷ ∅ ⊢ α
 

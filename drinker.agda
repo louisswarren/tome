@@ -1,5 +1,6 @@
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_-_)
 open import Agda.Builtin.Equality
+open import Agda.Builtin.String
 
 open import Deduction
 open import Ensemble
@@ -13,6 +14,8 @@ open import List
     decide∈    to decide[∈]    )
 open import Formula
 open import Vec
+
+open import Texify
 
 open import sugar
 
@@ -38,7 +41,7 @@ dne→lem : (∀ α → ⊢ (dne α)) → ∀ α → ⊢ (lem α)
 dne→lem ⊢dne α = close
                   (∅ ∪  ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (arrowelim
-                   (⊢dne (α ∨ ¬ α))
+                   (cite "DNE" (⊢dne (α ∨ ¬ α)))
                    (arrowintro (¬ (α ∨ ¬ α))
                     (arrowelim
                      (assume (¬ (α ∨ ¬ α)))
@@ -57,7 +60,7 @@ dp→gmp ⊢dp α = close
                 ((Λ (mkvar zero) α ⇒ atom (mkrel zero zero) []) ~  (∅ ∪   ((α ⇒ Λ (mkvar zero) α) ~ (α ~  (((α ∷ ((α ⇒ Λ (mkvar zero) α) ∷ List.[ refl ])) -∷ ∅) ∪   (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
                 (arrowintro (¬∀x α)
                  (existelim (V∣ (mkvar zero) (α ⇒ atom (mkrel zero zero) []) ∷  ((α ⇒ Λ (mkvar zero) α) ~   (α ~(((Λ∣ (mkvar zero) α ⇒ atom []) ∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
-                  (⊢dp α)
+                  (cite "DP" (⊢dp α))
                   (existintro x xvar (ident (α ⇒ atom (mkrel zero zero) []) (varterm (mkvar zero)))
                    (arrowintro α
                     (arrowelim
@@ -67,3 +70,7 @@ dp→gmp ⊢dp α = close
                       (assume α)))))))
 DP⊃GMP : DP ∷ [] ⊃ GMP
 DP⊃GMP (⊢dp ∷ []) (α ∷ []) = dp→gmp (λ β → ⊢dp (β ∷ [])) α
+
+
+s : String
+s = texreduce DNE⊃LEM (A ∷ [])
