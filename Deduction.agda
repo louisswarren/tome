@@ -13,6 +13,10 @@ open import List
     _∉_        to _[∉]_        ;
     decide∈    to decide[∈]    )
 
+private
+  _BoundInAll_ : Variable → Ensemble formulaEq → Set
+  x BoundInAll Γ = All (x BoundIn_) Γ
+
 
 infix 1 _⊢_
 data _⊢_ : Ensemble formulaEq → Formula → Set where
@@ -59,7 +63,7 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
                →                   (Γ₁ ∪ (Γ₂ - α)) ∪ (Γ₃ - β) ⊢ γ
 
   univintro  : ∀{Γ α} → (x : Variable)
-               → All (varterm x BoundIn_) Γ
+               → x BoundInAll Γ
                →                                  Γ ⊢ α
                                                ----------- ∀⁺
                →                                Γ ⊢ Λ x α
@@ -77,7 +81,7 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
                →                                  Γ ⊢ V x α
 
   existelim  : ∀{Γ₁ Γ₂ α β x}
-               → All (varterm x BoundIn_) (β ∷ (Γ₂ - α))
+               → x BoundInAll (β ∷ (Γ₂ - α))
                →                      Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
                                      --------------------------- ∃⁻
                →                          Γ₁ ∪ (Γ₂ - α) ⊢ β

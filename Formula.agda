@@ -77,27 +77,27 @@ record Scheme : Set where
 
 -- Term freedom
 
-data _TermNotIn_ (t : Term) : ∀{n} → Vec Term n → Set where
-  []    : t TermNotIn []
+data _BoundInTerms_ (x : Variable) : ∀{n} → Vec Term n → Set where
+  []    : x BoundInTerms []
   var∉  : ∀{n} {xs : Vec Term n}
-            → (x : Variable)
-            → t ≢ (varterm x)
-            → t TermNotIn xs
-            → t TermNotIn (varterm x ∷ xs)
+            → (y : Variable)
+            → x ≢ y
+            → x BoundInTerms xs
+            → x BoundInTerms (varterm y ∷ xs)
   func∉ : ∀{n} {xs : Vec Term n}
-            → (f : Function) → {ys : Vec Term (Function.arity f)} → t TermNotIn ys
-            → t ≢ functerm f ys
-            → t TermNotIn xs
-            → t TermNotIn (functerm f ys ∷ xs)
+            → (f : Function) → {us : Vec Term (Function.arity f)}
+            → x BoundInTerms us
+            → x BoundInTerms xs
+            → x BoundInTerms (functerm f us ∷ xs)
 
-data _BoundIn_ : Term → Formula → Set where
+data _BoundIn_ : Variable → Formula → Set where
   atom : ∀{t r} {xs : Vec Term (Relation.arity r)}
-                  → t TermNotIn xs → t BoundIn (atom r xs)
+                  → t BoundInTerms xs → t BoundIn (atom r xs)
   _⇒_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ⇒ β)
   _∧_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ∧ β)
   _∨_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ∨ β)
-  Λ∣   : ∀ x α    → (varterm x) BoundIn Λ x α
-  V∣   : ∀ x α    → (varterm x) BoundIn V x α
+  Λ∣   : ∀ x α    → x BoundIn Λ x α
+  V∣   : ∀ x α    → x BoundIn V x α
   Λ    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn Λ x α
   V    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn V x α
 

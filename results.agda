@@ -9,75 +9,76 @@ open import Deduction
 open import Vec
 
 
--- Some formula propositions are decidable
+-- The bulk of these proofs were generated with a mixture of Agda's auto and
+-- vim macros. They are not very interesting, and all work by just breaking out
+-- cases and examining them exhaustively.
 
-isTermNotIn : ∀{n} → (t : Term) → (ss : Vec Term n) → Dec (t TermNotIn ss)
-isTermNotIn t [] = yes []
-isTermNotIn t (s ∷ ss) with isTermNotIn t ss
-isTermNotIn t (s ∷ ss) | yes rst with termEq t s
-...                              | yes x = no φ
+-- Some formula propositions are decidable.
+
+_isBoundInTerms_ : ∀{n} → (x : Variable) → (ss : Vec Term n) → Dec (x BoundInTerms ss)
+x isBoundInTerms [] = yes []
+x isBoundInTerms (s ∷ ss) with x isBoundInTerms ss
+(x isBoundInTerms (varterm y ∷ ss))     | yes rst with varEq x y
+(x isBoundInTerms _∷_ {n} (varterm .x) ss) | yes rst | yes refl = no φ
                                           where φ : _
-                                                φ (var∉ _ neq _)    = neq x
-                                                φ (func∉ _ _ neq _) = neq x
-
-isTermNotIn t (varterm x₁ ∷ ss) | yes rst | no x = yes (var∉ x₁ x rst)
-isTermNotIn t (functerm f x₁ ∷ ss) | yes rst | no x with isTermNotIn t x₁
-isTermNotIn t (functerm f x₁ ∷ ss) | yes rst | no x | yes x₂ = yes (func∉ f x₂ x rst)
-isTermNotIn t (functerm f x₁ ∷ ss) | yes rst | no x | no x₂ = no φ
-                                                              where φ : _
-                                                                    φ (func∉ f pf x₁ pf₁) = x₂ pf
-isTermNotIn t (s ∷ ss) | no isin = no φ
+                                                φ (var∉ y x k) = x refl
+(x isBoundInTerms (varterm y ∷ ss)) | yes rst | no x₁ = yes (var∉ y x₁ rst)
+(x isBoundInTerms (functerm f us ∷ ss)) | yes rst with x isBoundInTerms us
+(x isBoundInTerms (functerm f us ∷ ss)) | yes rst | yes x₁ = yes (func∉ f x₁ rst)
+(x isBoundInTerms (functerm f us ∷ ss)) | yes rst | no x₁ = no φ
                                   where φ : _
-                                        φ (var∉ _ _ pf)    = isin pf
-                                        φ (func∉ _ _ _ pf) = isin pf
+                                        φ (func∉ f k k₁) = x₁ k
+(x isBoundInTerms (s ∷ ss)) | no sfree = no φ
+                                  where φ : _
+                                        φ (var∉ y x₁ k) = sfree k
+                                        φ (func∉ f k k₁) = sfree k₁
 
--- Vim macros generated this
-_isBoundIn_ : (t : Term) → (α : Formula) → Dec (t BoundIn α)
-t isBoundIn atom r xs with isTermNotIn t xs
-(t isBoundIn atom r xs) | yes x = yes (atom x)
-(t isBoundIn atom r xs) | no x = no φ
+_isBoundIn_ : (y : Variable) → (α : Formula) → Dec (y BoundIn α)
+y isBoundIn atom r xs with y isBoundInTerms xs
+(y isBoundIn atom r xs) | yes x = yes (atom x)
+(y isBoundIn atom r xs) | no x = no φ
   where φ : _
         φ (atom x₁) = x x₁
-t isBoundIn (α ⇒ β) with t isBoundIn α
-(t isBoundIn (α ⇒ β)) | yes x with t isBoundIn β
-(t isBoundIn (α ⇒ β)) | yes x | yes x₁ = yes (x ⇒ x₁)
-(t isBoundIn (α ⇒ β)) | yes x | no x₁ = no φ
+y isBoundIn (α ⇒ β) with y isBoundIn α
+(y isBoundIn (α ⇒ β)) | yes x with y isBoundIn β
+(y isBoundIn (α ⇒ β)) | yes x | yes x₁ = yes (x ⇒ x₁)
+(y isBoundIn (α ⇒ β)) | yes x | no x₁ = no φ
   where φ : _
         φ (pf ⇒ pf₁) = x₁ pf₁
-(t isBoundIn (α ⇒ β)) | no x = no φ
+(y isBoundIn (α ⇒ β)) | no x = no φ
   where φ : _
         φ (pf ⇒ pf₁) = x pf
-t isBoundIn (α ∧ β) with t isBoundIn α
-(t isBoundIn (α ∧ β)) | yes x with t isBoundIn β
-(t isBoundIn (α ∧ β)) | yes x | yes x₁ = yes (x ∧ x₁)
-(t isBoundIn (α ∧ β)) | yes x | no x₁ = no φ
+y isBoundIn (α ∧ β) with y isBoundIn α
+(y isBoundIn (α ∧ β)) | yes x with y isBoundIn β
+(y isBoundIn (α ∧ β)) | yes x | yes x₁ = yes (x ∧ x₁)
+(y isBoundIn (α ∧ β)) | yes x | no x₁ = no φ
   where φ : _
         φ (pf ∧ pf₁) = x₁ pf₁
-(t isBoundIn (α ∧ β)) | no x = no φ
+(y isBoundIn (α ∧ β)) | no x = no φ
   where φ : _
         φ (pf ∧ pf₁) = x pf
-t isBoundIn (α ∨ β) with t isBoundIn α
-(t isBoundIn (α ∨ β)) | yes x with t isBoundIn β
-(t isBoundIn (α ∨ β)) | yes x | yes x₁ = yes (x ∨ x₁)
-(t isBoundIn (α ∨ β)) | yes x | no x₁ = no φ
+y isBoundIn (α ∨ β) with y isBoundIn α
+(y isBoundIn (α ∨ β)) | yes x with y isBoundIn β
+(y isBoundIn (α ∨ β)) | yes x | yes x₁ = yes (x ∨ x₁)
+(y isBoundIn (α ∨ β)) | yes x | no x₁ = no φ
   where φ : _
         φ (pf ∨ pf₁) = x₁ pf₁
-(t isBoundIn (α ∨ β)) | no x = no φ
+(y isBoundIn (α ∨ β)) | no x = no φ
   where φ : _
         φ (pf ∨ pf₁) = x pf
-t isBoundIn Λ x α with termEq t (varterm x)
-(.(varterm x) isBoundIn Λ x α) | yes refl = yes (Λ∣ x α)
-(t isBoundIn Λ x α) | no x₁ with t isBoundIn α
-(t isBoundIn Λ x α) | no x₁ | yes x₂ = yes (Λ x x₂)
-(t isBoundIn Λ x α) | no x₁ | no x₂ = no φ
+y isBoundIn Λ x α with varEq y x
+(.x isBoundIn Λ x α) | yes refl = yes (Λ∣ x α)
+(y isBoundIn Λ x α) | no x₁ with y isBoundIn α
+(y isBoundIn Λ x α) | no x₁ | yes x₂ = yes (Λ x x₂)
+(y isBoundIn Λ x α) | no x₁ | no x₂ = no φ
   where φ : _
         φ (Λ∣ x α) = x₁ refl
         φ (Λ x pf) = x₂ pf
-t isBoundIn V x α with termEq t (varterm x)
-(.(varterm x) isBoundIn V x α) | yes refl = yes (V∣ x α)
-(t isBoundIn V x α) | no x₁ with t isBoundIn α
-(t isBoundIn V x α) | no x₁ | yes x₂ = yes (V x x₂)
-(t isBoundIn V x α) | no x₁ | no x₂ = no φ
+y isBoundIn V x α with varEq y x
+(.x isBoundIn V x α) | yes refl = yes (V∣ x α)
+(y isBoundIn V x α) | no x₁ with y isBoundIn α
+(y isBoundIn V x α) | no x₁ | yes x₂ = yes (V x x₂)
+(y isBoundIn V x α) | no x₁ | no x₂ = no φ
   where φ : _
         φ (V∣ x α) = x₁ refl
         φ (V x pf) = x₂ pf
