@@ -20,22 +20,7 @@ open import Texify
 open import sugar
 
 
-DNE LEM DP GMP LPO : Scheme
-
-dne lem : Formula → Formula
-dne α = ¬¬ α ⇒ α
-lem α = α ∨ ¬ α
-
-DNE = unaryscheme "DNE" dne
-LEM = unaryscheme "LEM" lem
-
-
-dp gmp : Formula → Formula
-dp  Φx = ∃x(Φx ⇒ ∀x Φx)
-gmp Φx = ¬∀x Φx ⇒ ∃x (¬ Φx)
-
-DP  = unaryscheme "DP"  dp
-GMP = unaryscheme "GMP" gmp
+LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP : Scheme
 
 
 lpo : Formula → Formula → Formula
@@ -43,8 +28,85 @@ lpo Φx Ψx = ∀x (Φx ∨ Ψx) ⇒ ∀x Φx ∨ ∃x Ψx
 
 LPO = binaryscheme "LPO" lpo
 
+dne : Formula → Formula
+dne Φ = ¬¬ Φ ⇒ Φ
 
-dne→lem : (∀ α → ⊢ dne α) → ∀ α → ⊢ lem α
+DNE = unaryscheme "DNE" dne
+
+efq : Formula → Formula
+efq Φ = ⊥ ⇒ Φ
+
+EFQ = unaryscheme "EFQ" efq
+
+
+lem wlem : Formula → Formula
+lem  Φ = Φ ∨ ¬ Φ
+wlem Φ = ¬ Φ ∨ ¬¬ Φ
+
+LEM  = unaryscheme "LEM" lem
+WLEM = unaryscheme "WLEM" wlem
+
+
+
+dgp : Formula → Formula → Formula
+dgp Φ Ψ  = (Φ ⇒ Ψ) ∨ (Ψ ⇒ Φ)
+
+DGP = binaryscheme "DGP" dgp
+
+
+
+glpo glpoa gmp wgmp : Formula → Formula
+glpo  Φx = ∀x ¬Φx ∨ ∃x Φx                                       where ¬Φx = ¬ Φx
+glpoa Φx = ∀x Φx ∨ ∃x ¬Φx                                       where ¬Φx = ¬ Φx
+gmp   Φx = ¬∀x Φx ⇒ ∃x ¬Φx                                      where ¬Φx = ¬ Φx
+wgmp  Φx = ¬∀x Φx ⇒ ¬¬(∃x ¬Φx)                                  where ¬Φx = ¬ Φx
+
+GLPO  = unaryscheme "GLPO"  glpo
+GLPOA = unaryscheme "GLPOA" glpoa
+GMP   = unaryscheme "GMP"   gmp
+WGMP  = unaryscheme "WGMP"  wgmp
+
+
+
+dp he dpn hen : Formula → Formula
+dp  Φx = ∃x(Φx ⇒ ∀x Φx)
+he  Φx = ∃x(∃x Φx ⇒ Φx)
+dpn Φx = dp (¬ Φx)
+hen Φx = he (¬ Φx)
+
+DP  = unaryscheme "DP"  dp
+HE  = unaryscheme "HE"  he
+DPN = unaryscheme "DPN" dpn
+HEN = unaryscheme "HEN" hen
+
+
+
+dnsu dnse : Formula → Formula
+dnsu Φx = ∀x(¬¬ Φx) ⇒ ¬¬(∀x Φx)
+dnse Φx = ¬¬(∃x Φx) ⇒ ∃x (¬¬ Φx)
+
+DNSU = unaryscheme "DNSU" dnsu
+DNSE = unaryscheme "DNSE" dnse
+
+
+-- These are usually stated with Ψ instead of ∃x Ψ, but this is a simple way of
+-- adding bounded variable requirements as x is certainly not free in ∃x Ψ.
+-- If x is in fact not free in Ψ, then the existential can be eliminated
+-- separately.
+ud ip : Formula → Formula → Formula
+ud Φx Ψ = ∀x (Φx ∨ (∃x Ψ)) ⇒ (∀x Φx ∨ ∃x Ψ)
+ip Φx Ψ = (∃x Ψ ⇒ ∃x Φx) ⇒ ∃x(∃x Ψ ⇒ Φx)
+
+UD = binaryscheme "UD" ud
+IP = binaryscheme "IP" ip
+
+
+
+
+
+
+
+dne→lem : ⊢₁ dne → ⊢₁ lem
 dne→lem ⊢dne α = close
                   (∅ ∪  ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (arrowelim
@@ -62,8 +124,17 @@ DNE⊃LEM : DNE ∷ [] ⊃ LEM
 DNE⊃LEM (⊢dne ∷ []) (α ∷ []) = dne→lem (λ β → ⊢dne (β ∷ [])) α
 
 
+dne→efq : ⊢₁ dne → ⊢₁ efq
+dne→efq ⊢dne α = close (⊥ ~ (∅ ∪ (¬ α ~ ((¬ α ∷ [ refl ]) -∷ ∅)))) (arrowintro ⊥ (arrowelim (⊢dne α) (arrowintro (¬ α) (assume ⊥))))
+DNE⊃EFQ : DNE ∷ [] ⊃ EFQ
+DNE⊃EFQ (⊢dne ∷ []) (α ∷ []) = dne→efq (λ β → ⊢dne (β ∷ [])) α
 
-dp→gmp : (∀ α → ⊢ dp α) → ∀ α → ⊢ gmp α
+lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
+lem,efq→dne ⊢lem ⊢efq α = close (¬¬ α ~  ((∅ ∪ (α ~ ([ refl ] -∷ ∅))) ∪   (¬ α ~ (∅ ∪ (((¬ α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅)))))) (arrowintro (¬¬ α) (disjelim (⊢lem α) (assume α) (arrowelim (⊢efq α) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
+LEM,EFQ⊃DNE : LEM ∷ EFQ ∷ [] ⊃ DNE
+LEM,EFQ⊃DNE (⊢lem ∷ ⊢efq ∷ []) (α ∷ []) = lem,efq→dne (λ β → ⊢lem (β ∷ [])) (λ β → ⊢efq (β ∷ [])) α
+
+dp→gmp : ⊢₁ dp → ⊢₁ gmp
 dp→gmp ⊢dp α = close
                 ((Λ (mkvar zero) α ⇒ atom (mkrel zero zero) []) ~  (∅ ∪   ((α ⇒ Λ (mkvar zero) α) ~ (α ~  (((α ∷ ((α ⇒ Λ (mkvar zero) α) ∷ List.[ refl ])) -∷ ∅) ∪   (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
                 (arrowintro (¬∀x α)
@@ -80,7 +151,7 @@ DP⊃GMP : DP ∷ [] ⊃ GMP
 DP⊃GMP (⊢dp ∷ []) (α ∷ []) = dp→gmp (λ β → ⊢dp (β ∷ [])) α
 
 
-dp→lpo : (∀ α → ⊢ dp α) → ∀ α β → ⊢ lpo α β
+dp→lpo : ⊢₁ dp → ⊢₂ lpo
 dp→lpo ⊢dp α β = close
                   (∀x (α ∨ β) ~  (∅ ∪   ((α ⇒ ∀x α) ~(((((α ⇒ ∀x α) ∷ [ refl ]) -∷ ∅) ∪  (α ~ (((α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅)))) ∪ (β ~ ([ refl ] -∷ ∅))))))
                   (arrowintro (∀x (α ∨ β))
@@ -101,11 +172,4 @@ DP⊃LPO : DP ∷ [] ⊃ LPO
 DP⊃LPO (⊢dp ∷ []) (α ∷ β ∷ []) = dp→lpo (λ α → ⊢dp (α ∷ [])) α β
 
 
-s : String
-s = texreduce {DNE ∷ []} {LEM} DNE⊃LEM (A ∷ [])
 
-t : String
-t = texreduce {DP ∷ []} {GMP} DP⊃GMP ((P x ⇒ Q x) ∷ [])
-
-r : String
-r = texreduce {DP ∷ []} {LPO} DP⊃LPO (P x ∷ Q x ∷ [])

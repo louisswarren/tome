@@ -2,6 +2,7 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 open import Agda.Builtin.List
 
+open import Deduction
 open import Formula
 open import Vec
 
@@ -34,6 +35,17 @@ binaryscheme s f = scheme s 2 fs
                    where
                      fs : _
                      fs (α ∷ β ∷ []) = f α β
+
+
+-- Easier definitions for derivability
+⊢₀_ : Formula → Set
+⊢₀ α = ⊢ α
+
+⊢₁_ : (Formula → Formula) → Set
+⊢₁ s = ∀ α → ⊢ s α
+
+⊢₂_ : (Formula → Formula → Formula) → Set
+⊢₂ s = ∀ α β → ⊢ s α β
 
 
 -- Fix a few formula components
