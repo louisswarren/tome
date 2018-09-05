@@ -75,7 +75,7 @@ record Scheme : Set where
     inst  : Vec Formula arity → Formula
 
 
--- Term freedom
+-- Variable freedom
 
 data _BoundInTerms_ (x : Variable) : ∀{n} → Vec Term n → Set where
   []    : x BoundInTerms []
@@ -100,6 +100,38 @@ data _BoundIn_ : Variable → Formula → Set where
   V∣   : ∀ x α    → x BoundIn V x α
   Λ    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn Λ x α
   V    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn V x α
+
+
+-- Variable replacement
+
+data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set where
+  []   : ∀{x t} → [ [] ][ x / t ]≡ []
+  var≡ : ∀{n t} {xs ys : Vec Term n}
+           → (x : Variable)
+           → [ xs ][ x / t ]≡ ys
+           → [ varterm x ∷ xs ][ x / t ]≡ (t ∷ ys)
+  var≢ : ∀{n x t} {xs ys : Vec Term n}
+           → (v : Variable)
+           → x ≢ v
+           → [ xs ][ x / t ]≡ ys
+           → [ varterm v ∷ xs ][ x / t ]≡ (varterm v ∷ ys)
+  func : ∀{n x t} {xs ys : Vec Term n}
+           → (f : Function) → ∀{us vs}
+           → [ us ][ x / t ]≡ vs
+           → [ xs ][ x / t ]≡ ys
+           → [ functerm f us ∷ xs ][ x / t ]≡ (functerm f vs ∷ ys)
+
+data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
+  ident : ∀ α x → α [ x / varterm x ]≡ α
+  atom  : ∀{x t} → (r : Relation) → ∀{xs ys} → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
+  _⇒_   : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ⇒ β) [ s / t ]≡ (α′ ⇒ β′)
+  _∧_   : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∧ β) [ s / t ]≡ (α′ ∧ β′)
+  _∨_   : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∨ β) [ s / t ]≡ (α′ ∨ β′)
+  Λ∣    : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
+  V∣    : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
+  Λ     : ∀{α β x v t} → v ≢ x → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
+  V     : ∀{α β x v t} → v ≢ x → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+
 
 ----------------------------------------------------------------------------------
 -- Computation requires decidable equality for the types above
@@ -256,40 +288,3 @@ formulaEq (V x α) (β ⇒ β₁) = no (λ ())
 formulaEq (V x α) (β ∧ β₁) = no (λ ())
 formulaEq (V x α) (β ∨ β₁) = no (λ ())
 formulaEq (V x α) (Λ x₁ β) = no (λ ())
-
---------------------------------------------------------------------------------
-
--- Term replacement
-
-data [_][_/_]≡_ : ∀{n} → Vec Term n → Term → Term → Vec Term n → Set where
-  []    : ∀{s t} → [ [] ][ s / t ]≡ []
-  var≡  : ∀{n t} {xs ys : Vec Term n}
-            → (x : Variable)
-            → [ xs ][ varterm x / t ]≡ ys
-            → [ varterm x ∷ xs ][ varterm x / t ]≡ (t ∷ ys)
-  var≢  : ∀{n s t} {xs ys : Vec Term n}
-            → (x : Variable)
-            → s ≢ varterm x
-            → [ xs ][ s / t ]≡ ys
-            → [ varterm x ∷ xs ][ s / t ]≡ (varterm x ∷ ys)
-  func≡ : ∀{n t} {xs ys : Vec Term n}
-            → (f : Function) → ∀{us}
-            → [ xs ][ functerm f us / t ]≡ ys
-            → [ functerm f us ∷ xs ][ functerm f us / t ]≡ (t ∷ ys)
-  func≢ : ∀{n s t} {xs ys : Vec Term n}
-            → (f : Function) → ∀{us vs}
-            → s ≢ functerm f us
-            → [ us ][ s / t ]≡ vs
-            → [ xs ][ s / t ]≡ ys
-            → [ functerm f us ∷ xs ][ s / t ]≡ (functerm f vs ∷ ys)
-
-data _[_/_]≡_ : Formula → Term → Term → Formula → Set where
-  ident : ∀ α t → α [ t / t ]≡ α
-  atom  : ∀{s t} → (r : Relation) → ∀{xs ys} → [ xs ][ s / t ]≡ ys → (atom r xs) [ s / t ]≡ (atom r ys)
-  _⇒_   : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ⇒ β) [ s / t ]≡ (α′ ⇒ β′)
-  _∧_   : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∧ β) [ s / t ]≡ (α′ ∧ β′)
-  _∨_   : ∀{α α′ β β′ s t} → α [ s / t ]≡ α′ → β [ s / t ]≡ β′ → (α ∨ β) [ s / t ]≡ (α′ ∨ β′)
-  Λ∣    : ∀{α x t} → (Λ x α) [ varterm x / t ]≡ (Λ x α)
-  V∣    : ∀{α x t} → (V x α) [ varterm x / t ]≡ (V x α)
-  Λ     : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (Λ x α) [ s / t ]≡ (Λ x β)
-  V     : ∀{α β x s t} → s ≢ (varterm x) → α [ s / t ]≡ β → (V x α) [ s / t ]≡ (V x β)

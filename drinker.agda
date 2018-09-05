@@ -69,7 +69,7 @@ dp→gmp ⊢dp α = close
                 (arrowintro (¬∀x α)
                  (existelim (V∣ (mkvar zero) (α ⇒ atom (mkrel zero zero) []) ∷  ((α ⇒ Λ (mkvar zero) α) ~   (α ~(((Λ∣ (mkvar zero) α ⇒ atom []) ∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (cite "DP" (⊢dp α))
-                  (existintro x xvar (ident (α ⇒ atom (mkrel zero zero) []) (varterm (mkvar zero)))
+                  (existintro x xvar (ident (¬ α) xvar)
                    (arrowintro α
                     (arrowelim
                      (assume (¬∀x α))
@@ -88,14 +88,14 @@ dp→lpo ⊢dp α β = close
                     ((Λ∣ xvar α ∨ V∣ xvar β) ∷  ((α ⇒ ∀x α) ~   (((Λ∣ xvar (α ∨ β) ∷ ∅) ∪ (α ~ (((α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅))))∪ (β ~ ([ refl ] -∷ ∅)))))
                     (cite "DP" (⊢dp α))
                     (disjelim
-                     (univelim x (ident (α ∨ β) (varterm xvar))
+                     (univelim x (ident (α ∨ β) xvar)
                       (assume (∀x (α ∨ β))))
                      (disjintro₁ (∃x β)
                       (arrowelim
                        (assume (α ⇒ ∀x α))
                        (assume α)))
                      (disjintro₂ (∀x α)
-                      (existintro x xvar (ident β (varterm xvar))
+                      (existintro x xvar (ident β xvar)
                        (assume β))))))
 DP⊃LPO : DP ∷ [] ⊃ LPO
 DP⊃LPO (⊢dp ∷ []) (α ∷ β ∷ []) = dp→lpo (λ α → ⊢dp (α ∷ [])) α β
