@@ -121,18 +121,30 @@ dne→lem ⊢dne α = close
                         (disjintro₁ (¬ α)
                          (assume α))))))))
 DNE⊃LEM : DNE ∷ [] ⊃ LEM
-DNE⊃LEM (⊢dne ∷ []) (α ∷ []) = dne→lem (λ β → ⊢dne (β ∷ [])) α
+DNE⊃LEM (⊢DNE ∷ []) (α ∷ []) = dne→lem (descheme₁ ⊢DNE) α
 
 
 dne→efq : ⊢₁ dne → ⊢₁ efq
 dne→efq ⊢dne α = close (⊥ ~ (∅ ∪ (¬ α ~ ((¬ α ∷ [ refl ]) -∷ ∅)))) (arrowintro ⊥ (arrowelim (⊢dne α) (arrowintro (¬ α) (assume ⊥))))
 DNE⊃EFQ : DNE ∷ [] ⊃ EFQ
-DNE⊃EFQ (⊢dne ∷ []) (α ∷ []) = dne→efq (λ β → ⊢dne (β ∷ [])) α
+DNE⊃EFQ (⊢DNE ∷ []) (α ∷ []) = dne→efq (descheme₁ ⊢DNE) α
 
 lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
 lem,efq→dne ⊢lem ⊢efq α = close (¬¬ α ~  ((∅ ∪ (α ~ ([ refl ] -∷ ∅))) ∪   (¬ α ~ (∅ ∪ (((¬ α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅)))))) (arrowintro (¬¬ α) (disjelim (⊢lem α) (assume α) (arrowelim (⊢efq α) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
 LEM,EFQ⊃DNE : LEM ∷ EFQ ∷ [] ⊃ DNE
-LEM,EFQ⊃DNE (⊢lem ∷ ⊢efq ∷ []) (α ∷ []) = lem,efq→dne (λ β → ⊢lem (β ∷ [])) (λ β → ⊢efq (β ∷ [])) α
+LEM,EFQ⊃DNE (⊢LEM ∷ ⊢EFQ ∷ []) (α ∷ []) = lem,efq→dne (descheme₁ ⊢LEM) (descheme₁ ⊢EFQ) α
+
+
+he→ip : ⊢₁ he → ⊢₂ ip
+he→ip ⊢he α β = close ((∃x β ⇒ ∃x α) ~  (∅ ∪   ((∃x α ⇒ α) ~(∃x β ~ (((∃x β ∷ [ refl ]) -∷ ∅) ∪  (((∃x β ∷ ((∃x α ⇒ α) ∷ [ refl ])) -∷ ∅) ∪ ([ refl ] -∷ ∅))))))) (arrowintro (∃x β ⇒ ∃x α) (existelim (V∣ xvar (∃x β ⇒ α) ∷  ((∃x α ⇒ α) ~   (∃x β ~(((∃x β ∷ [ refl ]) -∷ ∅) ∪ (((V∣ xvar β ⇒ V∣ xvar α) ∷ ∅) ∪ (V∣ xvar β ∷ ∅)))))) (⊢he α) (existintro x xvar (ident (∃x β ⇒ α) xvar) (arrowintro (∃x β) (arrowelim (assume (∃x α ⇒ α)) (arrowelim (assume (∃x β ⇒ ∃x α)) (assume (∃x β))))))))
+HE⊃IP : HE ∷ [] ⊃ IP
+HE⊃IP (⊢HE ∷ []) (α ∷ β ∷ []) = he→ip (descheme₁ ⊢HE) α β
+
+
+ip→he : ⊢₂ ip → ⊢₁ he
+ip→he ⊢ip α = close ((∅ ∪ (∃x α ~ ([ refl ] -∷ ∅))) ∪ ((∃x α ⇒ α) ~ ([ refl ] -∷ ∅))) (existelim (V∣ xvar (∃x α ⇒ α) ∷ ((∃x α ⇒ α) ~ ([ refl ] -∷ ∅))) (arrowelim (⊢ip α α) (arrowintro (∃x α) (assume (∃x α)))) (existintro x xvar (ident (∃x α ⇒ α) xvar) (assume (∃x α ⇒ α))))
+IP⊃HE : IP ∷ [] ⊃ HE
+IP⊃HE (⊢IP ∷ []) (α ∷ []) = ip→he (descheme₂ ⊢IP) α
 
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
 dp→gmp ⊢dp α = close
@@ -148,7 +160,7 @@ dp→gmp ⊢dp α = close
                       (assume (α ⇒ ∀x α))
                       (assume α)))))))
 DP⊃GMP : DP ∷ [] ⊃ GMP
-DP⊃GMP (⊢dp ∷ []) (α ∷ []) = dp→gmp (λ β → ⊢dp (β ∷ [])) α
+DP⊃GMP (⊢DP ∷ []) (α ∷ []) = dp→gmp (descheme₁ ⊢DP) α
 
 
 dp→lpo : ⊢₁ dp → ⊢₂ lpo
@@ -169,7 +181,6 @@ dp→lpo ⊢dp α β = close
                       (existintro x xvar (ident β xvar)
                        (assume β))))))
 DP⊃LPO : DP ∷ [] ⊃ LPO
-DP⊃LPO (⊢dp ∷ []) (α ∷ β ∷ []) = dp→lpo (λ α → ⊢dp (α ∷ [])) α β
-
+DP⊃LPO (⊢DP ∷ []) (α ∷ β ∷ []) = dp→lpo (descheme₁ ⊢DP) α β
 
 

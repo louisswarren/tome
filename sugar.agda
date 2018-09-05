@@ -47,6 +47,18 @@ binaryscheme s f = scheme s 2 fs
 ⊢₂_ : (Formula → Formula → Formula) → Set
 ⊢₂ s = ∀ α β → ⊢ s α β
 
+descheme₀ : {f : Vec Formula 0 → Formula}
+            → (∀ αs → ⊢ f αs) → ⊢ f []
+descheme₀ {f} ⊢S = ⊢S []
+
+descheme₁ : {f : Vec Formula 1 → Formula}
+            → (∀ αs → ⊢ f αs) → ∀ α → ⊢ f (α ∷ [])
+descheme₁ {f} ⊢S α = ⊢S (α ∷ [])
+
+descheme₂ : {f : Vec Formula 2 → Formula}
+            → (∀ αs → ⊢ f αs) → ∀ α β → ⊢ f (α ∷ β ∷ [])
+descheme₂ {f} ⊢S α β = ⊢S (α ∷ (β ∷ []))
+
 
 -- Fix a few formula components
 pattern xvar  = mkvar zero
