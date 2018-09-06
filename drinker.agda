@@ -165,10 +165,6 @@ LEM⊃GLPO : LEM ∷ [] ⊃ GLPO
 LEM⊃GLPO (⊢LEM ∷ []) (α ∷ []) = lem→glpo (descheme₁ ⊢LEM) α
 
 
-glpo→lem : ⊢₁ glpo → ⊢₁ lem
-glpo→lem ⊢glpo α = close ((∅ ∪ (∀x¬ α ~ ([ refl ] -∷ ∅))) ∪  (∃x α ~ (([ refl ] -∷ ∅) ∪ (α ~ ([ refl ] -∷ ∅))))) (disjelim (cite "GLPO" (⊢glpo α)) (disjintro₂ α (univelim x (ident (¬ α) xvar) (assume (∀x¬ α)))) (disjintro₁ (¬ α) (existelim {!   !} (assume (∃x α)) (assume α))))
-
-
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
 dp→gmp ⊢dp α = close
                 ((Λ (mkvar zero) α ⇒ atom (mkrel zero zero) []) ~  (∅ ∪   ((α ⇒ Λ (mkvar zero) α) ~ (α ~  (((α ∷ ((α ⇒ Λ (mkvar zero) α) ∷ List.[ refl ])) -∷ ∅) ∪   (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
