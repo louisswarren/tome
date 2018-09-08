@@ -15,17 +15,6 @@ record Variable : Set where
     idx : ℕ
 
 
--- "For every natural number n ≥ 0 a ... set of n-ary relation symbols."
-record Relation : Set where
-  constructor mkrel
-  field
-    idx   : ℕ
-    arity : ℕ
-
-mkprop : ℕ → Relation
-mkprop n = mkrel n zero
-
-
 -- "For every natural number n ≥ 0 a ... set of n-ary function symbols."
 record Function : Set where
   constructor mkfunc
@@ -33,19 +22,23 @@ record Function : Set where
     idx   : ℕ
     arity : ℕ
 
-mkconst : ℕ → Function
-mkconst n = mkfunc n zero
-
 
 -- "Terms are inductively defined as follows.
 --  (i)   Every variable is a term.
 --  (ii)  Every constant is a term.
 --  (iii) If t1, . . . , tn are terms and f is an n-ary function symbol with
 --        n ≥ 1, then f(t1 , . . . , tn ) is a term."
-
 data Term : Set where
   varterm  : Variable → Term
   functerm : (f : Function) → Vec Term (Function.arity f) → Term
+
+
+-- "For every natural number n ≥ 0 a ... set of n-ary relation symbols."
+record Relation : Set where
+  constructor mkrel
+  field
+    idx   : ℕ
+    arity : ℕ
 
 
 -- "If t1, . . . , tn are terms and R is an n-ary relation symbol, then
