@@ -76,14 +76,12 @@ pattern Crel = mkrel (suc (suc (suc zero)))             zero
 pattern Prel = mkrel (suc (suc (suc (suc zero))))       (suc zero)
 pattern Qrel = mkrel (suc (suc (suc (suc (suc zero))))) (suc zero)
 
-A B C : Formula
-A = atom Arel []
-B = atom Brel []
-C = atom Crel []
+pattern A = atom Arel []
+pattern B = atom Brel []
+pattern C = atom Crel []
 
-P Q : Term → Formula
-P t = atom Prel (t ∷ [])
-Q t = atom Qrel (t ∷ [])
+pattern P t = atom Prel (t ∷ [])
+pattern Q t = atom Qrel (t ∷ [])
 
 private
   _>>_ = primStringAppend
