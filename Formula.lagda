@@ -1,3 +1,5 @@
+\section{Formula.lagda}
+
 \begin{code}
 
 module Formula where
@@ -186,10 +188,16 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
 
 It remains to prove that equality of formulae is decidable. This follows from
 the fact that formulae are inductively defined. The proof is obtained by case
-analysis.
+analysis, and is ommitted from the latex-typeset form of this file.
 
 \begin{code}
 
+formulaEq : Decidable≡ Formula
+
+\end{code}
+
+\AgdaHide{
+\begin{code}
 natEq : Decidable≡ ℕ
 natEq zero zero = yes refl
 natEq zero (suc m) = no (λ ())
@@ -260,7 +268,6 @@ termEq (functerm f xs) (functerm g ys) with funcEq f g
                                                               where φ : _
                                                                     φ refl = neq refl
 
-formulaEq : Decidable≡ Formula
 formulaEq (atom r xs) (atom s ys) with natEq (Relation.arity r) (Relation.arity s)
 ...                               | yes refl with (relEq r s) , (vecEq termEq xs ys)
 ...                                          | yes refl , yes refl = yes refl
@@ -345,3 +352,4 @@ formulaEq (V x α)   (β ∨ β₁)    = no (λ ())
 formulaEq (V x α)   (Λ x₁ β)    = no (λ ())
 
 \end{code}
+}
