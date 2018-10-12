@@ -1,3 +1,5 @@
+\begin{code}
+
 module Formula where
 
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
@@ -7,43 +9,61 @@ open import Agda.Builtin.String
 open import Vec
 open import Decidable
 
+\end{code}
 
--- "Let a countably infinite set {vi | i ∈ N} of variables be given."
+We adopt the definitions from Proof and Computation (Schwichteberg). In
+particular, there are countably many variables, and countably many function
+symbols of each (natural) airty.
+
+\begin{code}
+
 record Variable : Set where
   constructor mkvar
   field
     idx : ℕ
 
 
--- "For every natural number n ≥ 0 a ... set of n-ary function symbols."
 record Function : Set where
   constructor mkfunc
   field
     idx   : ℕ
     arity : ℕ
 
+\end{code}
 
--- "Terms are inductively defined as follows.
---  (i)   Every variable is a term.
---  (ii)  Every constant is a term.
---  (iii) If t1, . . . , tn are terms and f is an n-ary function symbol with
---        n ≥ 1, then f(t1 , . . . , tn ) is a term."
+Note that the indices are natural numbers. While it seems equivalent and more
+useful to index using strings, strings are not supported by Agda's proof
+search.
+
+Terms are either variables, or functions applied to the appropriate number of
+arguments.
+
+\begin{code}
+
 data Term : Set where
   varterm  : Variable → Term
   functerm : (f : Function) → Vec Term (Function.arity f) → Term
 
+\end{code}
 
--- "For every natural number n ≥ 0 a ... set of n-ary relation symbols."
+Relation symbols work the same way as Function symbols.
+
+\begin{code}
+
 record Relation : Set where
   constructor mkrel
   field
     idx   : ℕ
     arity : ℕ
 
+\end{code}
 
--- "If t1, . . . , tn are terms and R is an n-ary relation symbol, then
---  R(t1, . . . , tn ) is a prime formula ... Formulas are inductively defined
---  from prime formulas."
+We now define atoms (prime formulae), and the logical connectives, using
+$\Lambda$ and $V$ in place of $\forall$ and $\exists$, since $\forall$ is
+reserved by Agda.
+
+\begin{code}
+
 data Formula : Set where
   atom   : (r : Relation) → Vec Term (Relation.arity r) → Formula
   _⇒_    : Formula  → Formula → Formula
@@ -59,6 +79,14 @@ infixr 105 _⇒_ _⇔_
 infixr 106 _∨_
 infixr 107 _∧_
 
+\end{code}
+
+The following notion of a Scheme is more general than usual; instead of using
+placeholder symbols which are replaced by formulae, a Scheme is just
+constructed from a function from formulae to a formula. This is much easier to
+work with.
+
+\begin{code}
 
 record Scheme : Set where
   constructor scheme
@@ -67,8 +95,19 @@ record Scheme : Set where
     arity : ℕ
     inst  : Vec Formula arity → Formula
 
+\end{code}
 
--- Variable freedom
+A variable is shown to be bound in a formula with an obvious recursive
+definition. It is bound inside a quantification over a subformula $\alpha$ if
+either it is the quantification variable, or else if it is bound in $\alpha$.
+Separate constructors are given for these. A variable is bound inside an atom
+if it appears nowhere within that atom, meaning it is not within the terms that
+the relation is operating on. We define a lemma for this, as a function's terms
+may include further functions, and so on. For a given term, $x$ is bound within
+that term if that term is a variable other than $x$, or otherwise if the term
+is a function, and $x$ is bound in all arguments.
+
+\begin{code}
 
 data _BoundInTerms_ (x : Variable) : ∀{n} → Vec Term n → Set where
   []    : x BoundInTerms []
@@ -94,8 +133,20 @@ data _BoundIn_ : Variable → Formula → Set where
   Λ    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn Λ x α
   V    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn V x α
 
+\end{code}
 
--- Variable replacement
+We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
+replacing all instances of a variable $x$ with term $t$. The reasoning is
+similar to that of the bound variable check above, and a lemma is used for the
+same reasons. Inside a vector of terms, wherever $x$ occurs, it is replaced
+with $t$. Any variable distinct from $x$ is left unchanged.
+
+An extra constructor `ident' is defined, giving the case that replacing $x$
+with $x$ yields the original formula. This case is actually provable from the
+others. However, in practice it is the case we usually want to use, and so
+would like Agda's proof search to find it easily.
+
+\begin{code}
 
 data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set where
   []   : ∀{x t} → [ [] ][ x / t ]≡ []
@@ -131,9 +182,13 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   V     : ∀{α β x v t} → v ≢ x → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
 
 
---------------------------------------------------------------------------------
--- Computation requires decidable equality for the types above
--- Surely there's something nicer than this?
+\end{code}
+
+It remains to prove that equality of formulae is decidable. This follows from
+the fact that formulae are inductively defined. The proof is obtained by case
+analysis.
+
+\begin{code}
 
 natEq : Decidable≡ ℕ
 natEq zero zero = yes refl
@@ -288,3 +343,5 @@ formulaEq (V x α)   (β ⇒ β₁)    = no (λ ())
 formulaEq (V x α)   (β ∧ β₁)    = no (λ ())
 formulaEq (V x α)   (β ∨ β₁)    = no (λ ())
 formulaEq (V x α)   (Λ x₁ β)    = no (λ ())
+
+\end{code}
