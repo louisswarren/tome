@@ -18,7 +18,7 @@ private
   x BoundInAll Γ = All (x BoundIn_) Γ
 
 
-infix 1 _⊢_
+infix 1 _⊢_ ⊢_
 data _⊢_ : Ensemble formulaEq → Formula → Set where
   cite       : ∀{α} → String → ∅ ⊢ α → ∅ ⊢ α
 

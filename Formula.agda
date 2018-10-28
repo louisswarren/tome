@@ -70,6 +70,8 @@ record Scheme : Set where
 
 -- Variable freedom
 
+infix 300 _BoundInTerms_ _BoundIn_ [_][_/_]≡_ _[_/_]≡_
+
 data _BoundInTerms_ (x : Variable) : ∀{n} → Vec Term n → Set where
   []    : x BoundInTerms []
   var∉  : ∀{n} {xs : Vec Term n}

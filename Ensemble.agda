@@ -11,12 +11,18 @@ open import List
 -- An ensemble is like a decidable finite set, but we do not define a
 -- comprehension constructor.
 
+-- Sadly, a change in Agda forces all of these to be given explicitly
+infixl 5 _∷_ _∪_
+infixl 5 _-_
+infix 1 _∈_∖_ _∈?_ _∉_∖_ _∣∪_ _∪∣_ _⊂_ _⊂?_
+
 data Ensemble {A : Set} (eq : Decidable≡ A) : Set where
   ∅   : Ensemble eq
   _∷_ : A           → Ensemble eq → Ensemble eq
   _-_ : Ensemble eq → A           → Ensemble eq
   _∪_ : Ensemble eq → Ensemble eq → Ensemble eq
 
+infixr 5 _-∷_ _~_
 
 data All_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) : Ensemble eq → List A → Set where
   ∅    : ∀{xs}       → All P ⟨ ∅ ∖ xs ⟩
@@ -152,6 +158,7 @@ _∈_∖_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → List
 _∉_∖_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → List A → Set
 α ∉ αs ∖ xs = ¬(α ∈ αs ∖ xs)
 
+infix 4 _∈_ _∉_
 _∈_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
 α ∈ αs = α ∈ αs ∖ []
 
