@@ -188,15 +188,12 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
 
 It remains to prove that equality of formulae is decidable. This follows from
 the fact that formulae are inductively defined. The proof is obtained by case
-analysis, and is ommitted from the latex-typeset form of this file.
+analysis, using lemmae on the types used to construct formulae. The unremarkable
+proofs are ommitted from the latex-typeset form of this file, except for
+equality of natural numbers, which is included for illustrative purposes.
 
-\begin{code}
+Lemmas:
 
-formulaEq : Decidable≡ Formula
-
-\end{code}
-
-\AgdaHide{
 \begin{code}
 natEq : Decidable≡ ℕ
 natEq zero zero = yes refl
@@ -207,15 +204,25 @@ natEq (suc n) (suc m) with natEq n m
 ...                   | no  neq  = no φ
                                    where φ : _
                                          φ refl = neq refl
+\end{code}
 
+\begin{code}
 varEq : Decidable≡ Variable
+\end{code}
+\AgdaHide{
+\begin{code}
 varEq (mkvar n) (mkvar m) with natEq n m
 ...                       | yes refl = yes refl
 ...                       | no  neq  = no φ
                                        where φ : _
                                              φ refl = neq refl
-
+\end{code}
+}
+\begin{code}
 relEq : Decidable≡ Relation
+\end{code}
+\AgdaHide{
+\begin{code}
 relEq (mkrel n j) (mkrel m k) with natEq n m
 ...                           | no  neq  = no φ
                                             where φ : _
@@ -225,8 +232,13 @@ relEq (mkrel n j) (mkrel m k) with natEq n m
 ...                                      | no  neq  = no φ
                                                       where φ : _
                                                             φ refl = neq refl
-
+\end{code}
+}
+\begin{code}
 funcEq : Decidable≡ Function
+\end{code}
+\AgdaHide{
+\begin{code}
 funcEq (mkfunc n j) (mkfunc m k) with natEq n m
 ...                              | no  neq  = no φ
                                               where φ : _
@@ -236,8 +248,13 @@ funcEq (mkfunc n j) (mkfunc m k) with natEq n m
 ...                                         | no  neq  = no φ
                                                          where φ : _
                                                                φ refl = neq refl
-
+\end{code}
+}
+\begin{code}
 vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
+\end{code}
+\AgdaHide{
+\begin{code}
 vecEq eq [] [] = yes refl
 vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
 ...                        | no  neq  = no φ
@@ -249,6 +266,19 @@ vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
                                                    where φ : _
                                                          φ refl = neq refl
 
+\end{code}
+}
+
+Proving that equality of terms is decidable is non-trivial. A term can be
+constructed from a vector of terms. Consider a term like $f(g(x), h(x))$. To
+check if this term is equal to itself, we first check the vector $(g(x), h(x))$
+equals itself. We do this by applying the lemma above to the type of terms.
+However, this is not structurally recursive; we do not know that term equality
+will be used on structurally smaller terms inside vector equality. While there
+are ways of solving this problem, here we instead use the terminating pragma, as
+we trust that this will terminate.
+
+\begin{code}
 {-# TERMINATING #-}
 termEq : Decidable≡ Term
 termEq (varterm x) (varterm y) with varEq x y
@@ -267,7 +297,14 @@ termEq (functerm f xs) (functerm g ys) with funcEq f g
 ...                                               | no  neq = no φ
                                                               where φ : _
                                                                     φ refl = neq refl
+\end{code}
 
+\begin{code}
+formulaEq : Decidable≡ Formula
+\end{code}
+
+\AgdaHide{
+\begin{code}
 formulaEq (atom r xs) (atom s ys) with natEq (Relation.arity r) (Relation.arity s)
 ...                               | yes refl with (relEq r s) , (vecEq termEq xs ys)
 ...                                          | yes refl , yes refl = yes refl
