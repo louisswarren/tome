@@ -38,6 +38,8 @@ binaryscheme s f = scheme s 2 fs
 
 
 -- Easier definitions for derivability
+infix 1 ⊢₀_ ⊢₁_ ⊢₂_
+
 ⊢₀_ : Formula → Set
 ⊢₀ α = ⊢ α
 
