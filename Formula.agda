@@ -129,8 +129,8 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
             → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
   Λ∣    : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
   V∣    : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
-  Λ     : ∀{α β x v t} → v ≢ x → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
-  V     : ∀{α β x v t} → v ≢ x → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+  Λ     : ∀{α β x v t} → v ≢ x → x BoundInTerms (t ∷ []) → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
+  V     : ∀{α β x v t} → v ≢ x → x BoundInTerms (t ∷ []) → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
 
 
 --------------------------------------------------------------------------------
