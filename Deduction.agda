@@ -14,6 +14,7 @@ open import List
     decide∈    to decide[∈]    )
 
 private
+  infix 300 _BoundInAll_
   _BoundInAll_ : Variable → Ensemble formulaEq → Set
   x BoundInAll Γ = All (x BoundIn_) Γ
 
