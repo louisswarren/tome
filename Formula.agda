@@ -70,31 +70,28 @@ record Scheme : Set where
 
 -- Variable freedom
 
-infix 300 _BoundInTerms_ _BoundIn_ [_][_/_]≡_ _[_/_]≡_
+infix 300 _DoesNotOccurIn_ _DoesNotOccurInAny_ _BoundIn_ [_][_/_]≡_ _[_/_]≡_
 
-data _BoundInTerms_ (x : Variable) : ∀{n} → Vec Term n → Set where
-  []    : x BoundInTerms []
-  var∉  : ∀{n} {xs : Vec Term n}
-            → (y : Variable)
-            → x ≢ y
-            → x BoundInTerms xs
-            → x BoundInTerms (varterm y ∷ xs)
-  func∉ : ∀{n} {xs : Vec Term n}
-            → (f : Function) → {us : Vec Term (Function.arity f)}
-            → x BoundInTerms us
-            → x BoundInTerms xs
-            → x BoundInTerms (functerm f us ∷ xs)
+data _DoesNotOccurIn_ (x : Variable) : Term → Set
+
+_DoesNotOccurInAny_ : ∀{n} → Variable → Vec Term n → Set
+x DoesNotOccurInAny us = All (x DoesNotOccurIn_) us
+
+data _DoesNotOccurIn_ (x : Variable) where
+  varterm  : ∀{y} → x ≢ y → x DoesNotOccurIn (varterm y)
+  functerm : ∀{f} {us : Vec Term (Function.arity f)}
+               → x DoesNotOccurInAny us → x DoesNotOccurIn (functerm f us)
 
 data _BoundIn_ : Variable → Formula → Set where
-  atom : ∀{t r} {xs : Vec Term (Relation.arity r)}
-                  → t BoundInTerms xs → t BoundIn (atom r xs)
-  _⇒_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ⇒ β)
-  _∧_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ∧ β)
-  _∨_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ∨ β)
+  atom : ∀{x r} {ts : Vec Term (Relation.arity r)}
+                  → x DoesNotOccurInAny ts → x BoundIn (atom r ts)
+  _⇒_  : ∀{x α β} → x BoundIn α → x BoundIn β → x BoundIn (α ⇒ β)
+  _∧_  : ∀{x α β} → x BoundIn α → x BoundIn β → x BoundIn (α ∧ β)
+  _∨_  : ∀{x α β} → x BoundIn α → x BoundIn β → x BoundIn (α ∨ β)
   Λ∣   : ∀ x α    → x BoundIn Λ x α
   V∣   : ∀ x α    → x BoundIn V x α
-  Λ    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn Λ x α
-  V    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn V x α
+  Λ    : ∀{x α}   → ∀ y → x BoundIn α → x BoundIn Λ y α
+  V    : ∀{x α}   → ∀ y → x BoundIn α → x BoundIn V y α
 
 
 -- Variable replacement
@@ -129,8 +126,8 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
             → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
   Λ∣    : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
   V∣    : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
-  Λ     : ∀{α β x v t} → v ≢ x → x BoundInTerms (t ∷ []) → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
-  V     : ∀{α β x v t} → v ≢ x → x BoundInTerms (t ∷ []) → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+  Λ     : ∀{α β x v t} → v ≢ x → x DoesNotOccurIn t → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
+  V     : ∀{α β x v t} → v ≢ x → x DoesNotOccurIn t → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
 
 
 --------------------------------------------------------------------------------

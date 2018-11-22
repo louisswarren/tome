@@ -1,5 +1,6 @@
 -- These are proofs which aren't actually needed for doing natural deduction.
 
+open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.Sigma
 
 
@@ -15,26 +16,27 @@ open import Vec
 
 -- Some formula propositions are decidable.
 
-_isBoundInTerms_ : ∀{n} → (x : Variable) → (ss : Vec Term n) → Dec (x BoundInTerms ss)
-x isBoundInTerms [] = yes []
-x isBoundInTerms (s ∷ ss) with x isBoundInTerms ss
-(x isBoundInTerms (varterm y ∷ ss))     | yes rst with varEq x y
-(x isBoundInTerms _∷_ {n} (varterm .x) ss) | yes rst | yes refl = no φ
-                                          where φ : _
-                                                φ (var∉ y x k) = x refl
-(x isBoundInTerms (varterm y ∷ ss)) | yes rst | no x₁ = yes (var∉ y x₁ rst)
-(x isBoundInTerms (functerm f us ∷ ss)) | yes rst with x isBoundInTerms us
-(x isBoundInTerms (functerm f us ∷ ss)) | yes rst | yes x₁ = yes (func∉ f x₁ rst)
-(x isBoundInTerms (functerm f us ∷ ss)) | yes rst | no x₁ = no φ
-                                  where φ : _
-                                        φ (func∉ f k k₁) = x₁ k
-(x isBoundInTerms (s ∷ ss)) | no sfree = no φ
-                                  where φ : _
-                                        φ (var∉ y x₁ k) = sfree k
-                                        φ (func∉ f k k₁) = sfree k₁
+_doesNotOccurIn_ : (x : Variable) → (t : Term) → Dec (x DoesNotOccurIn t)
+x doesNotOccurIn varterm x₁ with varEq x x₁
+(x doesNotOccurIn varterm .x) | yes refl = no φ
+  where φ : _
+        φ (varterm x) = x refl
+(x doesNotOccurIn varterm x₁) | no x₂ = yes (varterm x₂)
+x doesNotOccurIn functerm (mkfunc idx .0) [] = yes (functerm [])
+x doesNotOccurIn functerm (mkfunc idx (suc n)) (x₁ ∷ x₂) with (x doesNotOccurIn x₁) , (x doesNotOccurIn functerm (mkfunc idx n) x₂)
+(x doesNotOccurIn functerm (mkfunc idx (suc _)) (x₁ ∷ x₂)) | yes x₃ , yes (functerm x₄) = yes (functerm (x₃ ∷ x₄))
+(x doesNotOccurIn functerm (mkfunc idx (suc _)) (x₁ ∷ x₂)) | yes x₃ , no x₄ = no φ
+  where φ : _
+        φ (functerm (x₂ ∷ x₅)) = x₄ (functerm x₅)
+(x doesNotOccurIn functerm (mkfunc idx (suc _)) (x₁ ∷ x₂)) | no x₃ , snd₁ = no φ
+  where φ : _
+        φ (functerm (x₄ ∷ x₅)) = x₃ x₄
+
+_doesNotOccurInAny_ : ∀{n} → (x : Variable) → (ss : Vec Term n) → Dec (x DoesNotOccurInAny ss)
+x doesNotOccurInAny ts = all (x doesNotOccurIn_) ts
 
 _isBoundIn_ : (y : Variable) → (α : Formula) → Dec (y BoundIn α)
-y isBoundIn atom r xs with y isBoundInTerms xs
+y isBoundIn atom r xs with y doesNotOccurInAny xs
 (y isBoundIn atom r xs) | yes x = yes (atom x)
 (y isBoundIn atom r xs) | no x = no φ
   where φ : _
