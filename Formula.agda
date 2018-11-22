@@ -188,24 +188,38 @@ vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
                                                    where φ : _
                                                          φ refl = neq refl
 
-{-# TERMINATING #-}
+
 termEq : Decidable≡ Term
 termEq (varterm x) (varterm y) with varEq x y
-...                            | yes refl = yes refl
-...                            | no  neq  = no φ
-                                            where φ : _
-                                                  φ refl = neq refl
-termEq (varterm x) (functerm f xs) = no (λ ())
-termEq (functerm f xs) (varterm x) = no (λ ())
-termEq (functerm f xs) (functerm g ys) with funcEq f g
-...                                    | no  neq = no φ
-                                                   where φ : _
-                                                         φ refl = neq refl
-...                                    | yes refl with vecEq termEq xs ys
-...                                               | yes refl = yes refl
-...                                               | no  neq = no φ
-                                                              where φ : _
-                                                                    φ refl = neq refl
+...                             | yes refl = yes refl
+...                             | no  neq  = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (varterm _) (functerm _ _) = no λ ()
+termEq (functerm _ _) (varterm _) = no (λ ())
+termEq (functerm (mkfunc n .0) []) (functerm (mkfunc m .0) []) with natEq n m
+termEq (functerm (mkfunc n _) []) (functerm (mkfunc .n _) []) | yes refl = yes refl
+termEq (functerm (mkfunc n _) []) (functerm (mkfunc m _) []) | no neq = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (functerm (mkfunc _ .0) []) (functerm (mkfunc _ .(suc _)) (_ ∷ _)) = no (λ ())
+termEq (functerm (mkfunc _ .(suc _)) (_ ∷ _)) (functerm (mkfunc _ .0) []) = no (λ ())
+termEq (functerm (mkfunc n (suc k)) (x ∷ xs)) (functerm (mkfunc m (suc j)) (y ∷ ys)) with (natEq n m) , (natEq k j)
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (y ∷ ys)) | yes refl , yes refl with termEq (functerm (mkfunc n j) xs) (functerm (mkfunc n j) ys)
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (y ∷ .xs)) | yes refl , yes refl | yes refl with termEq x y
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (.x ∷ .xs)) | yes refl , yes refl | yes refl | yes refl = yes refl
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (y ∷ .xs)) | yes refl , yes refl | yes refl | no neq = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (y ∷ ys)) | yes refl , yes refl | no neq = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (functerm (mkfunc n (suc k)) (x ∷ xs)) (functerm (mkfunc m (suc j)) (y ∷ ys)) | _ , no neq = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (functerm (mkfunc n (suc k)) (x ∷ xs)) (functerm (mkfunc m (suc j)) (y ∷ ys)) | no neq , _ = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
 
 formulaEq : Decidable≡ Formula
 formulaEq (atom r xs) (atom s ys) with natEq (Relation.arity r) (Relation.arity s)
