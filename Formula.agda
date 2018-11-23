@@ -96,22 +96,16 @@ data _BoundIn_ : Variable → Formula → Set where
 
 -- Variable replacement
 
-data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set where
-  []   : ∀{x t} → [ [] ][ x / t ]≡ []
-  var≡ : ∀{n t} {xs ys : Vec Term n}
-           → (x : Variable)
-           → [ xs ][ x / t ]≡ ys
-           → [ varterm x ∷ xs ][ x / t ]≡ (t ∷ ys)
-  var≢ : ∀{n x t} {xs ys : Vec Term n}
-           → (v : Variable)
-           → x ≢ v
-           → [ xs ][ x / t ]≡ ys
-           → [ varterm v ∷ xs ][ x / t ]≡ (varterm v ∷ ys)
-  func : ∀{n x t} {xs ys : Vec Term n}
-           → (f : Function) → ∀{us vs}
-           → [ us ][ x / t ]≡ vs
-           → [ xs ][ x / t ]≡ ys
-           → [ functerm f us ∷ xs ][ x / t ]≡ (functerm f vs ∷ ys)
+data ⟨_⟩[_/_]≡_ : Term → Variable → Term → Term → Set
+
+[_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
+[ us ][ x / t ]≡ vs = Solutions (⟨_⟩[ x / t ]≡_) us vs
+
+data ⟨_⟩[_/_]≡_ where
+  varterm≡ : ∀{x t} → ⟨ varterm x ⟩[ x / t ]≡ t
+  varterm≢ : ∀{x t y} → x ≢ y → ⟨ varterm y ⟩[ x / t ]≡ varterm y
+  functerm : ∀{x t f us vs}
+              → [ us ][ x  / t ]≡ vs → ⟨ functerm f us ⟩[ x / t ]≡ functerm f vs
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   ident : ∀ α x → α [ x / varterm x ]≡ α

@@ -68,3 +68,8 @@ x ∉ xs = ¬(x ∈ xs)
 -- Memberhsip is decidable if equality is decidable.
 decide∈ : {A : Set} {n : ℕ} → Decidable≡ A → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
 decide∈ _≟_ x xs = any (x ≟_) xs
+
+data Solutions {A B} (P : A → B → Set) : ∀{n} → Vec A n → Vec B n → Set where
+  []  : Solutions P [] []
+  _∷_ : ∀{x y n} {xs : Vec A n} {ys : Vec B n}
+          → P x y → Solutions P xs ys → Solutions P (x ∷ xs) (y ∷ ys)
