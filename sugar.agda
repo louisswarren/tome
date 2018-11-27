@@ -68,6 +68,7 @@ pattern yvar  = mkvar (suc zero)
 pattern zvar  = mkvar (suc (suc zero))
 pattern var n = mkvar (suc (suc (suc n)))
 
+x y z : Term
 x = varterm xvar
 y = varterm yvar
 z = varterm zvar

@@ -12,7 +12,8 @@ open import List
 -- comprehension constructor.
 
 -- Sadly, a change in Agda forces all of these to be given explicitly
-infixl 5 _∷_ _∪_
+infixr 5 _∷_
+infixl 4 _∪_
 infixl 5 _-_
 infix 1 _∈_∖_ _∈?_ _∉_∖_ _∣∪_ _∪∣_ _⊂_ _⊂?_
 
