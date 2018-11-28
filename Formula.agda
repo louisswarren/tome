@@ -14,6 +14,7 @@ record Variable : Set where
   field
     idx : ℕ
 
+varEq : Decidable≡ Variable
 
 -- "For every natural number n ≥ 0 a ... set of n-ary function symbols."
 record Function : Set where
@@ -94,6 +95,82 @@ data _BoundIn_ : Variable → Formula → Set where
   V    : ∀{x α}   → ∀ y → x BoundIn α → x BoundIn V y α
 
 
+_doesNotOccurInAny_ : ∀{n} → (x : Variable) → (ts : Vec Term n) → Dec (x DoesNotOccurInAny ts)
+x doesNotOccurInAny [] = yes []
+x doesNotOccurInAny (t ∷ ts) with x doesNotOccurInAny ts
+(x doesNotOccurInAny (t ∷ ts)) | no ¬rst = no φ
+                                           where
+                                             φ : ¬(All (x DoesNotOccurIn_) (t ∷ ts))
+                                             φ (_ ∷ rst) = ¬rst rst
+(x doesNotOccurInAny (varterm y ∷ ts))     | yes rst with varEq x y
+(x doesNotOccurInAny (varterm .x ∷ ts))    | yes rst | yes refl = no φ
+                                                                  where
+                                                                    φ : ¬(All (x DoesNotOccurIn_) (varterm x ∷ ts))
+                                                                    φ (varterm x≢x ∷ _) = x≢x refl
+(x doesNotOccurInAny (varterm y ∷ ts))     | yes rst | no x≢y = yes (varterm x≢y ∷ rst)
+(x doesNotOccurInAny (functerm f us ∷ ts)) | yes rst with x doesNotOccurInAny us
+(x doesNotOccurInAny (functerm f us ∷ ts)) | yes rst | yes uspf = yes (functerm uspf ∷ rst)
+(x doesNotOccurInAny (functerm f us ∷ ts)) | yes rst | no ¬uspf = no φ
+                                                                  where
+                                                                    φ : ¬(All (x DoesNotOccurIn_) (functerm f us ∷ ts))
+                                                                    φ (functerm uspf ∷ _) = ¬uspf uspf
+
+_boundIn_ : (x : Variable) → (α : Formula) → Dec (x BoundIn α)
+x boundIn atom r ts with x doesNotOccurInAny ts
+(x boundIn atom r ts) | yes bdts = yes (atom bdts)
+(x boundIn atom r ts) | no ¬bdts = no φ
+  where
+    φ : ¬(x BoundIn atom r ts)
+    φ (atom bdts) = ¬bdts bdts
+x boundIn (α ⇒ β) with x boundIn α | x boundIn β
+(x boundIn (α ⇒ β)) | yes αbd | yes βbd = yes (αbd ⇒ βbd)
+(x boundIn (α ⇒ β)) | _       | no ¬βbd = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ⇒ β))
+                                            φ (αbd ⇒ βbd) = ¬βbd βbd
+(x boundIn (α ⇒ β)) | no ¬αbd | _       = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ⇒ β))
+                                            φ (αbd ⇒ βbd) = ¬αbd αbd
+x boundIn (α ∧ β) with x boundIn α | x boundIn β
+(x boundIn (α ∧ β)) | yes αbd | yes βbd = yes (αbd ∧ βbd)
+(x boundIn (α ∧ β)) | _       | no ¬βbd = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ∧ β))
+                                            φ (αbd ∧ βbd) = ¬βbd βbd
+(x boundIn (α ∧ β)) | no ¬αbd | _       = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ∧ β))
+                                            φ (αbd ∧ βbd) = ¬αbd αbd
+x boundIn (α ∨ β) with x boundIn α | x boundIn β
+(x boundIn (α ∨ β)) | yes αbd | yes βbd = yes (αbd ∨ βbd)
+(x boundIn (α ∨ β)) | _       | no ¬βbd = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ∨ β))
+                                            φ (αbd ∨ βbd) = ¬βbd βbd
+(x boundIn (α ∨ β)) | no ¬αbd | _       = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ∨ β))
+                                            φ (αbd ∨ βbd) = ¬αbd αbd
+x boundIn Λ y α with varEq x y
+(x boundIn Λ .x α) | yes refl = yes (Λ∣ x α)
+(x boundIn Λ y α)  | no x≢y with x boundIn α
+(x boundIn Λ y α) | no x≢y | yes αbd = yes (Λ y αbd)
+(x boundIn Λ y α) | no x≢y | no ¬αbd = no φ
+                                       where
+                                         φ : ¬(x BoundIn Λ y α)
+                                         φ (Λ∣ x α) = x≢y refl
+                                         φ (Λ y αbd) = ¬αbd αbd
+x boundIn V y α with varEq x y
+(x boundIn V .x α) | yes refl = yes (V∣ x α)
+(x boundIn V y α)  | no x≢y with x boundIn α
+(x boundIn V y α) | no x≢y | yes αbd = yes (V y αbd)
+(x boundIn V y α) | no x≢y | no ¬αbd = no φ
+                                       where
+                                         φ : ¬(x BoundIn V y α)
+                                         φ (V∣ x α) = x≢y refl
+                                         φ (V y αbd) = ¬αbd αbd
+
 -- Variable replacement
 
 data ⟨_⟩[_/_]≡_ : Term → Variable → Term → Term → Set
@@ -124,6 +201,71 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   V     : ∀{α β x v t} → v ≢ x → x DoesNotOccurIn t → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
 
 
+prec : ∀ n m → suc n ≡ suc m → n ≡ m
+prec n .n refl = refl
+
+suc≢ : ∀ n → (suc n) ≢ n
+suc≢ n ()
+
+suc+≢ : ∀ n m → suc n + m ≢ n
+suc+≢ zero m ()
+suc+≢ (suc n) m x = suc+≢ n m (prec (suc (n + m)) n x)
+
+suc+≢' : ∀ n m → suc (n + m) ≢ n
+suc+≢' zero m ()
+suc+≢' (suc n) m eq = suc+≢' n m (prec (suc (n + m)) n eq)
+
+data _≤_ : ℕ → ℕ → Set where
+  0≤n    : ∀{n} → zero ≤ n
+  sn≤sm : ∀{n m} → n ≤ m → (suc n) ≤ (suc m)
+
+≤refl : ∀ n → n ≤ n
+≤refl zero = 0≤n
+≤refl (suc n) = sn≤sm (≤refl n)
+
+≤trans : ∀ x y z → x ≤ y → y ≤ z → x ≤ z
+≤trans .0 y z 0≤n y≤z = 0≤n
+≤trans (suc x) (suc y) (suc z) (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x y z x≤y y≤z)
+
+_≤?_ : (n m : ℕ) → Dec (n ≤ m)
+zero ≤? zero = yes 0≤n
+zero ≤? suc m = yes 0≤n
+suc n ≤? zero = no (λ ())
+suc n ≤? suc m with n ≤? m
+...            | yes n≤m = yes (sn≤sm n≤m)
+...            | no ¬n≤m = no φ
+                           where φ : _
+                                 φ (sn≤sm n≤m) = ¬n≤m n≤m
+
+order : ∀ n m → ¬(n ≤ m) → m ≤ n
+order zero m ¬n≤m = ⊥-elim (¬n≤m 0≤n)
+order (suc n) zero ¬n≤m = 0≤n
+order (suc n) (suc m) ¬n≤m = sn≤sm (order n m (λ z → ¬n≤m (sn≤sm z)))
+
+
+postulate greatest : (α : Formula) → Σ ℕ (λ n → ∀ m → ¬((mkvar m) BoundIn α) → m ≤ n)
+--greatest (atom r x) = {!   !}
+--greatest (α ⇒ β) with greatest α | greatest β
+--greatest (α ⇒ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
+--greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , {!   !}
+--greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , {!   !}
+--greatest (α ∧ β) = {!   !}
+--greatest (α ∨ β) = {!   !}
+--greatest (Λ x α) = {!   !}
+--greatest (V x α) = {!   !}
+
+fresh : (α : Formula) → Σ Variable (_BoundIn α)
+fresh α with greatest α
+fresh α | gα , gαpf = mkvar (suc gα) , stab λ φ → ¬sn≤n (gαpf (suc gα) φ)
+  where
+    ¬sn≤n : ∀{n} → ¬(suc n ≤ n)
+    ¬sn≤n {zero}  ()
+    ¬sn≤n {suc n} (sn≤sm pf) = ¬sn≤n pf
+    stab : ∀{α x} → ¬ ¬(x BoundIn α) → x BoundIn α
+    stab {α} {x} ¬¬bd with x boundIn α
+    stab {α} {x} ¬¬bd | yes bd = bd
+    stab {α} {x} ¬¬bd | no ¬bd = ⊥-elim (¬¬bd ¬bd)
+
 --------------------------------------------------------------------------------
 -- Computation requires decidable equality for the types above
 -- Surely there's something nicer than this?
@@ -138,7 +280,6 @@ natEq (suc n) (suc m) with natEq n m
                                    where φ : _
                                          φ refl = neq refl
 
-varEq : Decidable≡ Variable
 varEq (mkvar n) (mkvar m) with natEq n m
 ...                       | yes refl = yes refl
 ...                       | no  neq  = no φ
