@@ -30,8 +30,8 @@ record Function : Set where
 --  (iii) If t1, . . . , tn are terms and f is an n-ary function symbol with
 --        n ≥ 1, then f(t1 , . . . , tn ) is a term."
 data Term : Set where
-  varterm  : Variable → Term
-  functerm : (f : Function) → Vec Term (Function.arity f) → Term
+  varterm  : (x : Variable) → Term
+  functerm : (f : Function) → (ts : Vec Term (Function.arity f)) → Term
 
 
 -- "For every natural number n ≥ 0 a ... set of n-ary relation symbols."
@@ -46,12 +46,12 @@ record Relation : Set where
 --  R(t1, . . . , tn ) is a prime formula ... Formulas are inductively defined
 --  from prime formulas."
 data Formula : Set where
-  atom   : (r : Relation) → Vec Term (Relation.arity r) → Formula
-  _⇒_    : Formula  → Formula → Formula
-  _∧_    : Formula  → Formula → Formula
-  _∨_    : Formula  → Formula → Formula
-  Λ      : Variable → Formula → Formula
-  V      : Variable → Formula → Formula
+  atom   : (r : Relation) → (ts : Vec Term (Relation.arity r)) → Formula
+  _⇒_    : (α : Formula)  → (β : Formula) → Formula
+  _∧_    : (α : Formula)  → (β : Formula) → Formula
+  _∨_    : (α : Formula)  → (β : Formula) → Formula
+  Λ      : (x : Variable) → (α : Formula) → Formula
+  V      : (x : Variable) → (α : Formula) → Formula
 
 _⇔_ : Formula → Formula → Formula
 Φ ⇔ Ψ = (Φ ⇒ Ψ) ∧ (Ψ ⇒ Φ)
@@ -223,9 +223,13 @@ data _≤_ : ℕ → ℕ → Set where
 ≤refl zero = 0≤n
 ≤refl (suc n) = sn≤sm (≤refl n)
 
-≤trans : ∀ x y z → x ≤ y → y ≤ z → x ≤ z
-≤trans .0 y z 0≤n y≤z = 0≤n
-≤trans (suc x) (suc y) (suc z) (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x y z x≤y y≤z)
+--≤trans : ∀ x y z → x ≤ y → y ≤ z → x ≤ z
+--≤trans .0 y z 0≤n y≤z = 0≤n
+--≤trans (suc x) (suc y) (suc z) (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x y z x≤y y≤z)
+
+≤trans : ∀{x y z} → x ≤ y → y ≤ z → x ≤ z
+≤trans 0≤n y≤z = 0≤n
+≤trans (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x≤y y≤z)
 
 _≤?_ : (n m : ℕ) → Dec (n ≤ m)
 zero ≤? zero = yes 0≤n
@@ -243,16 +247,69 @@ order (suc n) zero ¬n≤m = 0≤n
 order (suc n) (suc m) ¬n≤m = sn≤sm (order n m (λ z → ¬n≤m (sn≤sm z)))
 
 
-postulate greatest : (α : Formula) → Σ ℕ (λ n → ∀ m → ¬((mkvar m) BoundIn α) → m ≤ n)
---greatest (atom r x) = {!   !}
---greatest (α ⇒ β) with greatest α | greatest β
---greatest (α ⇒ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
---greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , {!   !}
---greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , {!   !}
---greatest (α ∧ β) = {!   !}
---greatest (α ∨ β) = {!   !}
---greatest (Λ x α) = {!   !}
---greatest (V x α) = {!   !}
+postulate greatestvar : ∀{k} → (ts : Vec Term k) → Σ ℕ (λ n → ∀ m → ¬(mkvar m DoesNotOccurInAny ts) → m ≤ n)
+--greatestvar [] = zero , λ m ¬[]dno → ⊥-elim (¬[]dno [])
+--greatestvar (varterm x ∷ ts) = {!   !}
+--greatestvar (functerm f ts₁ ∷ ts) = {!   !}
+
+-- No guarantee that this bound is tight - in fact for the V and Λ cases it is
+-- not tight if the quantifier is the greatest variable (and does not have index
+-- zero)
+greatest : (α : Formula) → Σ ℕ (λ n → ∀ m → ¬((mkvar m) BoundIn α) → m ≤ n)
+greatest (atom r ts) with greatestvar ts
+greatest (atom r ts) | gts , gtspf = gts , λ m ¬tsbd → gtspf m (λ tsdno → ¬tsbd (atom tsdno))
+greatest (α ⇒ β) with greatest α | greatest β
+greatest (α ⇒ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
+greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ⇒ β)) → n ≤ gβ
+    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
+    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ⇒ βbd))
+    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
+    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
+greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ⇒ β)) → n ≤ gα
+    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
+    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ⇒ βbd))
+    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order gα gβ ¬gα≤gβ)
+greatest (α ∧ β) with greatest α | greatest β
+greatest (α ∧ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
+greatest (α ∧ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∧ β)) → n ≤ gβ
+    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
+    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ∧ βbd))
+    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
+    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
+greatest (α ∧ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∧ β)) → n ≤ gα
+    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
+    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∧ βbd))
+    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order gα gβ ¬gα≤gβ)
+greatest (α ∨ β) with greatest α | greatest β
+greatest (α ∨ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
+greatest (α ∨ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∨ β)) → n ≤ gβ
+    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
+    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ∨ βbd))
+    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
+    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
+greatest (α ∨ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∨ β)) → n ≤ gα
+    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
+    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∨ βbd))
+    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order gα gβ ¬gα≤gβ)
+greatest (Λ x α) with greatest α
+greatest (Λ x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (Λ x β))
+greatest (V x α) with greatest α
+greatest (V x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (V x β))
 
 fresh : (α : Formula) → Σ Variable (_BoundIn α)
 fresh α with greatest α
