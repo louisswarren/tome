@@ -115,6 +115,11 @@ x doesNotOccurInAny (t ∷ ts) with x doesNotOccurInAny ts
                                                                     φ : ¬(All (x DoesNotOccurIn_) (functerm f us ∷ ts))
                                                                     φ (functerm uspf ∷ _) = ¬uspf uspf
 
+_doesNotOccurIn_ : (x : Variable) → (t : Term) → Dec (x DoesNotOccurIn t)
+x doesNotOccurIn t with x doesNotOccurInAny (t ∷ [])
+(x doesNotOccurIn t) | yes (pf ∷ []) = yes pf
+(x doesNotOccurIn t) | no npf        = no λ z → npf (z ∷ [])
+
 _boundIn_ : (x : Variable) → (α : Formula) → Dec (x BoundIn α)
 x boundIn atom r ts with x doesNotOccurInAny ts
 (x boundIn atom r ts) | yes bdts = yes (atom bdts)
@@ -249,8 +254,17 @@ order (suc n) (suc m) ¬n≤m = sn≤sm (order n m (λ z → ¬n≤m (sn≤sm z)
 
 postulate greatestvar : ∀{k} → (ts : Vec Term k) → Σ ℕ (λ n → ∀ m → ¬(mkvar m DoesNotOccurInAny ts) → m ≤ n)
 --greatestvar [] = zero , λ m ¬[]dno → ⊥-elim (¬[]dno [])
---greatestvar (varterm x ∷ ts) = {!   !}
---greatestvar (functerm f ts₁ ∷ ts) = {!   !}
+--greatestvar (x ∷ ts) with greatestvar ts
+--greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf with n ≤? gts
+--greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | yes n≤gts = gts , φ
+--  where
+--    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ gts
+--    φ m x = {!   !}
+--greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | no ¬n≤gts = n , φ
+--  where
+--    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ n
+--    φ m x = {!   !}
+--greatestvar (functerm f us ∷ ts)     | gts , gtspf = {!   !}
 
 -- No guarantee that this bound is tight - in fact for the V and Λ cases it is
 -- not tight if the quantifier is the greatest variable (and does not have index
