@@ -259,7 +259,12 @@ postulate greatestvar : ∀{k} → (ts : Vec Term k) → Σ ℕ (λ n → ∀ m 
 --greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | yes n≤gts = gts , φ
 --  where
 --    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ gts
---    φ m x = {!   !}
+--    φ m ¬all with mkvar m doesNotOccurIn (varterm (mkvar n))
+--    φ m ¬all | yes (varterm x) = {!   !}
+--    φ m ¬all | no ¬head with all (mkvar m doesNotOccurIn_) ts
+--    φ m ¬all | no ¬head | yes [] = ⊥-elim {!   !}
+--    φ m ¬all | no ¬head | yes (x₁ ∷ x) = ⊥-elim {!   !}
+--    φ m ¬all | no ¬head | no x = gtspf m x
 --greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | no ¬n≤gts = n , φ
 --  where
 --    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ n
