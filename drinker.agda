@@ -1,6 +1,7 @@
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_-_)
 open import Agda.Builtin.Equality
 open import Agda.Builtin.String
+open import Agda.Builtin.Sigma
 
 open import Deduction
 open import Ensemble
@@ -203,3 +204,27 @@ DP⊃LPO : DP ∷ [] ⊃ LPO
 DP⊃LPO (⊢DP ∷ []) (α ∷ β ∷ []) = dp→lpo (descheme₁ ⊢DP) α β
 
 
+glpo→lem : ⊢₁ glpo → ⊢₁ lem
+glpo→lem ⊢glpo α = close
+                    (∅ ∪ ∀x¬ α ~ [ refl ] -∷ ∅ ∪ ∃x α ~ ([ refl ] -∷ ∅ ∪ α ~ [ refl ] -∷ ∅))
+                    (univelim x {!   !}
+                     (univintro ω {!   !}
+                      (disjelim
+                       (cite "GLPO" (⊢glpo αω))
+                       (disjintro₂ αω
+                        (univelim x (ident (¬ α) xvar)
+                         (assume (∀x (¬ αω)))))
+                       (disjintro₁ (¬ αω)
+                        (existelim (xαωbd ∷ αω ~ [ refl ] -∷ ∅)
+                         (assume (∃x αω))
+                         (assume αω))))))
+                   where
+                    ω : Variable
+                    ω = fst (fresh α)
+                    ωbd : ω BoundIn α
+                    ωbd = snd (fresh α)
+                    αω : Formula
+                    αω = ?
+                    xαωbd : xvar BoundIn αω
+                    xαωbd = ?
+                    αω∨¬αω[ω/x]≡α∨¬α
