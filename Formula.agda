@@ -246,30 +246,46 @@ suc n ≤? suc m with n ≤? m
                            where φ : _
                                  φ (sn≤sm n≤m) = ¬n≤m n≤m
 
-order : ∀ n m → ¬(n ≤ m) → m ≤ n
-order zero m ¬n≤m = ⊥-elim (¬n≤m 0≤n)
-order (suc n) zero ¬n≤m = 0≤n
-order (suc n) (suc m) ¬n≤m = sn≤sm (order n m (λ z → ¬n≤m (sn≤sm z)))
+order : ∀{n m} → ¬(n ≤ m) → m ≤ n
+order {zero}  {m}     ¬n≤m = ⊥-elim (¬n≤m 0≤n)
+order {suc n} {zero}  ¬n≤m = 0≤n
+order {suc n} {suc m} ¬n≤m = sn≤sm (order (λ z → ¬n≤m (sn≤sm z)))
 
 
-postulate greatestvar : ∀{k} → (ts : Vec Term k) → Σ ℕ (λ n → ∀ m → ¬(mkvar m DoesNotOccurInAny ts) → m ≤ n)
---greatestvar [] = zero , λ m ¬[]dno → ⊥-elim (¬[]dno [])
---greatestvar (x ∷ ts) with greatestvar ts
---greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf with n ≤? gts
---greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | yes n≤gts = gts , φ
---  where
---    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ gts
---    φ m ¬all with mkvar m doesNotOccurIn (varterm (mkvar n))
---    φ m ¬all | yes (varterm x) = {!   !}
---    φ m ¬all | no ¬head with all (mkvar m doesNotOccurIn_) ts
---    φ m ¬all | no ¬head | yes [] = ⊥-elim {!   !}
---    φ m ¬all | no ¬head | yes (x₁ ∷ x) = ⊥-elim {!   !}
---    φ m ¬all | no ¬head | no x = gtspf m x
---greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | no ¬n≤gts = n , φ
---  where
---    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ n
---    φ m x = {!   !}
---greatestvar (functerm f us ∷ ts)     | gts , gtspf = {!   !}
+greatestvar : ∀{k} → (ts : Vec Term k) → Σ ℕ (λ n → ∀ m → ¬(mkvar m DoesNotOccurInAny ts) → m ≤ n)
+greatestvar [] = zero , λ m ¬[]dno → ⊥-elim (¬[]dno [])
+greatestvar (x ∷ ts) with greatestvar ts
+greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf with n ≤? gts
+greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | yes n≤gts = gts , φ
+  where
+    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ gts
+    φ m ¬all with mkvar m doesNotOccurIn (varterm (mkvar n))
+    φ m ¬all | yes (varterm m≢n) = gtspf m λ rst → ¬all (varterm m≢n ∷ rst)
+    φ m ¬all | no ¬head with varEq (mkvar m) (mkvar n)
+    φ m ¬all | no ¬head | yes refl = n≤gts
+    φ m ¬all | no ¬head | no x = ⊥-elim (¬head (varterm x))
+greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | no ¬n≤gts = n , φ
+  where
+    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ n
+    φ m ¬all with mkvar m doesNotOccurIn (varterm (mkvar n))
+    φ m ¬all | yes (varterm x) = ≤trans (gtspf m (λ z → ¬all (varterm x ∷ z))) (order ¬n≤gts)
+    φ m ¬all | no ¬head with varEq (mkvar m) (mkvar n)
+    φ m ¬all | no ¬head | yes refl = ≤refl n
+    φ m ¬all | no ¬head | no x = ⊥-elim (¬head (varterm x))
+greatestvar (functerm f us ∷ ts) | gts , gtspf with greatestvar us
+greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf with gus ≤? gts
+greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf | yes gus≤gts = gts , φ
+  where
+    φ : ∀ m → ¬ All (mkvar m DoesNotOccurIn_) (functerm f us ∷ ts) → m ≤ gts
+    φ m ¬all with mkvar m doesNotOccurIn (functerm f us)
+    φ m ¬all | yes (functerm x) = gtspf m λ z → ¬all (functerm x ∷ z)
+    φ m ¬all | no ¬head = ≤trans (guspf m (λ z → ¬head (functerm z))) gus≤gts
+greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf | no ¬gus≤gts = gus , φ
+  where
+    φ : ∀ m → ¬ All (mkvar m DoesNotOccurIn_) (functerm f us ∷ ts) → m ≤ gus
+    φ m ¬all with mkvar m doesNotOccurIn (functerm f us)
+    φ m ¬all | yes (functerm x) = ≤trans (gtspf m (λ z → ¬all (functerm x ∷ z))) (order ¬gus≤gts)
+    φ m ¬all | no ¬head = guspf m λ z → ¬head (functerm z)
 
 -- No guarantee that this bound is tight - in fact for the V and Λ cases it is
 -- not tight if the quantifier is the greatest variable (and does not have index
@@ -292,7 +308,7 @@ greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
     φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
     φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ⇒ βbd))
     φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order gα gβ ¬gα≤gβ)
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
 greatest (α ∧ β) with greatest α | greatest β
 greatest (α ∧ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
 greatest (α ∧ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
@@ -308,7 +324,7 @@ greatest (α ∧ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
     φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
     φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∧ βbd))
     φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order gα gβ ¬gα≤gβ)
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
 greatest (α ∨ β) with greatest α | greatest β
 greatest (α ∨ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
 greatest (α ∨ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
@@ -324,7 +340,7 @@ greatest (α ∨ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
     φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
     φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∨ βbd))
     φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order gα gβ ¬gα≤gβ)
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
 greatest (Λ x α) with greatest α
 greatest (Λ x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (Λ x β))
 greatest (V x α) with greatest α
