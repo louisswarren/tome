@@ -14,7 +14,6 @@ record Variable : Set where
   field
     idx : ℕ
 
-varEq : Decidable≡ Variable
 
 -- "For every natural number n ≥ 0 a ... set of n-ary function symbols."
 record Function : Set where
@@ -71,21 +70,16 @@ record Scheme : Set where
 
 -- Variable freedom
 
-infix 300 _DoesNotOccurIn_ _DoesNotOccurInAny_ _BoundIn_ [_][_/_]≡_ _[_/_]≡_
+infix 300 _BoundInTerm_ _BoundIn_ [_][_/_]≡_ _[_/_]≡_
 
-data _DoesNotOccurIn_ (x : Variable) : Term → Set
-
-_DoesNotOccurInAny_ : ∀{n} → Variable → Vec Term n → Set
-x DoesNotOccurInAny us = All (x DoesNotOccurIn_) us
-
-data _DoesNotOccurIn_ (x : Variable) where
-  varterm  : ∀{y} → x ≢ y → x DoesNotOccurIn (varterm y)
+data _BoundInTerm_ (x : Variable) : Term → Set where
+  varterm  : ∀{y} → x ≢ y → x BoundInTerm (varterm y)
   functerm : ∀{f} {us : Vec Term (Function.arity f)}
-               → x DoesNotOccurInAny us → x DoesNotOccurIn (functerm f us)
+               → All (x BoundInTerm_) us → x BoundInTerm (functerm f us)
 
 data _BoundIn_ : Variable → Formula → Set where
   atom : ∀{x r} {ts : Vec Term (Relation.arity r)}
-                  → x DoesNotOccurInAny ts → x BoundIn (atom r ts)
+                  → All (x BoundInTerm_) ts → x BoundIn (atom r ts)
   _⇒_  : ∀{x α β} → x BoundIn α → x BoundIn β → x BoundIn (α ⇒ β)
   _∧_  : ∀{x α β} → x BoundIn α → x BoundIn β → x BoundIn (α ∧ β)
   _∨_  : ∀{x α β} → x BoundIn α → x BoundIn β → x BoundIn (α ∨ β)
@@ -95,99 +89,20 @@ data _BoundIn_ : Variable → Formula → Set where
   V    : ∀{x α}   → ∀ y → x BoundIn α → x BoundIn V y α
 
 
-_doesNotOccurInAny_ : ∀{n} → (x : Variable) → (ts : Vec Term n) → Dec (x DoesNotOccurInAny ts)
-x doesNotOccurInAny [] = yes []
-x doesNotOccurInAny (t ∷ ts) with x doesNotOccurInAny ts
-(x doesNotOccurInAny (t ∷ ts)) | no ¬rst = no φ
-                                           where
-                                             φ : ¬(All (x DoesNotOccurIn_) (t ∷ ts))
-                                             φ (_ ∷ rst) = ¬rst rst
-(x doesNotOccurInAny (varterm y ∷ ts))     | yes rst with varEq x y
-(x doesNotOccurInAny (varterm .x ∷ ts))    | yes rst | yes refl = no φ
-                                                                  where
-                                                                    φ : ¬(All (x DoesNotOccurIn_) (varterm x ∷ ts))
-                                                                    φ (varterm x≢x ∷ _) = x≢x refl
-(x doesNotOccurInAny (varterm y ∷ ts))     | yes rst | no x≢y = yes (varterm x≢y ∷ rst)
-(x doesNotOccurInAny (functerm f us ∷ ts)) | yes rst with x doesNotOccurInAny us
-(x doesNotOccurInAny (functerm f us ∷ ts)) | yes rst | yes uspf = yes (functerm uspf ∷ rst)
-(x doesNotOccurInAny (functerm f us ∷ ts)) | yes rst | no ¬uspf = no φ
-                                                                  where
-                                                                    φ : ¬(All (x DoesNotOccurIn_) (functerm f us ∷ ts))
-                                                                    φ (functerm uspf ∷ _) = ¬uspf uspf
-
-_doesNotOccurIn_ : (x : Variable) → (t : Term) → Dec (x DoesNotOccurIn t)
-x doesNotOccurIn t with x doesNotOccurInAny (t ∷ [])
-(x doesNotOccurIn t) | yes (pf ∷ []) = yes pf
-(x doesNotOccurIn t) | no npf        = no λ z → npf (z ∷ [])
-
-_boundIn_ : (x : Variable) → (α : Formula) → Dec (x BoundIn α)
-x boundIn atom r ts with x doesNotOccurInAny ts
-(x boundIn atom r ts) | yes bdts = yes (atom bdts)
-(x boundIn atom r ts) | no ¬bdts = no φ
-  where
-    φ : ¬(x BoundIn atom r ts)
-    φ (atom bdts) = ¬bdts bdts
-x boundIn (α ⇒ β) with x boundIn α | x boundIn β
-(x boundIn (α ⇒ β)) | yes αbd | yes βbd = yes (αbd ⇒ βbd)
-(x boundIn (α ⇒ β)) | _       | no ¬βbd = no φ
-                                          where
-                                            φ : ¬(x BoundIn (α ⇒ β))
-                                            φ (αbd ⇒ βbd) = ¬βbd βbd
-(x boundIn (α ⇒ β)) | no ¬αbd | _       = no φ
-                                          where
-                                            φ : ¬(x BoundIn (α ⇒ β))
-                                            φ (αbd ⇒ βbd) = ¬αbd αbd
-x boundIn (α ∧ β) with x boundIn α | x boundIn β
-(x boundIn (α ∧ β)) | yes αbd | yes βbd = yes (αbd ∧ βbd)
-(x boundIn (α ∧ β)) | _       | no ¬βbd = no φ
-                                          where
-                                            φ : ¬(x BoundIn (α ∧ β))
-                                            φ (αbd ∧ βbd) = ¬βbd βbd
-(x boundIn (α ∧ β)) | no ¬αbd | _       = no φ
-                                          where
-                                            φ : ¬(x BoundIn (α ∧ β))
-                                            φ (αbd ∧ βbd) = ¬αbd αbd
-x boundIn (α ∨ β) with x boundIn α | x boundIn β
-(x boundIn (α ∨ β)) | yes αbd | yes βbd = yes (αbd ∨ βbd)
-(x boundIn (α ∨ β)) | _       | no ¬βbd = no φ
-                                          where
-                                            φ : ¬(x BoundIn (α ∨ β))
-                                            φ (αbd ∨ βbd) = ¬βbd βbd
-(x boundIn (α ∨ β)) | no ¬αbd | _       = no φ
-                                          where
-                                            φ : ¬(x BoundIn (α ∨ β))
-                                            φ (αbd ∨ βbd) = ¬αbd αbd
-x boundIn Λ y α with varEq x y
-(x boundIn Λ .x α) | yes refl = yes (Λ∣ x α)
-(x boundIn Λ y α)  | no x≢y with x boundIn α
-(x boundIn Λ y α) | no x≢y | yes αbd = yes (Λ y αbd)
-(x boundIn Λ y α) | no x≢y | no ¬αbd = no φ
-                                       where
-                                         φ : ¬(x BoundIn Λ y α)
-                                         φ (Λ∣ x α) = x≢y refl
-                                         φ (Λ y αbd) = ¬αbd αbd
-x boundIn V y α with varEq x y
-(x boundIn V .x α) | yes refl = yes (V∣ x α)
-(x boundIn V y α)  | no x≢y with x boundIn α
-(x boundIn V y α) | no x≢y | yes αbd = yes (V y αbd)
-(x boundIn V y α) | no x≢y | no ¬αbd = no φ
-                                       where
-                                         φ : ¬(x BoundIn V y α)
-                                         φ (V∣ x α) = x≢y refl
-                                         φ (V y αbd) = ¬αbd αbd
-
 -- Variable replacement
 
-data ⟨_⟩[_/_]≡_ : Term → Variable → Term → Term → Set
+data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
 
-[_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
-[ us ][ x / t ]≡ vs = Solutions (⟨_⟩[ x / t ]≡_) us vs
-
-data ⟨_⟩[_/_]≡_ where
+data ⟨_⟩[_/_]≡_ : Term → Variable → Term → Term → Set where
   varterm≡ : ∀{x t} → ⟨ varterm x ⟩[ x / t ]≡ t
   varterm≢ : ∀{x t y} → x ≢ y → ⟨ varterm y ⟩[ x / t ]≡ varterm y
   functerm : ∀{x t f us vs}
               → [ us ][ x  / t ]≡ vs → ⟨ functerm f us ⟩[ x / t ]≡ functerm f vs
+
+data [_][_/_]≡_ where
+  []  : ∀{x t} → [ [] ][ x / t ]≡ []
+  _∷_ : ∀{x t u v n} {us vs : Vec Term n}
+        → ⟨ u ⟩[ x / t ]≡ v → [ us ][ x / t ]≡ vs → [ u ∷ us ][ x / t ]≡ (v ∷ vs)
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   ident : ∀ α x → α [ x / varterm x ]≡ α
@@ -202,165 +117,13 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
             → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
   Λ∣    : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
   V∣    : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
-  Λ     : ∀{α β x v t} → v ≢ x → x DoesNotOccurIn t → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
-  V     : ∀{α β x v t} → v ≢ x → x DoesNotOccurIn t → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
-  Λ/    : ∀{α β γ x v t ω} → ω BoundIn α → v ≢ ω → ω DoesNotOccurIn t
+  Λ     : ∀{α β x v t} → v ≢ x → x BoundInTerm t → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
+  V     : ∀{α β x v t} → v ≢ x → x BoundInTerm t → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+  Λ/    : ∀{α β γ x v t ω} → ω BoundIn α → v ≢ ω → ω BoundInTerm t
           → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (Λ x α) [ v / t ]≡ (Λ ω γ)
-  V/    : ∀{α β γ x v t ω} → ω BoundIn α → v ≢ ω → ω DoesNotOccurIn t
+  V/    : ∀{α β γ x v t ω} → ω BoundIn α → v ≢ ω → ω BoundInTerm t
           → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (V x α) [ v / t ]≡ (V ω γ)
 
-
-prec : ∀ n m → suc n ≡ suc m → n ≡ m
-prec n .n refl = refl
-
-suc≢ : ∀ n → (suc n) ≢ n
-suc≢ n ()
-
-suc+≢ : ∀ n m → suc n + m ≢ n
-suc+≢ zero m ()
-suc+≢ (suc n) m x = suc+≢ n m (prec (suc (n + m)) n x)
-
-suc+≢' : ∀ n m → suc (n + m) ≢ n
-suc+≢' zero m ()
-suc+≢' (suc n) m eq = suc+≢' n m (prec (suc (n + m)) n eq)
-
-data _≤_ : ℕ → ℕ → Set where
-  0≤n    : ∀{n} → zero ≤ n
-  sn≤sm : ∀{n m} → n ≤ m → (suc n) ≤ (suc m)
-
-≤refl : ∀ n → n ≤ n
-≤refl zero = 0≤n
-≤refl (suc n) = sn≤sm (≤refl n)
-
---≤trans : ∀ x y z → x ≤ y → y ≤ z → x ≤ z
---≤trans .0 y z 0≤n y≤z = 0≤n
---≤trans (suc x) (suc y) (suc z) (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x y z x≤y y≤z)
-
-≤trans : ∀{x y z} → x ≤ y → y ≤ z → x ≤ z
-≤trans 0≤n y≤z = 0≤n
-≤trans (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x≤y y≤z)
-
-_≤?_ : (n m : ℕ) → Dec (n ≤ m)
-zero ≤? zero = yes 0≤n
-zero ≤? suc m = yes 0≤n
-suc n ≤? zero = no (λ ())
-suc n ≤? suc m with n ≤? m
-...            | yes n≤m = yes (sn≤sm n≤m)
-...            | no ¬n≤m = no φ
-                           where φ : _
-                                 φ (sn≤sm n≤m) = ¬n≤m n≤m
-
-order : ∀{n m} → ¬(n ≤ m) → m ≤ n
-order {zero}  {m}     ¬n≤m = ⊥-elim (¬n≤m 0≤n)
-order {suc n} {zero}  ¬n≤m = 0≤n
-order {suc n} {suc m} ¬n≤m = sn≤sm (order (λ z → ¬n≤m (sn≤sm z)))
-
-
-greatestvar : ∀{k} → (ts : Vec Term k) → Σ ℕ (λ n → ∀ m → ¬(mkvar m DoesNotOccurInAny ts) → m ≤ n)
-greatestvar [] = zero , λ m ¬[]dno → ⊥-elim (¬[]dno [])
-greatestvar (x ∷ ts) with greatestvar ts
-greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf with n ≤? gts
-greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | yes n≤gts = gts , φ
-  where
-    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ gts
-    φ m ¬all with mkvar m doesNotOccurIn (varterm (mkvar n))
-    φ m ¬all | yes (varterm m≢n) = gtspf m λ rst → ¬all (varterm m≢n ∷ rst)
-    φ m ¬all | no ¬head with varEq (mkvar m) (mkvar n)
-    φ m ¬all | no ¬head | yes refl = n≤gts
-    φ m ¬all | no ¬head | no x = ⊥-elim (¬head (varterm x))
-greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | no ¬n≤gts = n , φ
-  where
-    φ : ∀ m → ¬(All (mkvar m DoesNotOccurIn_) (varterm (mkvar n) ∷ ts)) → m ≤ n
-    φ m ¬all with mkvar m doesNotOccurIn (varterm (mkvar n))
-    φ m ¬all | yes (varterm x) = ≤trans (gtspf m (λ z → ¬all (varterm x ∷ z))) (order ¬n≤gts)
-    φ m ¬all | no ¬head with varEq (mkvar m) (mkvar n)
-    φ m ¬all | no ¬head | yes refl = ≤refl n
-    φ m ¬all | no ¬head | no x = ⊥-elim (¬head (varterm x))
-greatestvar (functerm f us ∷ ts) | gts , gtspf with greatestvar us
-greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf with gus ≤? gts
-greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf | yes gus≤gts = gts , φ
-  where
-    φ : ∀ m → ¬ All (mkvar m DoesNotOccurIn_) (functerm f us ∷ ts) → m ≤ gts
-    φ m ¬all with mkvar m doesNotOccurIn (functerm f us)
-    φ m ¬all | yes (functerm x) = gtspf m λ z → ¬all (functerm x ∷ z)
-    φ m ¬all | no ¬head = ≤trans (guspf m (λ z → ¬head (functerm z))) gus≤gts
-greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf | no ¬gus≤gts = gus , φ
-  where
-    φ : ∀ m → ¬ All (mkvar m DoesNotOccurIn_) (functerm f us ∷ ts) → m ≤ gus
-    φ m ¬all with mkvar m doesNotOccurIn (functerm f us)
-    φ m ¬all | yes (functerm x) = ≤trans (gtspf m (λ z → ¬all (functerm x ∷ z))) (order ¬gus≤gts)
-    φ m ¬all | no ¬head = guspf m λ z → ¬head (functerm z)
-
--- No guarantee that this bound is tight - in fact for the V and Λ cases it is
--- not tight if the quantifier is the greatest variable (and does not have index
--- zero)
-greatest : (α : Formula) → Σ ℕ (λ n → ∀ m → ¬((mkvar m) BoundIn α) → m ≤ n)
-greatest (atom r ts) with greatestvar ts
-greatest (atom r ts) | gts , gtspf = gts , λ m ¬tsbd → gtspf m (λ tsdno → ¬tsbd (atom tsdno))
-greatest (α ⇒ β) with greatest α | greatest β
-greatest (α ⇒ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
-greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
-  where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ⇒ β)) → n ≤ gβ
-    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
-    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ⇒ βbd))
-    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
-    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
-greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
-  where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ⇒ β)) → n ≤ gα
-    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
-    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ⇒ βbd))
-    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
-greatest (α ∧ β) with greatest α | greatest β
-greatest (α ∧ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
-greatest (α ∧ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
-  where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∧ β)) → n ≤ gβ
-    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
-    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ∧ βbd))
-    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
-    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
-greatest (α ∧ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
-  where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∧ β)) → n ≤ gα
-    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
-    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∧ βbd))
-    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
-greatest (α ∨ β) with greatest α | greatest β
-greatest (α ∨ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
-greatest (α ∨ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
-  where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∨ β)) → n ≤ gβ
-    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
-    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ∨ βbd))
-    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
-    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
-greatest (α ∨ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
-  where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∨ β)) → n ≤ gα
-    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
-    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∨ βbd))
-    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
-greatest (Λ x α) with greatest α
-greatest (Λ x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (Λ x β))
-greatest (V x α) with greatest α
-greatest (V x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (V x β))
-
-fresh : (α : Formula) → Σ Variable (_BoundIn α)
-fresh α with greatest α
-fresh α | gα , gαpf = mkvar (suc gα) , stab λ φ → ¬sn≤n (gαpf (suc gα) φ)
-  where
-    ¬sn≤n : ∀{n} → ¬(suc n ≤ n)
-    ¬sn≤n {zero}  ()
-    ¬sn≤n {suc n} (sn≤sm pf) = ¬sn≤n pf
-    stab : ∀{α x} → ¬ ¬(x BoundIn α) → x BoundIn α
-    stab {α} {x} ¬¬bd with x boundIn α
-    stab {α} {x} ¬¬bd | yes bd = bd
-    stab {α} {x} ¬¬bd | no ¬bd = ⊥-elim (¬¬bd ¬bd)
 
 --------------------------------------------------------------------------------
 -- Computation requires decidable equality for the types above
@@ -376,6 +139,7 @@ natEq (suc n) (suc m) with natEq n m
                                    where φ : _
                                          φ refl = neq refl
 
+varEq : Decidable≡ Variable
 varEq (mkvar n) (mkvar m) with natEq n m
 ...                       | yes refl = yes refl
 ...                       | no  neq  = no φ
@@ -532,3 +296,222 @@ formulaEq (V x α)   (β ⇒ β₁)    = no (λ ())
 formulaEq (V x α)   (β ∧ β₁)    = no (λ ())
 formulaEq (V x α)   (β ∨ β₁)    = no (λ ())
 formulaEq (V x α)   (Λ x₁ β)    = no (λ ())
+
+
+--------------------------------------------------------------------------------
+
+data _≤_ : ℕ → ℕ → Set where
+  0≤n    : ∀{n} → zero ≤ n
+  sn≤sm : ∀{n m} → n ≤ m → (suc n) ≤ (suc m)
+
+≤refl : ∀{n} → n ≤ n
+≤refl {zero}  = 0≤n
+≤refl {suc n} = sn≤sm ≤refl
+
+≤trans : ∀{x y z} → x ≤ y → y ≤ z → x ≤ z
+≤trans 0≤n y≤z = 0≤n
+≤trans (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x≤y y≤z)
+
+_≤?_ : (n m : ℕ) → Dec (n ≤ m)
+zero ≤? zero = yes 0≤n
+zero ≤? suc m = yes 0≤n
+suc n ≤? zero = no (λ ())
+suc n ≤? suc m with n ≤? m
+...            | yes n≤m = yes (sn≤sm n≤m)
+...            | no ¬n≤m = no φ
+                           where φ : _
+                                 φ (sn≤sm n≤m) = ¬n≤m n≤m
+
+order : ∀{n m} → ¬(n ≤ m) → m ≤ n
+order {zero}  {m}     ¬n≤m = ⊥-elim (¬n≤m 0≤n)
+order {suc n} {zero}  ¬n≤m = 0≤n
+order {suc n} {suc m} ¬n≤m = sn≤sm (order (λ z → ¬n≤m (sn≤sm z)))
+
+_boundInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n) → Dec (All (x BoundInTerm_) ts)
+x boundInTerms [] = yes []
+x boundInTerms (t ∷ ts) with x boundInTerms ts
+(x boundInTerms (t ∷ ts)) | no ¬rst = no φ
+                                           where
+                                             φ : ¬(All (x BoundInTerm_) (t ∷ ts))
+                                             φ (_ ∷ rst) = ¬rst rst
+(x boundInTerms (varterm y ∷ ts))     | yes rst with varEq x y
+(x boundInTerms (varterm .x ∷ ts))    | yes rst | yes refl = no φ
+                                                                  where
+                                                                    φ : ¬(All (x BoundInTerm_) (varterm x ∷ ts))
+                                                                    φ (varterm x≢x ∷ _) = x≢x refl
+(x boundInTerms (varterm y ∷ ts))     | yes rst | no x≢y = yes (varterm x≢y ∷ rst)
+(x boundInTerms (functerm f us ∷ ts)) | yes rst with x boundInTerms us
+(x boundInTerms (functerm f us ∷ ts)) | yes rst | yes uspf = yes (functerm uspf ∷ rst)
+(x boundInTerms (functerm f us ∷ ts)) | yes rst | no ¬uspf = no φ
+                                                                  where
+                                                                    φ : ¬(All (x BoundInTerm_) (functerm f us ∷ ts))
+                                                                    φ (functerm uspf ∷ _) = ¬uspf uspf
+
+_boundInTerm_ : (x : Variable) → (t : Term) → Dec (x BoundInTerm t)
+x boundInTerm t with x boundInTerms (t ∷ [])
+(x boundInTerm t) | yes (pf ∷ []) = yes pf
+(x boundInTerm t) | no npf        = no λ z → npf (z ∷ [])
+
+_boundIn_ : (x : Variable) → (α : Formula) → Dec (x BoundIn α)
+x boundIn atom r ts with x boundInTerms ts
+(x boundIn atom r ts) | yes bdts = yes (atom bdts)
+(x boundIn atom r ts) | no ¬bdts = no φ
+  where
+    φ : ¬(x BoundIn atom r ts)
+    φ (atom bdts) = ¬bdts bdts
+x boundIn (α ⇒ β) with x boundIn α | x boundIn β
+(x boundIn (α ⇒ β)) | yes αbd | yes βbd = yes (αbd ⇒ βbd)
+(x boundIn (α ⇒ β)) | _       | no ¬βbd = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ⇒ β))
+                                            φ (αbd ⇒ βbd) = ¬βbd βbd
+(x boundIn (α ⇒ β)) | no ¬αbd | _       = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ⇒ β))
+                                            φ (αbd ⇒ βbd) = ¬αbd αbd
+x boundIn (α ∧ β) with x boundIn α | x boundIn β
+(x boundIn (α ∧ β)) | yes αbd | yes βbd = yes (αbd ∧ βbd)
+(x boundIn (α ∧ β)) | _       | no ¬βbd = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ∧ β))
+                                            φ (αbd ∧ βbd) = ¬βbd βbd
+(x boundIn (α ∧ β)) | no ¬αbd | _       = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ∧ β))
+                                            φ (αbd ∧ βbd) = ¬αbd αbd
+x boundIn (α ∨ β) with x boundIn α | x boundIn β
+(x boundIn (α ∨ β)) | yes αbd | yes βbd = yes (αbd ∨ βbd)
+(x boundIn (α ∨ β)) | _       | no ¬βbd = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ∨ β))
+                                            φ (αbd ∨ βbd) = ¬βbd βbd
+(x boundIn (α ∨ β)) | no ¬αbd | _       = no φ
+                                          where
+                                            φ : ¬(x BoundIn (α ∨ β))
+                                            φ (αbd ∨ βbd) = ¬αbd αbd
+x boundIn Λ y α with varEq x y
+(x boundIn Λ .x α) | yes refl = yes (Λ∣ x α)
+(x boundIn Λ y α)  | no x≢y with x boundIn α
+(x boundIn Λ y α) | no x≢y | yes αbd = yes (Λ y αbd)
+(x boundIn Λ y α) | no x≢y | no ¬αbd = no φ
+                                       where
+                                         φ : ¬(x BoundIn Λ y α)
+                                         φ (Λ∣ x α) = x≢y refl
+                                         φ (Λ y αbd) = ¬αbd αbd
+x boundIn V y α with varEq x y
+(x boundIn V .x α) | yes refl = yes (V∣ x α)
+(x boundIn V y α)  | no x≢y with x boundIn α
+(x boundIn V y α) | no x≢y | yes αbd = yes (V y αbd)
+(x boundIn V y α) | no x≢y | no ¬αbd = no φ
+                                       where
+                                         φ : ¬(x BoundIn V y α)
+                                         φ (V∣ x α) = x≢y refl
+                                         φ (V y αbd) = ¬αbd αbd
+
+
+greatestvar : ∀{k} → (ts : Vec Term k) → Σ ℕ (λ n → ∀ m → ¬(All (mkvar m BoundInTerm_) ts) → m ≤ n)
+greatestvar [] = zero , λ m ¬[]dno → ⊥-elim (¬[]dno [])
+greatestvar (x ∷ ts) with greatestvar ts
+greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf with n ≤? gts
+greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | yes n≤gts = gts , φ
+  where
+    φ : ∀ m → ¬(All (mkvar m BoundInTerm_) (varterm (mkvar n) ∷ ts)) → m ≤ gts
+    φ m ¬all with mkvar m boundInTerm (varterm (mkvar n))
+    φ m ¬all | yes (varterm m≢n) = gtspf m λ rst → ¬all (varterm m≢n ∷ rst)
+    φ m ¬all | no ¬head with varEq (mkvar m) (mkvar n)
+    φ m ¬all | no ¬head | yes refl = n≤gts
+    φ m ¬all | no ¬head | no x = ⊥-elim (¬head (varterm x))
+greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | no ¬n≤gts = n , φ
+  where
+    φ : ∀ m → ¬(All (mkvar m BoundInTerm_) (varterm (mkvar n) ∷ ts)) → m ≤ n
+    φ m ¬all with mkvar m boundInTerm (varterm (mkvar n))
+    φ m ¬all | yes (varterm x) = ≤trans (gtspf m (λ z → ¬all (varterm x ∷ z))) (order ¬n≤gts)
+    φ m ¬all | no ¬head with varEq (mkvar m) (mkvar n)
+    φ m ¬all | no ¬head | yes refl = ≤refl
+    φ m ¬all | no ¬head | no x = ⊥-elim (¬head (varterm x))
+greatestvar (functerm f us ∷ ts) | gts , gtspf with greatestvar us
+greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf with gus ≤? gts
+greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf | yes gus≤gts = gts , φ
+  where
+    φ : ∀ m → ¬ All (mkvar m BoundInTerm_) (functerm f us ∷ ts) → m ≤ gts
+    φ m ¬all with mkvar m boundInTerm (functerm f us)
+    φ m ¬all | yes (functerm x) = gtspf m λ z → ¬all (functerm x ∷ z)
+    φ m ¬all | no ¬head = ≤trans (guspf m (λ z → ¬head (functerm z))) gus≤gts
+greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf | no ¬gus≤gts = gus , φ
+  where
+    φ : ∀ m → ¬ All (mkvar m BoundInTerm_) (functerm f us ∷ ts) → m ≤ gus
+    φ m ¬all with mkvar m boundInTerm (functerm f us)
+    φ m ¬all | yes (functerm x) = ≤trans (gtspf m (λ z → ¬all (functerm x ∷ z))) (order ¬gus≤gts)
+    φ m ¬all | no ¬head = guspf m λ z → ¬head (functerm z)
+
+-- No guarantee that this bound is tight - in fact for the V and Λ cases it is
+-- not tight if the quantifier is the greatest variable (and does not have index
+-- zero)
+greatest : (α : Formula) → Σ ℕ (λ n → ∀ m → ¬((mkvar m) BoundIn α) → m ≤ n)
+greatest (atom r ts) with greatestvar ts
+greatest (atom r ts) | gts , gtspf = gts , λ m ¬tsbd → gtspf m (λ tsdno → ¬tsbd (atom tsdno))
+greatest (α ⇒ β) with greatest α | greatest β
+greatest (α ⇒ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
+greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ⇒ β)) → n ≤ gβ
+    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
+    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ⇒ βbd))
+    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
+    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
+greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ⇒ β)) → n ≤ gα
+    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
+    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ⇒ βbd))
+    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
+greatest (α ∧ β) with greatest α | greatest β
+greatest (α ∧ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
+greatest (α ∧ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∧ β)) → n ≤ gβ
+    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
+    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ∧ βbd))
+    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
+    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
+greatest (α ∧ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∧ β)) → n ≤ gα
+    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
+    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∧ βbd))
+    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
+greatest (α ∨ β) with greatest α | greatest β
+greatest (α ∨ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
+greatest (α ∨ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∨ β)) → n ≤ gβ
+    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
+    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ∨ βbd))
+    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
+    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
+greatest (α ∨ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+  where
+    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∨ β)) → n ≤ gα
+    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
+    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∨ βbd))
+    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
+    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
+greatest (Λ x α) with greatest α
+greatest (Λ x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (Λ x β))
+greatest (V x α) with greatest α
+greatest (V x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (V x β))
+
+fresh : (α : Formula) → Σ Variable (_BoundIn α)
+fresh α with greatest α
+fresh α | gα , gαpf = mkvar (suc gα) , stab λ φ → ¬sn≤n (gαpf (suc gα) φ)
+  where
+    ¬sn≤n : ∀{n} → ¬(suc n ≤ n)
+    ¬sn≤n {zero}  ()
+    ¬sn≤n {suc n} (sn≤sm pf) = ¬sn≤n pf
+    stab : ∀{α x} → ¬ ¬(x BoundIn α) → x BoundIn α
+    stab {α} {x} ¬¬bd with x boundIn α
+    stab {α} {x} ¬¬bd | yes bd = bd
+    stab {α} {x} ¬¬bd | no ¬bd = ⊥-elim (¬¬bd ¬bd)
+
