@@ -204,6 +204,10 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   V∣    : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
   Λ     : ∀{α β x v t} → v ≢ x → x DoesNotOccurIn t → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
   V     : ∀{α β x v t} → v ≢ x → x DoesNotOccurIn t → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+  Λ/    : ∀{α β γ x v t ω} → ω BoundIn α → v ≢ ω → ω DoesNotOccurIn t
+          → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (Λ x α) [ v / t ]≡ (Λ ω γ)
+  V/    : ∀{α β γ x v t ω} → ω BoundIn α → v ≢ ω → ω DoesNotOccurIn t
+          → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (V x α) [ v / t ]≡ (V ω γ)
 
 
 prec : ∀ n m → suc n ≡ suc m → n ≡ m
