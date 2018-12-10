@@ -315,21 +315,6 @@ n < m = suc n ≤ m
 ≤trans 0≤n y≤z = 0≤n
 ≤trans (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x≤y y≤z)
 
-_≤?_ : (n m : ℕ) → Dec (n ≤ m)
-zero ≤? zero = yes 0≤n
-zero ≤? suc m = yes 0≤n
-suc n ≤? zero = no (λ ())
-suc n ≤? suc m with n ≤? m
-...            | yes n≤m = yes (sn≤sm n≤m)
-...            | no ¬n≤m = no φ
-                           where φ : _
-                                 φ (sn≤sm n≤m) = ¬n≤m n≤m
-
-order : ∀{n m} → ¬(n ≤ m) → m ≤ n
-order {zero}  {m}     ¬n≤m = ⊥-elim (¬n≤m 0≤n)
-order {suc n} {zero}  ¬n≤m = 0≤n
-order {suc n} {suc m} ¬n≤m = sn≤sm (order (λ z → ¬n≤m (sn≤sm z)))
-
 data WeakOrder (n m : ℕ) : Set where
   less : n ≤ m → WeakOrder n m
   more : m ≤ n → WeakOrder n m
@@ -340,6 +325,7 @@ weakorder (suc n) zero    = more 0≤n
 weakorder (suc n) (suc m) with weakorder n m
 weakorder (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
 weakorder (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
+
 
 _boundInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n) → Dec (All (x BoundInTerm_) ts)
 x boundInTerms [] = yes []
