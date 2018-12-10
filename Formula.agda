@@ -1,6 +1,6 @@
 module Formula where
 
-open import Agda.Builtin.Nat renaming (Nat to ℕ)
+open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_<_)
 open import Agda.Builtin.Sigma
 open import Agda.Builtin.String
 
@@ -304,6 +304,9 @@ data _≤_ : ℕ → ℕ → Set where
   0≤n    : ∀{n} → zero ≤ n
   sn≤sm : ∀{n m} → n ≤ m → (suc n) ≤ (suc m)
 
+_<_ : ℕ → ℕ → Set
+n < m = suc n ≤ m
+
 ≤refl : ∀{n} → n ≤ n
 ≤refl {zero}  = 0≤n
 ≤refl {suc n} = sn≤sm ≤refl
@@ -326,6 +329,17 @@ order : ∀{n m} → ¬(n ≤ m) → m ≤ n
 order {zero}  {m}     ¬n≤m = ⊥-elim (¬n≤m 0≤n)
 order {suc n} {zero}  ¬n≤m = 0≤n
 order {suc n} {suc m} ¬n≤m = sn≤sm (order (λ z → ¬n≤m (sn≤sm z)))
+
+data WeakOrder (n m : ℕ) : Set where
+  less : n ≤ m → WeakOrder n m
+  more : m ≤ n → WeakOrder n m
+
+weakorder : ∀ n m → WeakOrder n m
+weakorder zero    m       = less 0≤n
+weakorder (suc n) zero    = more 0≤n
+weakorder (suc n) (suc m) with weakorder n m
+weakorder (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
+weakorder (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
 
 _boundInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n) → Dec (All (x BoundInTerm_) ts)
 x boundInTerms [] = yes []
@@ -409,109 +423,79 @@ x boundIn V y α with varEq x y
                                          φ (V y αbd) = ¬αbd αbd
 
 
-greatestvar : ∀{k} → (ts : Vec Term k) → Σ ℕ (λ n → ∀ m → ¬(All (mkvar m BoundInTerm_) ts) → m ≤ n)
-greatestvar [] = zero , λ m ¬[]dno → ⊥-elim (¬[]dno [])
-greatestvar (x ∷ ts) with greatestvar ts
-greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf with n ≤? gts
-greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | yes n≤gts = gts , φ
+
+supboundterms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → All (mkvar n BoundInTerm_) ts
+supboundterms [] = zero , λ _ _ → []
+supboundterms (varterm (mkvar m) ∷ ts) with supboundterms ts
+... | ⌈ts⌉ , tspf with weakorder m ⌈ts⌉
+...               | less m≤⌈ts⌉ = ⌈ts⌉ , boundIs⌈ts⌉
   where
-    φ : ∀ m → ¬(All (mkvar m BoundInTerm_) (varterm (mkvar n) ∷ ts)) → m ≤ gts
-    φ m ¬all with mkvar m boundInTerm (varterm (mkvar n))
-    φ m ¬all | yes (varterm m≢n) = gtspf m λ rst → ¬all (varterm m≢n ∷ rst)
-    φ m ¬all | no ¬head with varEq (mkvar m) (mkvar n)
-    φ m ¬all | no ¬head | yes refl = n≤gts
-    φ m ¬all | no ¬head | no x = ⊥-elim (¬head (varterm x))
-greatestvar (varterm (mkvar n) ∷ ts) | gts , gtspf | no ¬n≤gts = n , φ
+    orderneq : ∀{n m} → n < m → mkvar m ≢ mkvar n
+    orderneq {zero} {.0} () refl
+    orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
+    boundIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n → All (mkvar n BoundInTerm_) (varterm (mkvar m) ∷ ts)
+    boundIs⌈ts⌉ n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n)) ∷ tspf n ⌈ts⌉<n
+...               | more ⌈ts⌉≤m = m , boundIsm
   where
-    φ : ∀ m → ¬(All (mkvar m BoundInTerm_) (varterm (mkvar n) ∷ ts)) → m ≤ n
-    φ m ¬all with mkvar m boundInTerm (varterm (mkvar n))
-    φ m ¬all | yes (varterm x) = ≤trans (gtspf m (λ z → ¬all (varterm x ∷ z))) (order ¬n≤gts)
-    φ m ¬all | no ¬head with varEq (mkvar m) (mkvar n)
-    φ m ¬all | no ¬head | yes refl = ≤refl
-    φ m ¬all | no ¬head | no x = ⊥-elim (¬head (varterm x))
-greatestvar (functerm f us ∷ ts) | gts , gtspf with greatestvar us
-greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf with gus ≤? gts
-greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf | yes gus≤gts = gts , φ
+    orderneq : ∀{n m} → n < m → mkvar m ≢ mkvar n
+    orderneq {zero} {.0} () refl
+    orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
+    boundIsm : ∀ n → m < n → All (mkvar n BoundInTerm_) (varterm (mkvar m) ∷ ts)
+    boundIsm n m<n = varterm (orderneq m<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
+supboundterms (functerm f us     ∷ ts) with supboundterms us | supboundterms ts
+... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with weakorder ⌈us⌉ ⌈ts⌉
+...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , boundIs⌈ts⌉
   where
-    φ : ∀ m → ¬ All (mkvar m BoundInTerm_) (functerm f us ∷ ts) → m ≤ gts
-    φ m ¬all with mkvar m boundInTerm (functerm f us)
-    φ m ¬all | yes (functerm x) = gtspf m λ z → ¬all (functerm x ∷ z)
-    φ m ¬all | no ¬head = ≤trans (guspf m (λ z → ¬head (functerm z))) gus≤gts
-greatestvar (functerm f us ∷ ts) | gts , gtspf | gus , guspf | no ¬gus≤gts = gus , φ
+    boundIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n → All (mkvar n BoundInTerm_) (functerm f us ∷ ts)
+    boundIs⌈ts⌉ n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n)) ∷ tspf n ⌈ts⌉<n
+...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , boundIs⌈us⌉
   where
-    φ : ∀ m → ¬ All (mkvar m BoundInTerm_) (functerm f us ∷ ts) → m ≤ gus
-    φ m ¬all with mkvar m boundInTerm (functerm f us)
-    φ m ¬all | yes (functerm x) = ≤trans (gtspf m (λ z → ¬all (functerm x ∷ z))) (order ¬gus≤gts)
-    φ m ¬all | no ¬head = guspf m λ z → ¬head (functerm z)
+    boundIs⌈us⌉ : ∀ n → ⌈us⌉ < n → All (mkvar n BoundInTerm_) (functerm f us ∷ ts)
+    boundIs⌈us⌉ n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
+
 
 -- No guarantee that this bound is tight - in fact for the V and Λ cases it is
 -- not tight if the quantifier is the greatest variable (and does not have index
 -- zero)
-greatest : (α : Formula) → Σ ℕ (λ n → ∀ m → ¬((mkvar m) BoundIn α) → m ≤ n)
-greatest (atom r ts) with greatestvar ts
-greatest (atom r ts) | gts , gtspf = gts , λ m ¬tsbd → gtspf m (λ tsdno → ¬tsbd (atom tsdno))
-greatest (α ⇒ β) with greatest α | greatest β
-greatest (α ⇒ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
-greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+supbound : ∀ α → Σ ℕ λ ⌈α⌉ → ∀ n → ⌈α⌉ < n → mkvar n BoundIn α
+supbound (atom r ts) with supboundterms ts
+supbound (atom r ts) | ⌈ts⌉ , tspf = ⌈ts⌉ , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
+supbound (α ⇒ β) with supbound α | supbound β
+supbound (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with weakorder ⌈α⌉ ⌈β⌉
+supbound (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , boundIs⌈β⌉
   where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ⇒ β)) → n ≤ gβ
-    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
-    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ⇒ βbd))
-    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
-    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
-greatest (α ⇒ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+    boundIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n BoundIn (α ⇒ β)
+    boundIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ⇒ βpf n ⌈β⌉<n
+supbound (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , boundIs⌈α⌉
   where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ⇒ β)) → n ≤ gα
-    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
-    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ⇒ βbd))
-    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
-greatest (α ∧ β) with greatest α | greatest β
-greatest (α ∧ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
-greatest (α ∧ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+    boundIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n BoundIn (α ⇒ β)
+    boundIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ⇒ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
+supbound (α ∧ β) with supbound α | supbound β
+supbound (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with weakorder ⌈α⌉ ⌈β⌉
+supbound (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , boundIs⌈β⌉
   where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∧ β)) → n ≤ gβ
-    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
-    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ∧ βbd))
-    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
-    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
-greatest (α ∧ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+    boundIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n BoundIn (α ∧ β)
+    boundIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ∧ βpf n ⌈β⌉<n
+supbound (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , boundIs⌈α⌉
   where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∧ β)) → n ≤ gα
-    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
-    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∧ βbd))
-    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
-greatest (α ∨ β) with greatest α | greatest β
-greatest (α ∨ β) | gα , gαpf | gβ , gβpf with gα ≤? gβ
-greatest (α ∨ β) | gα , gαpf | gβ , gβpf | yes gα≤gβ = gβ , φ
+    boundIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n BoundIn (α ∧ β)
+    boundIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∧ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
+supbound (α ∨ β) with supbound α | supbound β
+supbound (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with weakorder ⌈α⌉ ⌈β⌉
+supbound (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , boundIs⌈β⌉
   where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∨ β)) → n ≤ gβ
-    φ n ¬bd with mkvar n boundIn α | mkvar n boundIn β
-    φ n ¬bd | yes αbd | yes βbd = ⊥-elim (¬bd (αbd ∨ βbd))
-    φ n ¬bd | _       | no ¬βbd = gβpf n ¬βbd
-    φ n ¬bd | no ¬αbd | _       = ≤trans (gαpf n ¬αbd) gα≤gβ
-greatest (α ∨ β) | gα , gαpf | gβ , gβpf | no ¬gα≤gβ = gα , φ
+    boundIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n BoundIn (α ∨ β)
+    boundIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ∨ βpf n ⌈β⌉<n
+supbound (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , boundIs⌈α⌉
   where
-    φ : (n : ℕ) → ¬(mkvar n BoundIn (α ∨ β)) → n ≤ gα
-    φ n ¬bd with mkvar n boundIn β | mkvar n boundIn α
-    φ n ¬bd | yes βbd | yes αbd = ⊥-elim (¬bd (αbd ∨ βbd))
-    φ n ¬bd | _       | no ¬αbd = gαpf n ¬αbd
-    φ n ¬bd | no ¬βbd | _       = ≤trans (gβpf n ¬βbd) (order ¬gα≤gβ)
-greatest (Λ x α) with greatest α
-greatest (Λ x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (Λ x β))
-greatest (V x α) with greatest α
-greatest (V x α) | gα , gαpf = gα , λ m ¬mbd → gαpf m (λ β → ¬mbd (V x β))
+    boundIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n BoundIn (α ∨ β)
+    boundIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∨ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
+supbound (Λ x α) with supbound α
+supbound (Λ x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → Λ x (αpf n ⌈α⌉<n)
+supbound (V x α) with supbound α
+supbound (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n ⌈α⌉<n)
+
 
 fresh : (α : Formula) → Σ Variable (_BoundIn α)
-fresh α with greatest α
-fresh α | gα , gαpf = mkvar (suc gα) , stab λ φ → ¬sn≤n (gαpf (suc gα) φ)
-  where
-    ¬sn≤n : ∀{n} → ¬(suc n ≤ n)
-    ¬sn≤n {zero}  ()
-    ¬sn≤n {suc n} (sn≤sm pf) = ¬sn≤n pf
-    stab : ∀{α x} → ¬ ¬(x BoundIn α) → x BoundIn α
-    stab {α} {x} ¬¬bd with x boundIn α
-    stab {α} {x} ¬¬bd | yes bd = bd
-    stab {α} {x} ¬¬bd | no ¬bd = ⊥-elim (¬¬bd ¬bd)
-
+fresh α with supbound α
+fresh α | s , ssup = mkvar (suc s) , ssup (suc s) ≤refl
