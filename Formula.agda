@@ -315,16 +315,16 @@ n < m = suc n ≤ m
 ≤trans 0≤n y≤z = 0≤n
 ≤trans (sn≤sm x≤y) (sn≤sm y≤z) = sn≤sm (≤trans x≤y y≤z)
 
-data WeakOrder (n m : ℕ) : Set where
-  less : n ≤ m → WeakOrder n m
-  more : m ≤ n → WeakOrder n m
+data Max (n m : ℕ) : Set where
+  less : n ≤ m → Max n m
+  more : m ≤ n → Max n m
 
-weakorder : ∀ n m → WeakOrder n m
-weakorder zero    m       = less 0≤n
-weakorder (suc n) zero    = more 0≤n
-weakorder (suc n) (suc m) with weakorder n m
-weakorder (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
-weakorder (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
+max : ∀ n m → Max n m
+max zero    m       = less 0≤n
+max (suc n) zero    = more 0≤n
+max (suc n) (suc m) with max n m
+max (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
+max (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
 
 
 _boundInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n) → Dec (All (x BoundInTerm_) ts)
@@ -409,11 +409,10 @@ x boundIn V y α with varEq x y
                                          φ (V y αbd) = ¬αbd αbd
 
 
-
 supboundterms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → All (mkvar n BoundInTerm_) ts
 supboundterms [] = zero , λ _ _ → []
 supboundterms (varterm (mkvar m) ∷ ts) with supboundterms ts
-... | ⌈ts⌉ , tspf with weakorder m ⌈ts⌉
+... | ⌈ts⌉ , tspf with max m ⌈ts⌉
 ...               | less m≤⌈ts⌉ = ⌈ts⌉ , boundIs⌈ts⌉
   where
     orderneq : ∀{n m} → n < m → mkvar m ≢ mkvar n
@@ -429,7 +428,7 @@ supboundterms (varterm (mkvar m) ∷ ts) with supboundterms ts
     boundIsm : ∀ n → m < n → All (mkvar n BoundInTerm_) (varterm (mkvar m) ∷ ts)
     boundIsm n m<n = varterm (orderneq m<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
 supboundterms (functerm f us     ∷ ts) with supboundterms us | supboundterms ts
-... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with weakorder ⌈us⌉ ⌈ts⌉
+... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with max ⌈us⌉ ⌈ts⌉
 ...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , boundIs⌈ts⌉
   where
     boundIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n → All (mkvar n BoundInTerm_) (functerm f us ∷ ts)
@@ -447,7 +446,7 @@ supbound : ∀ α → Σ ℕ λ ⌈α⌉ → ∀ n → ⌈α⌉ < n → mkvar n 
 supbound (atom r ts) with supboundterms ts
 supbound (atom r ts) | ⌈ts⌉ , tspf = ⌈ts⌉ , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
 supbound (α ⇒ β) with supbound α | supbound β
-supbound (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with weakorder ⌈α⌉ ⌈β⌉
+supbound (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
 supbound (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , boundIs⌈β⌉
   where
     boundIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n BoundIn (α ⇒ β)
@@ -457,7 +456,7 @@ supbound (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α
     boundIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n BoundIn (α ⇒ β)
     boundIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ⇒ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
 supbound (α ∧ β) with supbound α | supbound β
-supbound (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with weakorder ⌈α⌉ ⌈β⌉
+supbound (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
 supbound (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , boundIs⌈β⌉
   where
     boundIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n BoundIn (α ∧ β)
@@ -467,7 +466,7 @@ supbound (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α
     boundIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n BoundIn (α ∧ β)
     boundIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∧ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
 supbound (α ∨ β) with supbound α | supbound β
-supbound (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with weakorder ⌈α⌉ ⌈β⌉
+supbound (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
 supbound (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , boundIs⌈β⌉
   where
     boundIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n BoundIn (α ∨ β)
