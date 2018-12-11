@@ -438,6 +438,13 @@ supboundterms (functerm f us     ∷ ts) with supboundterms us | supboundterms t
     boundIs⌈us⌉ : ∀ n → ⌈us⌉ < n → All (mkvar n BoundInTerm_) (functerm f us ∷ ts)
     boundIs⌈us⌉ n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
 
+supboundterm : ∀ t → Σ ℕ λ ⌈t⌉ → ∀ n → ⌈t⌉ < n → mkvar n BoundInTerm t
+supboundterm t with supboundterms (t ∷ [])
+supboundterm t | s , pfs = s , boundIss
+  where
+    boundIss : ∀ n → s < n → mkvar n BoundInTerm t
+    boundIss n s<n with pfs n s<n
+    boundIss n s<n | pf ∷ [] = pf
 
 -- No guarantee that this bound is tight - in fact for the V and Λ cases it is
 -- not tight if the quantifier is the greatest variable (and does not have index
@@ -484,3 +491,23 @@ supbound (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n
 fresh : (α : Formula) → Σ Variable (_BoundIn α)
 fresh α with supbound α
 fresh α | s , ssup = mkvar (suc s) , ssup (suc s) ≤refl
+
+record ReplacementVariable (α : Formula) (x : Variable) (t : Term) : Set where
+  constructor freshvariable
+  field
+    var         : Variable
+    bound       : var BoundIn α
+    new         : x ≢ var
+    replaceable : var BoundInTerm t
+
+replacementvariable : ∀ α x t → ReplacementVariable α x t
+replacementvariable α (mkvar n) t with supbound α | supboundterm t
+... | ⌈α⌉ , αpf | ⌈t⌉ , tpf with max n ⌈α⌉ | max n ⌈t⌉ | max ⌈α⌉ ⌈t⌉
+...   | less n≤⌈α⌉ | less n≤⌈t⌉ | less ⌈α⌉≤⌈t⌉ = {!   !}
+...   | less n≤⌈α⌉ | less n≤⌈t⌉ | more ⌈t⌉≤⌈α⌉ = {!   !}
+...   | less n≤⌈α⌉ | more ⌈t⌉≤n | less ⌈α⌉≤⌈t⌉ = {!   !}
+...   | less n≤⌈α⌉ | more ⌈t⌉≤n | more ⌈t⌉≤⌈α⌉ = {!   !}
+...   | more ⌈α⌉≤n | less n≤⌈t⌉ | less ⌈α⌉≤⌈t⌉ = {!   !}
+...   | more ⌈α⌉≤n | less n≤⌈t⌉ | more ⌈t⌉≤⌈α⌉ = {!   !}
+...   | more ⌈α⌉≤n | more ⌈t⌉≤n | less ⌈α⌉≤⌈t⌉ = {!   !}
+...   | more ⌈α⌉≤n | more ⌈t⌉≤n | more ⌈t⌉≤⌈α⌉ = {!   !}
