@@ -560,9 +560,20 @@ replacementvariable α (mkvar n) t with supfree α | supfreeterm t
     replaceable = tpf (suc n) (sn≤sm ⌈t⌉≤n)
 
 
+[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs → [ us ][ x / t ]≡ vs
+[ [] ][ x / t ] = [] , []
+[ u ∷ us ][ x / t ] with [ us ][ x / t ]
+[ varterm y     ∷ us ][ x / t ] | vs , [us][x/t]≡vs with varEq x y
+... | yes refl = t ∷ vs , (varterm≡ ∷ [us][x/t]≡vs)
+... | no x≡y   = varterm y ∷ vs , (varterm≢ x≡y ∷ [us][x/t]≡vs)
+[ functerm f ws ∷ us ][ x / t ] | vs , [us][x/t]≡vs with [ ws ][ x / t ]
+... | xs , [ws][x/t]≡xs = functerm f xs ∷ vs , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
+
 -- Make sure to use the nicer substitutions for quantification where possible
+{-# TERMINATING #-}
 _[_/_] : ∀ α x t → Σ Formula (α [ x / t ]≡_)
-atom r us [ x / t ] = {!   !}
+atom r us [ x / t ] with [ us ][ x / t ]
+atom r us [ x / t ] | vs , [us][x/t]≡vs = atom r vs , atom r [us][x/t]≡vs
 (α ⇒ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
 (α ⇒ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ⇒ β′ , α[x/t]≡α′ ⇒ β[x/t]≡β′
 (α ∧ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
@@ -576,5 +587,14 @@ atom r us [ x / t ] = {!   !}
 Λ  y α    [ x / t ] | no x≢y   | no  xf  with replacementvariable α x t
 Λ  y α    [ x / t ] | no x≢y   | no  xf  | freshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
 Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
-Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ = Λ ω γ , Λ/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
-V y  α    [ x / t ] = {!   !}
+Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
+                    = Λ ω γ , Λ/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
+V  y α    [ x / t ] with varEq x y | y notFreeInTerm t
+V .x α    [ x / t ] | yes refl | _       = V x α , V∣ x α
+V  y α    [ x / t ] | no x≢y   | yes xnf with α [ x / t ]
+V  y α    [ x / t ] | no x≢y   | yes xnf | α′ , α[x/t]≡α′ = V y α′ , V x≢y xnf α[x/t]≡α′
+V  y α    [ x / t ] | no x≢y   | no  xf  with replacementvariable α x t
+V  y α    [ x / t ] | no x≢y   | no  xf  | freshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
+V  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
+V  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
+                    = V ω γ , V/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
