@@ -307,6 +307,10 @@ data _≤_ : ℕ → ℕ → Set where
 _<_ : ℕ → ℕ → Set
 n < m = suc n ≤ m
 
+¬<refl : ∀{n} → ¬(n < n)
+¬<refl {zero} ()
+¬<refl {suc n} (sn≤sm x) = ¬<refl x
+
 ≤refl : ∀{n} → n ≤ n
 ≤refl {zero}  = 0≤n
 ≤refl {suc n} = sn≤sm ≤refl
@@ -493,7 +497,7 @@ fresh α with supbound α
 fresh α | s , ssup = mkvar (suc s) , ssup (suc s) ≤refl
 
 record ReplacementVariable (α : Formula) (x : Variable) (t : Term) : Set where
-  constructor freshvariable
+  constructor freshvar
   field
     var         : Variable
     bound       : var BoundIn α
@@ -503,11 +507,43 @@ record ReplacementVariable (α : Formula) (x : Variable) (t : Term) : Set where
 replacementvariable : ∀ α x t → ReplacementVariable α x t
 replacementvariable α (mkvar n) t with supbound α | supboundterm t
 ... | ⌈α⌉ , αpf | ⌈t⌉ , tpf with max n ⌈α⌉ | max n ⌈t⌉ | max ⌈α⌉ ⌈t⌉
-...   | less n≤⌈α⌉ | less n≤⌈t⌉ | less ⌈α⌉≤⌈t⌉ = {!   !}
-...   | less n≤⌈α⌉ | less n≤⌈t⌉ | more ⌈t⌉≤⌈α⌉ = {!   !}
-...   | less n≤⌈α⌉ | more ⌈t⌉≤n | less ⌈α⌉≤⌈t⌉ = {!   !}
-...   | less n≤⌈α⌉ | more ⌈t⌉≤n | more ⌈t⌉≤⌈α⌉ = {!   !}
-...   | more ⌈α⌉≤n | less n≤⌈t⌉ | less ⌈α⌉≤⌈t⌉ = {!   !}
-...   | more ⌈α⌉≤n | less n≤⌈t⌉ | more ⌈t⌉≤⌈α⌉ = {!   !}
-...   | more ⌈α⌉≤n | more ⌈t⌉≤n | less ⌈α⌉≤⌈t⌉ = {!   !}
-...   | more ⌈α⌉≤n | more ⌈t⌉≤n | more ⌈t⌉≤⌈α⌉ = {!   !}
+...   | less n≤⌈α⌉ | less n≤⌈t⌉ | less ⌈α⌉≤⌈t⌉ = freshvar (mkvar (suc ⌈t⌉)) bound new replaceable
+  where
+    bound : mkvar (suc ⌈t⌉) BoundIn α
+    bound = αpf (suc ⌈t⌉) (sn≤sm ⌈α⌉≤⌈t⌉)
+    new : mkvar n ≢ mkvar (suc ⌈t⌉)
+    new refl = ⊥-elim (¬<refl n≤⌈t⌉)
+    replaceable : mkvar (suc ⌈t⌉) BoundInTerm t
+    replaceable = tpf (suc ⌈t⌉) (sn≤sm ≤refl)
+...   | less n≤⌈α⌉ | less n≤⌈t⌉ | more ⌈t⌉≤⌈α⌉ = freshvar (mkvar (suc ⌈α⌉)) bound new replaceable
+  where
+    bound : mkvar (suc ⌈α⌉) BoundIn α
+    bound = αpf (suc ⌈α⌉) (sn≤sm ≤refl)
+    new : mkvar n ≢ mkvar (suc ⌈α⌉)
+    new refl = ¬<refl n≤⌈α⌉
+    replaceable : mkvar (suc ⌈α⌉) BoundInTerm t
+    replaceable = tpf (suc ⌈α⌉) (sn≤sm ⌈t⌉≤⌈α⌉)
+...   | less n≤⌈α⌉ | more ⌈t⌉≤n | _            = freshvar (mkvar (suc ⌈α⌉)) bound new replaceable
+  where
+    bound : mkvar (suc ⌈α⌉) BoundIn α
+    bound = αpf (suc ⌈α⌉) (sn≤sm ≤refl)
+    new : mkvar n ≢ mkvar (suc ⌈α⌉)
+    new refl = ¬<refl n≤⌈α⌉
+    replaceable : mkvar (suc ⌈α⌉) BoundInTerm t
+    replaceable = tpf (suc ⌈α⌉) (≤trans (sn≤sm ⌈t⌉≤n) (sn≤sm n≤⌈α⌉))
+...   | more ⌈α⌉≤n | less n≤⌈t⌉ | _            = freshvar (mkvar (suc ⌈t⌉)) bound new replaceable
+  where
+    bound : mkvar (suc ⌈t⌉) BoundIn α
+    bound = αpf (suc ⌈t⌉) (≤trans (sn≤sm ⌈α⌉≤n) (sn≤sm n≤⌈t⌉))
+    new : mkvar n ≢ mkvar (suc ⌈t⌉)
+    new refl = ¬<refl n≤⌈t⌉
+    replaceable : mkvar (suc ⌈t⌉) BoundInTerm t
+    replaceable = tpf (suc ⌈t⌉) (sn≤sm ≤refl)
+...   | more ⌈α⌉≤n | more ⌈t⌉≤n | _            = freshvar (mkvar (suc n)) bound new replaceable
+  where
+    bound : mkvar (suc n) BoundIn α
+    bound = αpf (suc n) (sn≤sm ⌈α⌉≤n)
+    new : mkvar n ≢ mkvar (suc n)
+    new ()
+    replaceable : mkvar (suc n) BoundInTerm t
+    replaceable = tpf (suc n) (sn≤sm ⌈t⌉≤n)
