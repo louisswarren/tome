@@ -558,3 +558,23 @@ replacementvariable α (mkvar n) t with supfree α | supfreeterm t
     new ()
     replaceable : mkvar (suc n) NotFreeInTerm t
     replaceable = tpf (suc n) (sn≤sm ⌈t⌉≤n)
+
+
+-- Make sure to use the nicer substitutions for quantification where possible
+_[_/_] : ∀ α x t → Σ Formula (α [ x / t ]≡_)
+atom r us [ x / t ] = {!   !}
+(α ⇒ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+(α ⇒ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ⇒ β′ , α[x/t]≡α′ ⇒ β[x/t]≡β′
+(α ∧ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+(α ∧ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∧ β′ , α[x/t]≡α′ ∧ β[x/t]≡β′
+(α ∨ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+(α ∨ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∨ β′ , α[x/t]≡α′ ∨ β[x/t]≡β′
+Λ  y α    [ x / t ] with varEq x y | y notFreeInTerm t
+Λ .x α    [ x / t ] | yes refl | _       = Λ x α , Λ∣ x α
+Λ  y α    [ x / t ] | no x≢y   | yes xnf with α [ x / t ]
+Λ  y α    [ x / t ] | no x≢y   | yes xnf | α′ , α[x/t]≡α′ = Λ y α′ , Λ x≢y xnf α[x/t]≡α′
+Λ  y α    [ x / t ] | no x≢y   | no  xf  with replacementvariable α x t
+Λ  y α    [ x / t ] | no x≢y   | no  xf  | freshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
+Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
+Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ = Λ ω γ , Λ/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
+V y  α    [ x / t ] = {!   !}
