@@ -206,25 +206,28 @@ DP⊃LPO (⊢DP ∷ []) (α ∷ β ∷ []) = dp→lpo (descheme₁ ⊢DP) α β
 
 glpo→lem : ⊢₁ glpo → ⊢₁ lem
 glpo→lem ⊢glpo α = close
-                    (∅ ∪ ∀x¬ α ~ [ refl ] -∷ ∅ ∪ ∃x α ~ ([ refl ] -∷ ∅ ∪ α ~ [ refl ] -∷ ∅))
-                    (univelim x {!   !}
-                     (univintro ω {!   !}
+                    (∅ ∪ ∀x¬ αω ~ [ refl ] -∷ ∅ ∪ ∃x αω ~ ([ refl ] -∷ ∅ ∪ αω ~ [ refl ] -∷ ∅))
+                    (univelim x αω∨¬αω[ω/x]≡α∨¬α
+                     (univintro ω (∅ ∪ ∀x¬ αω ~ [ refl ] -∷ ∅ ∪ ∃x αω ~ ([ refl ] -∷ ∅ ∪ αω ~ [ refl ] -∷ ∅))
                       (disjelim
                        (cite "GLPO" (⊢glpo αω))
                        (disjintro₂ αω
-                        (univelim x (ident (¬ α) xvar)
+                        (univelim x (ident (¬ αω) xvar)
                          (assume (∀x (¬ αω)))))
                        (disjintro₁ (¬ αω)
                         (existelim (xαωbd ∷ αω ~ [ refl ] -∷ ∅)
                          (assume (∃x αω))
                          (assume αω))))))
                    where
+                    ωrepvar : ReplacementVariable α xvar (varterm xvar)
+                    ωrepvar = replacementvariable α xvar x
                     ω : Variable
-                    ω = fst (fresh α)
-                    ωbd : ω BoundIn α
-                    ωbd = snd (fresh α)
+                    ω = ReplacementVariable.var ωrepvar
+                    ωbd : ω NotFreeIn α
+                    ωbd = ReplacementVariable.notFree ωrepvar
                     αω : Formula
-                    αω = ?
-                    xαωbd : xvar BoundIn αω
-                    xαωbd = ?
-                    αω∨¬αω[ω/x]≡α∨¬α
+                    αω = fst (α [ xvar / varterm ω ])
+                    xαωbd : xvar NotFreeIn αω
+                    xαωbd = repNotFree (varterm (ReplacementVariable.new ωrepvar)) (snd (α [ xvar / varterm ω ]))
+                    αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
+                    αω∨¬αω[ω/x]≡α∨¬α = {!   !} ∨ ({!   !} ⇒ atom ⊥rel [])

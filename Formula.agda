@@ -305,6 +305,37 @@ formulaEq (V x α)   (Λ x₁ β)    = no (λ ())
 
 --------------------------------------------------------------------------------
 
+-- Machine-proven lemmae
+repNotFreeTerms : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
+repNotFreeTerms {.0} {x} {t} {[]} {.[]} xnft [] = []
+repNotFreeTerms {.(suc _)} {.x₁} {_} {varterm x₁ ∷ us} {.(_ ∷ _)} xnft (varterm≡ ∷ rep) = xnft ∷ repNotFreeTerms xnft rep
+repNotFreeTerms {.(suc _)} {x} {t} {varterm x₁ ∷ us} {.(varterm x₁ ∷ _)} xnft (varterm≢ x₂ ∷ rep) = varterm x₂ ∷ repNotFreeTerms xnft rep
+repNotFreeTerms {.(suc _)} {x} {t} {functerm f ts ∷ us} {.(functerm f _ ∷ _)} xnft (functerm x₁ ∷ rep) = functerm (repNotFreeTerms xnft x₁) ∷ repNotFreeTerms xnft rep
+
+repNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
+repNotFree {atom r ts} {x₁} {.(varterm x₁)} {.(atom r ts)} (varterm x) (ident .(atom r ts) x₁) = ⊥-elim (x refl)
+repNotFree {atom r ts} {x} {t} {.(atom r _)} xnft (atom .r x₁) = atom (repNotFreeTerms xnft x₁)
+repNotFree {α ⇒ α₁} {x₁} {.(varterm x₁)} {.(α ⇒ α₁)} (varterm x) (ident .(α ⇒ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ⇒ α₁} {x} {t} {.(_ ⇒ _)} xnft (rep ⇒ rep₁) = repNotFree xnft rep ⇒ repNotFree xnft rep₁
+repNotFree {α ∧ α₁} {x₁} {.(varterm x₁)} {.(α ∧ α₁)} (varterm x) (ident .(α ∧ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ∧ α₁} {x} {t} {.(_ ∧ _)} xnft (rep ∧ rep₁) = repNotFree xnft rep ∧ repNotFree xnft rep₁
+repNotFree {α ∨ α₁} {x₁} {.(varterm x₁)} {.(α ∨ α₁)} (varterm x) (ident .(α ∨ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ∨ α₁} {x} {t} {.(_ ∨ _)} xnft (rep ∨ rep₁) = repNotFree xnft rep ∨ repNotFree xnft rep₁
+repNotFree {Λ x₁ α} {x₂} {.(varterm x₂)} {.(Λ x₁ α)} (varterm x) (ident .(Λ x₁ α) x₂) = ⊥-elim (x refl)
+repNotFree {Λ x₁ α} {.x₁} {t} {.(Λ x₁ α)} xnft (Λ∣ .x₁ .α) = Λ∣ x₁ α
+repNotFree {Λ x₁ α} {x} {t} {.(Λ x₁ _)} xnft (Λ x₂ x₃ rep) = Λ x₁ (repNotFree xnft rep)
+repNotFree {Λ x₁ α} {x} {t} {.(Λ _ _)} xnft (Λ/ x₂ x₃ x₄ rep rep₁) = Λ _ (repNotFree xnft rep₁)
+repNotFree {V x₁ α} {x₂} {.(varterm x₂)} {.(V x₁ α)} (varterm x) (ident .(V x₁ α) x₂) = ⊥-elim (x refl)
+repNotFree {V x₁ α} {.x₁} {t} {.(V x₁ α)} xnft (V∣ .x₁ .α) = V∣ x₁ α
+repNotFree {V x₁ α} {x} {t} {.(V x₁ _)} xnft (V x₂ x₃ rep) = V x₁ (repNotFree xnft rep)
+repNotFree {V x₁ α} {x} {t} {.(V _ _)} xnft (V/ x₂ x₃ x₄ rep rep₁) = V _ (repNotFree xnft rep₁)
+
+
+repinv : ∀{α β x ω} → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
+repinv = ?
+
+--------------------------------------------------------------------------------
+
 data _≤_ : ℕ → ℕ → Set where
   0≤n    : ∀{n} → zero ≤ n
   sn≤sm : ∀{n m} → n ≤ m → (suc n) ≤ (suc m)
