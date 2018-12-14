@@ -94,6 +94,25 @@ data _NotFreeIn_ : Variable → Formula → Set where
   V    : ∀{x α}   → ∀ y → x NotFreeIn α → x NotFreeIn V y α
 
 
+-- Variable independence
+
+data _NowhereIn_ : Variable → Formula → Set where
+  atom : ∀{x r} {ts : Vec Term (Relation.arity r)}
+                  → x NotFreeInTerms ts → x NowhereIn (atom r ts)
+  _⇒_  : ∀{x α β} → x NowhereIn α → x NowhereIn β → x NowhereIn (α ⇒ β)
+  _∧_  : ∀{x α β} → x NowhereIn α → x NowhereIn β → x NowhereIn (α ∧ β)
+  _∨_  : ∀{x α β} → x NowhereIn α → x NowhereIn β → x NowhereIn (α ∨ β)
+  Λ    : ∀{x y α} → x ≢ y → x NowhereIn α → x NowhereIn Λ y α
+  V    : ∀{x y α} → x ≢ y → x NowhereIn α → x NowhereIn V y α
+
+Nowhere→NotFree : ∀{x α} → x NowhereIn α → x NotFreeIn α
+Nowhere→NotFree {x} {atom r ts} (atom x₁) = atom x₁
+Nowhere→NotFree {x} {α ⇒ β} (x₁ ⇒ x₂) = Nowhere→NotFree x₁ ⇒ Nowhere→NotFree x₂
+Nowhere→NotFree {x} {α ∧ β} (x₁ ∧ x₂) = Nowhere→NotFree x₁ ∧ Nowhere→NotFree x₂
+Nowhere→NotFree {x} {α ∨ β} (x₁ ∨ x₂) = Nowhere→NotFree x₁ ∨ Nowhere→NotFree x₂
+Nowhere→NotFree {x} {Λ y α} (Λ x₁ x₂) = Λ y (Nowhere→NotFree x₂)
+Nowhere→NotFree {x} {V y α} (V x₁ x₂) = V y (Nowhere→NotFree x₂)
+
 -- Variable replacement
 
 data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
@@ -530,6 +549,69 @@ supfree (Λ x α) with supfree α
 supfree (Λ x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → Λ x (αpf n ⌈α⌉<n)
 supfree (V x α) with supfree α
 supfree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n ⌈α⌉<n)
+
+
+supvar : ∀ α → Σ ℕ (λ s → ∀ n → s < n → mkvar n NowhereIn α)
+supvar (atom r ts) with supfreeterms ts
+supvar (atom r ts) | ⌈ts⌉ , tspf = ⌈ts⌉ , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
+supvar (α ⇒ β) with supvar α | supvar β
+supvar (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+supvar (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , sup⌈β⌉
+  where
+    sup⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NowhereIn (α ⇒ β)
+    sup⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉≤n) ⇒ βpf n ⌈β⌉≤n
+supvar (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , sup⌈α⌉
+  where
+    sup⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NowhereIn (α ⇒ β)
+    sup⌈α⌉ n ⌈α⌉≤n  = αpf n ⌈α⌉≤n ⇒ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉≤n)
+supvar (α ∧ β) with supvar α | supvar β
+supvar (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+supvar (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , sup⌈β⌉
+  where
+    sup⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NowhereIn (α ∧ β)
+    sup⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉≤n) ∧ βpf n ⌈β⌉≤n
+supvar (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , sup⌈α⌉
+  where
+    sup⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NowhereIn (α ∧ β)
+    sup⌈α⌉ n ⌈α⌉≤n  = αpf n ⌈α⌉≤n ∧ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉≤n)
+supvar (α ∨ β) with supvar α | supvar β
+supvar (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+supvar (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , sup⌈β⌉
+  where
+    sup⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NowhereIn (α ∨ β)
+    sup⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉≤n) ∨ βpf n ⌈β⌉≤n
+supvar (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , sup⌈α⌉
+  where
+    sup⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NowhereIn (α ∨ β)
+    sup⌈α⌉ n ⌈α⌉≤n  = αpf n ⌈α⌉≤n ∨ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉≤n)
+supvar (Λ (mkvar m) α) with supvar α
+supvar (Λ (mkvar m) α) | ⌈α⌉ , αpf with max m ⌈α⌉
+supvar (Λ (mkvar m) α) | ⌈α⌉ , αpf | less m≤⌈α⌉ = ⌈α⌉ , sup⌈α⌉
+  where
+    varneq : ∀{m n} → m < n → ¬(mkvar n ≡ mkvar m)
+    varneq x refl = ¬<refl x
+    sup⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NowhereIn Λ (mkvar m) α
+    sup⌈α⌉ n ⌈α⌉<n = Λ (varneq (≤trans (sn≤sm m≤⌈α⌉) ⌈α⌉<n)) (αpf n ⌈α⌉<n)
+supvar (Λ (mkvar m) α) | ⌈α⌉ , αpf | more ⌈α⌉≤m = m , supm
+  where
+    varneq : ∀{m n} → m < n → ¬(mkvar n ≡ mkvar m)
+    varneq x refl = ¬<refl x
+    supm : ∀ n → m < n → mkvar n NowhereIn Λ (mkvar m) α
+    supm n m<n = Λ (varneq m<n) (αpf n (≤trans (sn≤sm ⌈α⌉≤m) m<n))
+supvar (V (mkvar m) α) with supvar α
+supvar (V (mkvar m) α) | ⌈α⌉ , αpf with max m ⌈α⌉
+supvar (V (mkvar m) α) | ⌈α⌉ , αpf | less m≤⌈α⌉ = ⌈α⌉ , sup⌈α⌉
+  where
+    varneq : ∀{m n} → m < n → ¬(mkvar n ≡ mkvar m)
+    varneq x refl = ¬<refl x
+    sup⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NowhereIn V (mkvar m) α
+    sup⌈α⌉ n ⌈α⌉<n = V (varneq (≤trans (sn≤sm m≤⌈α⌉) ⌈α⌉<n)) (αpf n ⌈α⌉<n)
+supvar (V (mkvar m) α) | ⌈α⌉ , αpf | more ⌈α⌉≤m = m , supm
+  where
+    varneq : ∀{m n} → m < n → ¬(mkvar n ≡ mkvar m)
+    varneq x refl = ¬<refl x
+    supm : ∀ n → m < n → mkvar n NowhereIn V (mkvar m) α
+    supm n m<n = V (varneq m<n) (αpf n (≤trans (sn≤sm ⌈α⌉≤m) m<n))
 
 
 fresh : (α : Formula) → Σ Variable (_NotFreeIn α)
