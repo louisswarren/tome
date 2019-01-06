@@ -128,28 +128,6 @@ data [_][_/_]≡_ where
   _∷_ : ∀{x t u v n} {us vs : Vec Term n}
         → ⟨ u ⟩[ x / t ]≡ v → [ us ][ x / t ]≡ vs → [ u ∷ us ][ x / t ]≡ (v ∷ vs)
 
-data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
-  ident : ∀ α x → α [ x / varterm x ]≡ α
-  notfree : ∀{α x} → ∀ t → x NotFreeIn α → α [ x / t ]≡ α
-  atom  : ∀{x t}
-            → (r : Relation) → {xs ys : Vec Term (Relation.arity r)}
-            → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
-  _⇒_   : ∀{α α′ β β′ x t}
-            → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ⇒ β) [ x / t ]≡ (α′ ⇒ β′)
-  _∧_   : ∀{α α′ β β′ x t}
-            → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∧ β) [ x / t ]≡ (α′ ∧ β′)
-  _∨_   : ∀{α α′ β β′ x t}
-            → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
-  Λ∣    : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
-  V∣    : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
-  Λ     : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
-  V     : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
-  Λ/    : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
-          → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (Λ x α) [ v / t ]≡ (Λ ω γ)
-  V/    : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
-          → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (V x α) [ v / t ]≡ (V ω γ)
-
-
 --------------------------------------------------------------------------------
 -- Computation requires decidable equality for the types above
 -- Surely there's something nicer than this?
@@ -325,7 +303,50 @@ formulaEq (V x α)   (Λ x₁ β)    = no (λ ())
 
 --------------------------------------------------------------------------------
 
+data _[_/_]≡_ : Formula → Variable → Term → Formula → Set
+
+data _≈_ : Formula → Formula → Set where
+  atom : ∀{r us} → atom r us ≈ atom r us
+  _⇒_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ⇒ β ≈ α′ ⇒ β′
+  _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
+  _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
+  Λ    : ∀{x y α β γ δ ω} → ω NotFreeIn α          → ω NotFreeIn β
+                          → α [ x / varterm ω ]≡ γ → β [ y / varterm ω ]≡ δ
+                          → γ ≈ δ → Λ x α ≈ Λ y β
+  V    : ∀{x y α β γ δ ω} → ω NotFreeIn α          → ω NotFreeIn β
+                          → α [ x / varterm ω ]≡ γ → β [ y / varterm ω ]≡ δ
+                          → γ ≈ δ → V x α ≈ V y β
+
+data _[_/_]≡_ where
+  ident : ∀ α x → α [ x / varterm x ]≡ α
+  rename : ∀{α β γ x t} → α ≈ β → β [ x / t ]≡ γ → α [ x / t ]≡ γ
+  atom  : ∀{x t}
+            → (r : Relation) → {xs ys : Vec Term (Relation.arity r)}
+            → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
+  _⇒_   : ∀{α α′ β β′ x t}
+            → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ⇒ β) [ x / t ]≡ (α′ ⇒ β′)
+  _∧_   : ∀{α α′ β β′ x t}
+            → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∧ β) [ x / t ]≡ (α′ ∧ β′)
+  _∨_   : ∀{α α′ β β′ x t}
+            → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
+  Λ∣    : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
+  V∣    : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
+  Λ     : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
+  V     : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+
 -- Machine-proven lemmae
+
+notFreeRep : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
+notFreeRep {atom r ts} {x} {t} (atom x₁) = {!   !}
+notFreeRep {α ⇒ α₁} {x} {t} (x₁ ⇒ x₂) = notFreeRep x₁ ⇒ notFreeRep x₂
+notFreeRep {α ∧ α₁} {x} {t} (x₁ ∧ x₂) = notFreeRep x₁ ∧ notFreeRep x₂
+notFreeRep {α ∨ α₁} {x} {t} (x₁ ∨ x₂) = notFreeRep x₁ ∨ notFreeRep x₂
+notFreeRep {Λ x₂ α} {.x₂} {t} (Λ∣ .x₂ .α) = Λ∣ x₂ α
+notFreeRep {Λ y α} {x} {t} (Λ .y xnf) with varEq x y
+notFreeRep {Λ y α} {.y} {t} (Λ .y xnf) | yes refl = Λ∣ y α
+notFreeRep {Λ y α} {x} {t} (Λ .y xnf) | no x₁ = Λ x₁ {!   !} {!   !}
+notFreeRep {V x₂ α} {x} {t} x₁ = {!   !}
+
 repNotFreeTerms : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
 repNotFreeTerms {.0} {x} {t} {[]} {.[]} xnft [] = []
 repNotFreeTerms {.(suc _)} {.x₁} {_} {varterm x₁ ∷ us} {.(_ ∷ _)} xnft (varterm≡ ∷ rep) = xnft ∷ repNotFreeTerms xnft rep
@@ -333,27 +354,51 @@ repNotFreeTerms {.(suc _)} {x} {t} {varterm x₁ ∷ us} {.(varterm x₁ ∷ _)}
 repNotFreeTerms {.(suc _)} {x} {t} {functerm f ts ∷ us} {.(functerm f _ ∷ _)} xnft (functerm x₁ ∷ rep) = functerm (repNotFreeTerms xnft x₁) ∷ repNotFreeTerms xnft rep
 
 repNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
-repNotFree {α} {x} {t} {β} xnft (notfree x₁ x₂) = x₂
 repNotFree {atom r ts} {x₁} {.(varterm x₁)} {.(atom r ts)} (varterm x) (ident .(atom r ts) x₁) = ⊥-elim (x refl)
+repNotFree {atom r ts} {x} {t} {β} xnft (rename x₁ rep) = repNotFree xnft rep
 repNotFree {atom r ts} {x} {t} {.(atom r _)} xnft (atom .r x₁) = atom (repNotFreeTerms xnft x₁)
 repNotFree {α ⇒ α₁} {x₁} {.(varterm x₁)} {.(α ⇒ α₁)} (varterm x) (ident .(α ⇒ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ⇒ α₁} {x} {t} {β} xnft (rename x₁ rep) = repNotFree xnft rep
 repNotFree {α ⇒ α₁} {x} {t} {.(_ ⇒ _)} xnft (rep ⇒ rep₁) = repNotFree xnft rep ⇒ repNotFree xnft rep₁
 repNotFree {α ∧ α₁} {x₁} {.(varterm x₁)} {.(α ∧ α₁)} (varterm x) (ident .(α ∧ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ∧ α₁} {x} {t} {β} xnft (rename x₁ rep) = repNotFree xnft rep
 repNotFree {α ∧ α₁} {x} {t} {.(_ ∧ _)} xnft (rep ∧ rep₁) = repNotFree xnft rep ∧ repNotFree xnft rep₁
 repNotFree {α ∨ α₁} {x₁} {.(varterm x₁)} {.(α ∨ α₁)} (varterm x) (ident .(α ∨ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ∨ α₁} {x} {t} {β} xnft (rename x₁ rep) = repNotFree xnft rep
 repNotFree {α ∨ α₁} {x} {t} {.(_ ∨ _)} xnft (rep ∨ rep₁) = repNotFree xnft rep ∨ repNotFree xnft rep₁
 repNotFree {Λ x₁ α} {x₂} {.(varterm x₂)} {.(Λ x₁ α)} (varterm x) (ident .(Λ x₁ α) x₂) = ⊥-elim (x refl)
+repNotFree {Λ x₁ α} {x} {t} {β} xnft (rename x₂ rep) = repNotFree xnft rep
 repNotFree {Λ x₁ α} {.x₁} {t} {.(Λ x₁ α)} xnft (Λ∣ .x₁ .α) = Λ∣ x₁ α
 repNotFree {Λ x₁ α} {x} {t} {.(Λ x₁ _)} xnft (Λ x₂ x₃ rep) = Λ x₁ (repNotFree xnft rep)
-repNotFree {Λ x₁ α} {x} {t} {.(Λ _ _)} xnft (Λ/ x₂ x₃ x₄ rep rep₁) = Λ _ (repNotFree xnft rep₁)
 repNotFree {V x₁ α} {x₂} {.(varterm x₂)} {.(V x₁ α)} (varterm x) (ident .(V x₁ α) x₂) = ⊥-elim (x refl)
+repNotFree {V x₁ α} {x} {t} {β} xnft (rename x₂ rep) = repNotFree xnft rep
 repNotFree {V x₁ α} {.x₁} {t} {.(V x₁ α)} xnft (V∣ .x₁ .α) = V∣ x₁ α
 repNotFree {V x₁ α} {x} {t} {.(V x₁ _)} xnft (V x₂ x₃ rep) = V x₁ (repNotFree xnft rep)
-repNotFree {V x₁ α} {x} {t} {.(V _ _)} xnft (V/ x₂ x₃ x₄ rep rep₁) = V _ (repNotFree xnft rep₁)
 
 
---repinv : ∀{α β x ω} → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
---repinv = ?
+repinv : ∀{α β x ω} → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
+repinv {atom r ts} {.(atom r ts)} {x₁} {.x₁} ωnf (ident .(atom r ts) x₁) = ident (atom r ts) x₁
+repinv {atom r ts} {β} {x} {ω} ωnf (rename x₁ rep) = {!   !}
+repinv {atom r ts} {.(atom r _)} {x} {ω} ωnf (atom .r x₁) = {!   !}
+repinv {α ⇒ α₁} {β} {x} {ω} ωnf rep = {!   !}
+repinv {α ∧ α₁} {β} {x} {ω} ωnf rep = {!   !}
+repinv {α ∨ α₁} {β} {x} {ω} ωnf rep = {!   !}
+repinv {Λ x₁ α} {β} {x} {ω} ωnf rep = {!   !}
+repinv {V x₁ α} {β} {x} {ω} ωnf rep = {!   !}
+--repinv {α₁} {.α₁} ωnf (ident α₁ x) = ident α₁ x
+--repinv {α} {.α} ωnf (notfree .(varterm _) x₁) = notfree (varterm _) ωnf
+--repinv {α} {β} ωnf (rename x₁ rep) = {!   !}
+--repinv {.(atom r _)} {.(atom r _)} ωnf (atom r x₁) = {!   !}
+--repinv {.(_ ⇒ _)} {.(_ ⇒ _)} (ωnf ⇒ ωnf₁) (rep ⇒ rep₁) = repinv ωnf rep ⇒ repinv ωnf₁ rep₁
+--repinv {.(_ ∧ _)} {.(_ ∧ _)} (ωnf ∧ ωnf₁) (rep ∧ rep₁) = repinv ωnf rep ∧ repinv ωnf₁ rep₁
+--repinv {.(_ ∨ _)} {.(_ ∨ _)} (ωnf ∨ ωnf₁) (rep ∨ rep₁) = repinv ωnf rep ∨ repinv ωnf₁ rep₁
+--repinv {.(Λ x α)} {.(Λ x α)} ωnf (Λ∣ x α) = notfree (varterm x) ωnf
+--repinv {.(V x α)} {.(V x α)} ωnf (V∣ x α) = notfree (varterm x) ωnf
+--repinv {.(Λ x α)} {.(Λ x _)} (Λ∣ x α) (Λ x₂ (varterm x₃) rep) = ⊥-elim (x₃ refl)
+--repinv {.(Λ y _)} {.(Λ y _)} (Λ y ωnf) (Λ x₂ x₃ rep) = {!   !}
+--repinv {.(V _ _)} {.(V _ _)} ωnf (V x₂ x₃ rep) = {!   !}
+--repinv {.(Λ _ _)} {.(Λ _ _)} ωnf (Λ/ x₂ x₃ x₄ rep rep₁) = {!   !}
+--repinv {.(V _ _)} {.(V _ _)} ωnf (V/ x₂ x₃ x₄ rep rep₁) = {!   !}
 
 --------------------------------------------------------------------------------
 
@@ -685,31 +730,50 @@ replacementvariable α (mkvar n) t with supfree α | supfreeterm t
 ... | xs , [ws][x/t]≡xs = functerm f xs ∷ vs , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
 
 -- Make sure to use the nicer substitutions for quantification where possible
-{-# TERMINATING #-}
+--{-# TERMINATING #-}
+--_[_/_] : ∀ α x t → Σ Formula (α [ x / t ]≡_)
+--atom r us [ x / t ] with [ us ][ x / t ]
+--atom r us [ x / t ] | vs , [us][x/t]≡vs = atom r vs , atom r [us][x/t]≡vs
+--(α ⇒ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+--(α ⇒ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ⇒ β′ , α[x/t]≡α′ ⇒ β[x/t]≡β′
+--(α ∧ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+--(α ∧ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∧ β′ , α[x/t]≡α′ ∧ β[x/t]≡β′
+--(α ∨ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+--(α ∨ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∨ β′ , α[x/t]≡α′ ∨ β[x/t]≡β′
+--Λ  y α    [ x / t ] with varEq x y | y notFreeInTerm t
+--Λ .x α    [ x / t ] | yes refl | _       = Λ x α , Λ∣ x α
+--Λ  y α    [ x / t ] | no x≢y   | yes xnf with α [ x / t ]
+--Λ  y α    [ x / t ] | no x≢y   | yes xnf | α′ , α[x/t]≡α′ = Λ y α′ , Λ x≢y xnf α[x/t]≡α′
+--Λ  y α    [ x / t ] | no x≢y   | no  xf  with replacementvariable α x t
+--Λ  y α    [ x / t ] | no x≢y   | no  xf  | freshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
+--Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
+--Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
+--                    = Λ ω γ , Λ/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
+--V  y α    [ x / t ] with varEq x y | y notFreeInTerm t
+--V .x α    [ x / t ] | yes refl | _       = V x α , V∣ x α
+--V  y α    [ x / t ] | no x≢y   | yes xnf with α [ x / t ]
+--V  y α    [ x / t ] | no x≢y   | yes xnf | α′ , α[x/t]≡α′ = V y α′ , V x≢y xnf α[x/t]≡α′
+--V  y α    [ x / t ] | no x≢y   | no  xf  with replacementvariable α x t
+--V  y α    [ x / t ] | no x≢y   | no  xf  | freshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
+--V  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
+--V  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
+--                    = V ω γ , V/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
+
 _[_/_] : ∀ α x t → Σ Formula (α [ x / t ]≡_)
-atom r us [ x / t ] with [ us ][ x / t ]
-atom r us [ x / t ] | vs , [us][x/t]≡vs = atom r vs , atom r [us][x/t]≡vs
-(α ⇒ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
-(α ⇒ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ⇒ β′ , α[x/t]≡α′ ⇒ β[x/t]≡β′
-(α ∧ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
-(α ∧ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∧ β′ , α[x/t]≡α′ ∧ β[x/t]≡β′
-(α ∨ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
-(α ∨ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∨ β′ , α[x/t]≡α′ ∨ β[x/t]≡β′
-Λ  y α    [ x / t ] with varEq x y | y notFreeInTerm t
-Λ .x α    [ x / t ] | yes refl | _       = Λ x α , Λ∣ x α
-Λ  y α    [ x / t ] | no x≢y   | yes xnf with α [ x / t ]
-Λ  y α    [ x / t ] | no x≢y   | yes xnf | α′ , α[x/t]≡α′ = Λ y α′ , Λ x≢y xnf α[x/t]≡α′
-Λ  y α    [ x / t ] | no x≢y   | no  xf  with replacementvariable α x t
-Λ  y α    [ x / t ] | no x≢y   | no  xf  | freshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
-Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
-Λ  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
-                    = Λ ω γ , Λ/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
-V  y α    [ x / t ] with varEq x y | y notFreeInTerm t
-V .x α    [ x / t ] | yes refl | _       = V x α , V∣ x α
-V  y α    [ x / t ] | no x≢y   | yes xnf with α [ x / t ]
-V  y α    [ x / t ] | no x≢y   | yes xnf | α′ , α[x/t]≡α′ = V y α′ , V x≢y xnf α[x/t]≡α′
-V  y α    [ x / t ] | no x≢y   | no  xf  with replacementvariable α x t
-V  y α    [ x / t ] | no x≢y   | no  xf  | freshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
-V  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
-V  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
-                    = V ω γ , V/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
+atom r ts [ x / t ] with [ ts ][ x / t ]
+...                 | ts′ , tspf = atom r ts′ , atom r tspf
+(α ⇒ β) [ x / t ] with α [ x / t ] | β [ x / t ]
+...               | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
+(α ∧ β) [ x / t ] with α [ x / t ] | β [ x / t ]
+...               | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
+(α ∨ β) [ x / t ] with α [ x / t ] | β [ x / t ]
+...               | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
+(Λ y α) [ x / t ] with varEq x y
+...               | yes refl = Λ y α , Λ∣ y α
+...               | no x≢y   with y notFreeInTerm t
+...                        | yes ynft with α [ x / t ]
+...                                   | α′ , αpf = Λ y α′ , Λ x≢y ynft αpf
+(Λ y α [ x / t ]) | no x≢y | no  yft  = {!   !}
+  where
+    ωfresh : Σ Variable 
+(V y α) [ x / t ] = {!   !}
