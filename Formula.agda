@@ -400,6 +400,13 @@ repinv {V x₁ α} {β} {x} {ω} ωnf rep = {!   !}
 --repinv {.(Λ _ _)} {.(Λ _ _)} ωnf (Λ/ x₂ x₃ x₄ rep rep₁) = {!   !}
 --repinv {.(V _ _)} {.(V _ _)} ωnf (V/ x₂ x₃ x₄ rep rep₁) = {!   !}
 
+
+freshEquivΛ : ∀{α β x ω} → ω NotFreeIn α → α [ x / varterm ω ]≡ β → Λ x α ≈ Λ ω β
+freshEquivΛ = ?
+
+freshEquivV : ∀{α β x ω} → ω NotFreeIn α → α [ x / varterm ω ]≡ β → V x α ≈ V ω β
+freshEquivV = ?
+
 --------------------------------------------------------------------------------
 
 data _≤_ : ℕ → ℕ → Set where
@@ -759,6 +766,7 @@ replacementvariable α (mkvar n) t with supfree α | supfreeterm t
 --V  y α    [ x / t ] | no x≢y   | no xf   | freshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
 --                    = V ω γ , V/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
 
+{-# TERMINATING #-}
 _[_/_] : ∀ α x t → Σ Formula (α [ x / t ]≡_)
 atom r ts [ x / t ] with [ ts ][ x / t ]
 ...                 | ts′ , tspf = atom r ts′ , atom r tspf
@@ -773,7 +781,36 @@ atom r ts [ x / t ] with [ ts ][ x / t ]
 ...               | no x≢y   with y notFreeInTerm t
 ...                        | yes ynft with α [ x / t ]
 ...                                   | α′ , αpf = Λ y α′ , Λ x≢y ynft αpf
-(Λ y α [ x / t ]) | no x≢y | no  yft  = {!   !}
+(Λ y α [ x / t ]) | no x≢y | no  yft  = Λ ω α[y/ω][x/t] , rename Λyα≈Λωα[y/ω] Λωα[y/ω][x/t]pf
   where
-    ωfresh : Σ Variable 
-(V y α) [ x / t ] = {!   !}
+    ωfresh : ReplacementVariable α x t
+    ωfresh = replacementvariable α x t
+    ω : Variable
+    ω = ReplacementVariable.var ωfresh
+    α[y/ω] : Formula
+    α[y/ω] = fst (α [ y / varterm ω ])
+    α[y/ω][x/t] : Formula
+    α[y/ω][x/t] = fst (α[y/ω] [ x / t ])
+    Λyα≈Λωα[y/ω] : Λ y α ≈ Λ ω α[y/ω]
+    Λyα≈Λωα[y/ω] = freshEquivΛ (ReplacementVariable.notFree ωfresh) (snd (α [ y / varterm ω ]))
+    Λωα[y/ω][x/t]pf : Λ ω α[y/ω] [ x / t ]≡ Λ ω α[y/ω][x/t]
+    Λωα[y/ω][x/t]pf = Λ (ReplacementVariable.new ωfresh) (ReplacementVariable.replaceable ωfresh) (snd (α[y/ω] [ x / t ]))
+(V y α) [ x / t ] with varEq x y
+...               | yes refl = V y α , V∣ y α
+...               | no x≢y   with y notFreeInTerm t
+...                        | yes ynft with α [ x / t ]
+...                                   | α′ , αpf = V y α′ , V x≢y ynft αpf
+(V y α [ x / t ]) | no x≢y | no  yft  = V ω α[y/ω][x/t] , rename Vyα≈Vωα[y/ω] Vωα[y/ω][x/t]pf
+  where
+    ωfresh : ReplacementVariable α x t
+    ωfresh = replacementvariable α x t
+    ω : Variable
+    ω = ReplacementVariable.var ωfresh
+    α[y/ω] : Formula
+    α[y/ω] = fst (α [ y / varterm ω ])
+    α[y/ω][x/t] : Formula
+    α[y/ω][x/t] = fst (α[y/ω] [ x / t ])
+    Vyα≈Vωα[y/ω] : V y α ≈ V ω α[y/ω]
+    Vyα≈Vωα[y/ω] = freshEquivV (ReplacementVariable.notFree ωfresh) (snd (α [ y / varterm ω ]))
+    Vωα[y/ω][x/t]pf : V ω α[y/ω] [ x / t ]≡ V ω α[y/ω][x/t]
+    Vωα[y/ω][x/t]pf = V (ReplacementVariable.new ωfresh) (ReplacementVariable.replaceable ωfresh) (snd (α[y/ω] [ x / t ]))
