@@ -186,4 +186,29 @@
 \UnaryInfC{$P{y} \Tor \Tneg{P{y}}$}
 \end{prooftree}
 
+\vspace{1cm}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{GLPO}
+\UnaryInfC{$\Tforall_{x} \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)} \Tor \Texists_{x} \left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)$}
+	\AxiomC{[$\Tforall_{x} \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$]}
+	\RightLabel{\Tunivelim}
+	\UnaryInfC{$\Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+	\RightLabel{\Tdisjintro}
+	\UnaryInfC{$\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+		\AxiomC{[$\Texists_{x} \left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)$]}
+			\AxiomC{[$P{y} \Tand \Tneg{\Tforall_{x} P{x}}$]}
+		\RightLabel{\Texistelim}
+		\BinaryInfC{$P{y} \Tand \Tneg{\Tforall_{x} P{x}}$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{$\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+\RightLabel{\Tdisjelim}
+\TrinaryInfC{$\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+\RightLabel{\Tunivintro}
+\UnaryInfC{$\Tforall_{y} \left(\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}\right)$}
+\RightLabel{\Tunivelim}
+\UnaryInfC{$\left(P{x} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{x} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+\end{prooftree}
+
+
 \end{document}

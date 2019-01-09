@@ -244,3 +244,5 @@ t = texreduce GLPO⊃LEM (P x ∷ [])
 u : String
 u = texreduce GLPO⊃LEM (P y ∷ [])
 
+v : String
+v = texreduce GLPO⊃LEM ((P x ∧ ¬ (Λ xvar (P x))) ∷ [])
