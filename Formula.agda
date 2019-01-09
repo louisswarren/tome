@@ -400,9 +400,23 @@ repinv {V x₁ α} {β} {x} {ω} ωnf rep = {!   !}
 --repinv {.(Λ _ _)} {.(Λ _ _)} ωnf (Λ/ x₂ x₃ x₄ rep rep₁) = {!   !}
 --repinv {.(V _ _)} {.(V _ _)} ωnf (V/ x₂ x₃ x₄ rep rep₁) = {!   !}
 
+cutrep : ∀{α β γ x ω t} → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / t ]≡ γ → α [ x / t ]≡ γ
+cutrep {atom r ts} {.(atom r ts)} {γ} {x₁} {.x₁} {t} ωnf (ident .(atom r ts) x₁) repβ = {!   !}
+cutrep {atom r ts} {β} {γ} {x} {ω} {t} ωnf (rename x₁ repα) repβ = {!   !}
+cutrep {atom r ts} {.(atom r _)} {γ} {x} {ω} {t} ωnf (atom .r x₁) repβ = {!   !}
+cutrep {α ⇒ α₁} {.(α ⇒ α₁)} {γ} {x₁} {.x₁} {t} ωnf (ident .(α ⇒ α₁) x₁) repβ = {!   !}
+cutrep {α ⇒ α₁} {β} {γ} {x} {ω} {t} ωnf (rename x₁ repα) repβ = {!   !}
+cutrep {α ⇒ α₁} {.(_ ⇒ _)} {.(_ ⇒ _)} {x} {.x₁} {.(varterm x₁)} ωnf (repα ⇒ repα₁) (ident .(_ ⇒ _) x₁) = repα ⇒ repα₁
+cutrep {α ⇒ α₁} {β ⇒ β₁} {γ} {x} {ω} {t} (ωnf ⇒ ωnf₁) (repα ⇒ repα₁) (rename x₁ repβ) = {!   !}
+cutrep {α ⇒ α₁} {.(_ ⇒ _)} {.(_ ⇒ _)} {x} {ω} {t} (ωnf ⇒ ωnf₁) (repα ⇒ repα₁) (repβ ⇒ repβ₁) = cutrep ωnf repα repβ ⇒ cutrep ωnf₁ repα₁ repβ₁
+cutrep {α ∧ α₁} {β} {γ} {x} {ω} {t} ωnf repα repβ = {!   !}
+cutrep {α ∨ α₁} {β} {γ} {x} {ω} {t} ωnf repα repβ = {!   !}
+cutrep {Λ x₁ α} {β} {γ} {x} {ω} {t} ωnf repα repβ = {!   !}
+cutrep {V x₁ α} {β} {γ} {x} {ω} {t} ωnf repα repβ = {!   !}
+
 
 freshEquivΛ : ∀{α β x ω} → ω NotFreeIn α → α [ x / varterm ω ]≡ β → Λ x α ≈ Λ ω β
-freshEquivΛ = ?
+freshEquivΛ {α} {β} {x} {ω} ωnf rep = {!   !}
 
 freshEquivV : ∀{α β x ω} → ω NotFreeIn α → α [ x / varterm ω ]≡ β → V x α ≈ V ω β
 freshEquivV = ?
