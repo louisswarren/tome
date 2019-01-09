@@ -230,4 +230,17 @@ glpo→lem ⊢glpo α = close
                     xαωbd : xvar NotFreeIn αω
                     xαωbd = repNotFree (varterm (ReplacementVariable.new ωrepvar)) (snd (α [ xvar / varterm ω ]))
                     αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
-                    αω∨¬αω[ω/x]≡α∨¬α = {!   !} ∨ ({!   !} ⇒ atom ⊥rel [])
+                    αω∨¬αω[ω/x]≡α∨¬α = inverse (ReplacementVariable.notFree ωrepvar) (snd (α [ xvar / varterm ω ])) ∨ (inverse (ReplacementVariable.notFree ωrepvar) (snd (α [ xvar / varterm ω ])) ⇒ atom ⊥rel [])
+
+GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
+GLPO⊃LEM (⊢GLPO ∷ []) (α ∷ []) = glpo→lem (descheme₁ ⊢GLPO) α
+
+s : String
+s = texreduce GLPO⊃LEM (A ∷ [])
+
+t : String
+t = texreduce GLPO⊃LEM (P x ∷ [])
+
+u : String
+u = texreduce GLPO⊃LEM (P y ∷ [])
+

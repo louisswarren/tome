@@ -131,6 +131,8 @@ data [_][_/_]≡_ where
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   ident : ∀ α x → α [ x / varterm x ]≡ α
   notfree : ∀{α x} → ∀ t → x NotFreeIn α → α [ x / t ]≡ α
+
+  inverse : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β [ y / varterm x ]≡ α
   atom  : ∀{x t}
             → (r : Relation) → {xs ys : Vec Term (Relation.arity r)}
             → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
@@ -334,6 +336,7 @@ repNotFreeTerms {.(suc _)} {x} {t} {functerm f ts ∷ us} {.(functerm f _ ∷ _)
 
 repNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
 repNotFree {α} {x} {t} {β} xnft (notfree x₁ x₂) = x₂
+repNotFree {α} {x} {t} {β} xnft (inverse xnfβ rep) = xnfβ
 repNotFree {atom r ts} {x₁} {.(varterm x₁)} {.(atom r ts)} (varterm x) (ident .(atom r ts) x₁) = ⊥-elim (x refl)
 repNotFree {atom r ts} {x} {t} {.(atom r _)} xnft (atom .r x₁) = atom (repNotFreeTerms xnft x₁)
 repNotFree {α ⇒ α₁} {x₁} {.(varterm x₁)} {.(α ⇒ α₁)} (varterm x) (ident .(α ⇒ α₁) x₁) = ⊥-elim (x refl)
