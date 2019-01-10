@@ -215,34 +215,24 @@ glpo→lem ⊢glpo α = close
                         (univelim x (ident (¬ αω) xvar)
                          (assume (∀x (¬ αω)))))
                        (disjintro₁ (¬ αω)
-                        (existelim (xαωbd ∷ αω ~ [ refl ] -∷ ∅)
+                        (existelim (xαωnf ∷ αω ~ [ refl ] -∷ ∅)
                          (assume (∃x αω))
                          (assume αω))))))
                    where
-                    ωrepvar : ReplacementVariable α xvar (varterm xvar)
-                    ωrepvar = replacementvariable α xvar x
+                    ωfresh : FreshVar α xvar (varterm xvar)
+                    ωfresh = freshVar α xvar x
                     ω : Variable
-                    ω = ReplacementVariable.var ωrepvar
-                    ωbd : ω NotFreeIn α
-                    ωbd = ReplacementVariable.notFree ωrepvar
+                    ω = FreshVar.var ωfresh
+                    ωnf : ω NotFreeIn α
+                    ωnf = FreshVar.notFree ωfresh
                     αω : Formula
                     αω = fst (α [ xvar / varterm ω ])
-                    xαωbd : xvar NotFreeIn αω
-                    xαωbd = repNotFree (varterm (ReplacementVariable.new ωrepvar)) (snd (α [ xvar / varterm ω ]))
+                    αωpf : α [ xvar / varterm ω ]≡ αω
+                    αωpf = snd (α [ xvar / varterm ω ])
+                    xαωnf : xvar NotFreeIn αω
+                    xαωnf = repNotFree (varterm (FreshVar.new ωfresh)) αωpf
                     αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
-                    αω∨¬αω[ω/x]≡α∨¬α = inverse (ReplacementVariable.notFree ωrepvar) (snd (α [ xvar / varterm ω ])) ∨ (inverse (ReplacementVariable.notFree ωrepvar) (snd (α [ xvar / varterm ω ])) ⇒ atom ⊥rel [])
+                    αω∨¬αω[ω/x]≡α∨¬α = inverse ωnf αωpf ∨ (inverse ωnf αωpf ⇒ atom ⊥rel [])
 
 GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
 GLPO⊃LEM (⊢GLPO ∷ []) (α ∷ []) = glpo→lem (descheme₁ ⊢GLPO) α
-
-s : String
-s = texreduce GLPO⊃LEM (A ∷ [])
-
-t : String
-t = texreduce GLPO⊃LEM (P x ∷ [])
-
-u : String
-u = texreduce GLPO⊃LEM (P y ∷ [])
-
-v : String
-v = texreduce GLPO⊃LEM ((P x ∧ ¬ (Λ xvar (P x))) ∷ [])
