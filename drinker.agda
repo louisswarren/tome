@@ -21,7 +21,7 @@ open import Texify
 open import sugar
 
 
-LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP : Scheme
+LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP CD : Scheme
 
 
 lpo : Formula → Formula → Formula
@@ -88,6 +88,11 @@ dnse Φx = ¬¬(∃x Φx) ⇒ ∃x (¬¬ Φx)
 
 DNSU = unaryscheme "DNSU" dnsu
 DNSE = unaryscheme "DNSE" dnse
+
+cd : Formula → Formula → Formula
+cd Φx Ψ = ∀x (Φx ∨ ∃x Ψ) ⇒ ∀x Φx ∨ ∃x Ψ
+
+CD = binaryscheme "CD" cd
 
 
 -- These are usually stated with Ψ instead of ∃x Ψ, but this is a simple way of
@@ -165,6 +170,38 @@ lem→glpo ⊢lem α = close
 LEM⊃GLPO : LEM ∷ [] ⊃ GLPO
 LEM⊃GLPO (⊢LEM ∷ []) (α ∷ []) = lem→glpo (descheme₁ ⊢LEM) α
 
+glpo→lem : ⊢₁ glpo → ⊢₁ lem
+glpo→lem ⊢glpo α = close
+                    (∅ ∪ ∀x¬ αω ~ [ refl ] -∷ ∅ ∪ ∃x αω ~ ([ refl ] -∷ ∅ ∪ αω ~ [ refl ] -∷ ∅))
+                    (univelim x αω∨¬αω[ω/x]≡α∨¬α
+                     (univintro ω (∅ ∪ ∀x¬ αω ~ [ refl ] -∷ ∅ ∪ ∃x αω ~ ([ refl ] -∷ ∅ ∪ αω ~ [ refl ] -∷ ∅))
+                      (disjelim
+                       (cite "GLPO" (⊢glpo αω))
+                       (disjintro₂ αω
+                        (univelim x (ident (¬ αω) xvar)
+                         (assume (∀x (¬ αω)))))
+                       (disjintro₁ (¬ αω)
+                        (existelim (xαωnf ∷ αω ~ [ refl ] -∷ ∅)
+                         (assume (∃x αω))
+                         (assume αω))))))
+                   where
+                    ωfresh : FreshVar α xvar (varterm xvar)
+                    ωfresh = freshVar α xvar x
+                    ω : Variable
+                    ω = FreshVar.var ωfresh
+                    ωnf : ω NotFreeIn α
+                    ωnf = FreshVar.notFree ωfresh
+                    αω : Formula
+                    αω = fst (α [ xvar / varterm ω ])
+                    αωpf : α [ xvar / varterm ω ]≡ αω
+                    αωpf = snd (α [ xvar / varterm ω ])
+                    xαωnf : xvar NotFreeIn αω
+                    xαωnf = repNotFree (varterm (FreshVar.new ωfresh)) αωpf
+                    αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
+                    αω∨¬αω[ω/x]≡α∨¬α = inverse ωnf αωpf ∨ (inverse ωnf αωpf ⇒ atom ⊥rel [])
+
+GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
+GLPO⊃LEM (⊢GLPO ∷ []) (α ∷ []) = glpo→lem (descheme₁ ⊢GLPO) α
 
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
 dp→gmp ⊢dp α = close
@@ -204,35 +241,17 @@ DP⊃LPO : DP ∷ [] ⊃ LPO
 DP⊃LPO (⊢DP ∷ []) (α ∷ β ∷ []) = dp→lpo (descheme₁ ⊢DP) α β
 
 
-glpo→lem : ⊢₁ glpo → ⊢₁ lem
-glpo→lem ⊢glpo α = close
-                    (∅ ∪ ∀x¬ αω ~ [ refl ] -∷ ∅ ∪ ∃x αω ~ ([ refl ] -∷ ∅ ∪ αω ~ [ refl ] -∷ ∅))
-                    (univelim x αω∨¬αω[ω/x]≡α∨¬α
-                     (univintro ω (∅ ∪ ∀x¬ αω ~ [ refl ] -∷ ∅ ∪ ∃x αω ~ ([ refl ] -∷ ∅ ∪ αω ~ [ refl ] -∷ ∅))
-                      (disjelim
-                       (cite "GLPO" (⊢glpo αω))
-                       (disjintro₂ αω
-                        (univelim x (ident (¬ αω) xvar)
-                         (assume (∀x (¬ αω)))))
-                       (disjintro₁ (¬ αω)
-                        (existelim (xαωnf ∷ αω ~ [ refl ] -∷ ∅)
-                         (assume (∃x αω))
-                         (assume αω))))))
-                   where
-                    ωfresh : FreshVar α xvar (varterm xvar)
-                    ωfresh = freshVar α xvar x
-                    ω : Variable
-                    ω = FreshVar.var ωfresh
-                    ωnf : ω NotFreeIn α
-                    ωnf = FreshVar.notFree ωfresh
-                    αω : Formula
-                    αω = fst (α [ xvar / varterm ω ])
-                    αωpf : α [ xvar / varterm ω ]≡ αω
-                    αωpf = snd (α [ xvar / varterm ω ])
-                    xαωnf : xvar NotFreeIn αω
-                    xαωnf = repNotFree (varterm (FreshVar.new ωfresh)) αωpf
-                    αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
-                    αω∨¬αω[ω/x]≡α∨¬α = inverse ωnf αωpf ∨ (inverse ωnf αωpf ⇒ atom ⊥rel [])
+dp→cd : ⊢₁ dp → ⊢₂ cd
+dp→cd ⊢dp α β = close
+                 (∀x (α ∨ ∃x β) ~ (∅ ∪ α ⇒ ∀x α ~ ((α ⇒ ∀x α ∷ [ refl ]) -∷ ∅ ∪ α ~ ((α ∷ [ refl ]) -∷ ∅ ∪ [ refl ] -∷ ∅) ∪ ∃x β ~ [ refl ] -∷ ∅)))
+                 (arrowintro (∀x (α ∨ ∃x β))
+                  (existelim (Λ∣ xvar α ∨ V∣ xvar β ∷ α ⇒ ∀x α ~ (Λ∣ xvar (α ∨ ∃x β) ∷ ∅ ∪ α ~ ((α ∷ [ refl ]) -∷ ∅ ∪ [ refl ] -∷ ∅) ∪ ∃x β ~ V∣ xvar β ∷ ∅))
+                   (cite "DP" (⊢dp α))
+                   (disjelim
+                    (univelim x (ident (α ∨ ∃x β) xvar)
+                     (assume (∀x (α ∨ ∃x β))))
+                    (disjintro₁ (∃x β) (arrowelim (assume (α ⇒ ∀x α)) (assume α)))
+                    (disjintro₂ (∀x α) (assume (∃x β))))))
 
-GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
-GLPO⊃LEM (⊢GLPO ∷ []) (α ∷ []) = glpo→lem (descheme₁ ⊢GLPO) α
+DP⊃CD : DP ∷ [] ⊃ CD
+DP⊃CD (⊢DP ∷ []) (α ∷ β ∷ []) = dp→cd (descheme₁ ⊢DP) α β
