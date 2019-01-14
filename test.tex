@@ -113,4 +113,102 @@
 \UnaryInfC{$\Tforall_{x} \left(P{x} \Tor Q{x}\right) \Tarrow \left(\Tforall_{x} P{x} \Tor \Texists_{x} Q{x}\right)$}
 \end{prooftree}
 
+\clearpage
+
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{GLPO}
+\UnaryInfC{$\Tforall_{x} \Tneg{A} \Tor \Texists_{x} A$}
+	\AxiomC{[$\Tforall_{x} \Tneg{A}$]}
+	\RightLabel{\Tunivelim}
+	\UnaryInfC{$\Tneg{A}$}
+	\RightLabel{\Tdisjintro}
+	\UnaryInfC{$A \Tor \Tneg{A}$}
+		\AxiomC{[$\Texists_{x} A$]}
+			\AxiomC{[$A$]}
+		\RightLabel{\Texistelim}
+		\BinaryInfC{$A$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{$A \Tor \Tneg{A}$}
+\RightLabel{\Tdisjelim}
+\TrinaryInfC{$A \Tor \Tneg{A}$}
+\RightLabel{\Tunivintro}
+\UnaryInfC{$\Tforall_{y} \left(A \Tor \Tneg{A}\right)$}
+\RightLabel{\Tunivelim}
+\UnaryInfC{$A \Tor \Tneg{A}$}
+\end{prooftree}
+
+\vspace{1cm}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{GLPO}
+\UnaryInfC{$\Tforall_{x} \Tneg{P{y}} \Tor \Texists_{x} P{y}$}
+	\AxiomC{[$\Tforall_{x} \Tneg{P{y}}$]}
+	\RightLabel{\Tunivelim}
+	\UnaryInfC{$\Tneg{P{y}}$}
+	\RightLabel{\Tdisjintro}
+	\UnaryInfC{$P{y} \Tor \Tneg{P{y}}$}
+		\AxiomC{[$\Texists_{x} P{y}$]}
+			\AxiomC{[$P{y}$]}
+		\RightLabel{\Texistelim}
+		\BinaryInfC{$P{y}$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{$P{y} \Tor \Tneg{P{y}}$}
+\RightLabel{\Tdisjelim}
+\TrinaryInfC{$P{y} \Tor \Tneg{P{y}}$}
+\RightLabel{\Tunivintro}
+\UnaryInfC{$\Tforall_{y} \left(P{y} \Tor \Tneg{P{y}}\right)$}
+\RightLabel{\Tunivelim}
+\UnaryInfC{$P{x} \Tor \Tneg{P{x}}$}
+\end{prooftree}
+
+\vspace{1cm}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{GLPO}
+\UnaryInfC{$\Tforall_{x} \Tneg{P{y}} \Tor \Texists_{x} P{y}$}
+	\AxiomC{[$\Tforall_{x} \Tneg{P{y}}$]}
+	\RightLabel{\Tunivelim}
+	\UnaryInfC{$\Tneg{P{y}}$}
+	\RightLabel{\Tdisjintro}
+	\UnaryInfC{$P{y} \Tor \Tneg{P{y}}$}
+		\AxiomC{[$\Texists_{x} P{y}$]}
+			\AxiomC{[$P{y}$]}
+		\RightLabel{\Texistelim}
+		\BinaryInfC{$P{y}$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{$P{y} \Tor \Tneg{P{y}}$}
+\RightLabel{\Tdisjelim}
+\TrinaryInfC{$P{y} \Tor \Tneg{P{y}}$}
+\RightLabel{\Tunivintro}
+\UnaryInfC{$\Tforall_{z} \left(P{y} \Tor \Tneg{P{y}}\right)$}
+\RightLabel{\Tunivelim}
+\UnaryInfC{$P{y} \Tor \Tneg{P{y}}$}
+\end{prooftree}
+
+\vspace{1cm}
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{GLPO}
+\UnaryInfC{$\Tforall_{x} \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)} \Tor \Texists_{x} \left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)$}
+	\AxiomC{[$\Tforall_{x} \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$]}
+	\RightLabel{\Tunivelim}
+	\UnaryInfC{$\Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+	\RightLabel{\Tdisjintro}
+	\UnaryInfC{$\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+		\AxiomC{[$\Texists_{x} \left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)$]}
+			\AxiomC{[$P{y} \Tand \Tneg{\Tforall_{x} P{x}}$]}
+		\RightLabel{\Texistelim}
+		\BinaryInfC{$P{y} \Tand \Tneg{\Tforall_{x} P{x}}$}
+		\RightLabel{\Tdisjintro}
+		\UnaryInfC{$\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+\RightLabel{\Tdisjelim}
+\TrinaryInfC{$\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+\RightLabel{\Tunivintro}
+\UnaryInfC{$\Tforall_{y} \left(\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{y} \Tand \Tneg{\Tforall_{x} P{x}}\right)}\right)$}
+\RightLabel{\Tunivelim}
+\UnaryInfC{$\left(P{x} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{x} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
+\end{prooftree}
+
+
 \end{document}

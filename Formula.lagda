@@ -4,12 +4,12 @@
 
 module Formula where
 
-open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.Sigma
 open import Agda.Builtin.String
 
-open import Vec
 open import Decidable
+open import Nat
+open import Vec
 
 \end{code}
 
@@ -43,8 +43,8 @@ arguments.
 \begin{code}
 
 data Term : Set where
-  varterm  : Variable → Term
-  functerm : (f : Function) → Vec Term (Function.arity f) → Term
+  varterm  : (x : Variable) → Term
+  functerm : (f : Function) → (ts : Vec Term (Function.arity f)) → Term
 
 \end{code}
 
@@ -67,12 +67,12 @@ reserved by Agda.
 \begin{code}
 
 data Formula : Set where
-  atom   : (r : Relation) → Vec Term (Relation.arity r) → Formula
-  _⇒_    : Formula  → Formula → Formula
-  _∧_    : Formula  → Formula → Formula
-  _∨_    : Formula  → Formula → Formula
-  Λ      : Variable → Formula → Formula
-  V      : Variable → Formula → Formula
+  atom   : (r : Relation) → (ts : Vec Term (Relation.arity r)) → Formula
+  _⇒_    : (α : Formula)  → (β : Formula) → Formula
+  _∧_    : (α : Formula)  → (β : Formula) → Formula
+  _∨_    : (α : Formula)  → (β : Formula) → Formula
+  Λ      : (x : Variable) → (α : Formula) → Formula
+  V      : (x : Variable) → (α : Formula) → Formula
 
 _⇔_ : Formula → Formula → Formula
 Φ ⇔ Ψ = (Φ ⇒ Ψ) ∧ (Ψ ⇒ Φ)
@@ -111,29 +111,28 @@ is a function, and $x$ is bound in all arguments.
 
 \begin{code}
 
-data _BoundInTerms_ (x : Variable) : ∀{n} → Vec Term n → Set where
-  []    : x BoundInTerms []
-  var∉  : ∀{n} {xs : Vec Term n}
-            → (y : Variable)
-            → x ≢ y
-            → x BoundInTerms xs
-            → x BoundInTerms (varterm y ∷ xs)
-  func∉ : ∀{n} {xs : Vec Term n}
-            → (f : Function) → {us : Vec Term (Function.arity f)}
-            → x BoundInTerms us
-            → x BoundInTerms xs
-            → x BoundInTerms (functerm f us ∷ xs)
+infix 300 _NotFreeInTerm_ _NotFreeInTerms_ _NotFreeIn_ [_][_/_]≡_ _[_/_]≡_
 
-data _BoundIn_ : Variable → Formula → Set where
-  atom : ∀{t r} {xs : Vec Term (Relation.arity r)}
-                  → t BoundInTerms xs → t BoundIn (atom r xs)
-  _⇒_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ⇒ β)
-  _∧_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ∧ β)
-  _∨_  : ∀{t α β} → t BoundIn α → t BoundIn β → t BoundIn (α ∨ β)
-  Λ∣   : ∀ x α    → x BoundIn Λ x α
-  V∣   : ∀ x α    → x BoundIn V x α
-  Λ    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn Λ x α
-  V    : ∀{t α}   → ∀ x → t BoundIn α → t BoundIn V x α
+data _NotFreeInTerm_ (x : Variable) : Term → Set
+
+_NotFreeInTerms_ : ∀{n} → Variable → Vec Term n → Set
+x NotFreeInTerms ts = All (x NotFreeInTerm_) ts
+
+data _NotFreeInTerm_ (x : Variable) where
+  varterm  : ∀{y} → x ≢ y → x NotFreeInTerm (varterm y)
+  functerm : ∀{f} {us : Vec Term (Function.arity f)}
+               → x NotFreeInTerms us → x NotFreeInTerm (functerm f us)
+
+data _NotFreeIn_ : Variable → Formula → Set where
+  atom : ∀{x r} {ts : Vec Term (Relation.arity r)}
+                  → x NotFreeInTerms ts → x NotFreeIn (atom r ts)
+  _⇒_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ⇒ β)
+  _∧_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ∧ β)
+  _∨_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ∨ β)
+  Λ∣   : ∀ x α    → x NotFreeIn Λ x α
+  V∣   : ∀ x α    → x NotFreeIn V x α
+  Λ    : ∀{x α}   → ∀ y → x NotFreeIn α → x NotFreeIn Λ y α
+  V    : ∀{x α}   → ∀ y → x NotFreeIn α → x NotFreeIn V y α
 
 \end{code}
 
@@ -150,25 +149,22 @@ would like Agda's proof search to find it easily.
 
 \begin{code}
 
-data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set where
-  []   : ∀{x t} → [ [] ][ x / t ]≡ []
-  var≡ : ∀{n t} {xs ys : Vec Term n}
-           → (x : Variable)
-           → [ xs ][ x / t ]≡ ys
-           → [ varterm x ∷ xs ][ x / t ]≡ (t ∷ ys)
-  var≢ : ∀{n x t} {xs ys : Vec Term n}
-           → (v : Variable)
-           → x ≢ v
-           → [ xs ][ x / t ]≡ ys
-           → [ varterm v ∷ xs ][ x / t ]≡ (varterm v ∷ ys)
-  func : ∀{n x t} {xs ys : Vec Term n}
-           → (f : Function) → ∀{us vs}
-           → [ us ][ x / t ]≡ vs
-           → [ xs ][ x / t ]≡ ys
-           → [ functerm f us ∷ xs ][ x / t ]≡ (functerm f vs ∷ ys)
+data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
+
+data ⟨_⟩[_/_]≡_ : Term → Variable → Term → Term → Set where
+  varterm≡ : ∀{x t} → ⟨ varterm x ⟩[ x / t ]≡ t
+  varterm≢ : ∀{x t y} → x ≢ y → ⟨ varterm y ⟩[ x / t ]≡ varterm y
+  functerm : ∀{x t f us vs}
+              → [ us ][ x  / t ]≡ vs → ⟨ functerm f us ⟩[ x / t ]≡ functerm f vs
+
+data [_][_/_]≡_ where
+  []  : ∀{x t} → [ [] ][ x / t ]≡ []
+  _∷_ : ∀{x t u v n} {us vs : Vec Term n}
+        → ⟨ u ⟩[ x / t ]≡ v → [ us ][ x / t ]≡ vs → [ u ∷ us ][ x / t ]≡ (v ∷ vs)
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
-  ident : ∀ α x → α [ x / varterm x ]≡ α
+  ident   : ∀ α x → α [ x / varterm x ]≡ α
+  inverse : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β [ y / varterm x ]≡ α
   atom  : ∀{x t}
             → (r : Relation) → {xs ys : Vec Term (Relation.arity r)}
             → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
@@ -180,8 +176,20 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
             → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
   Λ∣    : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
   V∣    : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
-  Λ     : ∀{α β x v t} → v ≢ x → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
-  V     : ∀{α β x v t} → v ≢ x → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+  Λ     : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
+  V     : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+  Λ/    : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
+          → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (Λ x α) [ v / t ]≡ (Λ ω γ)
+  V/    : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
+          → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (V x α) [ v / t ]≡ (V ω γ)
+
+record FreshVar (α : Formula) (x : Variable) (t : Term) : Set where
+  constructor mkfreshvar
+  field
+    var         : Variable
+    notFree     : var NotFreeIn α
+    new         : x ≢ var
+    replaceable : var NotFreeInTerm t
 
 
 \end{code}
@@ -265,39 +273,46 @@ vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
 ...                                   | no  neq  = no φ
                                                    where φ : _
                                                          φ refl = neq refl
-
 \end{code}
 }
 
-Proving that equality of terms is decidable is non-trivial. A term can be
-constructed from a vector of terms. Consider a term like $f(g(x), h(x))$. To
-check if this term is equal to itself, we first check the vector $(g(x), h(x))$
-equals itself. We do this by applying the lemma above to the type of terms.
-However, this is not structurally recursive; we do not know that term equality
-will be used on structurally smaller terms inside vector equality. While there
-are ways of solving this problem, here we instead use the terminating pragma, as
-we trust that this will terminate.
-
 \begin{code}
-{-# TERMINATING #-}
 termEq : Decidable≡ Term
-termEq (varterm x) (varterm y) with varEq x y
-...                            | yes refl = yes refl
-...                            | no  neq  = no φ
-                                            where φ : _
-                                                  φ refl = neq refl
-termEq (varterm x) (functerm f xs) = no (λ ())
-termEq (functerm f xs) (varterm x) = no (λ ())
-termEq (functerm f xs) (functerm g ys) with funcEq f g
-...                                    | no  neq = no φ
-                                                   where φ : _
-                                                         φ refl = neq refl
-...                                    | yes refl with vecEq termEq xs ys
-...                                               | yes refl = yes refl
-...                                               | no  neq = no φ
-                                                              where φ : _
-                                                                    φ refl = neq refl
 \end{code}
+\AgdaHide{
+\begin{code}
+termEq (varterm x) (varterm y) with varEq x y
+...                             | yes refl = yes refl
+...                             | no  neq  = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (varterm _) (functerm _ _) = no λ ()
+termEq (functerm _ _) (varterm _) = no (λ ())
+termEq (functerm (mkfunc n .0) []) (functerm (mkfunc m .0) []) with natEq n m
+termEq (functerm (mkfunc n _) []) (functerm (mkfunc .n _) []) | yes refl = yes refl
+termEq (functerm (mkfunc n _) []) (functerm (mkfunc m _) []) | no neq = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (functerm (mkfunc _ .0) []) (functerm (mkfunc _ .(suc _)) (_ ∷ _)) = no (λ ())
+termEq (functerm (mkfunc _ .(suc _)) (_ ∷ _)) (functerm (mkfunc _ .0) []) = no (λ ())
+termEq (functerm (mkfunc n (suc k)) (x ∷ xs)) (functerm (mkfunc m (suc j)) (y ∷ ys)) with (natEq n m) , (natEq k j)
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (y ∷ ys)) | yes refl , yes refl with termEq (functerm (mkfunc n j) xs) (functerm (mkfunc n j) ys)
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (y ∷ .xs)) | yes refl , yes refl | yes refl with termEq x y
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (.x ∷ .xs)) | yes refl , yes refl | yes refl | yes refl = yes refl
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (y ∷ .xs)) | yes refl , yes refl | yes refl | no neq = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (functerm (mkfunc n (suc .j)) (x ∷ xs)) (functerm (mkfunc .n (suc j)) (y ∷ ys)) | yes refl , yes refl | no neq = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (functerm (mkfunc n (suc k)) (x ∷ xs)) (functerm (mkfunc m (suc j)) (y ∷ ys)) | _ , no neq = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+termEq (functerm (mkfunc n (suc k)) (x ∷ xs)) (functerm (mkfunc m (suc j)) (y ∷ ys)) | no neq , _ = no φ
+                                             where φ : _
+                                                   φ refl = neq refl
+\end{code}
+}
 
 \begin{code}
 formulaEq : Decidable≡ Formula
@@ -390,3 +405,285 @@ formulaEq (V x α)   (Λ x₁ β)    = no (λ ())
 
 \end{code}
 }
+\begin{code}
+
+--------------------------------------------------------------------------------
+
+-- Machine-proven lemmae
+repNotFreeTerms : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
+repNotFreeTerms {.0} {x} {t} {[]} {.[]} xnft [] = []
+repNotFreeTerms {.(suc _)} {.x₁} {_} {varterm x₁ ∷ us} {.(_ ∷ _)} xnft (varterm≡ ∷ rep) = xnft ∷ repNotFreeTerms xnft rep
+repNotFreeTerms {.(suc _)} {x} {t} {varterm x₁ ∷ us} {.(varterm x₁ ∷ _)} xnft (varterm≢ x₂ ∷ rep) = varterm x₂ ∷ repNotFreeTerms xnft rep
+repNotFreeTerms {.(suc _)} {x} {t} {functerm f ts ∷ us} {.(functerm f _ ∷ _)} xnft (functerm x₁ ∷ rep) = functerm (repNotFreeTerms xnft x₁) ∷ repNotFreeTerms xnft rep
+
+repNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
+repNotFree {α} {x} {t} {β} xnft (inverse xnfβ rep) = xnfβ
+repNotFree {atom r ts} {x₁} {.(varterm x₁)} {.(atom r ts)} (varterm x) (ident .(atom r ts) x₁) = ⊥-elim (x refl)
+repNotFree {atom r ts} {x} {t} {.(atom r _)} xnft (atom .r x₁) = atom (repNotFreeTerms xnft x₁)
+repNotFree {α ⇒ α₁} {x₁} {.(varterm x₁)} {.(α ⇒ α₁)} (varterm x) (ident .(α ⇒ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ⇒ α₁} {x} {t} {.(_ ⇒ _)} xnft (rep ⇒ rep₁) = repNotFree xnft rep ⇒ repNotFree xnft rep₁
+repNotFree {α ∧ α₁} {x₁} {.(varterm x₁)} {.(α ∧ α₁)} (varterm x) (ident .(α ∧ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ∧ α₁} {x} {t} {.(_ ∧ _)} xnft (rep ∧ rep₁) = repNotFree xnft rep ∧ repNotFree xnft rep₁
+repNotFree {α ∨ α₁} {x₁} {.(varterm x₁)} {.(α ∨ α₁)} (varterm x) (ident .(α ∨ α₁) x₁) = ⊥-elim (x refl)
+repNotFree {α ∨ α₁} {x} {t} {.(_ ∨ _)} xnft (rep ∨ rep₁) = repNotFree xnft rep ∨ repNotFree xnft rep₁
+repNotFree {Λ x₁ α} {x₂} {.(varterm x₂)} {.(Λ x₁ α)} (varterm x) (ident .(Λ x₁ α) x₂) = ⊥-elim (x refl)
+repNotFree {Λ x₁ α} {.x₁} {t} {.(Λ x₁ α)} xnft (Λ∣ .x₁ .α) = Λ∣ x₁ α
+repNotFree {Λ x₁ α} {x} {t} {.(Λ x₁ _)} xnft (Λ x₂ x₃ rep) = Λ x₁ (repNotFree xnft rep)
+repNotFree {Λ x₁ α} {x} {t} {.(Λ _ _)} xnft (Λ/ x₂ x₃ x₄ rep rep₁) = Λ _ (repNotFree xnft rep₁)
+repNotFree {V x₁ α} {x₂} {.(varterm x₂)} {.(V x₁ α)} (varterm x) (ident .(V x₁ α) x₂) = ⊥-elim (x refl)
+repNotFree {V x₁ α} {.x₁} {t} {.(V x₁ α)} xnft (V∣ .x₁ .α) = V∣ x₁ α
+repNotFree {V x₁ α} {x} {t} {.(V x₁ _)} xnft (V x₂ x₃ rep) = V x₁ (repNotFree xnft rep)
+repNotFree {V x₁ α} {x} {t} {.(V _ _)} xnft (V/ x₂ x₃ x₄ rep rep₁) = V _ (repNotFree xnft rep₁)
+
+--------------------------------------------------------------------------------
+
+
+_notFreeInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n) → Dec (x NotFreeInTerms ts)
+x notFreeInTerms []                   = yes []
+x notFreeInTerms (t ∷ ts)             with x notFreeInTerms ts
+x notFreeInTerms (t ∷ ts)             | no ¬rst = no φ
+  where
+    φ : ¬(All (x NotFreeInTerm_) (t ∷ ts))
+    φ (_ ∷ rst) = ¬rst rst
+x notFreeInTerms (varterm y ∷ ts)     | yes rst with varEq x y
+x notFreeInTerms (varterm .x ∷ ts)    | yes rst | yes refl = no φ
+  where
+    φ : ¬(All (x NotFreeInTerm_) (varterm x ∷ ts))
+    φ (varterm x≢x ∷ _) = x≢x refl
+x notFreeInTerms (varterm y ∷ ts)     | yes rst | no x≢y = yes (varterm x≢y ∷ rst)
+x notFreeInTerms (functerm f us ∷ ts) | yes rst with x notFreeInTerms us
+x notFreeInTerms (functerm f us ∷ ts) | yes rst | yes uspf = yes (functerm uspf ∷ rst)
+x notFreeInTerms (functerm f us ∷ ts) | yes rst | no ¬uspf = no φ
+  where
+    φ : ¬(All (x NotFreeInTerm_) (functerm f us ∷ ts))
+    φ (functerm uspf ∷ _) = ¬uspf uspf
+
+
+_notFreeInTerm_ : (x : Variable) → (t : Term) → Dec (x NotFreeInTerm t)
+x notFreeInTerm t with x notFreeInTerms (t ∷ [])
+x notFreeInTerm t | yes (pf ∷ []) = yes pf
+x notFreeInTerm t | no npf        = no λ z → npf (z ∷ [])
+
+
+_notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
+x notFreeIn atom r ts with x notFreeInTerms ts
+x notFreeIn atom r ts | yes bdts = yes (atom bdts)
+x notFreeIn atom r ts | no ¬bdts = no φ
+                                   where
+                                     φ : ¬(x NotFreeIn atom r ts)
+                                     φ (atom bdts) = ¬bdts bdts
+x notFreeIn (α ⇒ β)   with x notFreeIn α | x notFreeIn β
+x notFreeIn (α ⇒ β)   | yes αbd | yes βbd = yes (αbd ⇒ βbd)
+x notFreeIn (α ⇒ β)   | _       | no ¬βbd = no φ
+                                            where
+                                              φ : ¬(x NotFreeIn (α ⇒ β))
+                                              φ (αbd ⇒ βbd) = ¬βbd βbd
+x notFreeIn (α ⇒ β)   | no ¬αbd | _       = no φ
+                                            where
+                                              φ : ¬(x NotFreeIn (α ⇒ β))
+                                              φ (αbd ⇒ βbd) = ¬αbd αbd
+x notFreeIn (α ∧ β)   with x notFreeIn α | x notFreeIn β
+x notFreeIn (α ∧ β)   | yes αbd | yes βbd = yes (αbd ∧ βbd)
+x notFreeIn (α ∧ β)   | _       | no ¬βbd = no φ
+                                            where
+                                              φ : ¬(x NotFreeIn (α ∧ β))
+                                              φ (αbd ∧ βbd) = ¬βbd βbd
+x notFreeIn (α ∧ β)   | no ¬αbd | _       = no φ
+                                            where
+                                              φ : ¬(x NotFreeIn (α ∧ β))
+                                              φ (αbd ∧ βbd) = ¬αbd αbd
+x notFreeIn (α ∨ β)   with x notFreeIn α | x notFreeIn β
+x notFreeIn (α ∨ β)   | yes αbd | yes βbd = yes (αbd ∨ βbd)
+x notFreeIn (α ∨ β)   | _       | no ¬βbd = no φ
+                                            where
+                                              φ : ¬(x NotFreeIn (α ∨ β))
+                                              φ (αbd ∨ βbd) = ¬βbd βbd
+x notFreeIn (α ∨ β)   | no ¬αbd | _       = no φ
+                                            where
+                                              φ : ¬(x NotFreeIn (α ∨ β))
+                                              φ (αbd ∨ βbd) = ¬αbd αbd
+x notFreeIn Λ  y α    with varEq x y
+x notFreeIn Λ .x α    | yes refl = yes (Λ∣ x α)
+x notFreeIn Λ  y α    | no x≢y with x notFreeIn α
+x notFreeIn Λ  y α    | no x≢y | yes αbd = yes (Λ y αbd)
+x notFreeIn Λ  y α    | no x≢y | no ¬αbd = no φ
+                                           where
+                                             φ : ¬(x NotFreeIn Λ y α)
+                                             φ (Λ∣ x α) = x≢y refl
+                                             φ (Λ y αbd) = ¬αbd αbd
+x notFreeIn V  y α    with varEq x y
+x notFreeIn V .x α    | yes refl = yes (V∣ x α)
+x notFreeIn V  y α    | no x≢y with x notFreeIn α
+x notFreeIn V  y α    | no x≢y | yes αbd = yes (V y αbd)
+x notFreeIn V  y α    | no x≢y | no ¬αbd = no φ
+                                           where
+                                             φ : ¬(x NotFreeIn V y α)
+                                             φ (V∣ x α) = x≢y refl
+                                             φ (V y αbd) = ¬αbd αbd
+
+
+supfreeterms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → mkvar n NotFreeInTerms ts
+supfreeterms [] = zero , λ _ _ → []
+supfreeterms (varterm (mkvar m) ∷ ts) with supfreeterms ts
+... | ⌈ts⌉ , tspf with max m ⌈ts⌉
+...               | less m≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
+  where
+    orderneq : ∀{n m} → n < m → mkvar m ≢ mkvar n
+    orderneq {zero} {.0} () refl
+    orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
+    notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n → All (mkvar n NotFreeInTerm_) (varterm (mkvar m) ∷ ts)
+    notFreeIs⌈ts⌉ n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n)) ∷ tspf n ⌈ts⌉<n
+...               | more ⌈ts⌉≤m = m , notFreeIsm
+  where
+    orderneq : ∀{n m} → n < m → mkvar m ≢ mkvar n
+    orderneq {zero} {.0} () refl
+    orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
+    notFreeIsm : ∀ n → m < n → All (mkvar n NotFreeInTerm_) (varterm (mkvar m) ∷ ts)
+    notFreeIsm n m<n = varterm (orderneq m<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
+supfreeterms (functerm f us     ∷ ts) with supfreeterms us | supfreeterms ts
+... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with max ⌈us⌉ ⌈ts⌉
+...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
+  where
+    notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n → All (mkvar n NotFreeInTerm_) (functerm f us ∷ ts)
+    notFreeIs⌈ts⌉ n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n)) ∷ tspf n ⌈ts⌉<n
+...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , notFreeIs⌈us⌉
+  where
+    notFreeIs⌈us⌉ : ∀ n → ⌈us⌉ < n → All (mkvar n NotFreeInTerm_) (functerm f us ∷ ts)
+    notFreeIs⌈us⌉ n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
+
+
+supfreeterm : ∀ t → Σ ℕ λ ⌈t⌉ → ∀ n → ⌈t⌉ < n → mkvar n NotFreeInTerm t
+supfreeterm t with supfreeterms (t ∷ [])
+supfreeterm t | s , pfs = s , notFreeIss
+  where
+    notFreeIss : ∀ n → s < n → mkvar n NotFreeInTerm t
+    notFreeIss n s<n with pfs n s<n
+    notFreeIss n s<n | pf ∷ [] = pf
+
+
+-- No guarantee that this notFree is tight - in fact for the V and Λ cases it is
+-- not tight if the quantifier is the greatest variable (and does not have index
+-- zero)
+supfree : ∀ α → Σ ℕ λ ⌈α⌉ → ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn α
+supfree (atom r ts) with supfreeterms ts
+supfree (atom r ts) | ⌈ts⌉ , tspf = ⌈ts⌉ , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
+supfree (α ⇒ β) with supfree α | supfree β
+supfree (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+supfree (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , notFreeIs⌈β⌉
+  where
+    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NotFreeIn (α ⇒ β)
+    notFreeIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ⇒ βpf n ⌈β⌉<n
+supfree (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , notFreeIs⌈α⌉
+  where
+    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn (α ⇒ β)
+    notFreeIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ⇒ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
+supfree (α ∧ β) with supfree α | supfree β
+supfree (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+supfree (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , notFreeIs⌈β⌉
+  where
+    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NotFreeIn (α ∧ β)
+    notFreeIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ∧ βpf n ⌈β⌉<n
+supfree (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , notFreeIs⌈α⌉
+  where
+    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn (α ∧ β)
+    notFreeIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∧ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
+supfree (α ∨ β) with supfree α | supfree β
+supfree (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+supfree (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , notFreeIs⌈β⌉
+  where
+    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NotFreeIn (α ∨ β)
+    notFreeIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ∨ βpf n ⌈β⌉<n
+supfree (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , notFreeIs⌈α⌉
+  where
+    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn (α ∨ β)
+    notFreeIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∨ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
+supfree (Λ x α) with supfree α
+supfree (Λ x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → Λ x (αpf n ⌈α⌉<n)
+supfree (V x α) with supfree α
+supfree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n ⌈α⌉<n)
+
+
+freshVar : ∀ α x t → FreshVar α x t
+freshVar α (mkvar n) t with supfree α | supfreeterm t
+... | ⌈α⌉ , αpf | ⌈t⌉ , tpf with max n ⌈α⌉ | max n ⌈t⌉ | max ⌈α⌉ ⌈t⌉
+...   | less n≤⌈α⌉ | less n≤⌈t⌉ | less ⌈α⌉≤⌈t⌉ = mkfreshvar (mkvar (suc ⌈t⌉)) notFree new replaceable
+  where
+    notFree : mkvar (suc ⌈t⌉) NotFreeIn α
+    notFree = αpf (suc ⌈t⌉) (sn≤sm ⌈α⌉≤⌈t⌉)
+    new : mkvar n ≢ mkvar (suc ⌈t⌉)
+    new refl = ⊥-elim (¬<refl n≤⌈t⌉)
+    replaceable : mkvar (suc ⌈t⌉) NotFreeInTerm t
+    replaceable = tpf (suc ⌈t⌉) (sn≤sm ≤refl)
+...   | less n≤⌈α⌉ | less n≤⌈t⌉ | more ⌈t⌉≤⌈α⌉ = mkfreshvar (mkvar (suc ⌈α⌉)) notFree new replaceable
+  where
+    notFree : mkvar (suc ⌈α⌉) NotFreeIn α
+    notFree = αpf (suc ⌈α⌉) (sn≤sm ≤refl)
+    new : mkvar n ≢ mkvar (suc ⌈α⌉)
+    new refl = ¬<refl n≤⌈α⌉
+    replaceable : mkvar (suc ⌈α⌉) NotFreeInTerm t
+    replaceable = tpf (suc ⌈α⌉) (sn≤sm ⌈t⌉≤⌈α⌉)
+...   | less n≤⌈α⌉ | more ⌈t⌉≤n | _            = mkfreshvar (mkvar (suc ⌈α⌉)) notFree new replaceable
+  where
+    notFree : mkvar (suc ⌈α⌉) NotFreeIn α
+    notFree = αpf (suc ⌈α⌉) (sn≤sm ≤refl)
+    new : mkvar n ≢ mkvar (suc ⌈α⌉)
+    new refl = ¬<refl n≤⌈α⌉
+    replaceable : mkvar (suc ⌈α⌉) NotFreeInTerm t
+    replaceable = tpf (suc ⌈α⌉) (≤trans (sn≤sm ⌈t⌉≤n) (sn≤sm n≤⌈α⌉))
+...   | more ⌈α⌉≤n | less n≤⌈t⌉ | _            = mkfreshvar (mkvar (suc ⌈t⌉)) notFree new replaceable
+  where
+    notFree : mkvar (suc ⌈t⌉) NotFreeIn α
+    notFree = αpf (suc ⌈t⌉) (≤trans (sn≤sm ⌈α⌉≤n) (sn≤sm n≤⌈t⌉))
+    new : mkvar n ≢ mkvar (suc ⌈t⌉)
+    new refl = ¬<refl n≤⌈t⌉
+    replaceable : mkvar (suc ⌈t⌉) NotFreeInTerm t
+    replaceable = tpf (suc ⌈t⌉) (sn≤sm ≤refl)
+...   | more ⌈α⌉≤n | more ⌈t⌉≤n | _            = mkfreshvar (mkvar (suc n)) notFree new replaceable
+  where
+    notFree : mkvar (suc n) NotFreeIn α
+    notFree = αpf (suc n) (sn≤sm ⌈α⌉≤n)
+    new : mkvar n ≢ mkvar (suc n)
+    new ()
+    replaceable : mkvar (suc n) NotFreeInTerm t
+    replaceable = tpf (suc n) (sn≤sm ⌈t⌉≤n)
+
+
+[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs → [ us ][ x / t ]≡ vs
+[ [] ][ x / t ] = [] , []
+[ u ∷ us ][ x / t ] with [ us ][ x / t ]
+[ varterm y     ∷ us ][ x / t ] | vs , [us][x/t]≡vs with varEq x y
+... | yes refl = t ∷ vs , (varterm≡ ∷ [us][x/t]≡vs)
+... | no x≡y   = varterm y ∷ vs , (varterm≢ x≡y ∷ [us][x/t]≡vs)
+[ functerm f ws ∷ us ][ x / t ] | vs , [us][x/t]≡vs with [ ws ][ x / t ]
+... | xs , [ws][x/t]≡xs = functerm f xs ∷ vs , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
+
+-- Make sure to use the nicer substitutions for quantification where possible
+{-# TERMINATING #-}
+_[_/_] : ∀ α x t → Σ Formula (α [ x / t ]≡_)
+atom r us [ x / t ] with [ us ][ x / t ]
+atom r us [ x / t ] | vs , [us][x/t]≡vs = atom r vs , atom r [us][x/t]≡vs
+(α ⇒ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+(α ⇒ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ⇒ β′ , α[x/t]≡α′ ⇒ β[x/t]≡β′
+(α ∧ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+(α ∧ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∧ β′ , α[x/t]≡α′ ∧ β[x/t]≡β′
+(α ∨ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
+(α ∨ β)   [ x / t ] | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∨ β′ , α[x/t]≡α′ ∨ β[x/t]≡β′
+Λ  y α    [ x / t ] with varEq x y | y notFreeInTerm t
+Λ .x α    [ x / t ] | yes refl | _       = Λ x α , Λ∣ x α
+Λ  y α    [ x / t ] | no x≢y   | yes xnf with α [ x / t ]
+Λ  y α    [ x / t ] | no x≢y   | yes xnf | α′ , α[x/t]≡α′ = Λ y α′ , Λ x≢y xnf α[x/t]≡α′
+Λ  y α    [ x / t ] | no x≢y   | no  xf  with freshVar α x t
+Λ  y α    [ x / t ] | no x≢y   | no  xf  | mkfreshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
+Λ  y α    [ x / t ] | no x≢y   | no xf   | mkfreshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
+Λ  y α    [ x / t ] | no x≢y   | no xf   | mkfreshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
+                    = Λ ω γ , Λ/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
+V  y α    [ x / t ] with varEq x y | y notFreeInTerm t
+V .x α    [ x / t ] | yes refl | _       = V x α , V∣ x α
+V  y α    [ x / t ] | no x≢y   | yes xnf with α [ x / t ]
+V  y α    [ x / t ] | no x≢y   | yes xnf | α′ , α[x/t]≡α′ = V y α′ , V x≢y xnf α[x/t]≡α′
+V  y α    [ x / t ] | no x≢y   | no  xf  with freshVar α x t
+V  y α    [ x / t ] | no x≢y   | no  xf  | mkfreshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
+V  y α    [ x / t ] | no x≢y   | no xf   | mkfreshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β with β [ x / t ]
+V  y α    [ x / t ] | no x≢y   | no xf   | mkfreshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
+                    = V ω γ , V/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
+\end{code}

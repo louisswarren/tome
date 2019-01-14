@@ -38,6 +38,8 @@ binaryscheme s f = scheme s 2 fs
 
 
 -- Easier definitions for derivability
+infix 1 ⊢₀_ ⊢₁_ ⊢₂_
+
 ⊢₀_ : Formula → Set
 ⊢₀ α = ⊢ α
 
@@ -66,6 +68,7 @@ pattern yvar  = mkvar (suc zero)
 pattern zvar  = mkvar (suc (suc zero))
 pattern var n = mkvar (suc (suc (suc n)))
 
+x y z : Term
 x = varterm xvar
 y = varterm yvar
 z = varterm zvar

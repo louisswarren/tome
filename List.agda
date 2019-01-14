@@ -32,6 +32,8 @@ all P? (x ∷ xs) with P? x
 ...                      | no ¬∀xsP = no λ φ → ¬∀xsP (tailAll φ)
 
 
+infixr 5 _∷_
+
 data Any {A : Set} (P : Pred A) : List A → Set where
   [_] : ∀{xs} → ∀{x} → P x      → Any P (x ∷ xs)
   _∷_ : ∀{xs} → ∀ x  → Any P xs → Any P (x ∷ xs)
@@ -57,6 +59,8 @@ any P? (x ∷ xs) with P? x
 
 
 -- Any can be used to define membership
+infix 4 _∈_ _∉_
+
 _∈_ : {A : Set} → (x : A) → List A → Set
 x ∈ xs = Any (x ≡_) xs
 

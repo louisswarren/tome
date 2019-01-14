@@ -16,10 +16,11 @@ open import List
     decide∈    to decide[∈]    )
 
 private
-  _BoundInAll_ : Variable → Ensemble formulaEq → Set
-  x BoundInAll Γ = All (x BoundIn_) Γ
+  infix 300 _NotFreeInAll_
+  _NotFreeInAll_ : Variable → Ensemble formulaEq → Set
+  x NotFreeInAll Γ = All (x NotFreeIn_) Γ
 
-infix 1 _⊢_
+infix 1 _⊢_ ⊢_
 data _⊢_ : Ensemble formulaEq → Formula → Set where
 
 \end{code}
@@ -91,7 +92,7 @@ supply them.
 \begin{code}
 
   univintro  : ∀{Γ α} → (x : Variable)
-               → x BoundInAll Γ
+               → x NotFreeInAll Γ
                →                                  Γ ⊢ α
                                                ----------- ∀⁺
                →                                Γ ⊢ Λ x α
@@ -109,7 +110,7 @@ supply them.
                →                                  Γ ⊢ V x α
 
   existelim  : ∀{Γ₁ Γ₂ α β x}
-               → x BoundInAll (β ∷ (Γ₂ - α))
+               → x NotFreeInAll (β ∷ (Γ₂ - α))
                →                      Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
                                      --------------------------- ∃⁻
                →                          Γ₁ ∪ (Γ₂ - α) ⊢ β

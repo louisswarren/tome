@@ -1,6 +1,8 @@
 module Vec where
 
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
+open import Agda.Builtin.Sigma
+
 open import Decidable
 
 data Vec (A : Set) : ℕ → Set where
@@ -30,6 +32,8 @@ all P? (x ∷ xs) with P? x
 ...                      | no ¬∀xsP = no λ φ → ¬∀xsP (tailAll φ)
 
 
+infixr 5 _∷_
+
 data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   [_] : ∀{n} {xs : Vec A n} → ∀{x} → P x      → Any P (x ∷ xs)
   _∷_ : ∀{n} {xs : Vec A n} → ∀ x  → Any P xs → Any P (x ∷ xs)
@@ -55,6 +59,8 @@ any P? (x ∷ xs) with P? x
 
 
 -- Any can be used to define membership
+infix 4 _∈_ _∉_
+
 _∈_ : {A : Set} {n : ℕ} → (x : A) → Vec A n → Set
 x ∈ xs = Any (x ≡_) xs
 
