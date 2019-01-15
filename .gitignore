@@ -9,3 +9,5 @@
 *.log
 *.pdf
 *.synctex.gz
+
+agda.sty
