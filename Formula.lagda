@@ -137,15 +137,11 @@ data _NotFreeIn_ : Variable → Formula → Set where
 \end{code}
 
 We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
-replacing all instances of a variable $x$ with term $t$. The reasoning is
-similar to that of the bound variable check above, and a lemma is used for the
-same reasons. Inside a vector of terms, wherever $x$ occurs, it is replaced
-with $t$. Any variable distinct from $x$ is left unchanged.
-
-An extra constructor `ident' is defined, giving the case that replacing $x$
-with $x$ yields the original formula. This case is actually provable from the
-others. However, in practice it is the case we usually want to use, and so
-would like Agda's proof search to find it easily.
+replacing all instances of a variable $x$ with term $t$. The more general case
+of replacing terms with terms is not needed for natural deduction. The
+reasoning is similar to that of the bound variable check above, and a lemma is
+used for the same reasons. Inside a vector of terms, wherever $x$ occurs, it is
+replaced with $t$. Any variable distinct from $x$ is left unchanged.
 
 \begin{code}
 
@@ -161,6 +157,41 @@ data [_][_/_]≡_ where
   []  : ∀{x t} → [ [] ][ x / t ]≡ []
   _∷_ : ∀{x t u v n} {us vs : Vec Term n}
         → ⟨ u ⟩[ x / t ]≡ v → [ us ][ x / t ]≡ vs → [ u ∷ us ][ x / t ]≡ (v ∷ vs)
+
+\end{code}
+
+An extra constructor `ident' is defined, giving the case that replacing $x$
+with $x$ yields the original formula. This case is actually provable from the
+others. However, in practice it is the case we usually want to use, and so
+would like Agda's proof search to find it easily.
+
+Variable replacement for a quantified formula has three cases. Consider the
+replacement $(\forall y \alpha) [ x / t ]$ (the existential case is identical):
+
+\begin{enumerate}
+\item If the variable being replaced is the quantification variable ($x = y$),
+      then the formula is unchanged.
+\item If the variable being replaced is not the quantification variable
+      ($x \neq y$), and $t$ is free for $x$ in $\forall y \alpha$ ($x \not\in
+      FV(t)$), then the replacement simply occurs inside the quantification (
+      $(\forall y \alpha) [ x / t ] = \forall y (\alpha [ x / t ])$).
+\item Otherwise, the quantifying variable must be renamed. We require a fresh
+      variable $\omega$ which is not free in $\alpha$, which differs from $x$,
+      and which is not in $t$. Then the replacement is
+      $(\forall y \alpha) [ x / t ]
+       = \forall \omega (\alpha [ y / \omega ][ x / t ])$).
+\end{enumerate}
+
+We provide a constructor for each case. Note that the third case means that
+replacement is not unique.
+
+If $y$ is not free in $\alpha$, and $beta$ is $\alpha [ x / y ]$ then it we
+would like $alpha$ to be $\beta [ y / x ]$, so that renaming to fresh variables
+is invertible. However, due to the third case above, $\beta [ y / x ]$ may
+differ from $\alpha$ in the names of its bound variables. A simple solition to
+this problem is to add the constructor `inverse' as below.
+
+\begin{code}
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   ident   : ∀ α x → α [ x / varterm x ]≡ α
@@ -183,6 +214,13 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   V/    : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
           → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ → (V x α) [ v / t ]≡ (V ω γ)
 
+\end{code}
+
+The notion of a variable being fresh, for use in a replacement as $\omega$ is
+in the last two constructors, is encapsulated below.
+
+\begin{code}
+
 record FreshVar (α : Formula) (x : Variable) (t : Term) : Set where
   constructor mkfreshvar
   field
@@ -193,6 +231,16 @@ record FreshVar (α : Formula) (x : Variable) (t : Term) : Set where
 
 
 \end{code}
+
+
+The constructors `inverse', `$\Lambda{}$/', and `V/', are convenient, but not
+ideal. A more thourough treatment would involve defining a notion of ``formula
+equivalence up to renaming of bound variables'' mutually with variable
+replacement, and replace those constructors with one such as $\alpha \sim \beta
+\rightarrow \beta [ x / t ]\equiv \gamma \rightarrow \alpha [ x / t ]\equiv
+\gamma$. This entails some extra work to prove that `inverse' (and some later
+lemmae) hold, however, and the details not necessary for natural deduction.
+
 
 It remains to prove that equality of formulae is decidable. This follows from
 the fact that formulae are inductively defined. The proof is obtained by case
@@ -217,6 +265,7 @@ natEq (suc n) (suc m) with natEq n m
 \begin{code}
 varEq : Decidable≡ Variable
 \end{code}
+(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 varEq (mkvar n) (mkvar m) with natEq n m
@@ -229,6 +278,7 @@ varEq (mkvar n) (mkvar m) with natEq n m
 \begin{code}
 relEq : Decidable≡ Relation
 \end{code}
+(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 relEq (mkrel n j) (mkrel m k) with natEq n m
@@ -245,6 +295,7 @@ relEq (mkrel n j) (mkrel m k) with natEq n m
 \begin{code}
 funcEq : Decidable≡ Function
 \end{code}
+(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 funcEq (mkfunc n j) (mkfunc m k) with natEq n m
@@ -261,6 +312,7 @@ funcEq (mkfunc n j) (mkfunc m k) with natEq n m
 \begin{code}
 vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
 \end{code}
+(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 vecEq eq [] [] = yes refl
@@ -279,6 +331,7 @@ vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
 \begin{code}
 termEq : Decidable≡ Term
 \end{code}
+(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 termEq (varterm x) (varterm y) with varEq x y
@@ -317,7 +370,7 @@ termEq (functerm (mkfunc n (suc k)) (x ∷ xs)) (functerm (mkfunc m (suc j)) (y 
 \begin{code}
 formulaEq : Decidable≡ Formula
 \end{code}
-
+(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 formulaEq (atom r xs) (atom s ys) with natEq (Relation.arity r) (Relation.arity s)
