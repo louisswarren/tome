@@ -196,7 +196,7 @@ glpo→lem ⊢glpo α = close
                     αωpf : α [ xvar / varterm ω ]≡ αω
                     αωpf = snd (α [ xvar / varterm ω ])
                     xαωnf : xvar NotFreeIn αω
-                    xαωnf = repNotFree (varterm (FreshVar.new ωfresh)) αωpf
+                    xαωnf = subNotFree (varterm (FreshVar.new ωfresh)) αωpf
                     αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
                     αω∨¬αω[ω/x]≡α∨¬α = inverse ωnf αωpf ∨ (inverse ωnf αωpf ⇒ atom ⊥rel [])
 
