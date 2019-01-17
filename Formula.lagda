@@ -165,28 +165,28 @@ with $x$ yields the original formula. This case is actually provable from the
 others. However, in practice it is the case we usually want to use, and so
 would like Agda's proof search to find it easily.
 
-Variable replacement for a quantified formula has three cases. Consider the
-replacement $(\forall y \alpha) [ x / t ]$ (the existential case is identical):
+Variable substitution for a quantified formula has three cases. Consider the
+substitution $(\forall y \alpha) [ x / t ]$ (the existential case is identical):
 
 \begin{enumerate}
 \item If the variable being replaced is the quantification variable ($x = y$),
       then the formula is unchanged.
 \item If the variable being replaced is not the quantification variable
       ($x \neq y$), and $t$ is free for $x$ in $\forall y \alpha$ ($x \not\in
-      FV(t)$), then the replacement simply occurs inside the quantification (
+      FV(t)$), then the substitution simply occurs inside the quantification (
       $(\forall y \alpha) [ x / t ] = \forall y (\alpha [ x / t ])$).
-\item Otherwise, the quantifying variable must be renamed. We require a fresh
+\item Otherwise, the quantifying variable must be renamed. We require a
       variable $\omega$ which is not free in $\alpha$, which differs from $x$,
-      and which is not in $t$. Then the replacement is
+      and which is not in $t$. Then the substitution is
       $(\forall y \alpha) [ x / t ]
        = \forall \omega (\alpha [ y / \omega ][ x / t ])$).
 \end{enumerate}
 
 We provide a constructor for each case. Note that the third case means that
-replacement is not unique.
+substitution is not unique.
 
 If $y$ is not free in $\alpha$, and $beta$ is $\alpha [ x / y ]$ then it we
-would like $alpha$ to be $\beta [ y / x ]$, so that renaming to fresh variables
+would like $alpha$ to be $\beta [ y / x ]$, so that renaming to not-free variables
 is invertible. However, due to the third case above, $\beta [ y / x ]$ may
 differ from $\alpha$ in the names of its bound variables. A simple solition to
 this problem is to add the constructor `inverse' as below.
@@ -216,7 +216,7 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
 
 \end{code}
 
-The notion of a variable being fresh, for use in a replacement as $\omega$ is
+The notion of a variable being fresh, for use in a substitution as $\omega$ is
 in the last two constructors, is encapsulated below.
 
 \begin{code}
@@ -235,7 +235,7 @@ record FreshVar (α : Formula) (x : Variable) (t : Term) : Set where
 The constructors `inverse', `$\Lambda{}$/', and `V/', are convenient, but not
 ideal. A more thourough treatment would involve defining a notion of ``formula
 equivalence up to renaming of bound variables'' mutually with variable
-replacement, and replace those constructors with one such as $\alpha \sim \beta
+substitution, and replace those constructors with one such as $\alpha \sim \beta
 \rightarrow \beta [ x / t ]\equiv \gamma \rightarrow \alpha [ x / t ]\equiv
 \gamma$. This entails some extra work to prove that `inverse' (and some later
 lemmae) hold, however, and the details not necessary for natural deduction.
@@ -457,11 +457,13 @@ formulaEq (V x α)   (Λ x₁ β)    = no (λ ())
 
 \end{code}
 }
+
+\subsection{Computation}
+
+Variable freedom is decidable, simply by searching through the formula for
+occurences.
+
 \begin{code}
-
---------------------------------------------------------------------------------
-
-
 
 _notFreeInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n) → Dec (x NotFreeInTerms ts)
 x notFreeInTerms []                   = yes []
@@ -546,6 +548,15 @@ x notFreeIn V  y α    | no x≢y | no ¬αbd = no φ
                                              φ (V∣ x α) = x≢y refl
                                              φ (V y αbd) = ¬αbd αbd
 
+\end{code}
+
+For the purposes of variable substitution (see above), we need a way to
+generate a not-free variable for a given formula. Only finitely many variables
+occur in a given term or formula, so there is a greatest (with respect to the
+natural number indexing) free variable in each term or formula; all variables
+greater than this are not free.
+
+\begin{code}
 
 supFreeTerms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → mkvar n NotFreeInTerms ts
 supFreeTerms [] = zero , λ _ _ → []
@@ -576,7 +587,6 @@ supFreeTerms (functerm f us     ∷ ts) with supFreeTerms us | supFreeTerms ts
     notFreeIs⌈us⌉ : ∀ n → ⌈us⌉ < n → All (mkvar n NotFreeInTerm_) (functerm f us ∷ ts)
     notFreeIs⌈us⌉ n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
 
-
 supFreeTerm : ∀ t → Σ ℕ λ ⌈t⌉ → ∀ n → ⌈t⌉ < n → mkvar n NotFreeInTerm t
 supFreeTerm t with supFreeTerms (t ∷ [])
 supFreeTerm t | s , pfs = s , notFreeIss
@@ -585,10 +595,23 @@ supFreeTerm t | s , pfs = s , notFreeIss
     notFreeIss n s<n with pfs n s<n
     notFreeIss n s<n | pf ∷ [] = pf
 
+\end{code}
 
--- No guarantee that this notFree is tight - in fact for the V and Λ cases it is
--- not tight if the quantifier is the greatest variable (and does not have index
--- zero)
+If the greatest variable occuring (free or bound) in $\alpha$ has
+index $\lceil\alpha\rceil$, and $\beta$ has greatest variable with index
+$\lceil\alpha\rceil$, then any variable with an index greater than
+$\max\{\lceil\alpha\rceil, \lceil\alpha\rceil\}$ will be not free in $\alpha
+\rightarrow \beta$. We therefore obtain infinitely many variables which are not
+free in $\alpha \rightarrow \beta$. A similar process is followed for other
+logical connectors.
+
+Note that there will be variables which bound, or which do not occur at all,
+which are not generated by this process. If $x, y, z$ have indicies $0, 1,$ and
+$2$, then $\forall x \forall y R x y$ and $P y \lor \lnot P y$ will both have
+$z$ as the least not-free variable generated.
+
+\begin{code}
+
 supFree : ∀ α → Σ ℕ λ ⌈α⌉ → ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn α
 supFree (atom r ts) with supFreeTerms ts
 supFree (atom r ts) | ⌈ts⌉ , tspf = ⌈ts⌉ , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
@@ -627,6 +650,13 @@ supFree (Λ x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → Λ x (αpf 
 supFree (V x α) with supFree α
 supFree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n ⌈α⌉<n)
 
+\end{code}
+
+Given a formula $\alpha$, variable $x$, and term $t$, a similar process to the
+one above produces a variable which is fresh (not free in $\alpha$, not equal
+to $x$, and not in $t$).
+
+\begin{code}
 
 freshVar : ∀ α x t → FreshVar α x t
 freshVar α (mkvar n) t with supFree α | supFreeTerm t
@@ -672,6 +702,11 @@ freshVar α (mkvar n) t with supFree α | supFreeTerm t
     replaceable : mkvar (suc n) NotFreeInTerm t
     replaceable = tpf (suc n) (sn≤sm ⌈t⌉≤n)
 
+\end{code}
+
+The result of $\alpha [ x / t ]$ should be a formula $\beta$ satisfying $\alpha [ x / t ]\equiv \beta$. Such a $\beta$ is computable.
+
+\begin{code}
 
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs → [ us ][ x / t ]≡ vs
 [ [] ][ x / t ] = [] , []
@@ -682,7 +717,14 @@ freshVar α (mkvar n) t with supFree α | supFreeTerm t
 [ functerm f ws ∷ us ][ x / t ] | vs , [us][x/t]≡vs with [ ws ][ x / t ]
 ... | xs , [ws][x/t]≡xs = functerm f xs ∷ vs , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
 
--- Make sure to use the nicer substitutions for quantification where possible
+\end{code}
+
+While there is a general constructor for variable substitution which works in
+all cases, we avoid unnecessary renaming of bound variables by using the other
+constructors where possible.
+
+\begin{code}
+
 {-# TERMINATING #-}
 _[_/_] : ∀ α x t → Σ Formula (α [ x / t ]≡_)
 atom r us [ x / t ] with [ us ][ x / t ]
@@ -712,6 +754,26 @@ V  y α    [ x / t ] | no x≢y   | no xf   | mkfreshvar ω ωnfα x≢ω ωnft 
 V  y α    [ x / t ] | no x≢y   | no xf   | mkfreshvar ω ωnfα x≢ω ωnft | β , α[y/ω]≡β | γ , β[x/t]≡γ
                     = V ω γ , V/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
 
+\end{code}
+
+The proof above is declared to be terminating with a pragma. This is necessary
+because of the substitution constructor which uses bound variable renaming. In
+this case, to compute $\forall y \alpha [ x / t ]$, we first compute a fresh
+variable $\omega$, and compute a $\beta$ satisfying $\alpha [ y / \omega
+]\equiv \beta$. Then the substitution is done on $\beta$, by computing a
+$\gamma$ satisfying $\beta [ x / t ]\equiv \gamma$. However, Agda does not see
+this as structurally recursive, as there is no guarantee that $\beta$ is
+structurally smaller than $\forall y \alpha$.
+
+\todo{Offer solutions}
+
+
+\subsection{Lemma}
+
+If a variable has been replaced with a term not involving that variable, then
+the variable is not free in the resulting term.
+
+\begin{code}
 
 subNotFreeTerms : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
 subNotFreeTerms xnft []                       = []
@@ -734,4 +796,3 @@ subNotFree xnft (V x≢y ynft sub)     = V _ (subNotFree xnft sub)
 subNotFree xnft (V/ _ _ _ sub₁ sub₂) = V _ (subNotFree xnft sub₂)
 
 \end{code}
-
