@@ -1,3 +1,10 @@
+\section{Nat.agda}
+
+We augment the built-in definition of the natural numbers with a propositional
+ordering, and show that the maximum of two numbers is computable.
+
+\begin{code}
+
 module Nat where
 
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_<_) public
@@ -34,4 +41,4 @@ max (suc n) (suc m) with max n m
 max (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
 max (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
 
-
+\end{code}
