@@ -1,7 +1,6 @@
 module Vec where
 
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
-open import Agda.Builtin.Sigma
 
 open import Decidable
 
@@ -14,48 +13,38 @@ data All {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   []  : All P []
   _∷_ : ∀{x n} {xs : Vec A n} → P x → All P xs → All P (x ∷ xs)
 
-private
-  -- Some lemmae for All
-  headAll : ∀{A x n} {xs : Vec A n} {P : Pred A} → All P (x ∷ xs) → P x
-  headAll (Px ∷ _) = Px
-
-  tailAll : ∀{A x n} {xs : Vec A n} {P : Pred A} → All P (x ∷ xs) → All P xs
-  tailAll (_ ∷ ∀xsP) = ∀xsP
-
 -- All is decidable for decidable predicates
-all : {A : Set} {n : ℕ} {P : Pred A} → (P? : Decidable P) → (xs : Vec A n) → Dec (All P xs)
-all P? [] = yes []
-all P? (x ∷ xs) with P? x
-...             | no ¬Px = no λ φ → ¬Px (headAll φ)
-...             | yes Px with all P? xs
-...                      | yes ∀xsP = yes (Px ∷ ∀xsP)
-...                      | no ¬∀xsP = no λ φ → ¬∀xsP (tailAll φ)
+all : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (All P xs)
+all p [] = yes []
+all p (x ∷ xs) with p x
+...            | no ¬Px = no ¬all
+                          where
+                            ¬all : ¬(All _ (x ∷ xs))
+                            ¬all (Px ∷ _) = ¬Px Px
+...            | yes Px with all p xs
+...                     | yes ∀xsP = yes (Px ∷ ∀xsP)
+...                     | no ¬∀xsP = no ¬all
+                                     where
+                                       ¬all : ¬(All _ (x ∷ xs))
+                                       ¬all (_ ∷ ∀xsP) = ¬∀xsP ∀xsP
 
-
-infixr 5 _∷_
 
 data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
-  [_] : ∀{n} {xs : Vec A n} → ∀{x} → P x      → Any P (x ∷ xs)
-  _∷_ : ∀{n} {xs : Vec A n} → ∀ x  → Any P xs → Any P (x ∷ xs)
-
-private
-  -- Some lemmae for Any
-  hereAny : ∀{A x n} {xs : Vec A n} {P : Pred A} → Any P (x ∷ xs) → ¬(Any P xs) → P x
-  hereAny [ Px ]     ¬∃xsP = Px
-  hereAny (_ ∷ ∃xsP) ¬∃xsP = ⊥-elim (¬∃xsP ∃xsP)
-
-  laterAny : ∀{A x n} {xs : Vec A n} {P : Pred A} → Any P (x ∷ xs) → ¬(P x) → (Any P xs)
-  laterAny [ Px ]     ¬Px = ⊥-elim (¬Px Px)
-  laterAny (_ ∷ ∃xsP) ¬Px = ∃xsP
+  [_] : ∀{n x} {xs : Vec A n}       → P x      → Any P (x ∷ xs)
+  _∷_ : ∀{n}   {xs : Vec A n} → ∀ x → Any P xs → Any P (x ∷ xs)
 
 -- Any is decidable for decidable predicates
-any : {A : Set} {n : ℕ} {P : Pred A} → (P? : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
-any P? [] = no (λ ())
-any P? (x ∷ xs) with P? x
-...             | yes Px = yes [ Px ]
-...             | no ¬Px with any P? xs
-...                      | yes ∃xsP = yes (x ∷ ∃xsP)
-...                      | no ¬∃xsP = no λ φ → ¬Px (hereAny φ ¬∃xsP)
+any : {A : Set} {n : ℕ} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
+any p [] = no (λ ())
+any p (x ∷ xs) with p x
+...            | yes Px = yes [ Px ]
+...            | no ¬Px with any p xs
+...                     | yes ∃xsP = yes (x ∷ ∃xsP)
+...                     | no ¬∃xsP = no ¬any
+                                     where
+                                       ¬any : ¬(Any _ (x ∷ xs))
+                                       ¬any [ Px ] = ¬Px Px
+                                       ¬any ( _ ∷ ∃xsP) = ¬∃xsP ∃xsP
 
 
 -- Any can be used to define membership
