@@ -61,7 +61,7 @@ x ∈ xs = Any (x ≡_) xs
 _∉_ : {A : Set} → (x : A) → List A → Set
 x ∉ xs = ¬(x ∈ xs)
 
-decide∈ : {A : Set} → Decidable≡ A → (x : A) → (xs : List A) → Dec (x ∈ xs)
+decide∈ : ∀{A} → Decidable≡ A → (x : A) → (xs : List A) → Dec (x ∈ xs)
 decide∈ _≟_ x xs = any (x ≟_) xs
 
 \end{code}

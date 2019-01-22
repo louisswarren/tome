@@ -53,7 +53,7 @@ data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   [_] : ∀{n x} {xs : Vec A n}       → P x      → Any P (x ∷ xs)
   _∷_ : ∀{n}   {xs : Vec A n} → ∀ x → Any P xs → Any P (x ∷ xs)
 
-any : {A : Set} {n : ℕ} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
+any : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
 
 \end{code}
 (Proof Omitted.)
@@ -84,7 +84,7 @@ x ∈ xs = Any (x ≡_) xs
 _∉_ : {A : Set} {n : ℕ} → (x : A) → Vec A n → Set
 x ∉ xs = ¬(x ∈ xs)
 
-decide∈ : {A : Set} {n : ℕ} → Decidable≡ A → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
+decide∈ : ∀{A n} → Decidable≡ A → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
 decide∈ _≟_ x xs = any (x ≟_) xs
 
 \end{code}
