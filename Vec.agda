@@ -34,7 +34,7 @@ data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   _∷_ : ∀{n}   {xs : Vec A n} → ∀ x → Any P xs → Any P (x ∷ xs)
 
 -- Any is decidable for decidable predicates
-any : {A : Set} {n : ℕ} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
+any : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
 any p [] = no (λ ())
 any p (x ∷ xs) with p x
 ...            | yes Px = yes [ Px ]
@@ -57,5 +57,5 @@ _∉_ : {A : Set} {n : ℕ} → (x : A) → Vec A n → Set
 x ∉ xs = ¬(x ∈ xs)
 
 -- Memberhsip is decidable if equality is decidable.
-decide∈ : {A : Set} {n : ℕ} → Decidable≡ A → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
+decide∈ : ∀{A n} → Decidable≡ A → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
 decide∈ _≟_ x xs = any (x ≟_) xs
