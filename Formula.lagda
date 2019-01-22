@@ -244,7 +244,7 @@ lemmae) hold, however, and the details not necessary for natural deduction.
 It remains to prove that equality of formulae is decidable. This follows from
 the fact that formulae are inductively defined. The proof is obtained by case
 analysis, using lemmae on the types used to construct formulae. The unremarkable
-proofs are ommitted from the latex-typeset form of this file, except for
+proofs are omitted from the latex-typeset form of this file, except for
 equality of natural numbers, which is included for illustrative purposes.
 
 Lemmas:
