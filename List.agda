@@ -3,13 +3,6 @@ module List where
 open import Agda.Builtin.List public
 open import Decidable
 
-infixr 5 _++_
-
-_++_ : {A : Set} → List A → List A → List A
-[]       ++ ys = ys
-(x ∷ xs) ++ ys = x ∷ (xs ++ ys)
-
-
 data All {A : Set} (P : Pred A) : List A → Set where
   []  : All P []
   _∷_ : ∀{x xs} → P x → All P xs → All P (x ∷ xs)
