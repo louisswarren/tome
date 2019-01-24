@@ -14,12 +14,14 @@ private
 _⊂_ : (αs βs : List Formula) → Set
 αs ⊂ βs = All (_∈ βs) αs
 
+infixl 4 _-_
 _-_ : List Formula → Formula → List Formula
 [] - β = []
 (α ∷ αs) - β with formulaEq α β
 ((β ∷ αs) - .β) | yes refl = αs - β
 ((α ∷ αs) -  β) | no  _    = α ∷ (αs - β)
 
+infixl 6 _∪_
 _∪_ : List Formula → List Formula → List Formula
 []       ∪ ys = ys
 (x ∷ xs) ∪ ys = x ∷ (xs ∪ ys)
@@ -122,6 +124,27 @@ simple α = eqded closed
     closed | yes refl = refl
     closed | no x = ⊥-elim (x refl)
 
+removeonce : ∀ α → (α ∷ α ∷ [] - α) ≡ []
+removeonce α with formulaEq α α
+removeonce α | yes refl with formulaEq α α
+removeonce α | yes refl | yes refl = refl
+removeonce α | yes refl | no x = ⊥-elim (x refl)
+removeonce α | no x = ⊥-elim (x refl)
+
+simple₂ : ∀ α β → [] ⊢ α ⇒ α ∧ (β ⇒ α)
+simple₂ α β = eqded closed (arrowintro α (conjintro (assume α) (arrowintro β (assume α))))
+  where
+    closed : (((α ∷ []) ∪ ((α ∷ []) - β)) - α) ≡ []
+    closed with formulaEq α β
+    closed | yes refl with formulaEq α α
+    closed | yes refl | yes refl = refl
+    closed | yes refl | no x = ⊥-elim (x refl)
+    closed | no _ with formulaEq α α
+    closed | no _ | yes refl with formulaEq α α
+    closed | no _ | yes refl | yes refl = refl
+    closed | no _ | yes refl | no x = ⊥-elim (x refl)
+    closed | no _ | no x = ⊥-elim (x refl)
+
 reorder : ∀ α β γ → α ⇒ β ⇒ γ ∷ [] ⊢ β ⇒ α ⇒ γ
 reorder α β γ = eqded closed
                 (arrowintro β
@@ -132,9 +155,7 @@ reorder α β γ = eqded closed
                     (assume α))
                    (assume β))))
   where
-    lemma : ((((α ⇒ β ⇒ γ) ∷ []) ∪ (α ∷ [])) ∪ (β ∷ [])) ≡ ((α ⇒ β ⇒ γ) ∷ (α ∷ (β ∷ [])))
-    lemma = refl
-    closed : ((((((α ⇒ β ⇒ γ) ∷ []) ∪ (α ∷ [])) ∪ (β ∷ [])) - α) - β) ≡ ((α ⇒ β ⇒ γ) ∷ [])
+    closed : (((α ⇒ β ⇒ γ ∷ []) ∪ (α ∷ []) ∪ (β ∷ [])) - α - β) ≡ α ⇒ β ⇒ γ ∷ []
     closed with formulaEq (α ⇒ β ⇒ γ) α
     closed | yes ()
     closed | no _ with formulaEq α α
