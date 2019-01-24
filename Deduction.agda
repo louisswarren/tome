@@ -3,30 +3,35 @@ module Deduction where
 open import Agda.Builtin.String
 
 open import Formula
-open import Ensemble
 open import List
-  hiding (Any ; any)
-  renaming (
-    All        to All[]        ;
-    all        to all[]        ;
-    _∈_        to _[∈]_        ;
-    _∉_        to _[∉]_        ;
-    decide∈    to decide[∈]    )
+open import Decidable
 
 private
   infix 300 _NotFreeInAll_
-  _NotFreeInAll_ : Variable → Ensemble formulaEq → Set
+  _NotFreeInAll_ : Variable → List Formula → Set
   x NotFreeInAll Γ = All (x NotFreeIn_) Γ
 
+_⊂_ : (αs βs : List Formula) → Set
+αs ⊂ βs = All (_∈ βs) αs
+
+_-_ : List Formula → Formula → List Formula
+[] - β = []
+(α ∷ αs) - β with formulaEq α β
+((β ∷ αs) - .β) | yes refl = αs - β
+((α ∷ αs) -  β) | no  _    = α ∷ (αs - β)
+
+_∪_ : List Formula → List Formula → List Formula
+[]       ∪ ys = ys
+(x ∷ xs) ∪ ys = x ∷ (xs ∪ ys)
 
 infix 1 _⊢_ ⊢_
-data _⊢_ : Ensemble formulaEq → Formula → Set where
-  cite       : ∀{α} → String → ∅ ⊢ α → ∅ ⊢ α
+data _⊢_ : List Formula → Formula → Set where
+  cite       : ∀{α} → String → [] ⊢ α → [] ⊢ α
 
   close      : ∀{Γ Δ α} → Γ ⊂ Δ  → Γ ⊢ α → Δ ⊢ α
 
   assume     : (α : Formula)
-               →                              α ∷ ∅ ⊢ α
+               →                              α ∷ [] ⊢ α
 
   arrowintro : ∀{Γ β} → (α : Formula)
                →                                  Γ ⊢ β
@@ -89,7 +94,7 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
 
 
 ⊢_ : Formula → Set
-⊢_ α = ∅ ⊢ α
+⊢_ α = [] ⊢ α
 
 
 Derivable : Scheme → Set
@@ -97,6 +102,20 @@ Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
 
 
 _⊃_ : List Scheme → Scheme → Set
-(Ω ⊃ Φ) = All[] (Derivable) Ω → Derivable Φ
+(Ω ⊃ Φ) = All (Derivable) Ω → Derivable Φ
 
 infixr 1 _⊃_
+
+
+eqded : ∀{α Δ Γ}→ Δ ≡ Γ → Δ ⊢ α → Γ ⊢ α
+eqded refl x₁ = x₁
+
+
+
+simple : ∀ α → [] ⊢ α ⇒ α
+simple α = eqded closed (arrowintro α (assume α))
+  where
+    closed : ((α ∷ []) - α) ≡ []
+    closed with formulaEq α α
+    closed | yes refl = refl
+    closed | no x = ⊥-elim (x refl)
