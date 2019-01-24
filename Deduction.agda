@@ -113,9 +113,38 @@ eqded refl x₁ = x₁
 
 
 simple : ∀ α → [] ⊢ α ⇒ α
-simple α = eqded closed (arrowintro α (assume α))
+simple α = eqded closed
+           (arrowintro α
+            (assume α))
   where
     closed : ((α ∷ []) - α) ≡ []
     closed with formulaEq α α
     closed | yes refl = refl
     closed | no x = ⊥-elim (x refl)
+
+reorder : ∀ α β γ → α ⇒ β ⇒ γ ∷ [] ⊢ β ⇒ α ⇒ γ
+reorder α β γ = eqded closed
+                (arrowintro β
+                 (arrowintro α
+                  (arrowelim
+                   (arrowelim
+                    (assume (α ⇒ β ⇒ γ))
+                    (assume α))
+                   (assume β))))
+  where
+    lemma : ((((α ⇒ β ⇒ γ) ∷ []) ∪ (α ∷ [])) ∪ (β ∷ [])) ≡ ((α ⇒ β ⇒ γ) ∷ (α ∷ (β ∷ [])))
+    lemma = refl
+    closed : ((((((α ⇒ β ⇒ γ) ∷ []) ∪ (α ∷ [])) ∪ (β ∷ [])) - α) - β) ≡ ((α ⇒ β ⇒ γ) ∷ [])
+    closed with formulaEq (α ⇒ β ⇒ γ) α
+    closed | yes ()
+    closed | no _ with formulaEq α α
+    closed | no _ | no x     = ⊥-elim (x refl)
+    closed | no _ | yes refl with formulaEq β α
+    closed | no _ | yes refl | yes refl with formulaEq (α ⇒ β ⇒ γ) β
+    closed | no _ | yes refl | yes refl | yes ()
+    closed | no _ | yes refl | yes refl | no _ = refl
+    closed | no _ | yes refl | no _ with formulaEq (α ⇒ β ⇒ γ) β
+    closed | no _ | yes refl | no _ | yes ()
+    closed | no _ | yes refl | no _ | no _ with formulaEq β β
+    closed | no _ | yes refl | no _ | no _ | yes refl = refl
+    closed | no _ | yes refl | no _ | no _ | no x = ⊥-elim (x refl)
