@@ -11,11 +11,9 @@ open import List
 -- An ensemble is like a decidable finite set, but we do not define a
 -- comprehension constructor.
 
--- Sadly, a change in Agda forces all of these to be given explicitly
 infixr 5 _∷_
-infixl 4 _∪_
+infixl 5 _∪_
 infixl 5 _-_
-infix 1 _∈_∖_ _∈?_ _∉_∖_ _∣∪_ _∪∣_ _⊂_ _⊂?_
 
 data Ensemble {A : Set} (eq : Decidable≡ A) : Set where
   ∅   : Ensemble eq
