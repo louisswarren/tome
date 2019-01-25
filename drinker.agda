@@ -172,9 +172,9 @@ LEM⊃GLPO (⊢LEM ∷ []) (α ∷ []) = lem→glpo (descheme₁ ⊢LEM) α
 
 glpo→lem : ⊢₁ glpo → ⊢₁ lem
 glpo→lem ⊢glpo α = close
-                    (∅ ∪ ∀x¬ αω ~ [ refl ] -∷ ∅ ∪ ∃x αω ~ ([ refl ] -∷ ∅ ∪ αω ~ [ refl ] -∷ ∅))
+                    (∅ ∪ (∀x¬ αω ~ [ refl ] -∷ ∅) ∪  (∃x αω ~ (([ refl ] -∷ ∅) ∪ (αω ~ [ refl ] -∷ ∅))))
                     (univelim x αω∨¬αω[ω/x]≡α∨¬α
-                     (univintro ω (∅ ∪ ∀x¬ αω ~ [ refl ] -∷ ∅ ∪ ∃x αω ~ ([ refl ] -∷ ∅ ∪ αω ~ [ refl ] -∷ ∅))
+                     (univintro ω (∅ ∪ (∀x¬ αω ~ [ refl ] -∷ ∅) ∪  (∃x αω ~ (([ refl ] -∷ ∅) ∪ (αω ~ [ refl ] -∷ ∅))))
                       (disjelim
                        (cite "GLPO" (⊢glpo αω))
                        (disjintro₂ αω
@@ -243,9 +243,9 @@ DP⊃LPO (⊢DP ∷ []) (α ∷ β ∷ []) = dp→lpo (descheme₁ ⊢DP) α β
 
 dp→cd : ⊢₁ dp → ⊢₂ cd
 dp→cd ⊢dp α β = close
-                 (∀x (α ∨ ∃x β) ~ (∅ ∪ α ⇒ ∀x α ~ ((α ⇒ ∀x α ∷ [ refl ]) -∷ ∅ ∪ α ~ ((α ∷ [ refl ]) -∷ ∅ ∪ [ refl ] -∷ ∅) ∪ ∃x β ~ [ refl ] -∷ ∅)))
+                 (∀x (α ∨ ∃x β) ~ (∅ ∪ (α ⇒ ∀x α ~ ((((α ⇒ ∀x α) ∷ [ refl ]) -∷ ∅) ∪ (α ~ (((α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅))) ∪ (∃x β ~ [ refl ] -∷ ∅)))))
                  (arrowintro (∀x (α ∨ ∃x β))
-                  (existelim (Λ∣ xvar α ∨ V∣ xvar β ∷ α ⇒ ∀x α ~ (Λ∣ xvar (α ∨ ∃x β) ∷ ∅ ∪ α ~ ((α ∷ [ refl ]) -∷ ∅ ∪ [ refl ] -∷ ∅) ∪ ∃x β ~ V∣ xvar β ∷ ∅))
+                  (existelim (Λ∣ xvar α ∨ V∣ xvar β ∷ α ⇒ ∀x α ~ ((Λ∣ xvar (α ∨ ∃x β) ∷ ∅) ∪ (α ~ (((α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅))) ∪ (∃x β ~ V∣ xvar β ∷ ∅)))
                    (cite "DP" (⊢dp α))
                    (disjelim
                     (univelim x (ident (α ∨ ∃x β) xvar)
