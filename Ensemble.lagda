@@ -48,7 +48,12 @@ data Ensemble {A : Set} (eq : Decidable≡ A) : Set where
 \end{code}
 
 We define what it means for a property $P$ to hold on every member of an
-ensemble $\alpha s$.
+ensemble $\alpha s$. We recurse through the ensemble, forking at unions. When
+reaching a removal constructor, the removed element is added to a list which
+accumulates removed elements. For each element, we require either that $P$
+holds for the element, or else that it is in the list of removed elements.
+Finally, $P$ holds on all of $\alpha s$ if it holds according to the above
+procedure, with the removed element list starting empty.
 
 \begin{code}
 
@@ -64,8 +69,15 @@ data All_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) : Ensemble eq 
 All : {A : Set} {_≟_ : Decidable≡ A} → (P : Pred A) → Ensemble _≟_ → Set
 All P αs = All P ⟨ αs ∖ [] ⟩
 
+\end{code}
+
+If $P$ is decidable, then checking if $P$ holds in all of an ensemble is also
+decidable. First, some lemmae for breaking down instances of the above
+proposition:
+
+\begin{code}
+
 private
-  -- Some lemmae for All
   headAll : ∀{A α xs} {eq : Decidable≡ A} {αs : Ensemble eq} {P : Pred A}
             → All P ⟨ α ∷ αs ∖ xs ⟩ → α [∉] xs → P α
   headAll (Pα ∷ al)    α∉xs = Pα
@@ -88,7 +100,13 @@ private
             → All P ⟨ αs ∪ βs ∖ xs ⟩ → All P ⟨ βs ∖ xs ⟩
   rightAll (_ ∪ ∀βs∖xsP) = ∀βs∖xsP
 
--- All is decidable for decidable predicates
+\end{code}
+
+Now we show decidability for all starting values for the accumulated list of
+removed elements, and then in particular for starting with an empty list.
+
+\begin{code}
+
 all_⟨_∖_⟩ : {A : Set} {_≟_ : Decidable≡ A} {P : Pred A}
               → (P? : Decidable P) → (αs : Ensemble _≟_) → (xs : List A)
               → Dec (All P ⟨ αs ∖ xs ⟩)
@@ -113,6 +131,12 @@ all : {A : Set} {eq : Decidable≡ A} {P : Pred A}
       → (P? : Decidable P) → (αs : Ensemble eq) → Dec (All P αs)
 all P? αs = all P? ⟨ αs ∖ [] ⟩
 
+\end{code}
+
+To define `Any' for ensembles, we also use an accumulating list for removed
+elements, and require that the element satisfying $P$ not be in that list.
+
+\begin{code}
 
 data Any_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) : Ensemble eq → List A → Set where
   [_,_] : ∀{αs xs α} → P α  → α [∉] xs              → Any P ⟨ α ∷ αs ∖ xs ⟩
@@ -124,8 +148,14 @@ data Any_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) : Ensemble eq 
 Any : {A : Set} {eq : Decidable≡ A} → (P : Pred A) → Ensemble eq → Set
 Any P αs = Any P ⟨ αs ∖ [] ⟩
 
+\end{code}
+
+Checking if a decidable property holds on any element of an ensemble is also
+decidable.
+
+\begin{code}
+
 private
-  -- Some lemmae for Any
   hereAny : ∀{A α xs} {eq : Decidable≡ A} {αs : Ensemble eq} {P : Pred A}
             → Any P ⟨ α ∷ αs ∖ xs ⟩ → ¬ Any P ⟨ αs ∖ xs ⟩ → P α
   hereAny [ Pα , _ ]    ¬∃αs∖xsP = Pα
@@ -155,7 +185,7 @@ private
   rightAny (αs      ∣∪  ∃βs∖xsP) ¬∃αs∖xsP = ∃βs∖xsP
   rightAny (∃αs∖xsP  ∪∣ βs)      ¬∃αs∖xsP = ⊥-elim (¬∃αs∖xsP ∃αs∖xsP)
 
--- Any is decidable for decidable predicates
+
 any_⟨_∖_⟩ : {A : Set} {_≟_ : Decidable≡ A} {P : Pred A}
               → (P? : Decidable P) → (αs : Ensemble _≟_) → (xs : List A)
               → Dec (Any P ⟨ αs ∖ xs ⟩)
@@ -180,13 +210,19 @@ any : {A : Set} {eq : Decidable≡ A} {P : Pred A}
       → (P? : Decidable P) → (αs : Ensemble eq) → Dec (Any P αs)
 any P? αs = any P? ⟨ αs ∖ [] ⟩
 
+\end{code}
 
--- Any can be used to define membership
+As with lists, membership can be defined in terms of `All' and `Any'. Note that
+membership is always decidable for ensembles.
+
+\begin{code}
+
 _∈_∖_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → List A → Set
 α ∈ αs ∖ xs = Any (α ≡_) ⟨ αs ∖ xs ⟩
 
 _∉_∖_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → List A → Set
 α ∉ αs ∖ xs = ¬(α ∈ αs ∖ xs)
+
 
 infix 4 _∈_ _∉_
 _∈_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
@@ -195,12 +231,16 @@ _∈_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
 _∉_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
 α ∉ αs = ¬(α ∈ αs)
 
--- Memberhsip is decidable since equality is decidable.
+
 _∈?_ : {A : Set} {eq : Decidable≡ A} → (α : A) → (αs : Ensemble eq) → Dec (α ∈ αs)
 _∈?_ {_} {eq} α αs = any (eq α) αs
 
+\end{code}
 
--- Subsets follow from membership
+Subsets follow from membership.
+
+\begin{code}
+
 _⊂_ : {A : Set} {_≟_ : Decidable≡ A} → (αs βs : Ensemble _≟_) → Set
 αs ⊂ βs = All (_∈ βs) αs
 
