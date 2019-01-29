@@ -1,3 +1,30 @@
+\section{Ensemble.lagda}
+
+Within a natural deduction proof, the context (collection of open assumptions)
+must be manipulated. In particular, when an assumption is discharged it is
+removed from the context. Some deductive rules require that a particular
+variable not be free in any open assumption. At the end of a deduction, we
+require that the remaining open assumptions are all contained within the
+premise of the statement being derived. Both of these requirements involve
+proving that a property holds on every remaining member of the context, but not
+necessarily on assumptions that have been removed.  While removal of elements
+from a list of formulae can be defined with a function, it is unweildy to give
+proofs regarding the results of such computations, as they depend on
+equality-checking of formulae, and so proofs must include both the case where
+the equality is as expected, and the degenerate case. See \todo{appendix} for
+details.
+
+We define an extension of the list type, called ensemble. This has a
+constructor for removal. While list concatenation does not have the same issues
+as removal, concatenation of ensembles is nontrivial to compute due to this
+constructor, and so a union constructor is also given. Ensembles are defined
+only over types with decidable equality, so that it is always possible to
+determine the elements of an ensemble. Note that this corresponds to finite
+sets, as sets must be defined with an equality. However, no constructor is
+given for comprehension.
+
+\begin{code}
+
 open import Agda.Builtin.Equality
 
 open import Decidable
@@ -8,9 +35,6 @@ open import List
     _∉_        to _[∉]_        ;
     decide∈    to decide[∈]    )
 
--- An ensemble is like a decidable finite set, but we do not define a
--- comprehension constructor.
-
 infixr 5 _∷_
 infixl 5 _∪_
 infixl 5 _-_
@@ -20,6 +44,13 @@ data Ensemble {A : Set} (eq : Decidable≡ A) : Set where
   _∷_ : A           → Ensemble eq → Ensemble eq
   _-_ : Ensemble eq → A           → Ensemble eq
   _∪_ : Ensemble eq → Ensemble eq → Ensemble eq
+
+\end{code}
+
+We define what it means for a property $P$ to hold on every member of an
+ensemble $\alpha s$.
+
+\begin{code}
 
 infixr 5 _-∷_ _~_
 
@@ -175,3 +206,5 @@ _⊂_ : {A : Set} {_≟_ : Decidable≡ A} → (αs βs : Ensemble _≟_) → Se
 
 _⊂?_ : {A : Set} {_≟_ : Decidable≡ A} → (αs βs : Ensemble _≟_) → Dec (αs ⊂ βs)
 _⊂?_ {A} {_≟_} αs βs = all (λ x → any _≟_ x ⟨ βs ∖ [] ⟩) ⟨ αs ∖ [] ⟩
+
+\end{code}
