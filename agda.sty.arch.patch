@@ -1,0 +1,29 @@
+--- /usr/share/agda/agda.sty	2019-01-21 10:54:04.000000000 +1300
++++ agda.sty	2019-01-30 17:23:21.122110992 +1300
+@@ -87,19 +87,19 @@
+ 
+     \setmainfont
+       [ Ligatures      = TeX
+-      , BoldItalicFont = xits-bolditalic.otf
+-      , BoldFont       = xits-bold.otf
+-      , ItalicFont     = xits-italic.otf
++      , BoldItalicFont = XITS-BoldItalic.otf
++      , BoldFont       = XITS-Bold.otf
++      , ItalicFont     = XITS-Italic.otf
+       ]
+-      {xits-regular.otf}
++      {XITS-Regular.otf}
+ 
+-    \setmathfont{xits-math.otf}
++    \setmathfont{XITSMath-Regular.otf}
+     \setmonofont[Mapping=tex-text]{FreeMono.otf}
+ 
+     % Make mathcal and mathscr appear as different.
+     % https://tex.stackexchange.com/questions/120065/xetex-what-happened-to-mathcal-and-mathscr
+-    \setmathfont[range={\mathcal,\mathbfcal},StylisticSet=1]{xits-math.otf}
+-    \setmathfont[range=\mathscr]{xits-math.otf}
++    \setmathfont[range={\mathcal,\mathbfcal},StylisticSet=1]{XITSMath-Regular.otf}
++    \setmathfont[range=\mathscr]{XITSMath-Regular.otf}
+ 
+   % pdfLaTeX
+   \else
