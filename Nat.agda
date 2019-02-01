@@ -33,5 +33,3 @@ max (suc n) zero    = more 0≤n
 max (suc n) (suc m) with max n m
 max (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
 max (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
-
-

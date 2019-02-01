@@ -11,8 +11,7 @@ open import List
 -- An ensemble is like a decidable finite set, but we do not define a
 -- comprehension constructor.
 
-infixr 5 _∷_
-infixr 5 _∪_
+infixr 5 _∷_ _∪_
 infixl 5 _-_
 
 data Ensemble {A : Set} (eq : Decidable≡ A) : Set where
@@ -20,6 +19,7 @@ data Ensemble {A : Set} (eq : Decidable≡ A) : Set where
   _∷_ : A           → Ensemble eq → Ensemble eq
   _-_ : Ensemble eq → A           → Ensemble eq
   _∪_ : Ensemble eq → Ensemble eq → Ensemble eq
+
 
 infixr 5 _-∷_ _~_
 
