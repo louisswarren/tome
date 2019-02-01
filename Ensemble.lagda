@@ -36,7 +36,7 @@ open import List
     decide∈    to decide[∈]    )
 
 infixr 5 _∷_
-infixl 5 _∪_
+infixr 5 _∪_
 infixl 5 _-_
 
 data Ensemble {A : Set} (eq : Decidable≡ A) : Set where
