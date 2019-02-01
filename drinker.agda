@@ -114,7 +114,7 @@ IP = binaryscheme "IP" ip
 
 dne→lem : ⊢₁ dne → ⊢₁ lem
 dne→lem ⊢dne α = close
-                  (∅ ∪  ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                  (∅ ∪ ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (arrowelim
                    (cite "DNE" (⊢dne (α ∨ ¬ α)))
                    (arrowintro (¬ (α ∨ ¬ α))
@@ -136,13 +136,13 @@ DNE⊃EFQ : DNE ∷ [] ⊃ EFQ
 DNE⊃EFQ (⊢DNE ∷ []) (α ∷ []) = dne→efq (descheme₁ ⊢DNE) α
 
 lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
-lem,efq→dne ⊢lem ⊢efq α = close (¬¬ α ~  ((∅ ∪ (α ~ ([ refl ] -∷ ∅))) ∪   (¬ α ~ (∅ ∪ (((¬ α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅)))))) (arrowintro (¬¬ α) (disjelim (cite "LEM" (⊢lem α)) (assume α) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
+lem,efq→dne ⊢lem ⊢efq α = close (¬¬ α ~ ∅ ∪ (α ~ [ refl ] -∷ ∅) ∪ ¬ α ~ ∅ ∪ ((¬ α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅) (arrowintro (¬¬ α) (disjelim (cite "LEM" (⊢lem α)) (assume α) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
 LEM,EFQ⊃DNE : LEM ∷ EFQ ∷ [] ⊃ DNE
 LEM,EFQ⊃DNE (⊢LEM ∷ ⊢EFQ ∷ []) (α ∷ []) = lem,efq→dne (descheme₁ ⊢LEM) (descheme₁ ⊢EFQ) α
 
 
 he→ip : ⊢₁ he → ⊢₂ ip
-he→ip ⊢he α β = close ((∃x β ⇒ ∃x α) ~  (∅ ∪   ((∃x α ⇒ α) ~(∃x β ~ (((∃x β ∷ [ refl ]) -∷ ∅) ∪  (((∃x β ∷ ((∃x α ⇒ α) ∷ [ refl ])) -∷ ∅) ∪ ([ refl ] -∷ ∅))))))) (arrowintro (∃x β ⇒ ∃x α) (existelim (V∣ xvar (∃x β ⇒ α) ∷  ((∃x α ⇒ α) ~   (∃x β ~(((∃x β ∷ [ refl ]) -∷ ∅) ∪ (((V∣ xvar β ⇒ V∣ xvar α) ∷ ∅) ∪ (V∣ xvar β ∷ ∅)))))) (cite "HE" (⊢he α)) (existintro x xvar (ident (∃x β ⇒ α) xvar) (arrowintro (∃x β) (arrowelim (assume (∃x α ⇒ α)) (arrowelim (assume (∃x β ⇒ ∃x α)) (assume (∃x β))))))))
+he→ip ⊢he α β = close ((∃x β ⇒ ∃x α) ~ (∅ ∪ ((∃x α ⇒ α) ~(∃x β ~ (((∃x β ∷ [ refl ]) -∷ ∅) ∪ (((∃x β ∷ ((∃x α ⇒ α) ∷ [ refl ])) -∷ ∅) ∪ ([ refl ] -∷ ∅))))))) (arrowintro (∃x β ⇒ ∃x α) (existelim (V∣ xvar (∃x β ⇒ α) ∷ ((∃x α ⇒ α) ~ (∃x β ~(((∃x β ∷ [ refl ]) -∷ ∅) ∪ (((V∣ xvar β ⇒ V∣ xvar α) ∷ ∅) ∪ (V∣ xvar β ∷ ∅)))))) (cite "HE" (⊢he α)) (existintro x xvar (ident (∃x β ⇒ α) xvar) (arrowintro (∃x β) (arrowelim (assume (∃x α ⇒ α)) (arrowelim (assume (∃x β ⇒ ∃x α)) (assume (∃x β))))))))
 HE⊃IP : HE ∷ [] ⊃ IP
 HE⊃IP (⊢HE ∷ []) (α ∷ β ∷ []) = he→ip (descheme₁ ⊢HE) α β
 
@@ -155,7 +155,7 @@ IP⊃HE (⊢IP ∷ []) (α ∷ []) = ip→he (descheme₂ ⊢IP) α
 
 lem→glpo : ⊢₁ lem → ⊢₁ glpo
 lem→glpo ⊢lem α = close
-                   ((∅ ∪ (∃x α ~ ([ refl ] -∷ ∅))) ∪  (¬∃x α ~ (α ~ (((α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅)))))
+                   (∅ ∪ (∃x α ~ [ refl ] -∷ ∅) ∪ ¬∃x α ~ α ~ ((α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅)
                    (disjelim
                     (cite "LEM" (⊢lem (∃x α)))
                     (disjintro₂ (∀x¬ α)
@@ -172,9 +172,9 @@ LEM⊃GLPO (⊢LEM ∷ []) (α ∷ []) = lem→glpo (descheme₁ ⊢LEM) α
 
 glpo→lem : ⊢₁ glpo → ⊢₁ lem
 glpo→lem ⊢glpo α = close
-                    (∅ ∪ (∀x¬ αω ~ [ refl ] -∷ ∅) ∪  (∃x αω ~ (([ refl ] -∷ ∅) ∪ (αω ~ [ refl ] -∷ ∅))))
+                    (∅ ∪ (∀x¬ αω ~ [ refl ] -∷ ∅) ∪ (∃x αω ~ (([ refl ] -∷ ∅) ∪ (αω ~ [ refl ] -∷ ∅))))
                     (univelim x αω∨¬αω[ω/x]≡α∨¬α
-                     (univintro ω (∅ ∪ (∀x¬ αω ~ [ refl ] -∷ ∅) ∪  (∃x αω ~ (([ refl ] -∷ ∅) ∪ (αω ~ [ refl ] -∷ ∅))))
+                     (univintro ω (∅ ∪ (∀x¬ αω ~ [ refl ] -∷ ∅) ∪ (∃x αω ~ (([ refl ] -∷ ∅) ∪ (αω ~ [ refl ] -∷ ∅))))
                       (disjelim
                        (cite "GLPO" (⊢glpo αω))
                        (disjintro₂ αω
@@ -205,9 +205,9 @@ GLPO⊃LEM (⊢GLPO ∷ []) (α ∷ []) = glpo→lem (descheme₁ ⊢GLPO) α
 
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
 dp→gmp ⊢dp α = close
-                ((Λ (mkvar zero) α ⇒ atom (mkrel zero zero) []) ~  (∅ ∪   ((α ⇒ Λ (mkvar zero) α) ~ (α ~  (((α ∷ ((α ⇒ Λ (mkvar zero) α) ∷ List.[ refl ])) -∷ ∅) ∪   (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
+                ((Λ (mkvar zero) α ⇒ atom (mkrel zero zero) []) ~ (∅ ∪ ((α ⇒ Λ (mkvar zero) α) ~ (α ~ (((α ∷ ((α ⇒ Λ (mkvar zero) α) ∷ List.[ refl ])) -∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
                 (arrowintro (¬∀x α)
-                 (existelim (V∣ (mkvar zero) (α ⇒ atom (mkrel zero zero) []) ∷  ((α ⇒ Λ (mkvar zero) α) ~   (α ~(((Λ∣ (mkvar zero) α ⇒ atom []) ∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                 (existelim (V∣ (mkvar zero) (α ⇒ atom (mkrel zero zero) []) ∷ ((α ⇒ Λ (mkvar zero) α) ~ (α ~(((Λ∣ (mkvar zero) α ⇒ atom []) ∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (cite "DP" (⊢dp α))
                   (existintro x xvar (ident (¬ α) xvar)
                    (arrowintro α
@@ -222,10 +222,10 @@ DP⊃GMP (⊢DP ∷ []) (α ∷ []) = dp→gmp (descheme₁ ⊢DP) α
 
 dp→lpo : ⊢₁ dp → ⊢₂ lpo
 dp→lpo ⊢dp α β = close
-                  (∀x (α ∨ β) ~  (∅ ∪   ((α ⇒ ∀x α) ~(((((α ⇒ ∀x α) ∷ [ refl ]) -∷ ∅) ∪  (α ~ (((α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅)))) ∪ (β ~ ([ refl ] -∷ ∅))))))
+                  (∀x (α ∨ β) ~ ∅ ∪ α ⇒ ∀x α ~ (((α ⇒ ∀x α) ∷ [ refl ]) -∷ ∅) ∪ (α ~ ((α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅) ∪ β ~ [ refl ] -∷ ∅)
                   (arrowintro (∀x (α ∨ β))
                    (existelim
-                    ((Λ∣ xvar α ∨ V∣ xvar β) ∷  ((α ⇒ ∀x α) ~   (((Λ∣ xvar (α ∨ β) ∷ ∅) ∪ (α ~ (((α ∷ [ refl ]) -∷ ∅) ∪ ([ refl ] -∷ ∅))))∪ (β ~ ([ refl ] -∷ ∅)))))
+                    (Λ∣ xvar α ∨ V∣ xvar β ∷ α ⇒ ∀x α ~ (Λ∣ xvar (α ∨ β) ∷ ∅) ∪ (α ~ ((α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅) ∪ β ~ [ refl ] -∷ ∅)
                     (cite "DP" (⊢dp α))
                     (disjelim
                      (univelim x (ident (α ∨ β) xvar)
