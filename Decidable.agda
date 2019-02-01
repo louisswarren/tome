@@ -4,7 +4,6 @@ open import Agda.Builtin.Equality public
 
 data ⊥ : Set where
 
-infix 3 ¬_
 ¬_ : (A : Set) → Set
 ¬ A = A → ⊥
 

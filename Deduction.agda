@@ -4,17 +4,9 @@ open import Agda.Builtin.String
 
 open import Formula
 open import Ensemble
-open import List
-  hiding (Any ; any)
-  renaming (
-    All        to All[]        ;
-    all        to all[]        ;
-    _∈_        to _[∈]_        ;
-    _∉_        to _[∉]_        ;
-    decide∈    to decide[∈]    )
+open import List renaming (All to All[])
 
 private
-  infix 300 _NotFreeInAll_
   _NotFreeInAll_ : Variable → Ensemble formulaEq → Set
   x NotFreeInAll Γ = All (x NotFreeIn_) Γ
 
@@ -34,69 +26,66 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
                →                              Γ - α ⊢ α ⇒ β
 
   arrowelim  : ∀{Γ₁ Γ₂ α β}
-               →                      Γ₁ ⊢ α ⇒ β    →    Γ₂ ⊢ α
-                                     --------------------------- ⇒⁻
-               →                            (Γ₁ ∪ Γ₂) ⊢ β
+               →                          Γ₁ ⊢ α ⇒ β    →    Γ₂ ⊢ α
+                                         --------------------------- ⇒⁻
+               →                                 Γ₁ ∪ Γ₂ ⊢ β
 
   conjintro  : ∀{Γ₁ Γ₂ α β}
-               →                          Γ₁ ⊢ α    →    Γ₂ ⊢ β
-                                         ----------------------- ∧⁺
-               →                            (Γ₁ ∪ Γ₂) ⊢ α ∧ β
+               →                           Γ₁ ⊢ α    →    Γ₂ ⊢ β
+                                          ----------------------- ∧⁺
+               →                              Γ₁ ∪ Γ₂ ⊢ α ∧ β
 
   conjelim   : ∀{Γ₁ Γ₂ α β γ}
-               →                      Γ₁ ⊢ α ∧ β    →    Γ₂ ⊢ γ
-                                     --------------------------- ∧⁻
-               →                       Γ₁ ∪ ((Γ₂ - α) - β) ⊢ γ
+               →                         Γ₁ ⊢ α ∧ β    →    Γ₂ ⊢ γ
+                                        --------------------------- ∧⁻
+               →                           Γ₁ ∪ (Γ₂ - α - β) ⊢ γ
 
   disjintro₁ : ∀{Γ α} → (β : Formula)
-               →                                  Γ ⊢ α
-                                               ----------- ∨⁺₁
-               →                                Γ ⊢ α ∨ β
+               →                                   Γ ⊢ α
+                                                ----------- ∨⁺₁
+               →                                 Γ ⊢ α ∨ β
 
   disjintro₂ : ∀{Γ β} → (α : Formula)
-               →                                  Γ ⊢ β
-                                               ----------- ∨⁺₂
-               →                                Γ ⊢ α ∨ β
+               →                                   Γ ⊢ β
+                                                ----------- ∨⁺₂
+               →                                 Γ ⊢ α ∨ β
 
   disjelim   : ∀{Γ₁ Γ₂ Γ₃ α β γ}
-               →              Γ₁ ⊢ α ∨ β    →    Γ₂ ⊢ γ    →    Γ₃ ⊢ γ
-                             ------------------------------------------ ∨⁻
-               →                   (Γ₁ ∪ (Γ₂ - α)) ∪ (Γ₃ - β) ⊢ γ
+               →             Γ₁ ⊢ α ∨ β    →    Γ₂ ⊢ γ    →    Γ₃ ⊢ γ
+                            ------------------------------------------ ∨⁻
+               →                   Γ₁ ∪ (Γ₂ - α) ∪ (Γ₃ - β) ⊢ γ
 
   univintro  : ∀{Γ α} → (x : Variable)
                → x NotFreeInAll Γ
-               →                                  Γ ⊢ α
-                                               ----------- ∀⁺
-               →                                Γ ⊢ Λ x α
+               →                                   Γ ⊢ α
+                                                ----------- ∀⁺
+               →                                 Γ ⊢ Λ x α
 
   univelim   : ∀{Γ α x α[x/r]} → (r : Term)
                → α [ x / r ]≡ α[x/r]
-               →                                  Γ ⊢ Λ x α
-                                                 ------------ ∀⁻
-               →                                  Γ ⊢ α[x/r]
+               →                                Γ ⊢ Λ x α
+                                               ------------ ∀⁻
+               →                                Γ ⊢ α[x/r]
 
   existintro : ∀{Γ α α[x/r]} → (r : Term) → (x : Variable)
                → α [ x / r ]≡ α[x/r]
-               →                                  Γ ⊢ α[x/r]
-                                                 ------------ ∃⁺
-               →                                  Γ ⊢ V x α
+               →                                Γ ⊢ α[x/r]
+                                               ------------ ∃⁺
+               →                                Γ ⊢ V x α
 
   existelim  : ∀{Γ₁ Γ₂ α β x}
                → x NotFreeInAll (β ∷ (Γ₂ - α))
-               →                      Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
-                                     --------------------------- ∃⁻
-               →                          Γ₁ ∪ (Γ₂ - α) ⊢ β
-
+               →                         Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
+                                        --------------------------- ∃⁻
+               →                             Γ₁ ∪ (Γ₂ - α) ⊢ β
 
 ⊢_ : Formula → Set
-⊢_ α = ∅ ⊢ α
+⊢ α = ∅ ⊢ α
 
 
 Derivable : Scheme → Set
 Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
 
-
+infix 1 _⊃_
 _⊃_ : List Scheme → Scheme → Set
 (Ω ⊃ Φ) = All[] (Derivable) Ω → Derivable Φ
-
-infixr 1 _⊃_
