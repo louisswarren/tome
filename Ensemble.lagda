@@ -58,12 +58,14 @@ procedure, with the removed element list starting empty.
 
 infixr 5 _-∷_ _~_
 
-data All_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) : Ensemble eq → List A → Set where
+data All_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) :
+    Ensemble eq → List A → Set where
   ∅    : ∀{xs}       → All P ⟨ ∅ ∖ xs ⟩
   _∷_  : ∀{αs xs α}  → P α      → All P ⟨ αs ∖ xs ⟩ → All P ⟨ α ∷ αs ∖ xs ⟩
   _-∷_ : ∀{αs xs α}  → α [∈] xs → All P ⟨ αs ∖ xs ⟩ → All P ⟨ α ∷ αs ∖ xs ⟩
   _~_  : ∀{αs xs}    → ∀ x → All P ⟨ αs ∖ x ∷ xs ⟩ → All P ⟨ αs - x ∖ xs ⟩
-  _∪_  : ∀{αs βs xs} → All P ⟨ αs ∖ xs ⟩ → All P ⟨ βs ∖ xs ⟩ → All P ⟨ αs ∪ βs ∖ xs ⟩
+  _∪_  : ∀{αs βs xs} → All P ⟨ αs ∖ xs ⟩ → All P ⟨ βs ∖ xs ⟩
+                     → All P ⟨ αs ∪ βs ∖ xs ⟩
 
 All : {A : Set} {_≟_ : Decidable≡ A} → (P : Pred A) → Ensemble _≟_ → Set
 All P αs = All P ⟨ αs ∖ [] ⟩
@@ -107,24 +109,25 @@ removed elements, and then in particular for starting with an empty list.
 \begin{code}
 
 all_⟨_∖_⟩ : {A : Set} {_≟_ : Decidable≡ A} {P : Pred A}
-              → (P? : Decidable P) → (αs : Ensemble _≟_) → (xs : List A)
+              → (p : Decidable P) → (αs : Ensemble _≟_) → (xs : List A)
               → Dec (All P ⟨ αs ∖ xs ⟩)
-all P? ⟨ ∅ ∖ xs ⟩ = yes ∅
-all P? ⟨ α ∷ αs ∖ xs ⟩ with all P? ⟨ αs ∖ xs ⟩
-...                                | no ¬all = no λ φ → ¬all (tailAll φ)
-all_⟨_∖_⟩ {_} {_≟_} P? (α ∷ αs) xs | yes all with decide[∈] _≟_ α xs
-...                                          | yes α∈xs = yes (α∈xs -∷ all)
-...                                          | no  α∉xs with P? α
-...                                                     | yes Pα = yes (Pα ∷ all)
-...                                                     | no ¬Pα = no λ φ → ¬Pα (headAll φ α∉xs)
-all P? ⟨ αs - α  ∖ xs ⟩ with all P? ⟨ αs ∖ α ∷ xs ⟩
-...                     | yes all = yes (α ~ all)
-...                     | no ¬all = no λ φ → ¬all (plusAll φ)
-all P? ⟨ αs ∪ βs ∖ xs ⟩ with all P? ⟨ αs ∖ xs ⟩
-...                     | no ¬allαs = no λ φ → ¬allαs (leftAll φ)
-...                     | yes allαs with all P? ⟨ βs ∖ xs ⟩
-...                                 | yes allβs = yes (allαs ∪ allβs)
-...                                 | no ¬allβs = no λ φ → ¬allβs (rightAll φ)
+all p ⟨ ∅ ∖ xs ⟩ = yes ∅
+all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs with decide[∈] eq α xs
+all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | no  α∉xs with p α
+... | no ¬Pα = no λ f → ¬Pα (headAll f α∉xs)
+... | yes Pα with all p ⟨ αs ∖ xs ⟩
+...          | yes Pαs = yes (Pα ∷ Pαs)
+...          | no ¬Pαs = no λ φ → ¬Pαs (tailAll φ)
+all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | yes α∈xs with all p ⟨ αs ∖ xs ⟩
+... | yes Pαs = yes (α∈xs -∷ Pαs)
+... | no ¬Pαs = no λ φ → ¬Pαs (tailAll φ)
+all p ⟨ αs - x ∖ xs ⟩ with all p ⟨ αs ∖ x ∷ xs ⟩
+all p ⟨ αs - x ∖ xs ⟩ | yes Pαs = yes (x ~ Pαs)
+all p ⟨ αs - x ∖ xs ⟩ | no ¬Pαs = no λ φ → ¬Pαs (plusAll φ)
+all p ⟨ αs ∪ βs ∖ xs ⟩ with all p ⟨ αs ∖ xs ⟩ | all p ⟨ βs ∖ xs ⟩
+all p ⟨ αs ∪ βs ∖ xs ⟩ | yes Pαs | yes Pβs = yes (Pαs ∪ Pβs)
+all p ⟨ αs ∪ βs ∖ xs ⟩ | no ¬Pαs | _       = no λ φ → ¬Pαs (leftAll φ)
+all p ⟨ αs ∪ βs ∖ xs ⟩ | _       | no ¬Pβs = no λ φ → ¬Pβs (rightAll φ)
 
 all : {A : Set} {eq : Decidable≡ A} {P : Pred A}
       → (P? : Decidable P) → (αs : Ensemble eq) → Dec (All P αs)
