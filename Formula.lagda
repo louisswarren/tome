@@ -118,7 +118,7 @@ data _NotFreeInTerm_ (x : Variable) : Term → Set
 _NotFreeInTerms_ : ∀{n} → Variable → Vec Term n → Set
 x NotFreeInTerms ts = All (x NotFreeInTerm_) ts
 
-data _NotFreeInTerm_ (x : Variable) where
+data _NotFreeInTerm_ x where
   varterm  : ∀{y} → x ≢ y → x NotFreeInTerm (varterm y)
   functerm : ∀{f} {us : Vec Term (Function.arity f)}
                → x NotFreeInTerms us → x NotFreeInTerm (functerm f us)
