@@ -140,7 +140,8 @@ elements, and require that the element satisfying $P$ not be in that list.
 
 \begin{code}
 
-data Any_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) : Ensemble eq → List A → Set where
+data Any_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) :
+    Ensemble eq → List A → Set where
   [_,_] : ∀{αs xs α} → P α  → α [∉] xs              → Any P ⟨ α ∷ αs ∖ xs ⟩
   _∷_   : ∀{αs xs}   → ∀ α  → Any P ⟨ αs ∖ xs ⟩     → Any P ⟨ α ∷ αs ∖ xs ⟩
   _~_   : ∀{αs xs}   → ∀ x  → Any P ⟨ αs ∖ x ∷ xs ⟩ → Any P ⟨ αs - x ∖ xs ⟩
@@ -220,6 +221,7 @@ _∉_∖_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → List
 
 
 infix 4 _∈_ _∉_
+
 _∈_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
 α ∈ αs = α ∈ αs ∖ []
 
@@ -227,7 +229,8 @@ _∉_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
 α ∉ αs = ¬(α ∈ αs)
 
 
-_∈?_ : {A : Set} {eq : Decidable≡ A} → (α : A) → (αs : Ensemble eq) → Dec (α ∈ αs)
+_∈?_ : {A : Set} {eq : Decidable≡ A}
+       → (α : A) → (αs : Ensemble eq) → Dec (α ∈ αs)
 _∈?_ {_} {eq} α αs = any (eq α) αs
 
 \end{code}
