@@ -86,7 +86,8 @@ all : {A : Set} {eq : Decidable≡ A} {P : Pred A}
 all p αs = all p ⟨ αs ∖ [] ⟩
 
 
-data Any_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) : Ensemble eq → List A → Set where
+data Any_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) :
+    Ensemble eq → List A → Set where
   [_,_] : ∀{αs xs α} → P α  → α [∉] xs              → Any P ⟨ α ∷ αs ∖ xs ⟩
   _∷_   : ∀{αs xs}   → ∀ α  → Any P ⟨ αs ∖ xs ⟩     → Any P ⟨ α ∷ αs ∖ xs ⟩
   _~_   : ∀{αs xs}   → ∀ x  → Any P ⟨ αs ∖ x ∷ xs ⟩ → Any P ⟨ αs - x ∖ xs ⟩
@@ -154,6 +155,7 @@ _∉_∖_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → List
 α ∉ αs ∖ xs = ¬(α ∈ αs ∖ xs)
 
 infix 4 _∈_ _∉_
+
 _∈_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
 α ∈ αs = α ∈ αs ∖ []
 
@@ -161,7 +163,8 @@ _∉_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
 α ∉ αs = ¬(α ∈ αs)
 
 -- Memberhsip is decidable since equality is decidable.
-_∈?_ : {A : Set} {eq : Decidable≡ A} → (α : A) → (αs : Ensemble eq) → Dec (α ∈ αs)
+_∈?_ : {A : Set} {eq : Decidable≡ A}
+       → (α : A) → (αs : Ensemble eq) → Dec (α ∈ αs)
 _∈?_ {_} {eq} α αs = any (eq α) αs
 
 
