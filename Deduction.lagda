@@ -1,5 +1,5 @@
-\section{Deduction.lagda}
 \begin{code}
+
 module Deduction where
 
 open import Agda.Builtin.String

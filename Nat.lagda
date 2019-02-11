@@ -1,5 +1,3 @@
-\section{Nat.agda}
-
 We augment the built-in definition of the natural numbers with a propositional
 ordering, and show that the maximum of two numbers is computable.
 

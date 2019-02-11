@@ -1,5 +1,3 @@
-\section{Vec.lagda}
-
 \begin{code}
 
 module Vec where

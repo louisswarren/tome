@@ -1,5 +1,3 @@
-\section{Formula.lagda}
-
 \begin{code}
 
 module Formula where

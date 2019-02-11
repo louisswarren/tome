@@ -1,5 +1,3 @@
-\section{List.lagda}
-
 Lists are finite objects. If a property over a type is decidable, then it is
 decidable whether that property holds for any or all members of a list of that
 type.

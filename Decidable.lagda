@@ -1,5 +1,3 @@
-\section{Decidable.lagda}
-
 \begin{code}
 
 module Decidable where

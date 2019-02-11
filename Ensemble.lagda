@@ -1,5 +1,3 @@
-\section{Ensemble.lagda}
-
 Within a natural deduction proof, the context (collection of open assumptions)
 must be manipulated. In particular, when an assumption is discharged it is
 removed from the context. Some deductive rules require that a particular
