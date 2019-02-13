@@ -182,7 +182,7 @@ private
 any_⟨_∖_⟩ : {A : Set} {_≟_ : Decidable≡ A} {P : Pred A}
               → (p : Decidable P) → (αs : Ensemble _≟_) → (xs : List A)
               → Dec (Any P ⟨ αs ∖ xs ⟩)
-any p ⟨ ∅ ∖ xs ⟩ = no (λ ())
+any p ⟨ ∅ ∖ xs ⟩ = no λ ()
 any_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs with decide[∈] eq α xs
 any_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | no α∉xs with p α
 ... | yes Pα = yes [ Pα , α∉xs ]

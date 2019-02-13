@@ -34,7 +34,7 @@ data Any {A : Set} (P : Pred A) : List A → Set where
   _∷_ : ∀{xs} → (x : A) → Any P xs → Any P (x ∷ xs)
 
 any : ∀{A} {P : Pred A} → (p : Decidable P) → (xs : List A) → Dec (Any P xs)
-any p [] = no (λ ())
+any p [] = no λ ()
 any p (x ∷ xs) with p x
 ...            | yes Px = yes [ Px ]
 ...            | no ¬Px with any p xs

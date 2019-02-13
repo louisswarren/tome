@@ -58,7 +58,7 @@ any : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (An
 \AgdaHide{
 \begin{code}
 
-any p [] = no (λ ())
+any p [] = no λ ()
 any p (x ∷ xs) with p x
 ...            | yes Px = yes [ Px ]
 ...            | no ¬Px with any p xs

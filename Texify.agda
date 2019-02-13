@@ -166,5 +166,6 @@ dtot {α} o (close _ d)          = dtot o d
 texdeduction : ∀{Γ α} → Γ ⊢ α → String
 texdeduction d = texifytree 0 (dtot [] d)
 
-texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y → Vec Formula (Scheme.arity y) → String
+texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y
+            → Vec Formula (Scheme.arity y) → String
 texreduce {xs} r αs = texdeduction (r (proveschemes xs) αs)
