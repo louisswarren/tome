@@ -35,7 +35,7 @@ data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
 
 -- Any is decidable for decidable predicates
 any : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
-any p [] = no (λ ())
+any p [] = no λ ()
 any p (x ∷ xs) with p x
 ...            | yes Px = yes [ Px ]
 ...            | no ¬Px with any p xs
