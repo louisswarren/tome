@@ -11,3 +11,5 @@
 *.synctex.gz
 
 agda.sty
+
+_minted*

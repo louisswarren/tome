@@ -4,9 +4,10 @@
 
 \usepackage{mathtools}
 
+\usepackage{minted}
+
 \usepackage{agda}
-\usepackage{fancyvrb}
-\DefineVerbatimEnvironment{code}{Verbatim}{}
+\renewenvironment{code}{\begin{minted}{lagda}}{\end{minted}}
 \usepackage{agdafonts}
 
 \usepackage{todonotes}
@@ -22,24 +23,24 @@ School of Mathematics and Statistics, University of Canterbury, New Zealand
 \maketitle
 
 \section{Decidable.lagda}
-\input{Decidable.lagda}
+\input{_minted.Decidable.gen}
 
-\section{Nat.agda}
-\input{Nat.lagda}
+\section{Nat.lagda}
+\input{_minted.Nat.gen}
 
 \section{List.lagda}
-\input{List.lagda}
+\input{_minted.List.gen}
 
 \section{Vec.lagda}
-\input{Vec.lagda}
+\input{_minted.Vec.gen}
 
 \section{Formula.lagda}
-\input{Formula.lagda}
+\input{_minted.Formula.gen}
 
 \section{Ensemble.lagda}
-\input{Ensemble.lagda}
+\input{_minted.Ensemble.gen}
 
 \section{Deduction.lagda}
-\input{Deduction.lagda}
+\input{_minted.Deduction.gen}
 
 \end{document}
