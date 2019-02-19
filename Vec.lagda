@@ -14,7 +14,7 @@ data Vec (A : Set) : ℕ → Set where
 
 We define All, Any, and membership the same was as for lists. The decidability
 proofs below are omitted from the latex-typeset form of this file as they are
-identical to the corresponding proofs for lists. See `List.agda' for details.
+identical to the corresponding proofs for lists. See List.lagda for details.
 
 \begin{code}
 
@@ -23,9 +23,9 @@ data All {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   _∷_ : ∀{x n} {xs : Vec A n} → P x → All P xs → All P (x ∷ xs)
 
 all : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (All P xs)
+-- Proof omitted
 
 \end{code}
-(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 
@@ -46,15 +46,14 @@ all p (x ∷ xs) with p x
 }
 \begin{code}
 
-
 data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   [_] : ∀{n x} {xs : Vec A n}       → P x      → Any P (x ∷ xs)
   _∷_ : ∀{n}   {xs : Vec A n} → ∀ x → Any P xs → Any P (x ∷ xs)
 
 any : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
+-- Proof omitted
 
 \end{code}
-(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 
@@ -72,7 +71,6 @@ any p (x ∷ xs) with p x
 \end{code}
 }
 \begin{code}
-
 
 infix 4 _∈_ _∉_
 
