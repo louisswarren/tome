@@ -254,6 +254,7 @@ equality of natural numbers, which is included for illustrative purposes.
 Lemmas:
 
 \begin{code}
+
 natEq : Decidable≡ ℕ
 natEq zero zero = yes refl
 natEq zero (suc m) = no λ ()
@@ -263,27 +264,34 @@ natEq (suc n) (suc m) with natEq n m
 ...                   | no  neq  = no φ
                                    where φ : _
                                          φ refl = neq refl
-\end{code}
 
-\begin{code}
-varEq : Decidable≡ Variable
 \end{code}
-(Proof Omitted.)
+\begin{code}
+
+varEq : Decidable≡ Variable
+-- Proof omitted
+
+\end{code}
 \AgdaHide{
 \begin{code}
+
 varEq (mkvar n) (mkvar m) with natEq n m
 ...                       | yes refl = yes refl
 ...                       | no  neq  = no φ
                                        where φ : _
                                              φ refl = neq refl
+
 \end{code}
 }
 \begin{code}
+
 relEq : Decidable≡ Relation
+-- Proof omitted
+
 \end{code}
-(Proof Omitted.)
 \AgdaHide{
 \begin{code}
+
 relEq (mkrel n j) (mkrel m k) with natEq n m
 ...                           | no  neq  = no φ
                                             where φ : _
@@ -293,14 +301,18 @@ relEq (mkrel n j) (mkrel m k) with natEq n m
 ...                                      | no  neq  = no φ
                                                       where φ : _
                                                             φ refl = neq refl
+
 \end{code}
 }
 \begin{code}
+
 funcEq : Decidable≡ Function
+-- Proof omitted
+
 \end{code}
-(Proof Omitted.)
 \AgdaHide{
 \begin{code}
+
 funcEq (mkfunc n j) (mkfunc m k) with natEq n m
 ...                              | no  neq  = no φ
                                               where φ : _
@@ -310,14 +322,18 @@ funcEq (mkfunc n j) (mkfunc m k) with natEq n m
 ...                                         | no  neq  = no φ
                                                          where φ : _
                                                                φ refl = neq refl
+
 \end{code}
 }
 \begin{code}
+
 vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
+-- Proof omitted
+
 \end{code}
-(Proof Omitted.)
 \AgdaHide{
 \begin{code}
+
 vecEq eq [] [] = yes refl
 vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
 ...                        | no  neq  = no φ
@@ -328,13 +344,15 @@ vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
 ...                                   | no  neq  = no φ
                                                    where φ : _
                                                          φ refl = neq refl
+
 \end{code}
 }
-
 \begin{code}
+
 termEq : Decidable≡ Term
+-- Proof omitted
+
 \end{code}
-(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 
@@ -372,9 +390,11 @@ termEq
 \end{code}
 }
 \begin{code}
+
 formulaEq : Decidable≡ Formula
+-- Proof omitted
+
 \end{code}
-(Proof Omitted.)
 \AgdaHide{
 \begin{code}
 
