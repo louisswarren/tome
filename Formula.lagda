@@ -12,8 +12,9 @@ open import Vec
 \end{code}
 
 We adopt the definitions from Proof and Computation (Schwichteberg). In
-particular, there are countably many variables, and countably many function
-symbols of each (natural) airty.
+particular, there are countably many variables, and there are countably many
+function symbols of each (natural) airty. Function symbols of different arities
+with the same index are considered different.
 
 \begin{code}
 
@@ -21,7 +22,6 @@ record Variable : Set where
   constructor mkvar
   field
     idx : ℕ
-
 
 record Function : Set where
   constructor mkfunc
@@ -33,10 +33,11 @@ record Function : Set where
 
 Note that the indices are natural numbers. While it seems equivalent and more
 useful to index using strings, strings are not supported by Agda's proof
-search.
+search. Internally, strings are not recursively defined as the natural numbers
+are; instead it is a postulated type which is bound to string literals.
 
 Terms are either variables, or functions applied to the appropriate number of
-arguments.
+arguments (zero for constants).
 
 \begin{code}
 

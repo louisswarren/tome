@@ -80,6 +80,8 @@ The membership predicate `$\in$' can be defined in terms of $\mathrm{Any}$; $x
 \in xs$ if any member of $xs$ is equal to $x$. It follows that if equality is
 decidable, then membership is decidable.
 
+The command \inline{infix} sets the arity of the infix operators.
+
 \begin{code}
 
 infix 4 _∈_ _∉_
