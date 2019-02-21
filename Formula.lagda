@@ -98,29 +98,31 @@ record Scheme : Set where
 
 \end{code}
 
-A variable is shown to be bound in a formula with an obvious recursive
-definition. It is bound inside a quantification over a subformula $\alpha$ if
-either it is the quantification variable, or else if it is bound in $\alpha$.
-Separate constructors are given for these. A variable is bound inside an atom
-if it appears nowhere within that atom, meaning it is not within the terms that
-the relation is operating on. We define a lemma for this, as a function's terms
-may include further functions, and so on. For a given term, $x$ is bound within
-that term if that term is a variable other than $x$, or otherwise if the term
-is a function, and $x$ is bound in all arguments.
+For a given term, $x$ is bound within that term if that term is a variable
+other than $x$, or otherwise if the term is a function, and $x$ is bound in all
+arguments, which can be checked by applying \inline{All} to this definition.
 
 \begin{code}
 
-infix 300 _NotFreeInTerm_ _NotFreeInTerms_ _NotFreeIn_ [_][_/_]≡_ _[_/_]≡_
-
-data _NotFreeInTerm_ (x : Variable) : Term → Set
-
 _NotFreeInTerms_ : ∀{n} → Variable → Vec Term n → Set
-x NotFreeInTerms ts = All (x NotFreeInTerm_) ts
 
-data _NotFreeInTerm_ x where
+data _NotFreeInTerm_ (x : Variable) : Term → Set where
   varterm  : ∀{y} → x ≢ y → x NotFreeInTerm (varterm y)
   functerm : ∀{f} {us : Vec Term (Function.arity f)}
                → x NotFreeInTerms us → x NotFreeInTerm (functerm f us)
+
+x NotFreeInTerms ts = All (x NotFreeInTerm_) ts
+
+\end{code}
+
+A variable is shown to be bound in a formula with the obvious recursive
+definition. It is bound inside a quantification over a subformula $\alpha$ if
+either it is the quantification variable, or else if it is bound in $\alpha$.
+Separate constructors are given for these. A variable is bound inside an atom
+if it is not free within that atom, meaning it is not free in the terms that
+the relation is operating on.
+
+\begin{code}
 
 data _NotFreeIn_ : Variable → Formula → Set where
   atom : ∀{x r} {ts : Vec Term (Relation.arity r)}
