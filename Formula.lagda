@@ -47,7 +47,7 @@ data Term : Set where
 
 \end{code}
 
-Relation symbols work the same way as Function symbols.
+Relation symbols work the same way as function symbols.
 
 \begin{code}
 
@@ -60,8 +60,8 @@ record Relation : Set where
 \end{code}
 
 We now define atoms (prime formulae), and the logical connectives, using
-$\Lambda$ and $V$ in place of $\forall$ and $\exists$, since $\forall$ is
-reserved by Agda.
+$\bigwedge$ and $\bigvee$ in place of $\forall$ and $\exists$, since $\forall$
+is reserved by Agda.
 
 \begin{code}
 
@@ -162,9 +162,9 @@ data [_][_/_]≡_ where
 
 \end{code}
 
-An extra constructor `ident' is defined, giving the case that replacing $x$
-with $x$ yields the original formula. This case is actually provable from the
-others. However, in practice it is the case we usually want to use, and so
+An extra constructor \inline{ident} is defined, giving the case that replacing
+$x$ with $x$ yields the original formula. This case is actually provable from
+the others. However, in practice it is the case we usually want to use, and so
 would like Agda's proof search to find it easily.
 
 Variable substitution for a quantified formula has three cases. Consider the
@@ -188,10 +188,10 @@ We provide a constructor for each case. Note that the third case means that
 substitution is not unique.
 
 If $y$ is not free in $\alpha$, and $beta$ is $\alpha [ x / y ]$ then it we
-would like $alpha$ to be $\beta [ y / x ]$, so that renaming to not-free variables
-is invertible. However, due to the third case above, $\beta [ y / x ]$ may
-differ from $\alpha$ in the names of its bound variables. A simple solition to
-this problem is to add the constructor `inverse' as below.
+would like $alpha$ to be $\beta [ y / x ]$, so that renaming to not-free
+variables is invertible. However, due to the third case above, $\beta [ y / x
+]$ may differ from $\alpha$ in the names of its bound variables. A simple
+solition to this problem is to add the constructor \inline{inverse} as below.
 
 \begin{code}
 
