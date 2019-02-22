@@ -63,6 +63,7 @@ We now define atoms (prime formulae), and the logical connectives, using
 $\bigwedge$ and $\bigvee$ in place of $\forall$ and $\exists$, since $\forall$
 is reserved by Agda.
 
+\todo{Rename $\Lambda$ and $V$}
 \begin{code}
 
 data Formula : Set where
@@ -139,10 +140,11 @@ data _NotFreeIn_ : Variable → Formula → Set where
 
 We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
 replacing all instances of a variable $x$ with term $t$. The more general case
-of replacing terms with terms is not needed for natural deduction. The
-reasoning is similar to that of the bound variable check above, and a lemma is
-used for the same reasons. Inside a vector of terms, wherever $x$ occurs, it is
-replaced with $t$. Any variable distinct from $x$ is left unchanged.
+of replacing terms with terms is not needed for natural deduction.
+
+Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
+variable distinct from $x$ is left unchanged. For a function, $x$ is replaced
+with $t$ in all of the arguments.
 
 \begin{code}
 
@@ -162,43 +164,22 @@ data [_][_/_]≡_ where
 
 \end{code}
 
-An extra constructor \inline{ident} is defined, giving the case that replacing
-$x$ with $x$ yields the original formula. This case is actually provable from
-the others. However, in practice it is the case we usually want to use, and so
-would like Agda's proof search to find it easily.
-
-Variable substitution for a quantified formula has three cases. Consider the
-substitution $(\forall y \alpha) [ x / t ]$ (the existential case is identical):
-
-\begin{enumerate}
-\item If the variable being replaced is the quantification variable ($x = y$),
-      then the formula is unchanged.
-\item If the variable being replaced is not the quantification variable
-      ($x \neq y$), and $t$ is free for $x$ in $\forall y \alpha$ ($x \not\in
-      FV(t)$), then the substitution simply occurs inside the quantification (
-      $(\forall y \alpha) [ x / t ] = \forall y (\alpha [ x / t ])$).
-\item Otherwise, the quantifying variable must be renamed. We require a
-      variable $\omega$ which is not free in $\alpha$, which differs from $x$,
-      and which is not in $t$. Then the substitution is
-      $(\forall y \alpha) [ x / t ]
-       = \forall \omega (\alpha [ y / \omega ][ x / t ])$).
-\end{enumerate}
-
-We provide a constructor for each case. Note that the third case means that
-substitution is not unique.
-
-If $y$ is not free in $\alpha$, and $beta$ is $\alpha [ x / y ]$ then it we
-would like $alpha$ to be $\beta [ y / x ]$, so that renaming to not-free
-variables is invertible. However, due to the third case above, $\beta [ y / x
-]$ may differ from $\alpha$ in the names of its bound variables. A simple
-solition to this problem is to add the constructor \inline{inverse} as below.
-
+Now, for formulae:
+\todo{Should these be $\equiv$?}
 \begin{code}
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
+\end{code}
+The \inline{ident} constructor gives the case that replacing $x$ with $x$
+yields the original formula. This case is actually provable from the others,
+However, in practice it is the case we usually want to use, and so we would
+like Agda's proof search to find it easily.
+\begin{code}
   ident   : ∀ α x → α [ x / varterm x ]≡ α
-  inverse : ∀{α β x y} → y NotFreeIn α
-              → α [ x / varterm y ]≡ β → β [ y / varterm x ]≡ α
+\end{code}
+The propositional cases are similar to those of the \inline{_NotFreeIn_} type
+above.
+\begin{code}
   atom    : ∀{x t}
               → (r : Relation) → {xs ys : Vec Term (Relation.arity r)}
               → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
@@ -208,23 +189,58 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
               → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∧ β) [ x / t ]≡ (α′ ∧ β′)
   _∨_     : ∀{α α′ β β′ x t}
               → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
+\end{code}
+Variable substitution for a quantified formula has three cases, with the first
+two also being similar to their counterparts in \inline{_NotFreeIn_}. If $x$ is
+the quantification variable, then the formula is unchanged.
+\begin{code}
   Λ∣      : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
   V∣      : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
+\end{code}
+If $x$ is not the quantification variable and $t$ is free for $x$ in in the
+formula ($x$ is not free in term $t$), then the substitution simply occurs
+inside the quantification.
+\begin{code}
   Λ       : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t
               → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
   V       : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t
               → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
+\end{code}
+Otherwise, the quantifying variable must be renamed. We require a variable
+$\omega$ which is not free in $\alpha$, which differs from $x$, and which is
+not in $t$. Since there are infinitely many such $\omega$, substitution is not
+unique. After replacing the quantifier with $omega$, we proceed as in the
+previous case.
+\begin{code}
   Λ/      : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
               → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ
               → (Λ x α) [ v / t ]≡ (Λ ω γ)
   V/      : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
               → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ
               → (V x α) [ v / t ]≡ (V ω γ)
+\end{code}
+Finally, if $y$ is not free in $\alpha$, and $\alpha [ x / y ]\equiv \beta$
+then it we would like $\beta [ y / x ]\equiv \alpha$, so that renaming to
+not-free variables is invertible. However, due to the third case above, $\beta
+[ y / x ]$ may differ from $\alpha$ in the names of its bound variables. A
+simple solution to this problem is to add a constructor for this.
+\begin{code}
+  inverse : ∀{α β x y} → y NotFreeIn α
+              → α [ x / varterm y ]≡ β → β [ y / varterm x ]≡ α
 
 \end{code}
 
-The notion of a variable being fresh, for use in a substitution as $\omega$ is
-in the last two constructors, is encapsulated below.
+The constructors \inline{inverse}, \mintinline{agda}{Λ/}, and \inline{V/}, are
+convenient, but not ideal. A more thourough treatment would involve defining a
+notion of ``formula equivalence up to renaming of bound variables'' mutually
+with variable substitution, and replace those constructors with one such as
+$\alpha \sim \beta \rightarrow \beta [ x / t ]\equiv \gamma \rightarrow \alpha
+[ x / t ]\equiv \gamma$. This entails some extra work to prove that lemmae like
+\inline{inverse} hold, however, and the details not necessary for natural
+deduction.
+
+We encapsulate the notion of a variable being fresh, for use in a substitution
+as $\omega$ is in the constructors \mintinline{agda}{Λ/} and \inline{V/}.
 
 \begin{code}
 
@@ -238,23 +254,11 @@ record FreshVar (α : Formula) (x : Variable) (t : Term) : Set where
 
 \end{code}
 
-
-The constructors `inverse', `$\Lambda{}$/', and `V/', are convenient, but not
-ideal. A more thourough treatment would involve defining a notion of ``formula
-equivalence up to renaming of bound variables'' mutually with variable
-substitution, and replace those constructors with one such as $\alpha \sim \beta
-\rightarrow \beta [ x / t ]\equiv \gamma \rightarrow \alpha [ x / t ]\equiv
-\gamma$. This entails some extra work to prove that `inverse' (and some later
-lemmae) hold, however, and the details not necessary for natural deduction.
-
-
 It remains to prove that equality of formulae is decidable. This follows from
 the fact that formulae are inductively defined. The proof is obtained by case
 analysis, using lemmae on the types used to construct formulae. The unremarkable
 proofs are omitted from the latex-typeset form of this file, except for
 equality of natural numbers, which is included for illustrative purposes.
-
-Lemmas:
 
 \begin{code}
 
