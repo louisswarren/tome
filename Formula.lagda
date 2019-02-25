@@ -492,10 +492,10 @@ formulaEq (V x α)     (Λ y γ)     = no λ ()
 \end{code}
 }
 
-\subsection{Computation}
-
-Variable freedom is decidable, simply by searching through the formula for
-occurences.
+Variable freedom within a vector of terms is decidable, simply by searching
+through the vector for occurences. To check against a variable term, use the
+decidable equality of variables. To check against a function term, recurse over
+the arguments.
 
 \begin{code}
 
@@ -521,6 +521,12 @@ x notFreeInTerms (functerm f us ∷ ts) with x notFreeInTerms us
                               where φ : _
                                     φ (_ ∷ xnfts) = xfts xnfts
 
+\end{code}
+
+The same logic can be used for a single term, calling the above function to
+check function arguments. The proposition \inline{_NotFreeInTerms_} is \todo{finish}
+
+\begin{code}
 
 _notFreeInTerm_ : (x : Variable) → (t : Term) → Dec (x NotFreeInTerm t)
 x notFreeInTerm varterm y     with varEq x y
