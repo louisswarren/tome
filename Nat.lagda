@@ -22,7 +22,7 @@ n < m = suc n ≤ m
 
 \end{code}
 
-Some lemmae which will be useful later:
+Some lemata which will be useful later:
 
 \begin{code}
 

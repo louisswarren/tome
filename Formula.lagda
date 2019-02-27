@@ -11,10 +11,10 @@ open import Vec
 
 \end{code}
 
-We adopt the definitions from Proof and Computation (Schwichteberg). In
-particular, there are countably many variables, and there are countably many
-function symbols of each (natural) airty. Function symbols of different arities
-with the same index are considered different.
+We adopt the definitions from Proof and Computation (Schwichteberg)
+\todo{cite}. In particular, there are countably many variables, and there are
+countably many function symbols of each (natural) airty. Function symbols of
+different arities with the same index are considered different.
 
 \begin{code}
 
@@ -235,7 +235,7 @@ convenient, but not ideal. A more thourough treatment would involve defining a
 notion of ``formula equivalence up to renaming of bound variables'' mutually
 with variable substitution, and replace those constructors with one such as
 $\alpha \sim \beta \rightarrow \beta [ x / t ]\equiv \gamma \rightarrow \alpha
-[ x / t ]\equiv \gamma$. This entails some extra work to prove that lemmae like
+[ x / t ]\equiv \gamma$. This entails some extra work to prove that lemata like
 \inline{inverse} hold, however, and the details not necessary for natural
 deduction.
 
@@ -256,7 +256,7 @@ record FreshVar (α : Formula) (x : Variable) (t : Term) : Set where
 
 It remains to prove that equality of formulae is decidable. This follows from
 the fact that formulae are inductively defined. The proof is obtained by case
-analysis, using lemmae on the types used to construct formulae. The unremarkable
+analysis, using lemata on the types used to construct formulae. The unremarkable
 proofs are omitted from the latex-typeset form of this file, except for
 equality of natural numbers, which is included for illustrative purposes.
 
@@ -524,7 +524,15 @@ x notFreeInTerms (functerm f us ∷ ts) with x notFreeInTerms us
 \end{code}
 
 The same logic can be used for a single term, calling the above function to
-check function arguments. The proposition \inline{_NotFreeInTerms_} is \todo{finish}
+check function arguments. The proposition \inline{_NotFreeInTerms_} is defined
+using \inline{All} and \inline{_NotFreeInTerm_}, so it is tempting to try to
+first prove that the single term case is decidable, and then generalise to
+vectors using the lemma that \inline{All} is decidable for decidable
+predicates. However, this would not be structurally recursive, and so Agda
+would not see this as terminating. Above, the case \mintinline{agda}{x
+notFreeInTerms t ∷ ts} depends on the result of \inline{x notFreeInterms ts},
+which is in fact primitively recursive. However, if it instead depended on the
+result of \inline{all (x notFreeInTerm) ts} \todo{finish}
 
 \begin{code}
 
@@ -541,6 +549,13 @@ x notFreeInTerm functerm f ts with x notFreeInTerms ts
                                               φ : _
                                               φ (functerm xnfts) = ¬xnfts xnfts
 
+\end{code}
+
+Now for formulae, to determine if a variable is not free, we apply the above
+for atoms, check recursively for the logical connectives, and check if the
+variable is the quantifying variable for the quantifiers.
+
+\begin{code}
 
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
 x notFreeIn atom r ts with x notFreeInTerms ts

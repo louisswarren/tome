@@ -71,7 +71,7 @@ All P αs = All P ⟨ αs ∖ [] ⟩
 \end{code}
 
 If $P$ is decidable, then checking if $P$ holds in all of an ensemble is also
-decidable. First, some lemmae for breaking down instances of the above
+decidable. First, some lemata for breaking down instances of the above
 proposition:
 
 \begin{code}
