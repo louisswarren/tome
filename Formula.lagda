@@ -532,7 +532,9 @@ predicates. However, this would not be structurally recursive, and so Agda
 would not see this as terminating. Above, the case \mintinline{agda}{x
 notFreeInTerms t ∷ ts} depends on the result of \inline{x notFreeInterms ts},
 which is in fact primitively recursive. However, if it instead depended on the
-result of \inline{all (x notFreeInTerm) ts} \todo{finish}
+result of \inline{all (x notFreeInTerm_) ts}, Agda cannot determine that
+\inline{x notFreeInTerm_} will be applied only to arguments structurally
+smaller than \inline{t ∷ ts}.
 
 \begin{code}
 
@@ -596,22 +598,22 @@ x notFreeIn (α ∨ β)   | no ¬αbd | _       = no φ
                                               φ (αbd ∨ βbd) = ¬αbd αbd
 x notFreeIn Λ  y α    with varEq x y
 x notFreeIn Λ .x α    | yes refl = yes (Λ∣ x α)
-x notFreeIn Λ  y α    | no x≢y with x notFreeIn α
-x notFreeIn Λ  y α    | no x≢y | yes αbd = yes (Λ y αbd)
-x notFreeIn Λ  y α    | no x≢y | no ¬αbd = no φ
-                                           where
-                                             φ : ¬(x NotFreeIn Λ y α)
-                                             φ (Λ∣ x α) = x≢y refl
-                                             φ (Λ y αbd) = ¬αbd αbd
+x notFreeIn Λ  y α    | no  x≢y  with x notFreeIn α
+x notFreeIn Λ  y α    | no  x≢y  | yes αbd = yes (Λ y αbd)
+x notFreeIn Λ  y α    | no  x≢y  | no ¬αbd = no φ
+                                             where
+                                               φ : ¬(x NotFreeIn Λ y α)
+                                               φ (Λ∣ x α) = x≢y refl
+                                               φ (Λ y αbd) = ¬αbd αbd
 x notFreeIn V  y α    with varEq x y
 x notFreeIn V .x α    | yes refl = yes (V∣ x α)
-x notFreeIn V  y α    | no x≢y with x notFreeIn α
-x notFreeIn V  y α    | no x≢y | yes αbd = yes (V y αbd)
-x notFreeIn V  y α    | no x≢y | no ¬αbd = no φ
-                                           where
-                                             φ : ¬(x NotFreeIn V y α)
-                                             φ (V∣ x α) = x≢y refl
-                                             φ (V y αbd) = ¬αbd αbd
+x notFreeIn V  y α    | no  x≢y  with x notFreeIn α
+x notFreeIn V  y α    | no  x≢y  | yes αbd = yes (V y αbd)
+x notFreeIn V  y α    | no  x≢y  | no ¬αbd = no φ
+                                             where
+                                               φ : ¬(x NotFreeIn V y α)
+                                               φ (V∣ x α) = x≢y refl
+                                               φ (V y αbd) = ¬αbd αbd
 
 \end{code}
 
