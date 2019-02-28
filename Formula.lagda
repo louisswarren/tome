@@ -621,13 +621,21 @@ For the purposes of variable substitution (see above), we need a way to
 generate a not-free variable for a given formula. Only finitely many variables
 occur in a given term or formula, so there is a greatest (with respect to the
 natural number indexing) free variable in each term or formula; all variables
-greater than this are not free.
+greater than this are not free. We first compute this variable for terms, and
+then specialise to a single term, for termination reasons similar to that of
+\inline{_notFreeInTerms_}.
+\todo{Explain \mintinline{agda}{Σ}}
 
 \begin{code}
 
 supFreeTerms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n
                → mkvar n NotFreeInTerms ts
 supFreeTerms [] = zero , λ _ _ → []
+\end{code}
+If the first term is a variable, check if its index is greater than the
+greatest \todo{supremum} free variable of the rest of the terms. If not, use the
+variable from the rest of the terms.
+\begin{code}
 supFreeTerms (varterm (mkvar m) ∷ ts) with supFreeTerms ts
 ... | ⌈ts⌉ , tspf with max m ⌈ts⌉
 ...               | less m≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
@@ -639,6 +647,9 @@ supFreeTerms (varterm (mkvar m) ∷ ts) with supFreeTerms ts
                     → All (mkvar n NotFreeInTerm_) (varterm (mkvar m) ∷ ts)
     notFreeIs⌈ts⌉ n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n))
                              ∷ tspf n ⌈ts⌉<n
+\end{code}
+Otherwise, use this variable.
+\begin{code}
 ...               | more ⌈ts⌉≤m = m , notFreeIsm
   where
     orderneq : ∀{n m} → n < m → mkvar m ≢ mkvar n
@@ -648,6 +659,11 @@ supFreeTerms (varterm (mkvar m) ∷ ts) with supFreeTerms ts
                  → All (mkvar n NotFreeInTerm_) (varterm (mkvar m) ∷ ts)
     notFreeIsm n m<n = varterm (orderneq m<n)
                        ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
+\end{code}
+If the first term is a function, then check if the greatest free variable in
+its arguments is greater than the greatest free variable of the rest of the
+terms. If not, use the variable from the rest of the terms.
+\begin{code}
 supFreeTerms (functerm f us     ∷ ts) with supFreeTerms us | supFreeTerms ts
 ... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with max ⌈us⌉ ⌈ts⌉
 ...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
@@ -656,12 +672,19 @@ supFreeTerms (functerm f us     ∷ ts) with supFreeTerms us | supFreeTerms ts
                     → All (mkvar n NotFreeInTerm_) (functerm f us ∷ ts)
     notFreeIs⌈ts⌉ n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n))
                              ∷ tspf n ⌈ts⌉<n
+\end{code}
+Otherwise, use the variable from the function's arguments.
+\begin{code}
 ...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , notFreeIs⌈us⌉
   where
     notFreeIs⌈us⌉ : ∀ n → ⌈us⌉ < n
                     → All (mkvar n NotFreeInTerm_) (functerm f us ∷ ts)
     notFreeIs⌈us⌉ n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n)
                              ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
+
+\end{code}
+Now for a single term:
+\begin{code}
 
 supFreeTerm : ∀ t → Σ ℕ λ ⌈t⌉ → ∀ n → ⌈t⌉ < n → mkvar n NotFreeInTerm t
 supFreeTerm t with supFreeTerms (t ∷ [])
