@@ -155,7 +155,7 @@ reorder α β γ = eqded closed
                     (assume α))
                    (assume β))))
   where
-    closed : (((α ⇒ β ⇒ γ ∷ []) ∪ (α ∷ []) ∪ (β ∷ [])) - α - β) ≡ α ⇒ β ⇒ γ ∷ []
+    closed : ((α ⇒ β ⇒ γ ∷ α ∷ β ∷ []) - α - β) ≡ α ⇒ β ⇒ γ ∷ []
     closed with formulaEq (α ⇒ β ⇒ γ) α
     closed | yes ()
     closed | no _ with formulaEq α α
