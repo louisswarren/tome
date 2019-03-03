@@ -5,6 +5,7 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 
 open import Decidable hiding (⊥ ; ¬_)
+open import Ensemble
 open import Deduction
 open import Formula
 open import List
@@ -138,9 +139,9 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
                                         >> inf i "TrinaryInfC" x
 
 
-dtot : ∀{α Γ} → List Formula → Γ ⊢ α → Textree
+dtot : ∀{α Γ} → Ensemble formulaEq → Γ ⊢ α → Textree
 dtot {α} o (cite s d)           = schemeax α s
-dtot {α} o (assume a) with List.decide∈ formulaEq a o
+dtot {α} o (assume a) with Ensemble._∈?_ a o
 ...                   | yes _   = openax     α
 ...                   | no  _   = closedax   α
 dtot {α} o (arrowintro a d)     = unaryinf   α "\\Tarrowintro" (dtot o d)
@@ -164,7 +165,7 @@ dtot {α} o (close _ d)          = dtot o d
 
 
 texdeduction : ∀{Γ α} → Γ ⊢ α → String
-texdeduction d = texifytree 0 (dtot [] d)
+texdeduction {Γ} d = texifytree 0 (dtot Γ d)
 
 texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y
             → Vec Formula (Scheme.arity y) → String
