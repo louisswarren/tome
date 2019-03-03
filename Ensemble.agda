@@ -32,7 +32,7 @@ data All_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) :
   _∪_  : ∀{αs βs xs} → All P ⟨ αs ∖ xs ⟩ → All P ⟨ βs ∖ xs ⟩
                      → All P ⟨ αs ∪ βs ∖ xs ⟩
 
-All : {A : Set} {_≟_ : Decidable≡ A} → (P : Pred A) → Ensemble _≟_ → Set
+All : {A : Set} {eq : Decidable≡ A} → (P : Pred A) → Ensemble eq → Set
 All P αs = All P ⟨ αs ∖ [] ⟩
 
 private
