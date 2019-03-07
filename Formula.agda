@@ -112,8 +112,6 @@ data [_][_/_]≡_ where
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
   ident   : ∀ α x → α [ x / varterm x ]≡ α
-  inverse : ∀{α β x y} → y NotFreeIn α
-              → α [ x / varterm y ]≡ β → β [ y / varterm x ]≡ α
   atom    : ∀{x t}
               → (r : Relation) → {xs ys : Vec Term (Relation.arity r)}
               → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
@@ -129,20 +127,6 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
               → α [ v / t ]≡ β → (Λ x α) [ v / t ]≡ (Λ x β)
   V       : ∀{α β x v t} → v ≢ x → x NotFreeInTerm t
               → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
-  Λ/      : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
-              → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ
-              → (Λ x α) [ v / t ]≡ (Λ ω γ)
-  V/      : ∀{α β γ x v t ω} → ω NotFreeIn α → v ≢ ω → ω NotFreeInTerm t
-              → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ
-              → (V x α) [ v / t ]≡ (V ω γ)
-
-record FreshVar (α : Formula) (x : Variable) (t : Term) : Set where
-  constructor mkfreshvar
-  field
-    var         : Variable
-    notFree     : var NotFreeIn α
-    new         : x ≢ var
-    replaceable : var NotFreeInTerm t
 
 
 --------------------------------------------------------------------------------
@@ -497,61 +481,6 @@ supFree (V x α) with supFree α
 supFree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n ⌈α⌉<n)
 
 
-freshVar : ∀ α x t → FreshVar α x t
-freshVar α (mkvar n) t with supFree α | supFreeTerm t
-... | ⌈α⌉ , αpf | ⌈t⌉ , tpf with max n ⌈α⌉ | max n ⌈t⌉ | max ⌈α⌉ ⌈t⌉
-...   | less n≤⌈α⌉ | less n≤⌈t⌉ | less ⌈α⌉≤⌈t⌉ = mkfreshvar
-                                                   (mkvar (suc ⌈t⌉))
-                                                   notFree new replaceable
-  where
-    notFree : mkvar (suc ⌈t⌉) NotFreeIn α
-    notFree = αpf (suc ⌈t⌉) (sn≤sm ⌈α⌉≤⌈t⌉)
-    new : mkvar n ≢ mkvar (suc ⌈t⌉)
-    new refl = ⊥-elim (¬<refl n≤⌈t⌉)
-    replaceable : mkvar (suc ⌈t⌉) NotFreeInTerm t
-    replaceable = tpf (suc ⌈t⌉) (sn≤sm ≤refl)
-...   | less n≤⌈α⌉ | less n≤⌈t⌉ | more ⌈t⌉≤⌈α⌉ = mkfreshvar
-                                                   (mkvar (suc ⌈α⌉))
-                                                   notFree new replaceable
-  where
-    notFree : mkvar (suc ⌈α⌉) NotFreeIn α
-    notFree = αpf (suc ⌈α⌉) (sn≤sm ≤refl)
-    new : mkvar n ≢ mkvar (suc ⌈α⌉)
-    new refl = ¬<refl n≤⌈α⌉
-    replaceable : mkvar (suc ⌈α⌉) NotFreeInTerm t
-    replaceable = tpf (suc ⌈α⌉) (sn≤sm ⌈t⌉≤⌈α⌉)
-...   | less n≤⌈α⌉ | more ⌈t⌉≤n | _            = mkfreshvar
-                                                   (mkvar (suc ⌈α⌉))
-                                                   notFree new replaceable
-  where
-    notFree : mkvar (suc ⌈α⌉) NotFreeIn α
-    notFree = αpf (suc ⌈α⌉) (sn≤sm ≤refl)
-    new : mkvar n ≢ mkvar (suc ⌈α⌉)
-    new refl = ¬<refl n≤⌈α⌉
-    replaceable : mkvar (suc ⌈α⌉) NotFreeInTerm t
-    replaceable = tpf (suc ⌈α⌉) (≤trans (sn≤sm ⌈t⌉≤n) (sn≤sm n≤⌈α⌉))
-...   | more ⌈α⌉≤n | less n≤⌈t⌉ | _            = mkfreshvar
-                                                   (mkvar (suc ⌈t⌉))
-                                                   notFree new replaceable
-  where
-    notFree : mkvar (suc ⌈t⌉) NotFreeIn α
-    notFree = αpf (suc ⌈t⌉) (≤trans (sn≤sm ⌈α⌉≤n) (sn≤sm n≤⌈t⌉))
-    new : mkvar n ≢ mkvar (suc ⌈t⌉)
-    new refl = ¬<refl n≤⌈t⌉
-    replaceable : mkvar (suc ⌈t⌉) NotFreeInTerm t
-    replaceable = tpf (suc ⌈t⌉) (sn≤sm ≤refl)
-...   | more ⌈α⌉≤n | more ⌈t⌉≤n | _            = mkfreshvar
-                                                   (mkvar (suc n))
-                                                   notFree new replaceable
-  where
-    notFree : mkvar (suc n) NotFreeIn α
-    notFree = αpf (suc n) (sn≤sm ⌈α⌉≤n)
-    new : mkvar n ≢ mkvar (suc n)
-    new ()
-    replaceable : mkvar (suc n) NotFreeInTerm t
-    replaceable = tpf (suc n) (sn≤sm ⌈t⌉≤n)
-
-
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs
            → [ us ][ x / t ]≡ vs
 [ [] ][ x / t ] = [] , []
@@ -603,14 +532,11 @@ subNotFreeTerms xnft (functerm sub ∷ ps) = functerm (subNotFreeTerms xnft sub)
 
 subNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
 subNotFree (varterm x≢x) (ident   _    _) = ⊥-elim (x≢x refl)
-subNotFree _             (inverse xnfβ _) = xnfβ
 subNotFree xnft (atom r p)       = atom (subNotFreeTerms xnft p)
 subNotFree xnft (pα ⇒ pβ)        = subNotFree xnft pα ⇒ subNotFree xnft pβ
 subNotFree xnft (pα ∧ pβ)        = subNotFree xnft pα ∧ subNotFree xnft pβ
 subNotFree xnft (pα ∨ pβ)        = subNotFree xnft pα ∨ subNotFree xnft pβ
 subNotFree xnft (Λ∣ y α)         = Λ∣ y α
 subNotFree xnft (Λ x≢y ynft p)   = Λ _ (subNotFree xnft p)
-subNotFree xnft (Λ/ _ _ _ p₁ p₂) = Λ _ (subNotFree xnft p₂)
 subNotFree xnft (V∣ y α)         = V∣ y α
 subNotFree xnft (V x≢y ynft p)   = V _ (subNotFree xnft p)
-subNotFree xnft (V/ _ _ _ p₁ p₂) = V _ (subNotFree xnft p₂)
