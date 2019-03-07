@@ -129,6 +129,16 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
               → α [ v / t ]≡ β → (V x α) [ v / t ]≡ (V x β)
 
 
+data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
+  atom : ∀ r us → t FreeFor x In atom r us
+  _⇒_ : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ⇒ β
+  _∧_ : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∧ β
+  _∨_ : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∨ β
+  Λ∣  : ∀ α → t FreeFor x In Λ x α
+  V∣  : ∀ α → t FreeFor x In V x α
+  Λ   : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
+  V   : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
+
 --------------------------------------------------------------------------------
 -- Computation requires decidable equality for the types above
 
@@ -493,33 +503,26 @@ supFree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n 
 ...   | xs , [ws][x/t]≡xs = (functerm f xs ∷ vs)
                             , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
 
--- Make sure to use the nicer substitutions for quantification where possible
-{-# TERMINATING #-}
-_[_/_] : ∀ α x t → Σ Formula (α [ x / t ]≡_)
-atom r us [ x / t ] with [ us ][ x / t ]
-... | vs , [us][x/t]≡vs = atom r vs , atom r [us][x/t]≡vs
-(α ⇒ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
-... | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ⇒ β′ , α[x/t]≡α′ ⇒ β[x/t]≡β′
-(α ∧ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
-... | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∧ β′ , α[x/t]≡α′ ∧ β[x/t]≡β′
-(α ∨ β)   [ x / t ] with α [ x / t ] | β [ x / t ]
-... | α′ , α[x/t]≡α′ | β′ , β[x/t]≡β′ = α′ ∨ β′ , α[x/t]≡α′ ∨ β[x/t]≡β′
-Λ y α     [ x / t ] with varEq x y | y notFreeInTerm t
-... | yes refl | _       = Λ x α , Λ∣ x α
-... | no x≢y   | yes xnf with α [ x / t ]
-...   | α′ , α[x/t]≡α′ = Λ y α′ , Λ x≢y xnf α[x/t]≡α′
-Λ  y α    [ x / t ] | no x≢y   | no  xf  with freshVar α x t
-... | mkfreshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
-...   | β , α[y/ω]≡β with β [ x / t ]
-...     | γ , β[x/t]≡γ = Λ ω γ , Λ/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
-V y α     [ x / t ] with varEq x y | y notFreeInTerm t
-... | yes refl | _       = V x α , V∣ x α
-... | no x≢y   | yes xnf with α [ x / t ]
-...   | α′ , α[x/t]≡α′ = V y α′ , V x≢y xnf α[x/t]≡α′
-V  y α    [ x / t ] | no x≢y   | no  xf  with freshVar α x t
-... | mkfreshvar ω ωnfα x≢ω ωnft with α [ y / varterm ω ]
-...   | β , α[y/ω]≡β with β [ x / t ]
-...     | γ , β[x/t]≡γ = V ω γ , V/ ωnfα x≢ω ωnft α[y/ω]≡β β[x/t]≡γ
+
+_[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
+_[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
+_[_/_] {t} (atom r ts) x tff    | ts′ , tspf = atom r ts′ , atom r tspf
+(α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
+(α ∧ β) [ x / tffα ∧ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
+(α ∨ β) [ x / tffα ∨ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
+Λ y α [ .y / Λ∣ .α ]            = Λ y α , Λ∣ y α
+Λ y α [ x / Λ .α .y ynft tffα ] with varEq x y
+...                             | yes refl = Λ y α , Λ∣ y α
+...                             | no  x≢y  with α [ x / tffα ]
+...                                        | α′ , αpf = Λ y α′ , Λ x≢y ynft αpf
+V y α [ .y / V∣ .α ]            = V y α , V∣ y α
+V y α [ x / V .α .y ynft tffα ] with varEq x y
+...                             | yes refl = V y α , V∣ y α
+...                             | no  x≢y  with α [ x / tffα ]
+...                                        | α′ , αpf = V y α′ , V x≢y ynft αpf
 
 
 subNotFreeTerms : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t
