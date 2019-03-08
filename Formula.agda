@@ -111,7 +111,6 @@ data [_][_/_]≡_ where
         → [ u ∷ us ][ x / t ]≡ (v ∷ vs)
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
-  ident   : ∀ α x → α [ x / varterm x ]≡ α
   atom    : ∀{x t}
               → (r : Relation) → {xs ys : Vec Term (Relation.arity r)}
               → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
@@ -525,6 +524,31 @@ V y α [ x / V .α .y ynft tffα ] with varEq x y
 ...                                        | α′ , αpf = V y α′ , V x≢y ynft αpf
 
 
+ident : ∀ α x → α [ x / varterm x ]≡ α
+ident (atom r ts) x = atom r (identTerms ts x)
+  where
+    identTerms : ∀{n} → (ts : Vec Term n) → ∀ x → [ ts ][ x / varterm x ]≡ ts
+    identTerms [] x = []
+    identTerms (varterm y ∷ ts) x with varEq x y
+    ...                           | yes refl = varterm≡ ∷ identTerms ts x
+    ...                           | no  x≢y  = varterm≢ x≢y ∷ identTerms ts x
+    identTerms (functerm f us ∷ ts) x = functerm (identTerms us x) ∷ identTerms ts x
+ident (α ⇒ β) x = ident α x ⇒ ident β x
+ident (α ∧ β) x = ident α x ∧ ident β x
+ident (α ∨ β) x = ident α x ∨ ident β x
+ident (Λ y α) x with varEq x y
+...             | yes refl = Λ∣ y α
+...             | no  x≢y  = Λ x≢y (varterm y≢x) (ident α x)
+                             where
+                               y≢x : y ≢ x
+                               y≢x refl = x≢y refl
+ident (V y α) x with varEq x y
+...             | yes refl = V∣ y α
+...             | no  x≢y  = V x≢y (varterm y≢x) (ident α x)
+                             where
+                               y≢x : y ≢ x
+                               y≢x refl = x≢y refl
+
 subNotFreeTerms : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t
                   → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
 subNotFreeTerms xnft []                  = []
@@ -534,7 +558,6 @@ subNotFreeTerms xnft (functerm sub ∷ ps) = functerm (subNotFreeTerms xnft sub)
                                            ∷ subNotFreeTerms xnft ps
 
 subNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
-subNotFree (varterm x≢x) (ident   _    _) = ⊥-elim (x≢x refl)
 subNotFree xnft (atom r p)       = atom (subNotFreeTerms xnft p)
 subNotFree xnft (pα ⇒ pβ)        = subNotFree xnft pα ⇒ subNotFree xnft pβ
 subNotFree xnft (pα ∧ pβ)        = subNotFree xnft pα ∧ subNotFree xnft pβ
@@ -543,3 +566,40 @@ subNotFree xnft (Λ∣ y α)         = Λ∣ y α
 subNotFree xnft (Λ x≢y ynft p)   = Λ _ (subNotFree xnft p)
 subNotFree xnft (V∣ y α)         = V∣ y α
 subNotFree xnft (V x≢y ynft p)   = V _ (subNotFree xnft p)
+
+subNotFreeIdent : ∀{x α t} → t FreeFor x In α → x NotFreeIn α → α [ x / t ]≡ α
+subNotFreeIdent (atom r us) (atom x) = atom r {!   !}
+  where
+    termsLemma : ∀{t n x} → (ts : Vec Term n) → x NotFreeInTerms ts → [ ts ][ x / t ]≡ ts
+    termsLemma [] xnf = []
+    termsLemma (.(varterm _) ∷ ts) (varterm neq ∷ xnfts) = varterm≢ neq ∷ termsLemma ts xnfts
+    termsLemma (.(functerm _ _) ∷ ts) (functerm xnfus ∷ xnfts) = functerm (termsLemma us₁ xnfus) ∷ termsLemma ts xnfts
+subNotFreeIdent (tffα ⇒ tffβ) (xnfα ⇒ xnfβ) = subNotFreeIdent tffα xnfα ⇒ subNotFreeIdent tffβ xnfβ
+subNotFreeIdent (tffα ∧ tffβ) (xnfα ∧ xnfβ) = subNotFreeIdent tffα xnfα ∧ subNotFreeIdent tffβ xnfβ
+subNotFreeIdent (tffα ∨ tffβ) (xnfα ∨ xnfβ) = subNotFreeIdent tffα xnfα ∨ subNotFreeIdent tffβ xnfβ
+subNotFreeIdent (Λ∣ α) (Λ∣ x .α) = Λ∣ x α
+subNotFreeIdent (Λ∣ α) (Λ y xnfα) = Λ∣ y α
+subNotFreeIdent (V∣ α) (V∣ x .α) = V∣ x α
+subNotFreeIdent (V∣ α) (V y xnfα) = V∣ y α
+subNotFreeIdent (Λ α y ynft tffα) (Λ∣ .y .α) = Λ∣ y α
+subNotFreeIdent {x} (Λ α y ynft tffα) (Λ .y xnfα) with varEq x y
+...                                               | yes refl = Λ∣ y α
+...                                               | no  x≢y  = Λ x≢y ynft (subNotFreeIdent tffα xnfα)
+subNotFreeIdent (V α y x tffα) (V∣ .y .α) = V∣ y α
+subNotFreeIdent {x} (V α y ynft tffα) (V .y xnfα) with varEq x y
+...                                               | yes refl = V∣ y α
+...                                               | no  x≢y  = V x≢y ynft (subNotFreeIdent tffα xnfα)
+
+subIdent : ∀ α x ω β → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
+subIdent .(atom r _) x ω .(atom r _) ωnfα (atom r x₁) = {!   !}
+subIdent (α ⇒ β) x ω (α′ ⇒ β′) (ωnfα ⇒ ωnfβ) (repα ⇒ repβ) = subIdent α x ω α′ ωnfα repα ⇒ subIdent β x ω β′ ωnfβ repβ
+subIdent (α ∧ β) x ω (α′ ∧ β′) (ωnfα ∧ ωnfβ) (repα ∧ repβ) = subIdent α x ω α′ ωnfα repα ∧ subIdent β x ω β′ ωnfβ repβ
+subIdent (α ∨ β) x ω (α′ ∨ β′) (ωnfα ∨ ωnfβ) (repα ∨ repβ) = subIdent α x ω α′ ωnfα repα ∨ subIdent β x ω β′ ωnfβ repβ
+subIdent .(Λ x α) x .x .(Λ x α) (Λ∣ .x .α) (Λ∣ .x α) = ident (Λ x α) x
+subIdent .(Λ x α) x ω .(Λ x α) (Λ .x ωnfα) (Λ∣ .x α) with varEq ω x
+subIdent .(Λ x α) x .x .(Λ x α) (Λ .x ωnfα) (Λ∣ .x α) | yes refl = ident (Λ x α) x
+subIdent .(Λ x α) x ω .(Λ x α) (Λ .x ωnfα) (Λ∣ .x α) | no ω≢x = ?
+subIdent .(V x α) x .x .(V x α) (V∣ .x .α) (V∣ .x α) = ident (V x α) x
+subIdent .(V x α) x ω .(V x α) (V .x ωnfα) (V∣ .x α) = {!   !}
+subIdent .(Λ _ _) x ω .(Λ _ _) ωnfα (Λ x₁ x₂ rep) = {!   !}
+subIdent .(V _ _) x ω .(V _ _) ωnfα (V x₁ x₂ rep) = {!   !}
