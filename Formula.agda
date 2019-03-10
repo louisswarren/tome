@@ -313,7 +313,7 @@ formulaEq (V x α)     (Λ y γ)     = no λ ()
 
 --------------------------------------------------------------------------------
 
-
+-- Decidablity proofs
 
 _notFreeInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n)
                    → Dec (x NotFreeInTerms ts)
@@ -401,71 +401,88 @@ x notFreeIn V  y α    | no x≢y | no ¬αbd = no φ
                                              φ (V y αbd) = ¬αbd αbd
 
 _freeFor_In_ : ∀ t x α → Dec (t FreeFor x In α)
-t freeFor x In atom r ts = yes (atom r ts)
-t freeFor x In (α ⇒ β)   with t freeFor x In α
-...                      | no ¬tffα = no ¬tffα⇒β
-                                      where
-                                        ¬tffα⇒β : _
-                                        ¬tffα⇒β (tffα ⇒ _) = ¬tffα tffα
-...                      | yes tffα with t freeFor x In β
-...                                 | no ¬tffβ = no ¬tffα⇒β
-                                                 where
-                                                   ¬tffα⇒β : _
-                                                   ¬tffα⇒β (_ ⇒ tffβ) = ¬tffβ tffβ
-...                                 | yes tffβ = yes (tffα ⇒ tffβ)
-t freeFor x In (α ∧ β)   with t freeFor x In α
-...                      | no ¬tffα = no ¬tffα∧β
-                                      where
-                                        ¬tffα∧β : _
-                                        ¬tffα∧β (tffα ∧ _) = ¬tffα tffα
-...                      | yes tffα with t freeFor x In β
-...                                 | no ¬tffβ = no ¬tffα∧β
-                                                 where
-                                                   ¬tffα∧β : _
-                                                   ¬tffα∧β (_ ∧ tffβ) = ¬tffβ tffβ
-...                                 | yes tffβ = yes (tffα ∧ tffβ)
-t freeFor x In (α ∨ β)   with t freeFor x In α
-...                      | no ¬tffα = no ¬tffα∨β
-                                      where
-                                        ¬tffα∨β : _
-                                        ¬tffα∨β (tffα ∨ _) = ¬tffα tffα
-...                      | yes tffα with t freeFor x In β
-...                                 | no ¬tffβ = no ¬tffα∨β
-                                                 where
-                                                   ¬tffα∨β : _
-                                                   ¬tffα∨β (_ ∨ tffβ) = ¬tffβ tffβ
-...                                 | yes tffβ = yes (tffα ∨ tffβ)
-t freeFor x In Λ y α     with varEq x y
-...                      | yes refl = yes (Λ∣ α)
-...                      | no  x≢y  with t freeFor x In α
-...                                 | no ¬tffα = no ¬tff
+t freeFor x In α with x notFreeIn α
+(t freeFor x In α) | yes xnfα = yes (notfree xnfα)
+(t freeFor x In α) | no ¬xnfα = lemma α ¬xnfα
+  where
+    lemma : ∀ α → ¬(x NotFreeIn α)  → Dec (t FreeFor x In α)
+    lemma (atom r ts) xf = yes (atom r ts)
+    lemma (α ⇒ β)     xf with t freeFor x In α
+    ...               | no ¬tffα = no ¬tffα⇒β
+                                   where
+                                     ¬tffα⇒β : _
+                                     ¬tffα⇒β (notfree xnf) = xf xnf
+                                     ¬tffα⇒β (tffα ⇒ _)     = ¬tffα tffα
+    ...               | yes tffα with t freeFor x In β
+    ...                          | no ¬tffβ = no ¬tffα⇒β
+                                              where
+                                                ¬tffα⇒β : _
+                                                ¬tffα⇒β (notfree xnf) = xf xnf
+                                                ¬tffα⇒β (_ ⇒ tffβ) = ¬tffβ tffβ
+    ...                          | yes tffβ = yes (tffα ⇒ tffβ)
+    lemma (α ∧ β)     xf with t freeFor x In α
+    ...               | no ¬tffα = no ¬tffα∧β
+                                   where
+                                     ¬tffα∧β : _
+                                     ¬tffα∧β (notfree xnf) = xf xnf
+                                     ¬tffα∧β (tffα ∧ _)     = ¬tffα tffα
+    ...               | yes tffα with t freeFor x In β
+    ...                          | no ¬tffβ = no ¬tffα∧β
+                                              where
+                                                ¬tffα∧β : _
+                                                ¬tffα∧β (notfree xnf) = xf xnf
+                                                ¬tffα∧β (_ ∧ tffβ) = ¬tffβ tffβ
+    ...                          | yes tffβ = yes (tffα ∧ tffβ)
+    lemma (α ∨ β)     xf with t freeFor x In α
+    ...               | no ¬tffα = no ¬tffα∨β
+                                   where
+                                     ¬tffα∨β : _
+                                     ¬tffα∨β (notfree xnf) = xf xnf
+                                     ¬tffα∨β (tffα ∨ _)     = ¬tffα tffα
+    ...               | yes tffα with t freeFor x In β
+    ...                          | no ¬tffβ = no ¬tffα∨β
+                                              where
+                                                ¬tffα∨β : _
+                                                ¬tffα∨β (notfree xnf) = xf xnf
+                                                ¬tffα∨β (_ ∨ tffβ) = ¬tffβ tffβ
+    ...                          | yes tffβ = yes (tffα ∨ tffβ)
+    lemma (Λ y α)     xf with varEq x y
+    ...                  | yes refl = yes (Λ∣ α)
+    ...                  | no  x≢y  with t freeFor x In α
+    ...                             | no ¬tffα = no ¬tff
                                                  where
                                                    ¬tff : _
+                                                   ¬tff (notfree xnf) = xf xnf
                                                    ¬tff (Λ∣ .α) = x≢y refl
                                                    ¬tff (Λ .α .y _ tffα) = ¬tffα tffα
-...                                 | yes tffα with y notFreeInTerm t
-...                                            | yes ynft = yes (Λ α y ynft tffα)
-...                                            | no ¬ynft = no ¬tff
+    ...                             | yes tffα with y notFreeInTerm t
+    ...                                        | yes ynft = yes (Λ α y ynft tffα)
+    ...                                        | no ¬ynft = no ¬tff
                                                             where
                                                               ¬tff : _
+                                                              ¬tff (notfree xnf) = xf xnf
                                                               ¬tff (Λ∣ .α) = x≢y refl
                                                               ¬tff (Λ .α .y ynft _) = ¬ynft ynft
-t freeFor x In V y α     with varEq x y
-...                      | yes refl = yes (V∣ α)
-...                      | no  x≢y  with t freeFor x In α
-...                                 | no ¬tffα = no ¬tff
+    lemma (V y α)     xf with varEq x y
+    ...                  | yes refl = yes (V∣ α)
+    ...                  | no  x≢y  with t freeFor x In α
+    ...                             | no ¬tffα = no ¬tff
                                                  where
                                                    ¬tff : _
+                                                   ¬tff (notfree xnf) = xf xnf
                                                    ¬tff (V∣ .α) = x≢y refl
                                                    ¬tff (V .α .y _ tffα) = ¬tffα tffα
-...                                 | yes tffα with y notFreeInTerm t
-...                                            | yes ynft = yes (V α y ynft tffα)
-...                                            | no ¬ynft = no ¬tff
+    ...                             | yes tffα with y notFreeInTerm t
+    ...                                        | yes ynft = yes (V α y ynft tffα)
+    ...                                        | no ¬ynft = no ¬tff
                                                             where
                                                               ¬tff : _
+                                                              ¬tff (notfree xnf) = xf xnf
                                                               ¬tff (V∣ .α) = x≢y refl
                                                               ¬tff (V .α .y ynft _) = ¬ynft ynft
 
+
+-- Generating not-free variables
 
 supFreeTerms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n
                → mkvar n NotFreeInTerms ts
@@ -557,6 +574,8 @@ supFree (V x α) with supFree α
 supFree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n ⌈α⌉<n)
 
 
+-- Computing replacements
+
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs
            → [ us ][ x / t ]≡ vs
 [ [] ][ x / t ] = [] , []
@@ -569,32 +588,24 @@ supFree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n 
 ...   | xs , [ws][x/t]≡xs = (functerm f xs ∷ vs)
                             , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
 
-subNotFreeIdent : ∀{x α t} → t FreeFor x In α → x NotFreeIn α → α [ x / t ]≡ α
-subNotFreeIdent (atom r us) (atom x) = atom r (termsLemma us x)
+subNotFreeIdent : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
+subNotFreeIdent {atom r ts} {x} (atom xnfts) = atom r (termsLemma ts xnfts)
   where
     termsLemma : ∀{t n x} → (ts : Vec Term n) → x NotFreeInTerms ts → [ ts ][ x / t ]≡ ts
     termsLemma [] xnf = []
     termsLemma (.(varterm _) ∷ ts) (varterm neq ∷ xnfts) = varterm≢ neq ∷ termsLemma ts xnfts
     termsLemma (.(functerm _ _) ∷ ts) (functerm xnfus ∷ xnfts) = functerm (termsLemma _ xnfus) ∷ termsLemma ts xnfts
-subNotFreeIdent (tffα ⇒ tffβ) (xnfα ⇒ xnfβ) = subNotFreeIdent tffα xnfα ⇒ subNotFreeIdent tffβ xnfβ
-subNotFreeIdent (tffα ∧ tffβ) (xnfα ∧ xnfβ) = subNotFreeIdent tffα xnfα ∧ subNotFreeIdent tffβ xnfβ
-subNotFreeIdent (tffα ∨ tffβ) (xnfα ∨ xnfβ) = subNotFreeIdent tffα xnfα ∨ subNotFreeIdent tffβ xnfβ
-subNotFreeIdent (Λ∣ α) (Λ∣ x .α) = Λ∣ x α
-subNotFreeIdent (Λ∣ α) (Λ y xnfα) = Λ∣ y α
-subNotFreeIdent (V∣ α) (V∣ x .α) = V∣ x α
-subNotFreeIdent (V∣ α) (V y xnfα) = V∣ y α
-subNotFreeIdent (Λ α y ynft tffα) (Λ∣ .y .α) = Λ∣ y α
-subNotFreeIdent {x} (Λ α y ynft tffα) (Λ .y xnfα) with varEq x y
-...                                               | yes refl = Λ∣ y α
-...                                               | no  x≢y  = Λ x≢y ynft (subNotFreeIdent tffα xnfα)
-subNotFreeIdent (V α y x tffα) (V∣ .y .α) = V∣ y α
-subNotFreeIdent {x} (V α y ynft tffα) (V .y xnfα) with varEq x y
-...                                               | yes refl = V∣ y α
-...                                               | no  x≢y  = V x≢y ynft (subNotFreeIdent tffα xnfα)
+subNotFreeIdent {α ⇒ β} {x} (xnfα ⇒ xnfβ) = subNotFreeIdent xnfα ⇒ subNotFreeIdent xnfβ
+subNotFreeIdent {α ∧ β} {x} (xnfα ∧ xnfβ) = subNotFreeIdent xnfα ∧ subNotFreeIdent xnfβ
+subNotFreeIdent {α ∨ β} {x} (xnfα ∨ xnfβ) = subNotFreeIdent xnfα ∨ subNotFreeIdent xnfβ
+subNotFreeIdent {Λ x α} {x} (Λ∣ .x .α)    = Λ∣ x α
+subNotFreeIdent {Λ y α} {x} (Λ .y xnfα)   = {!   !}
+subNotFreeIdent {V x α} {x} (V∣ .x .α)    = V∣ x α
+subNotFreeIdent {V y α} {x} (V .y xnfα)   = {!   !}
 
 
 _[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
-α [ x / notfree xnfα ]          = α , subNotFreeIdent (notfree xnfα) xnfα
+α [ x / notfree xnfα ]          = α , subNotFreeIdent xnfα
 _[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
 _[_/_] {t} (atom r ts) x tff    | ts′ , tspf = atom r ts′ , atom r tspf
 (α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
@@ -664,11 +675,8 @@ subInverse .(atom r _) x ω .(atom r _) ωnfα (atom r x₁) = {!   !}
 subInverse (α ⇒ β) x ω (α′ ⇒ β′) (ωnfα ⇒ ωnfβ) (repα ⇒ repβ) = subInverse α x ω α′ ωnfα repα ⇒ subInverse β x ω β′ ωnfβ repβ
 subInverse (α ∧ β) x ω (α′ ∧ β′) (ωnfα ∧ ωnfβ) (repα ∧ repβ) = subInverse α x ω α′ ωnfα repα ∧ subInverse β x ω β′ ωnfβ repβ
 subInverse (α ∨ β) x ω (α′ ∨ β′) (ωnfα ∨ ωnfβ) (repα ∨ repβ) = subInverse α x ω α′ ωnfα repα ∨ subInverse β x ω β′ ωnfβ repβ
-subInverse .(Λ x α) x .x .(Λ x α) (Λ∣ .x .α) (Λ∣ .x α) = ident (Λ x α) x
-subInverse .(Λ x α) x ω .(Λ x α) (Λ .x ωnfα) (Λ∣ .x α) with varEq ω x
-subInverse .(Λ x α) x .x .(Λ x α) (Λ .x ωnfα) (Λ∣ .x α) | yes refl = Λ∣ x α
-subInverse .(Λ x α) x ω .(Λ x α) (Λ .x ωnfα) (Λ∣ .x α) | no ω≢x = {!   !}
+subInverse .(Λ x α) x ω .(Λ x α) q (Λ∣ .x α) = subNotFreeIdent q
 subInverse .(V x α) x .x .(V x α) (V∣ .x .α) (V∣ .x α) = ident (V x α) x
-subInverse .(V x α) x ω .(V x α) (V .x ωnfα) (V∣ .x α) = subNotFreeIdent {!   !} (V x ωnfα)
+subInverse .(V x α) x ω .(V x α) (V .x ωnfα) (V∣ .x α) = subNotFreeIdent (V x ωnfα)
 subInverse .(Λ _ _) x ω .(Λ _ _) ωnfα (Λ x₁ x₂ rep) = {!   !}
 subInverse .(V _ _) x ω .(V _ _) ωnfα (V x₁ x₂ rep) = {!   !}
