@@ -680,3 +680,27 @@ subInverse .(V x α) x .x .(V x α) (V∣ .x .α) (V∣ .x α) = ident (V x α) 
 subInverse .(V x α) x ω .(V x α) (V .x ωnfα) (V∣ .x α) = subNotFreeIdent (V x ωnfα)
 subInverse .(Λ _ _) x ω .(Λ _ _) ωnfα (Λ x₁ x₂ rep) = {!   !}
 subInverse .(V _ _) x ω .(V _ _) ωnfα (V x₁ x₂ rep) = {!   !}
+
+
+-- Obviously can't be done
+peutetre : ∀ α ω x → (varterm ω) FreeFor x In α → Σ Formula (α [ ω / varterm x ]≡_)
+peutetre (atom r ts) ω x _   with [ ts ][ ω / varterm x ]
+peutetre (atom r ts) ω x _ | fst₁ , snd₁ = atom r fst₁ , atom r snd₁
+peutetre (α ⇒ β) ω x (notfree (xnfα ⇒ xnfβ)) with peutetre α ω x (notfree xnfα) | peutetre β ω x (notfree xnfβ)
+peutetre (α ⇒ β) ω x (notfree (xnfα ⇒ xnfβ)) | fst₁ , snd₁ | fst₂ , snd₂ = fst₁ ⇒ fst₂ , snd₁ ⇒ snd₂
+peutetre (α ⇒ β) ω x (ωffα ⇒ ωffβ)       with peutetre α ω x ωffα | peutetre β ω x ωffβ
+peutetre (α ⇒ β) ω x (ωffα ⇒ ωffβ) | fst₁ , snd₁ | fst₂ , snd₂ = fst₁ ⇒ fst₂ , snd₁ ⇒ snd₂
+peutetre (α ∧ β) ω x (notfree (xnfα ∧ xnfβ)) with peutetre α ω x (notfree xnfα) | peutetre β ω x (notfree xnfβ)
+peutetre (α ∧ β) ω x (notfree (xnfα ∧ xnfβ)) | fst₁ , snd₁ | fst₂ , snd₂ = fst₁ ∧ fst₂ , snd₁ ∧ snd₂
+peutetre (α ∧ β) ω x (ωffα ∧ ωffβ)       with peutetre α ω x ωffα | peutetre β ω x ωffβ
+peutetre (α ∧ β) ω x (ωffα ∧ ωffβ) | fst₁ , snd₁ | fst₂ , snd₂ = fst₁ ∧ fst₂ , snd₁ ∧ snd₂
+peutetre (α ∨ β) ω x (notfree (xnfα ∨ xnfβ)) with peutetre α ω x (notfree xnfα) | peutetre β ω x (notfree xnfβ)
+peutetre (α ∨ β) ω x (notfree (xnfα ∨ xnfβ)) | fst₁ , snd₁ | fst₂ , snd₂ = fst₁ ∨ fst₂ , snd₁ ∨ snd₂
+peutetre (α ∨ β) ω x (ωffα ∨ ωffβ)       with peutetre α ω x ωffα | peutetre β ω x ωffβ
+peutetre (α ∨ β) ω x (ωffα ∨ ωffβ) | fst₁ , snd₁ | fst₂ , snd₂ = fst₁ ∨ fst₂ , snd₁ ∨ snd₂
+peutetre (Λ y α) ω x (notfree xnf)       = {!   !}
+peutetre (Λ y α) ω .y (Λ∣ .α)            = {!   !}
+peutetre (Λ y α) ω x (Λ .α .y ynfω ωffα) = {!   !}
+peutetre (V y α) ω x (notfree xnf)       = {!   !}
+peutetre (V y α) ω .y (V∣ .α)            = {!   !}
+peutetre (V y α) ω x (V .α .y ynfω ωffα) = {!   !}
