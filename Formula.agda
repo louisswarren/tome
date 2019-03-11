@@ -583,6 +583,68 @@ supFree (V x α) with supFree α
 supFree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n ⌈α⌉<n)
 
 
+minFresh : ∀ α → Σ ℕ λ ⌈α⌉ → ∀ n → ⌈α⌉ ≤ n → mkvar n FreshIn α
+minFresh (atom r ts) with supFreeTerms ts
+minFresh (atom r ts) | ⌈ts⌉ , tspf = suc ⌈ts⌉ , (λ n ⌈ts⌉≤n → atom (tspf n ⌈ts⌉≤n))
+minFresh (α ⇒ β) with minFresh α | minFresh β
+...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
+  where
+    freshIs⌈β⌉ : ∀ n → ⌈β⌉ ≤ n → mkvar n FreshIn (α ⇒ β)
+    freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ⇒ βpf n ⌈β⌉≤n
+...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+  where
+    freshIs⌈α⌉ : ∀ n → ⌈α⌉ ≤ n → mkvar n FreshIn (α ⇒ β)
+    freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ⇒ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
+minFresh (α ∧ β) with minFresh α | minFresh β
+...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
+  where
+    freshIs⌈β⌉ : ∀ n → ⌈β⌉ ≤ n → mkvar n FreshIn (α ∧ β)
+    freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ∧ βpf n ⌈β⌉≤n
+...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+  where
+    freshIs⌈α⌉ : ∀ n → ⌈α⌉ ≤ n → mkvar n FreshIn (α ∧ β)
+    freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∧ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
+minFresh (α ∨ β) with minFresh α | minFresh β
+...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
+...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
+  where
+    freshIs⌈β⌉ : ∀ n → ⌈β⌉ ≤ n → mkvar n FreshIn (α ∨ β)
+    freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ∨ βpf n ⌈β⌉≤n
+...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+  where
+    freshIs⌈α⌉ : ∀ n → ⌈α⌉ ≤ n → mkvar n FreshIn (α ∨ β)
+    freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∨ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
+minFresh (Λ (mkvar k) α) with minFresh α
+...                      | ⌈α⌉ , αpf with max (suc k) ⌈α⌉
+...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+  where
+    skNewLemma : ∀{n m} → suc m ≤ n → mkvar n ≢ mkvar m
+    skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
+    freshIs⌈α⌉ : ∀ n → ⌈α⌉ ≤ n → mkvar n FreshIn Λ (mkvar k) α
+    freshIs⌈α⌉ n ⌈α⌉≤n = Λ (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
+...                                  | more ⌈α⌉≤sk = suc k , freshIssk
+  where
+    skNewLemma : ∀{n m} → suc m ≤ n → mkvar n ≢ mkvar m
+    skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
+    freshIssk : ∀ n → suc k ≤ n → mkvar n FreshIn Λ (mkvar k) α
+    freshIssk n sk≤n = Λ (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
+minFresh (V (mkvar k) α) with minFresh α
+...                      | ⌈α⌉ , αpf with max (suc k) ⌈α⌉
+...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+  where
+    skNewLemma : ∀{n m} → suc m ≤ n → mkvar n ≢ mkvar m
+    skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
+    freshIs⌈α⌉ : ∀ n → ⌈α⌉ ≤ n → mkvar n FreshIn V (mkvar k) α
+    freshIs⌈α⌉ n ⌈α⌉≤n = V (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
+...                                  | more ⌈α⌉≤sk = suc k , freshIssk
+  where
+    skNewLemma : ∀{n m} → suc m ≤ n → mkvar n ≢ mkvar m
+    skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
+    freshIssk : ∀ n → suc k ≤ n → mkvar n FreshIn V (mkvar k) α
+    freshIssk n sk≤n = V (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
+
 -- Computing replacements
 
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs
