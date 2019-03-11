@@ -140,6 +140,14 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   Λ       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
   V       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
+data _FreshIn_ (x : Variable) : Formula → Set where
+  atom : ∀{r ts} → x NotFreeInTerms ts  → x FreshIn (atom r ts)
+  _⇒_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
+  _∧_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∧ β
+  _∨_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∨ β
+  Λ    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn Λ y α
+  V    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn V y α
+
 --------------------------------------------------------------------------------
 -- Computation requires decidable equality for the types above
 
@@ -701,3 +709,97 @@ subInverse (V .y α) x .y (V .y β) (V y ωnfα) (V x₁ (varterm x₂) rep) | y
 subInverse (V .y α) x ω (V .y β) (V y ωnfα) (V x₁ x₂ rep) | no x₃ = V x₃ (varterm (≢sym x y x₁)) (subInverse α x ω β ωnfα rep)
   where ≢sym : (x y : Variable) → x ≢ y → y ≢ x
         ≢sym x y x≢y refl = x≢y refl
+
+freshNotFree : ∀{α x} → x FreshIn α → x NotFreeIn α
+freshNotFree (atom x) = atom x
+freshNotFree (xfrα ⇒ xfrα₁) = freshNotFree xfrα ⇒ freshNotFree xfrα₁
+freshNotFree (xfrα ∧ xfrα₁) = freshNotFree xfrα ∧ freshNotFree xfrα₁
+freshNotFree (xfrα ∨ xfrα₁) = freshNotFree xfrα ∨ freshNotFree xfrα₁
+freshNotFree (Λ x xfrα) = Λ _ (freshNotFree xfrα)
+freshNotFree (V x xfrα) = V _ (freshNotFree xfrα)
+
+freshFreeFor : ∀{α x y} → x FreshIn α → (varterm x) FreeFor y In α
+freshFreeFor (atom x) = atom _ _
+freshFreeFor (xfrα ⇒ xfrα₁) = freshFreeFor xfrα ⇒ freshFreeFor xfrα₁
+freshFreeFor (xfrα ∧ xfrα₁) = freshFreeFor xfrα ∧ freshFreeFor xfrα₁
+freshFreeFor (xfrα ∨ xfrα₁) = freshFreeFor xfrα ∨ freshFreeFor xfrα₁
+freshFreeFor (Λ x xfrα) = Λ _ _ (varterm (≢sym _ _ x)) (freshFreeFor xfrα)
+  where ≢sym : (x y : Variable) → x ≢ y → y ≢ x
+        ≢sym x y x≢y refl = x≢y refl
+freshFreeFor (V x xfrα) = V _ _ (varterm (≢sym _ _ x)) (freshFreeFor xfrα)
+  where ≢sym : (x y : Variable) → x ≢ y → y ≢ x
+        ≢sym x y x≢y refl = x≢y refl
+
+subUniqueTerms : ∀{n} → (us : Vec Term n) → ∀{x t} → {vs ws : Vec Term n} → [ us ][ x / t ]≡ vs → [ us ][ x / t ]≡ ws → vs ≡ ws
+subUniqueTerms [] [] [] = refl
+subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≡ ∷ q) with subUniqueTerms us p q
+subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≡ ∷ q) | refl = refl
+subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≢ x₁ ∷ q) = ⊥-elim (x₁ refl)
+subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≡ ∷ q) = ⊥-elim (x₁ refl)
+subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≢ x₂ ∷ q) with subUniqueTerms us p q
+subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≢ x₂ ∷ q) | refl = refl
+subUniqueTerms (functerm f ts ∷ us) (functerm x ∷ p) (functerm x₁ ∷ q) with subUniqueTerms ts x x₁ | subUniqueTerms us p q
+subUniqueTerms (functerm f ts ∷ us) (functerm x ∷ p) (functerm x₁ ∷ q) | refl | refl = refl
+
+subNotFreeIdentTerms : ∀{n x t} → (us : Vec Term n) → x NotFreeInTerms us → [ us ][ x / t ]≡ us
+subNotFreeIdentTerms [] x = []
+subNotFreeIdentTerms (varterm x₁ ∷ us) (varterm x ∷ x₂) = varterm≢ x ∷ subNotFreeIdentTerms us x₂
+subNotFreeIdentTerms (functerm f ts ∷ us) (functerm x ∷ x₁) = functerm (subNotFreeIdentTerms ts x) ∷ subNotFreeIdentTerms us x₁
+
+subUnique : ∀ α → ∀{x t β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
+subUnique (atom r ts) (notfree x) (notfree x₁) = refl
+subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) with subUniqueTerms ts (subNotFreeIdentTerms ts x) x₁
+subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) | refl = refl
+subUnique (atom r ts) (atom .r x) (notfree (atom x₁)) with subUniqueTerms ts (subNotFreeIdentTerms ts x₁) x
+subUnique (atom r ts) (atom .r x) (notfree (atom x₁)) | refl = refl
+subUnique (atom r ts) (atom .r x) (atom .r x₁) with subUniqueTerms ts x x₁
+subUnique (atom r ts) (atom .r x) (atom .r x₁) | refl = refl
+subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (notfree (y₁ ⇒ y₂)) = refl
+subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (q₁ ⇒ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
+subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (q₁ ⇒ q₂) | refl | refl = refl
+subUnique (α ⇒ β) (p₁ ⇒ p₂) (notfree (y₁ ⇒ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
+subUnique (α ⇒ β) (p₁ ⇒ p₂) (notfree (y₁ ⇒ y₂)) | refl | refl = refl
+subUnique (α ⇒ β) (p₁ ⇒ p₂) (q₁ ⇒ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
+subUnique (α ⇒ β) (p₁ ⇒ p₂) (q₁ ⇒ q₂)           | refl | refl = refl
+subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (notfree (y₁ ∧ y₂)) = refl
+subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (q₁ ∧ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
+subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (q₁ ∧ q₂) | refl | refl = refl
+subUnique (α ∧ β) (p₁ ∧ p₂) (notfree (y₁ ∧ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
+subUnique (α ∧ β) (p₁ ∧ p₂) (notfree (y₁ ∧ y₂)) | refl | refl = refl
+subUnique (α ∧ β) (p₁ ∧ p₂) (q₁ ∧ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
+subUnique (α ∧ β) (p₁ ∧ p₂) (q₁ ∧ q₂)           | refl | refl = refl
+subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (notfree (y₁ ∨ y₂)) = refl
+subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (q₁ ∨ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
+subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (q₁ ∨ q₂) | refl | refl = refl
+subUnique (α ∨ β) (p₁ ∨ p₂) (notfree (y₁ ∨ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
+subUnique (α ∨ β) (p₁ ∨ p₂) (notfree (y₁ ∨ y₂)) | refl | refl = refl
+subUnique (α ∨ β) (p₁ ∨ p₂) (q₁ ∨ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
+subUnique (α ∨ β) (p₁ ∨ p₂) (q₁ ∨ q₂)           | refl | refl = refl
+subUnique (Λ x α) (notfree x₁) (notfree x₂) = refl
+subUnique (Λ x α) (notfree x₁) (Λ∣ .x .α) = refl
+subUnique (Λ x α) (notfree (Λ∣ .x .α)) (Λ x₂ x₃ q) = ⊥-elim (x₂ refl)
+subUnique (Λ x α) (notfree (Λ .x x₁)) (Λ x₂ x₃ q) with subUnique α (notfree x₁) q
+subUnique (Λ x α) (notfree (Λ .x x₁)) (Λ x₂ x₃ q) | refl = refl
+subUnique (Λ x α) (Λ∣ .x .α) (notfree x₁) = refl
+subUnique (Λ x α) (Λ∣ .x .α) (Λ∣ .x .α) = refl
+subUnique (Λ x α) (Λ∣ .x .α) (Λ x₁ x₂ q) = ⊥-elim (x₁ refl)
+subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ∣ .x .α)) = ⊥-elim (x₁ refl)
+subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ .x x₃)) with subUnique α p (notfree x₃)
+subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ .x x₃)) | refl = refl
+subUnique (Λ x α) (Λ x₁ x₂ p) (Λ∣ .x .α) = ⊥-elim (x₁ refl)
+subUnique (Λ x α) (Λ x₁ x₂ p) (Λ x₃ x₄ q) with subUnique α p q
+subUnique (Λ x α) (Λ x₁ x₂ p) (Λ x₃ x₄ q) | refl = refl
+subUnique (V x α) (notfree x₁) (notfree x₂) = refl
+subUnique (V x α) (notfree x₁) (V∣ .x .α) = refl
+subUnique (V x α) (notfree (V∣ .x .α)) (V x₂ x₃ q) = ⊥-elim (x₂ refl)
+subUnique (V x α) (notfree (V .x x₁)) (V x₂ x₃ q) with subUnique α (notfree x₁) q
+subUnique (V x α) (notfree (V .x x₁)) (V x₂ x₃ q) | refl = refl
+subUnique (V x α) (V∣ .x .α) (notfree x₁) = refl
+subUnique (V x α) (V∣ .x .α) (V∣ .x .α) = refl
+subUnique (V x α) (V∣ .x .α) (V x₁ x₂ q) = ⊥-elim (x₁ refl)
+subUnique (V x α) (V x₁ x₂ p) (notfree (V∣ .x .α)) = ⊥-elim (x₁ refl)
+subUnique (V x α) (V x₁ x₂ p) (notfree (V .x x₃)) with subUnique α p (notfree x₃)
+subUnique (V x α) (V x₁ x₂ p) (notfree (V .x x₃)) | refl = refl
+subUnique (V x α) (V x₁ x₂ p) (V∣ .x .α) = ⊥-elim (x₁ refl)
+subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) with subUnique α p q
+subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) | refl = refl
