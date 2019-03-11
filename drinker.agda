@@ -188,18 +188,20 @@ glpo→lem ⊢glpo α = close
                    where
                     ω : Variable
                     ω = ?
+                    ωFresh : ω FreshIn α
+                    ωFresh = ?
                     ωnf : ω NotFreeIn α
-                    ωnf = ?
+                    ωnf = freshNotFree ωFresh
                     ωff : (varterm ω) FreeFor xvar In α
-                    ωff = ?
-                    ω≢x : ω ≢ xvar
-                    ω≢x = ?
+                    ωff = freshFreeFor ωFresh
                     αω : Formula
                     αω = fst (α [ xvar / ωff ])
                     αωpf : α [ xvar / varterm ω ]≡ αω
                     αωpf = snd (α [ xvar / ωff ])
                     xnfαω : xvar NotFreeIn αω
-                    xnfαω = subNotFree (varterm ω≢x) αωpf
+                    xnfαω with varEq ω xvar
+                    xnfαω | yes ω≡x = {! ω  !}
+                    xnfαω | no  ω≢x = subNotFree (varterm ω≢x) αωpf
                     αω[ω/x]≡α : αω [ ω / x ]≡ α
                     αω[ω/x]≡α = subInverse α xvar ω αω ωnf αωpf
                     αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
