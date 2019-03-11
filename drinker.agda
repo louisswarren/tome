@@ -3,6 +3,7 @@ open import Agda.Builtin.Equality
 open import Agda.Builtin.String
 open import Agda.Builtin.Sigma
 
+open import Decidable hiding (⊥ ; ¬_)
 open import Deduction
 open import Ensemble
 open import List
@@ -16,7 +17,7 @@ open import List
 open import Formula
 open import Vec
 
-open import Texify
+--open import Texify
 
 open import sugar
 
@@ -181,24 +182,28 @@ glpo→lem ⊢glpo α = close
                         (univelim x (ident (¬ αω) xvar)
                          (assume (∀x (¬ αω)))))
                        (disjintro₁ (¬ αω)
-                        (existelim (xαωnf ∷ αω ~ [ refl ] -∷ ∅)
+                        (existelim (xnfαω ∷ αω ~ [ refl ] -∷ ∅)
                          (assume (∃x αω))
                          (assume αω))))))
                    where
-                    ωfresh : FreshVar α xvar (varterm xvar)
-                    ωfresh = freshVar α xvar x
                     ω : Variable
-                    ω = FreshVar.var ωfresh
+                    ω = ?
                     ωnf : ω NotFreeIn α
-                    ωnf = FreshVar.notFree ωfresh
+                    ωnf = ?
+                    ωff : (varterm ω) FreeFor xvar In α
+                    ωff = ?
+                    ω≢x : ω ≢ xvar
+                    ω≢x = ?
                     αω : Formula
-                    αω = fst (α [ xvar / varterm ω ])
+                    αω = fst (α [ xvar / ωff ])
                     αωpf : α [ xvar / varterm ω ]≡ αω
-                    αωpf = snd (α [ xvar / varterm ω ])
-                    xαωnf : xvar NotFreeIn αω
-                    xαωnf = subNotFree (varterm (FreshVar.new ωfresh)) αωpf
+                    αωpf = snd (α [ xvar / ωff ])
+                    xnfαω : xvar NotFreeIn αω
+                    xnfαω = subNotFree (varterm ω≢x) αωpf
+                    αω[ω/x]≡α : αω [ ω / x ]≡ α
+                    αω[ω/x]≡α = subInverse α xvar ω αω ωnf αωpf
                     αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
-                    αω∨¬αω[ω/x]≡α∨¬α = inverse ωnf αωpf ∨ (inverse ωnf αωpf ⇒ atom ⊥rel [])
+                    αω∨¬αω[ω/x]≡α∨¬α = αω[ω/x]≡α ∨ (αω[ω/x]≡α ⇒ notfree (atom []))
 
 GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
 GLPO⊃LEM (⊢GLPO ∷ []) (α ∷ []) = glpo→lem (descheme₁ ⊢GLPO) α
