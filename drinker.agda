@@ -17,7 +17,7 @@ open import List
 open import Formula
 open import Vec
 
---open import Texify
+open import Texify
 
 open import sugar
 
