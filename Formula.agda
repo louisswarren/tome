@@ -114,6 +114,7 @@ data [_][_/_]≡_ where
         → [ u ∷ us ][ x / t ]≡ (v ∷ vs)
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
+  ident : ∀ α x → α [ x / varterm x ]≡ α
   notfree : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
   atom    : ∀{x t}
               → (r : Relation) → {xs ys : Vec Term (relarity r)}
@@ -143,6 +144,7 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   Λ       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
   V       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
+
 data _FreshIn_ (x : Variable) : Formula → Set where
   atom : ∀{r ts} → x NotFreeInTerms ts  → x FreshIn (atom r ts)
   _⇒_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
@@ -150,6 +152,7 @@ data _FreshIn_ (x : Variable) : Formula → Set where
   _∨_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∨ β
   Λ    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn Λ y α
   V    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn V y α
+
 
 --------------------------------------------------------------------------------
 -- Computation requires decidable equality for the types above
@@ -411,6 +414,7 @@ x notFreeIn V  y α    | no x≢y | no ¬αbd = no φ
                                              φ : ¬(x NotFreeIn V y α)
                                              φ (V∣ x α) = x≢y refl
                                              φ (V y αbd) = ¬αbd αbd
+
 
 _freeFor_In_ : ∀ t x α → Dec (t FreeFor x In α)
 t freeFor x In α with x notFreeIn α
@@ -706,30 +710,30 @@ V y α [ x / V .α .y ynft tffα ] with varEq x y
 
 
 -- Make this a derived rule
-ident : ∀ α x → α [ x / varterm x ]≡ α
-ident (atom r ts) x = atom r (identTerms ts x)
-  where
-    identTerms : ∀{n} → (ts : Vec Term n) → ∀ x → [ ts ][ x / varterm x ]≡ ts
-    identTerms [] x = []
-    identTerms (varterm y ∷ ts) x with varEq x y
-    ...                           | yes refl = varterm≡ ∷ identTerms ts x
-    ...                           | no  x≢y  = varterm≢ x≢y ∷ identTerms ts x
-    identTerms (functerm f us ∷ ts) x = functerm (identTerms us x) ∷ identTerms ts x
-ident (α ⇒ β) x = ident α x ⇒ ident β x
-ident (α ∧ β) x = ident α x ∧ ident β x
-ident (α ∨ β) x = ident α x ∨ ident β x
-ident (Λ y α) x with varEq x y
-...             | yes refl = Λ∣ y α
-...             | no  x≢y  = Λ x≢y (varterm y≢x) (ident α x)
-                             where
-                               y≢x : y ≢ x
-                               y≢x refl = x≢y refl
-ident (V y α) x with varEq x y
-...             | yes refl = V∣ y α
-...             | no  x≢y  = V x≢y (varterm y≢x) (ident α x)
-                             where
-                               y≢x : y ≢ x
-                               y≢x refl = x≢y refl
+--ident : ∀ α x → α [ x / varterm x ]≡ α
+--ident (atom r ts) x = atom r (identTerms ts x)
+--  where
+--    identTerms : ∀{n} → (ts : Vec Term n) → ∀ x → [ ts ][ x / varterm x ]≡ ts
+--    identTerms [] x = []
+--    identTerms (varterm y ∷ ts) x with varEq x y
+--    ...                           | yes refl = varterm≡ ∷ identTerms ts x
+--    ...                           | no  x≢y  = varterm≢ x≢y ∷ identTerms ts x
+--    identTerms (functerm f us ∷ ts) x = functerm (identTerms us x) ∷ identTerms ts x
+--ident (α ⇒ β) x = ident α x ⇒ ident β x
+--ident (α ∧ β) x = ident α x ∧ ident β x
+--ident (α ∨ β) x = ident α x ∨ ident β x
+--ident (Λ y α) x with varEq x y
+--...             | yes refl = Λ∣ y α
+--...             | no  x≢y  = Λ x≢y (varterm y≢x) (ident α x)
+--                             where
+--                               y≢x : y ≢ x
+--                               y≢x refl = x≢y refl
+--ident (V y α) x with varEq x y
+--...             | yes refl = V∣ y α
+--...             | no  x≢y  = V x≢y (varterm y≢x) (ident α x)
+--                             where
+--                               y≢x : y ≢ x
+--                               y≢x refl = x≢y refl
 
 subNotFreeTerms : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t
                   → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
@@ -740,6 +744,7 @@ subNotFreeTerms xnft (functerm sub ∷ ps) = functerm (subNotFreeTerms xnft sub)
                                            ∷ subNotFreeTerms xnft ps
 
 subNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
+subNotFree xnft (ident α x)      = ?
 subNotFree xnft (notfree xnfα)   = xnfα
 subNotFree xnft (atom r p)       = atom (subNotFreeTerms xnft p)
 subNotFree xnft (pα ⇒ pβ)        = subNotFree xnft pα ⇒ subNotFree xnft pβ
@@ -751,6 +756,7 @@ subNotFree xnft (V∣ y α)         = V∣ y α
 subNotFree xnft (V x≢y ynft p)   = V _ (subNotFree xnft p)
 
 subInverse : ∀ α x ω β → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
+subInverse α x ω β ωnfα (ident α x)    = ident α x
 subInverse α x ω β ωnfα (notfree xnfα) = notfree ωnfα
 subInverse (atom .r us) x ω (atom .r vs) (atom x₂) (atom r x₁) = atom r (termsLemma us vs x ω x₂ x₁)
   where
@@ -817,6 +823,8 @@ subNotFreeIdentTerms (varterm x₁ ∷ us) (varterm x ∷ x₂) = varterm≢ x �
 subNotFreeIdentTerms (functerm f ts ∷ us) (functerm x ∷ x₁) = functerm (subNotFreeIdentTerms ts x) ∷ subNotFreeIdentTerms us x₁
 
 subUnique : ∀ α → ∀{x t β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
+subUnique _ (ident α x) _ = ?
+subUnique _ _ (ident α x) = ?
 subUnique (atom r ts) (notfree x) (notfree x₁) = refl
 subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) with subUniqueTerms ts (subNotFreeIdentTerms ts x) x₁
 subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) | refl = refl
@@ -873,3 +881,15 @@ subUnique (V x α) (V x₁ x₂ p) (notfree (V .x x₃)) | refl = refl
 subUnique (V x α) (V x₁ x₂ p) (V∣ .x .α) = ⊥-elim (x₁ refl)
 subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) with subUnique α p q
 subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) | refl = refl
+
+subFreeFor : ∀{α x t β} → α [ x / t ]≡ β → t FreeFor x In α
+subFreeFor (ident α x) = ?
+subFreeFor (notfree x) = notfree x
+subFreeFor (atom r x) = atom r _
+subFreeFor (rep ⇒ rep₁) = subFreeFor rep ⇒ subFreeFor rep₁
+subFreeFor (rep ∧ rep₁) = subFreeFor rep ∧ subFreeFor rep₁
+subFreeFor (rep ∨ rep₁) = subFreeFor rep ∨ subFreeFor rep₁
+subFreeFor (Λ∣ x α) = Λ∣ α
+subFreeFor (V∣ x α) = V∣ α
+subFreeFor (Λ x x₁ rep) = Λ _ _ x₁ (subFreeFor rep)
+subFreeFor (V x x₁ rep) = V _ _ x₁ (subFreeFor rep)
