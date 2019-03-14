@@ -744,7 +744,7 @@ subNotFreeTerms xnft (functerm sub ∷ ps) = functerm (subNotFreeTerms xnft sub)
                                            ∷ subNotFreeTerms xnft ps
 
 subNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
-subNotFree xnft (ident α x)      = ?
+subNotFree (varterm x≢x) (ident α x) = ⊥-elim (x≢x refl)
 subNotFree xnft (notfree xnfα)   = xnfα
 subNotFree xnft (atom r p)       = atom (subNotFreeTerms xnft p)
 subNotFree xnft (pα ⇒ pβ)        = subNotFree xnft pα ⇒ subNotFree xnft pβ
@@ -822,9 +822,38 @@ subNotFreeIdentTerms [] x = []
 subNotFreeIdentTerms (varterm x₁ ∷ us) (varterm x ∷ x₂) = varterm≢ x ∷ subNotFreeIdentTerms us x₂
 subNotFreeIdentTerms (functerm f ts ∷ us) (functerm x ∷ x₁) = functerm (subNotFreeIdentTerms ts x) ∷ subNotFreeIdentTerms us x₁
 
+coidentTerms : ∀{n x} {us vs : Vec Term n} → [ us ][ x / varterm x ]≡ vs → us ≡ vs
+coidentTerms [] = refl
+coidentTerms (x ∷ rep) with coidentTerms rep
+coidentTerms (varterm≡ ∷ rep)    | refl = refl
+coidentTerms (varterm≢ x ∷ rep)  | refl = refl
+coidentTerms (functerm ts ∷ rep) | refl with coidentTerms ts
+coidentTerms (functerm ts ∷ rep) | refl | refl = refl
+
+coident : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
+coident (ident α x) = refl
+coident (notfree x) = refl
+coident (atom r ts) with coidentTerms ts
+coident (atom r ts) | refl = refl
+coident (repα ⇒ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (repα ∧ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (repα ∨ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (Λ∣ x α) = refl
+coident (V∣ x α) = refl
+coident (Λ x x₁ rep) with coident rep
+coident (Λ x x₁ rep) | refl = refl
+coident (V x x₁ rep) with coident rep
+coident (V x x₁ rep) | refl = refl
+
 subUnique : ∀ α → ∀{x t β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
-subUnique _ (ident α x) _ = ?
-subUnique _ _ (ident α x) = ?
+subUnique _ (ident α x) q = coident q
+subUnique _ p (ident α x) = ≡sym (coident p)
+  where
+    ≡sym : {A : Set} {x y : A} → x ≡ y → y ≡ x
+    ≡sym refl = refl
 subUnique (atom r ts) (notfree x) (notfree x₁) = refl
 subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) with subUniqueTerms ts (subNotFreeIdentTerms ts x) x₁
 subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) | refl = refl
@@ -883,7 +912,16 @@ subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) with subUnique α p q
 subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) | refl = refl
 
 subFreeFor : ∀{α x t β} → α [ x / t ]≡ β → t FreeFor x In α
-subFreeFor (ident α x) = ?
+subFreeFor (ident (atom r ts) x) = atom r ts
+subFreeFor (ident (α ⇒ α₁) x) = subFreeFor (ident α x) ⇒ subFreeFor (ident α₁ x)
+subFreeFor (ident (α ∧ α₁) x) = subFreeFor (ident α x) ∧ subFreeFor (ident α₁ x)
+subFreeFor (ident (α ∨ α₁) x) = subFreeFor (ident α x) ∨ subFreeFor (ident α₁ x)
+subFreeFor (ident (Λ x₁ α) x) with varEq x₁ x
+subFreeFor (ident (Λ x₁ α) .x₁) | yes refl = Λ∣ α
+subFreeFor (ident (Λ x₁ α) x) | no x₂ = Λ α x₁ (varterm x₂) (subFreeFor (ident α x))
+subFreeFor (ident (V x₁ α) x) with varEq x₁ x
+subFreeFor (ident (V x₁ α) .x₁) | yes refl = V∣ α
+subFreeFor (ident (V x₁ α) x) | no x₂ = V α x₁ (varterm x₂) (subFreeFor (ident α x))
 subFreeFor (notfree x) = notfree x
 subFreeFor (atom r x) = atom r _
 subFreeFor (rep ⇒ rep₁) = subFreeFor rep ⇒ subFreeFor rep₁
