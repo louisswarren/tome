@@ -1,6 +1,8 @@
-open import Formula
+open import Agda.Builtin.Sigma
 
 open import Decidable
+open import Formula
+open import Nat
 open import Vec
 
 -- Prove that ident is a derived rule. Note that this proof does not make use
@@ -187,3 +189,110 @@ subFreeFor (Λ∣ x α) = Λ∣ α
 subFreeFor (V∣ x α) = V∣ α
 subFreeFor (Λ x x₁ rep) = Λ _ _ x₁ (subFreeFor rep)
 subFreeFor (V x x₁ rep) = V _ _ x₁ (subFreeFor rep)
+
+
+-- Show that substutution is functional
+subUniqueTerms : ∀{n} → (us : Vec Term n) → ∀{x t} → {vs ws : Vec Term n} → [ us ][ x / t ]≡ vs → [ us ][ x / t ]≡ ws → vs ≡ ws
+subUniqueTerms [] [] [] = refl
+subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≡ ∷ q) with subUniqueTerms us p q
+subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≡ ∷ q) | refl = refl
+subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≢ x₁ ∷ q) = ⊥-elim (x₁ refl)
+subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≡ ∷ q) = ⊥-elim (x₁ refl)
+subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≢ x₂ ∷ q) with subUniqueTerms us p q
+subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≢ x₂ ∷ q) | refl = refl
+subUniqueTerms (functerm f ts ∷ us) (functerm x ∷ p) (functerm x₁ ∷ q) with subUniqueTerms ts x x₁ | subUniqueTerms us p q
+subUniqueTerms (functerm f ts ∷ us) (functerm x ∷ p) (functerm x₁ ∷ q) | refl | refl = refl
+
+subNotFreeIdentTerms : ∀{n x t} → (us : Vec Term n) → x NotFreeInTerms us → [ us ][ x / t ]≡ us
+subNotFreeIdentTerms [] x = []
+subNotFreeIdentTerms (varterm x₁ ∷ us) (varterm x ∷ x₂) = varterm≢ x ∷ subNotFreeIdentTerms us x₂
+subNotFreeIdentTerms (functerm f ts ∷ us) (functerm x ∷ x₁) = functerm (subNotFreeIdentTerms ts x) ∷ subNotFreeIdentTerms us x₁
+
+coidentTerms : ∀{n x} {us vs : Vec Term n} → [ us ][ x / varterm x ]≡ vs → us ≡ vs
+coidentTerms [] = refl
+coidentTerms (x ∷ rep) with coidentTerms rep
+coidentTerms (varterm≡ ∷ rep)    | refl = refl
+coidentTerms (varterm≢ x ∷ rep)  | refl = refl
+coidentTerms (functerm ts ∷ rep) | refl with coidentTerms ts
+coidentTerms (functerm ts ∷ rep) | refl | refl = refl
+
+coident : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
+coident (ident α x) = refl
+coident (notfree x) = refl
+coident (atom r ts) with coidentTerms ts
+coident (atom r ts) | refl = refl
+coident (repα ⇒ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (repα ∧ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (repα ∨ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (Λ∣ x α) = refl
+coident (V∣ x α) = refl
+coident (Λ x x₁ rep) with coident rep
+coident (Λ x x₁ rep) | refl = refl
+coident (V x x₁ rep) with coident rep
+coident (V x x₁ rep) | refl = refl
+
+subUnique : ∀ α → ∀{x t β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
+subUnique _ (ident α x) q = coident q
+subUnique _ p (ident α x) = ≡sym (coident p)
+  where
+    ≡sym : {A : Set} {x y : A} → x ≡ y → y ≡ x
+    ≡sym refl = refl
+subUnique (atom r ts) (notfree x) (notfree x₁) = refl
+subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) with subUniqueTerms ts (subNotFreeIdentTerms ts x) x₁
+subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) | refl = refl
+subUnique (atom r ts) (atom .r x) (notfree (atom x₁)) with subUniqueTerms ts (subNotFreeIdentTerms ts x₁) x
+subUnique (atom r ts) (atom .r x) (notfree (atom x₁)) | refl = refl
+subUnique (atom r ts) (atom .r x) (atom .r x₁) with subUniqueTerms ts x x₁
+subUnique (atom r ts) (atom .r x) (atom .r x₁) | refl = refl
+subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (notfree (y₁ ⇒ y₂)) = refl
+subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (q₁ ⇒ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
+subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (q₁ ⇒ q₂) | refl | refl = refl
+subUnique (α ⇒ β) (p₁ ⇒ p₂) (notfree (y₁ ⇒ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
+subUnique (α ⇒ β) (p₁ ⇒ p₂) (notfree (y₁ ⇒ y₂)) | refl | refl = refl
+subUnique (α ⇒ β) (p₁ ⇒ p₂) (q₁ ⇒ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
+subUnique (α ⇒ β) (p₁ ⇒ p₂) (q₁ ⇒ q₂)           | refl | refl = refl
+subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (notfree (y₁ ∧ y₂)) = refl
+subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (q₁ ∧ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
+subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (q₁ ∧ q₂) | refl | refl = refl
+subUnique (α ∧ β) (p₁ ∧ p₂) (notfree (y₁ ∧ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
+subUnique (α ∧ β) (p₁ ∧ p₂) (notfree (y₁ ∧ y₂)) | refl | refl = refl
+subUnique (α ∧ β) (p₁ ∧ p₂) (q₁ ∧ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
+subUnique (α ∧ β) (p₁ ∧ p₂) (q₁ ∧ q₂)           | refl | refl = refl
+subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (notfree (y₁ ∨ y₂)) = refl
+subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (q₁ ∨ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
+subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (q₁ ∨ q₂) | refl | refl = refl
+subUnique (α ∨ β) (p₁ ∨ p₂) (notfree (y₁ ∨ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
+subUnique (α ∨ β) (p₁ ∨ p₂) (notfree (y₁ ∨ y₂)) | refl | refl = refl
+subUnique (α ∨ β) (p₁ ∨ p₂) (q₁ ∨ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
+subUnique (α ∨ β) (p₁ ∨ p₂) (q₁ ∨ q₂)           | refl | refl = refl
+subUnique (Λ x α) (notfree x₁) (notfree x₂) = refl
+subUnique (Λ x α) (notfree x₁) (Λ∣ .x .α) = refl
+subUnique (Λ x α) (notfree (Λ∣ .x .α)) (Λ x₂ x₃ q) = ⊥-elim (x₂ refl)
+subUnique (Λ x α) (notfree (Λ .x x₁)) (Λ x₂ x₃ q) with subUnique α (notfree x₁) q
+subUnique (Λ x α) (notfree (Λ .x x₁)) (Λ x₂ x₃ q) | refl = refl
+subUnique (Λ x α) (Λ∣ .x .α) (notfree x₁) = refl
+subUnique (Λ x α) (Λ∣ .x .α) (Λ∣ .x .α) = refl
+subUnique (Λ x α) (Λ∣ .x .α) (Λ x₁ x₂ q) = ⊥-elim (x₁ refl)
+subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ∣ .x .α)) = ⊥-elim (x₁ refl)
+subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ .x x₃)) with subUnique α p (notfree x₃)
+subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ .x x₃)) | refl = refl
+subUnique (Λ x α) (Λ x₁ x₂ p) (Λ∣ .x .α) = ⊥-elim (x₁ refl)
+subUnique (Λ x α) (Λ x₁ x₂ p) (Λ x₃ x₄ q) with subUnique α p q
+subUnique (Λ x α) (Λ x₁ x₂ p) (Λ x₃ x₄ q) | refl = refl
+subUnique (V x α) (notfree x₁) (notfree x₂) = refl
+subUnique (V x α) (notfree x₁) (V∣ .x .α) = refl
+subUnique (V x α) (notfree (V∣ .x .α)) (V x₂ x₃ q) = ⊥-elim (x₂ refl)
+subUnique (V x α) (notfree (V .x x₁)) (V x₂ x₃ q) with subUnique α (notfree x₁) q
+subUnique (V x α) (notfree (V .x x₁)) (V x₂ x₃ q) | refl = refl
+subUnique (V x α) (V∣ .x .α) (notfree x₁) = refl
+subUnique (V x α) (V∣ .x .α) (V∣ .x .α) = refl
+subUnique (V x α) (V∣ .x .α) (V x₁ x₂ q) = ⊥-elim (x₁ refl)
+subUnique (V x α) (V x₁ x₂ p) (notfree (V∣ .x .α)) = ⊥-elim (x₁ refl)
+subUnique (V x α) (V x₁ x₂ p) (notfree (V .x x₃)) with subUnique α p (notfree x₃)
+subUnique (V x α) (V x₁ x₂ p) (notfree (V .x x₃)) | refl = refl
+subUnique (V x α) (V x₁ x₂ p) (V∣ .x .α) = ⊥-elim (x₁ refl)
+subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) with subUnique α p q
+subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) | refl = refl
