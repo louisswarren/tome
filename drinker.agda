@@ -217,7 +217,7 @@ glpo→lem ⊢glpo α | no ¬xnfα = close
                     xnfαω | yes x≡ω = ⊥-elim (¬xnfα (≡ωnf xvar x≡ω))
                     xnfαω | no  x≢ω = subNotFree (varterm x≢ω) αωpf
                     αω[ω/x]≡α : αω [ ω / x ]≡ α
-                    αω[ω/x]≡α = subInverse α xvar ω αω ωnf αωpf
+                    αω[ω/x]≡α = subInverse ωnf αωpf
                     αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
                     αω∨¬αω[ω/x]≡α∨¬α = αω[ω/x]≡α ∨ (αω[ω/x]≡α ⇒ notfree (atom []))
 

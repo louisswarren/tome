@@ -559,6 +559,8 @@ V y α [ x / V .α .y ynft tffα ] with varEq x y
 ...                                        | α′ , αpf = V y α′ , V x≢y ynft αpf
 
 
+-- Some useful lemata
+
 subNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
 subNotFree (varterm x≢x) (ident α x) = ⊥-elim (x≢x refl)
 subNotFree xnft (notfree xnfα)   = xnfα
@@ -578,38 +580,6 @@ subNotFree xnft (Λ∣ y α)         = Λ∣ y α
 subNotFree xnft (Λ x≢y ynft p)   = Λ _ (subNotFree xnft p)
 subNotFree xnft (V∣ y α)         = V∣ y α
 subNotFree xnft (V x≢y ynft p)   = V _ (subNotFree xnft p)
-
-
-subInverse : ∀ α x ω β → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
-subInverse α x ω β ωnfα (ident α x)    = ident α x
-subInverse α x ω β ωnfα (notfree xnfα) = notfree ωnfα
-subInverse (atom .r us) x ω (atom .r vs) (atom x₂) (atom r x₁) = atom r (termsLemma us vs x ω x₂ x₁)
-  where
-    termsLemma : ∀{n} → (us vs : Vec Term n) → ∀ x ω → ω NotFreeInTerms us → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
-    termsLemma [] .[] x ω x₁ [] = []
-    termsLemma (.(varterm x) ∷ us) (.(varterm ω) ∷ vs) x ω (x₁ ∷ x₅) (varterm≡ ∷ x₄) = varterm≡ ∷ termsLemma us vs x ω x₅ x₄
-    termsLemma ((varterm y) ∷ us) ((varterm .y) ∷ vs) x ω (x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) with varEq ω y
-    termsLemma (varterm y ∷ us) (varterm .y ∷ vs) x .y (varterm x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) | yes refl = ⊥-elim (x₁ refl)
-    termsLemma (varterm y ∷ us) (varterm .y ∷ vs) x ω (x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) | no x₃ = varterm≢ x₃ ∷ termsLemma us vs x ω x₅ x₄
-    termsLemma (functerm f ts ∷ us) (functerm .f ss ∷ vs) x ω (functerm x₁ ∷ x₅) (functerm x₂ ∷ x₄) = functerm (termsLemma ts ss x ω x₁ x₂) ∷ termsLemma us vs x ω x₅ x₄
-subInverse (α ⇒ β) x ω (α′ ⇒ β′) (ωnfα ⇒ ωnfβ) (repα ⇒ repβ) = subInverse α x ω α′ ωnfα repα ⇒ subInverse β x ω β′ ωnfβ repβ
-subInverse (α ∧ β) x ω (α′ ∧ β′) (ωnfα ∧ ωnfβ) (repα ∧ repβ) = subInverse α x ω α′ ωnfα repα ∧ subInverse β x ω β′ ωnfβ repβ
-subInverse (α ∨ β) x ω (α′ ∨ β′) (ωnfα ∨ ωnfβ) (repα ∨ repβ) = subInverse α x ω α′ ωnfα repα ∨ subInverse β x ω β′ ωnfβ repβ
-subInverse .(Λ x α) x ω .(Λ x α) q (Λ∣ .x α) = notfree q
-subInverse .(V x α) x .x .(V x α) (V∣ .x .α) (V∣ .x α) = ident (V x α) x
-subInverse .(V x α) x ω .(V x α) (V .x ωnfα) (V∣ .x α) = notfree (V x ωnfα)
-subInverse (Λ y _) x ω (Λ .y _) ωnfα (Λ x₁ x₂ rep) with varEq ω y
-subInverse (Λ y α) x .y (Λ .y β) ωnfα (Λ x₁ (varterm x₂) rep) | yes refl = ⊥-elim (x₂ refl)
-subInverse (Λ y α) x .y (Λ .y β) (Λ∣ .y .α) (Λ x₁ x₂ rep) | no x₃ = ⊥-elim (x₃ refl)
-subInverse (Λ y α) x ω (Λ .y β) (Λ .y ωnfα) (Λ x₁ x₂ rep) | no x₃ = Λ x₃ (varterm (≢sym x y x₁)) (subInverse α x ω β ωnfα rep)
-  where ≢sym : (x y : Variable) → x ≢ y → y ≢ x
-        ≢sym x y x≢y refl = x≢y refl
-subInverse .(V ω α) x ω .(V ω _) (V∣ .ω α) (V x₁ (varterm x₂) rep) = ⊥-elim (x₂ refl)
-subInverse (V .y α) x ω (V .y β) (V y ωnfα) (V x₁ x₂ rep) with varEq ω y
-subInverse (V .y α) x .y (V .y β) (V y ωnfα) (V x₁ (varterm x₂) rep) | yes refl = ⊥-elim (x₂ refl)
-subInverse (V .y α) x ω (V .y β) (V y ωnfα) (V x₁ x₂ rep) | no x₃ = V x₃ (varterm (≢sym x y x₁)) (subInverse α x ω β ωnfα rep)
-  where ≢sym : (x y : Variable) → x ≢ y → y ≢ x
-        ≢sym x y x≢y refl = x≢y refl
 
 
 freshNotFree : ∀{α x} → x FreshIn α → x NotFreeIn α
@@ -634,108 +604,33 @@ freshFreeFor (V x xfrα) = V _ _ (varterm (≢sym _ _ x)) (freshFreeFor xfrα)
         ≢sym x y x≢y refl = x≢y refl
 
 
--- Show that substutution is functional
-subUniqueTerms : ∀{n} → (us : Vec Term n) → ∀{x t} → {vs ws : Vec Term n} → [ us ][ x / t ]≡ vs → [ us ][ x / t ]≡ ws → vs ≡ ws
-subUniqueTerms [] [] [] = refl
-subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≡ ∷ q) with subUniqueTerms us p q
-subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≡ ∷ q) | refl = refl
-subUniqueTerms (varterm x ∷ us) (varterm≡ ∷ p) (varterm≢ x₁ ∷ q) = ⊥-elim (x₁ refl)
-subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≡ ∷ q) = ⊥-elim (x₁ refl)
-subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≢ x₂ ∷ q) with subUniqueTerms us p q
-subUniqueTerms (varterm x ∷ us) (varterm≢ x₁ ∷ p) (varterm≢ x₂ ∷ q) | refl = refl
-subUniqueTerms (functerm f ts ∷ us) (functerm x ∷ p) (functerm x₁ ∷ q) with subUniqueTerms ts x x₁ | subUniqueTerms us p q
-subUniqueTerms (functerm f ts ∷ us) (functerm x ∷ p) (functerm x₁ ∷ q) | refl | refl = refl
-
-subNotFreeIdentTerms : ∀{n x t} → (us : Vec Term n) → x NotFreeInTerms us → [ us ][ x / t ]≡ us
-subNotFreeIdentTerms [] x = []
-subNotFreeIdentTerms (varterm x₁ ∷ us) (varterm x ∷ x₂) = varterm≢ x ∷ subNotFreeIdentTerms us x₂
-subNotFreeIdentTerms (functerm f ts ∷ us) (functerm x ∷ x₁) = functerm (subNotFreeIdentTerms ts x) ∷ subNotFreeIdentTerms us x₁
-
-coidentTerms : ∀{n x} {us vs : Vec Term n} → [ us ][ x / varterm x ]≡ vs → us ≡ vs
-coidentTerms [] = refl
-coidentTerms (x ∷ rep) with coidentTerms rep
-coidentTerms (varterm≡ ∷ rep)    | refl = refl
-coidentTerms (varterm≢ x ∷ rep)  | refl = refl
-coidentTerms (functerm ts ∷ rep) | refl with coidentTerms ts
-coidentTerms (functerm ts ∷ rep) | refl | refl = refl
-
-coident : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
-coident (ident α x) = refl
-coident (notfree x) = refl
-coident (atom r ts) with coidentTerms ts
-coident (atom r ts) | refl = refl
-coident (repα ⇒ repβ) with coident repα | coident repβ
-...                   | refl | refl = refl
-coident (repα ∧ repβ) with coident repα | coident repβ
-...                   | refl | refl = refl
-coident (repα ∨ repβ) with coident repα | coident repβ
-...                   | refl | refl = refl
-coident (Λ∣ x α) = refl
-coident (V∣ x α) = refl
-coident (Λ x x₁ rep) with coident rep
-coident (Λ x x₁ rep) | refl = refl
-coident (V x x₁ rep) with coident rep
-coident (V x x₁ rep) | refl = refl
-
-subUnique : ∀ α → ∀{x t β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
-subUnique _ (ident α x) q = coident q
-subUnique _ p (ident α x) = ≡sym (coident p)
+subInverse : ∀{ω α x β}
+             → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
+subInverse _             (ident α x)   = ident α x
+subInverse ωnfα          (notfree xnf) = notfree ωnfα
+subInverse (atom xnfts)  (atom r repts) = atom r (termsLemma _ _ _ _ xnfts repts)
   where
-    ≡sym : {A : Set} {x y : A} → x ≡ y → y ≡ x
-    ≡sym refl = refl
-subUnique (atom r ts) (notfree x) (notfree x₁) = refl
-subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) with subUniqueTerms ts (subNotFreeIdentTerms ts x) x₁
-subUnique (atom r ts) (notfree (atom x)) (atom .r x₁) | refl = refl
-subUnique (atom r ts) (atom .r x) (notfree (atom x₁)) with subUniqueTerms ts (subNotFreeIdentTerms ts x₁) x
-subUnique (atom r ts) (atom .r x) (notfree (atom x₁)) | refl = refl
-subUnique (atom r ts) (atom .r x) (atom .r x₁) with subUniqueTerms ts x x₁
-subUnique (atom r ts) (atom .r x) (atom .r x₁) | refl = refl
-subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (notfree (y₁ ⇒ y₂)) = refl
-subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (q₁ ⇒ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
-subUnique (α ⇒ β) (notfree (x₁ ⇒ x₂)) (q₁ ⇒ q₂) | refl | refl = refl
-subUnique (α ⇒ β) (p₁ ⇒ p₂) (notfree (y₁ ⇒ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
-subUnique (α ⇒ β) (p₁ ⇒ p₂) (notfree (y₁ ⇒ y₂)) | refl | refl = refl
-subUnique (α ⇒ β) (p₁ ⇒ p₂) (q₁ ⇒ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
-subUnique (α ⇒ β) (p₁ ⇒ p₂) (q₁ ⇒ q₂)           | refl | refl = refl
-subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (notfree (y₁ ∧ y₂)) = refl
-subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (q₁ ∧ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
-subUnique (α ∧ β) (notfree (x₁ ∧ x₂)) (q₁ ∧ q₂) | refl | refl = refl
-subUnique (α ∧ β) (p₁ ∧ p₂) (notfree (y₁ ∧ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
-subUnique (α ∧ β) (p₁ ∧ p₂) (notfree (y₁ ∧ y₂)) | refl | refl = refl
-subUnique (α ∧ β) (p₁ ∧ p₂) (q₁ ∧ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
-subUnique (α ∧ β) (p₁ ∧ p₂) (q₁ ∧ q₂)           | refl | refl = refl
-subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (notfree (y₁ ∨ y₂)) = refl
-subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (q₁ ∨ q₂) with subUnique α (notfree x₁) q₁ | subUnique β (notfree x₂) q₂
-subUnique (α ∨ β) (notfree (x₁ ∨ x₂)) (q₁ ∨ q₂) | refl | refl = refl
-subUnique (α ∨ β) (p₁ ∨ p₂) (notfree (y₁ ∨ y₂)) with subUnique α p₁ (notfree y₁) | subUnique β p₂ (notfree y₂)
-subUnique (α ∨ β) (p₁ ∨ p₂) (notfree (y₁ ∨ y₂)) | refl | refl = refl
-subUnique (α ∨ β) (p₁ ∨ p₂) (q₁ ∨ q₂)           with subUnique α p₁ q₁ | subUnique β p₂ q₂
-subUnique (α ∨ β) (p₁ ∨ p₂) (q₁ ∨ q₂)           | refl | refl = refl
-subUnique (Λ x α) (notfree x₁) (notfree x₂) = refl
-subUnique (Λ x α) (notfree x₁) (Λ∣ .x .α) = refl
-subUnique (Λ x α) (notfree (Λ∣ .x .α)) (Λ x₂ x₃ q) = ⊥-elim (x₂ refl)
-subUnique (Λ x α) (notfree (Λ .x x₁)) (Λ x₂ x₃ q) with subUnique α (notfree x₁) q
-subUnique (Λ x α) (notfree (Λ .x x₁)) (Λ x₂ x₃ q) | refl = refl
-subUnique (Λ x α) (Λ∣ .x .α) (notfree x₁) = refl
-subUnique (Λ x α) (Λ∣ .x .α) (Λ∣ .x .α) = refl
-subUnique (Λ x α) (Λ∣ .x .α) (Λ x₁ x₂ q) = ⊥-elim (x₁ refl)
-subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ∣ .x .α)) = ⊥-elim (x₁ refl)
-subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ .x x₃)) with subUnique α p (notfree x₃)
-subUnique (Λ x α) (Λ x₁ x₂ p) (notfree (Λ .x x₃)) | refl = refl
-subUnique (Λ x α) (Λ x₁ x₂ p) (Λ∣ .x .α) = ⊥-elim (x₁ refl)
-subUnique (Λ x α) (Λ x₁ x₂ p) (Λ x₃ x₄ q) with subUnique α p q
-subUnique (Λ x α) (Λ x₁ x₂ p) (Λ x₃ x₄ q) | refl = refl
-subUnique (V x α) (notfree x₁) (notfree x₂) = refl
-subUnique (V x α) (notfree x₁) (V∣ .x .α) = refl
-subUnique (V x α) (notfree (V∣ .x .α)) (V x₂ x₃ q) = ⊥-elim (x₂ refl)
-subUnique (V x α) (notfree (V .x x₁)) (V x₂ x₃ q) with subUnique α (notfree x₁) q
-subUnique (V x α) (notfree (V .x x₁)) (V x₂ x₃ q) | refl = refl
-subUnique (V x α) (V∣ .x .α) (notfree x₁) = refl
-subUnique (V x α) (V∣ .x .α) (V∣ .x .α) = refl
-subUnique (V x α) (V∣ .x .α) (V x₁ x₂ q) = ⊥-elim (x₁ refl)
-subUnique (V x α) (V x₁ x₂ p) (notfree (V∣ .x .α)) = ⊥-elim (x₁ refl)
-subUnique (V x α) (V x₁ x₂ p) (notfree (V .x x₃)) with subUnique α p (notfree x₃)
-subUnique (V x α) (V x₁ x₂ p) (notfree (V .x x₃)) | refl = refl
-subUnique (V x α) (V x₁ x₂ p) (V∣ .x .α) = ⊥-elim (x₁ refl)
-subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) with subUnique α p q
-subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) | refl = refl
+    termsLemma : ∀{n} → (us vs : Vec Term n) → ∀ x ω → ω NotFreeInTerms us → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
+    termsLemma [] .[] x ω x₁ [] = []
+    termsLemma (.(varterm x) ∷ us) (.(varterm ω) ∷ vs) x ω (x₁ ∷ x₅) (varterm≡ ∷ x₄) = varterm≡ ∷ termsLemma us vs x ω x₅ x₄
+    termsLemma ((varterm y) ∷ us) ((varterm .y) ∷ vs) x ω (x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) with varEq ω y
+    termsLemma (varterm y ∷ us) (varterm .y ∷ vs) x .y (varterm x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) | yes refl = ⊥-elim (x₁ refl)
+    termsLemma (varterm y ∷ us) (varterm .y ∷ vs) x ω (x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) | no x₃ = varterm≢ x₃ ∷ termsLemma us vs x ω x₅ x₄
+    termsLemma (functerm f ts ∷ us) (functerm .f ss ∷ vs) x ω (functerm x₁ ∷ x₅) (functerm x₂ ∷ x₄) = functerm (termsLemma ts ss x ω x₁ x₂) ∷ termsLemma us vs x ω x₅ x₄
+subInverse (ωnfα ⇒ ωnfβ) (repα ⇒ repβ) = subInverse ωnfα repα ⇒ subInverse ωnfβ repβ
+subInverse (ωnfα ∧ ωnfβ) (repα ∧ repβ) = subInverse ωnfα repα ∧ subInverse ωnfβ repβ
+subInverse (ωnfα ∨ ωnfβ) (repα ∨ repβ) = subInverse ωnfα repα ∨ subInverse ωnfβ repβ
+subInverse ωnfα          (Λ∣ x α)              = notfree ωnfα
+subInverse (Λ∣ x α)      (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
+subInverse ωnfα          (V∣ x α)              = notfree ωnfα
+subInverse (V∣ x α)      (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
+subInverse {ω} (Λ y ωnfα) (Λ x≢y ynfω repα)      with varEq ω y
+subInverse {.y} (Λ y ωnfα) (Λ x≢y (varterm y≢y) repα) | yes refl = ⊥-elim (y≢y refl)
+subInverse {ω} (Λ y ωnfα) (Λ x≢y ynfω repα) | no ω≢y = Λ ω≢y (varterm (≢sym x≢y)) (subInverse ωnfα repα)
+  where ≢sym : {x y : Variable} → x ≢ y → y ≢ x
+        ≢sym x≢y refl = x≢y refl
+subInverse {ω} (V y ωnfα) (V x≢y ynfω repα)      with varEq ω y
+subInverse {.y} (V y ωnfα) (V x≢y (varterm y≢y) repα) | yes refl = ⊥-elim (y≢y refl)
+subInverse {ω} (V y ωnfα) (V x≢y ynfω repα) | no ω≢y = V ω≢y (varterm (≢sym x≢y)) (subInverse ωnfα repα)
+  where ≢sym : {x y : Variable} → x ≢ y → y ≢ x
+        ≢sym x≢y refl = x≢y refl
