@@ -12,7 +12,7 @@ _<_ : ℕ → ℕ → Set
 n < m = suc n ≤ m
 
 ¬<refl : ∀{n} → ¬(n < n)
-¬<refl {zero} ()
+¬<refl {zero}  ()
 ¬<refl {suc n} (sn≤sm x) = ¬<refl x
 
 ≤refl : ∀{n} → n ≤ n

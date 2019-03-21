@@ -115,7 +115,7 @@ IP = binaryscheme "IP" ip
 
 dne→lem : ⊢₁ dne → ⊢₁ lem
 dne→lem ⊢dne α = close
-                  (∅ ∪ ((α ∨ (α ⇒ atom (mkrel zero zero) []) ⇒ atom (mkrel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                  (∅ ∪ ((α ∨ (α ⇒ atom (rel zero zero) []) ⇒ atom (rel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (arrowelim
                    (cite "DNE" (⊢dne (α ∨ ¬ α)))
                    (arrowintro (¬ (α ∨ ¬ α))
@@ -226,9 +226,9 @@ GLPO⊃LEM (⊢GLPO ∷ []) (α ∷ []) = glpo→lem (descheme₁ ⊢GLPO) α
 
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
 dp→gmp ⊢dp α = close
-                ((Λ (mkvar zero) α ⇒ atom (mkrel zero zero) []) ~ (∅ ∪ ((α ⇒ Λ (mkvar zero) α) ~ (α ~ (((α ∷ ((α ⇒ Λ (mkvar zero) α) ∷ List.[ refl ])) -∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
+                ((Λ (var zero) α ⇒ atom (rel zero zero) []) ~ (∅ ∪ ((α ⇒ Λ (var zero) α) ~ (α ~ (((α ∷ ((α ⇒ Λ (var zero) α) ∷ List.[ refl ])) -∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅)))))))
                 (arrowintro (¬∀x α)
-                 (existelim (V∣ (mkvar zero) (α ⇒ atom (mkrel zero zero) []) ∷ ((α ⇒ Λ (mkvar zero) α) ~ (α ~(((Λ∣ (mkvar zero) α ⇒ atom []) ∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                 (existelim (V∣ (var zero) (α ⇒ atom (rel zero zero) []) ∷ ((α ⇒ Λ (var zero) α) ~ (α ~(((Λ∣ (var zero) α ⇒ atom []) ∷ ∅) ∪ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (cite "DP" (⊢dp α))
                   (existintro x xvar (ident (¬ α) xvar)
                    (arrowintro α

@@ -10,7 +10,7 @@ open import Vec
 
 -- "Let a countably infinite set {vi | i ∈ N} of variables be given."
 record Variable : Set where
-  constructor mkvar
+  constructor var
   field
     idx : ℕ
 
@@ -18,7 +18,7 @@ open Variable renaming (idx to varidx)
 
 -- "For every natural number n ≥ 0 a ... set of n-ary function symbols."
 record Function : Set where
-  constructor mkfunc
+  constructor func
   field
     idx   : ℕ
     arity : ℕ
@@ -37,7 +37,7 @@ data Term : Set where
 
 -- "For every natural number n ≥ 0 a ... set of n-ary relation symbols."
 record Relation : Set where
-  constructor mkrel
+  constructor rel
   field
     idx   : ℕ
     arity : ℕ
@@ -166,23 +166,23 @@ natEq (suc n) (suc m) with natEq n m
 ...                   | no  n≢m  = no λ { refl → n≢m refl }
 
 varEq : Decidable≡ Variable
-varEq (mkvar n) (mkvar m) with natEq n m
-...                       | yes refl = yes refl
-...                       | no  n≢m  = no λ { refl → n≢m refl }
+varEq (var n) (var m) with natEq n m
+...                   | yes refl = yes refl
+...                   | no  n≢m  = no λ { refl → n≢m refl }
 
 relEq : Decidable≡ Relation
-relEq (mkrel n j) (mkrel m k) with natEq n m
-...                           | no  n≢m  = no λ { refl → n≢m refl }
-...                           | yes refl with natEq j k
-...                                      | yes refl = yes refl
-...                                      | no  j≢k  = no λ { refl → j≢k refl }
+relEq (rel n j) (rel m k) with natEq n m
+...                       | no  n≢m  = no λ { refl → n≢m refl }
+...                       | yes refl with natEq j k
+...                                  | yes refl = yes refl
+...                                  | no  j≢k  = no λ { refl → j≢k refl }
 
 funcEq : Decidable≡ Function
-funcEq (mkfunc n j) (mkfunc m k) with natEq n m
-...                              | no  n≢m  = no λ { refl → n≢m refl }
-...                              | yes refl with natEq j k
-...                                         | yes refl = yes refl
-...                                         | no  j≢k  = no λ { refl → j≢k refl }
+funcEq (func n j) (func m k) with natEq n m
+...                          | no  n≢m  = no λ { refl → n≢m refl }
+...                          | yes refl with natEq j k
+...                                     | yes refl = yes refl
+...                                     | no  j≢k  = no λ { refl → j≢k refl }
 
 vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
 vecEq eq [] [] = yes refl
@@ -204,13 +204,13 @@ termEq (functerm f []) (functerm g []) with funcEq f g
 termEq (functerm f []) (functerm g (_ ∷ _)) = no λ ()
 termEq (functerm f (_ ∷ _)) (functerm g []) = no λ ()
 termEq
-  (functerm (mkfunc n (suc j)) (u ∷ us)) (functerm (mkfunc m (suc k)) (v ∷ vs))
+  (functerm (func n (suc j)) (u ∷ us)) (functerm (func m (suc k)) (v ∷ vs))
   with natEq j k
 ... | no  j≢k  = no λ { refl → j≢k refl }
 ... | yes refl with termEq u v
 ...   | no  u≢v  = no λ { refl → u≢v refl }
 ...   | yes refl
-        with termEq (functerm (mkfunc n j) us) (functerm (mkfunc m k) vs)
+        with termEq (functerm (func n j) us) (functerm (func m k) vs)
 ...     | yes refl = yes refl
 ...     | no  neq  = no λ { refl → neq refl }
 
@@ -330,26 +330,26 @@ x notFreeIn V  y α    | no x≢y | no ¬αbd = no λ { (V∣ x α)  → x≢y r
 
 -- Generating not-free variables
 supFreeTerms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n
-               → mkvar n NotFreeInTerms ts
+               → var n NotFreeInTerms ts
 supFreeTerms [] = zero , λ _ _ → []
-supFreeTerms (varterm (mkvar m) ∷ ts) with supFreeTerms ts
+supFreeTerms (varterm (var m) ∷ ts) with supFreeTerms ts
 ... | ⌈ts⌉ , tspf with max m ⌈ts⌉
 ...               | less m≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
   where
-    orderneq : ∀{n m} → n < m → mkvar m ≢ mkvar n
+    orderneq : ∀{n m} → n < m → var m ≢ var n
     orderneq {zero} {.0} () refl
     orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
     notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n
-                    → All (mkvar n NotFreeInTerm_) (varterm (mkvar m) ∷ ts)
+                    → All (var n NotFreeInTerm_) (varterm (var m) ∷ ts)
     notFreeIs⌈ts⌉ n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n))
                              ∷ tspf n ⌈ts⌉<n
 ...               | more ⌈ts⌉≤m = m , notFreeIsm
   where
-    orderneq : ∀{n m} → n < m → mkvar m ≢ mkvar n
+    orderneq : ∀{n m} → n < m → var m ≢ var n
     orderneq {zero} {.0} () refl
     orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
     notFreeIsm : ∀ n → m < n
-                 → All (mkvar n NotFreeInTerm_) (varterm (mkvar m) ∷ ts)
+                 → All (var n NotFreeInTerm_) (varterm (var m) ∷ ts)
     notFreeIsm n m<n = varterm (orderneq m<n)
                        ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
 supFreeTerms (functerm f us     ∷ ts) with supFreeTerms us | supFreeTerms ts
@@ -357,78 +357,78 @@ supFreeTerms (functerm f us     ∷ ts) with supFreeTerms us | supFreeTerms ts
 ...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
   where
     notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n
-                    → All (mkvar n NotFreeInTerm_) (functerm f us ∷ ts)
+                    → All (var n NotFreeInTerm_) (functerm f us ∷ ts)
     notFreeIs⌈ts⌉ n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n))
                              ∷ tspf n ⌈ts⌉<n
 ...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , notFreeIs⌈us⌉
   where
     notFreeIs⌈us⌉ : ∀ n → ⌈us⌉ < n
-                    → All (mkvar n NotFreeInTerm_) (functerm f us ∷ ts)
+                    → All (var n NotFreeInTerm_) (functerm f us ∷ ts)
     notFreeIs⌈us⌉ n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n)
                              ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
 
 
-minFresh : ∀ α → Σ Variable λ ⌈α⌉ → ∀ n → varidx ⌈α⌉ ≤ n → mkvar n FreshIn α
+minFresh : ∀ α → Σ Variable λ ⌈α⌉ → ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn α
 minFresh (atom r ts) with supFreeTerms ts
-minFresh (atom r ts) | ⌈ts⌉ , tspf = mkvar (suc ⌈ts⌉)
+minFresh (atom r ts) | ⌈ts⌉ , tspf = var (suc ⌈ts⌉)
                                      , (λ n ⌈ts⌉≤n → atom (tspf n ⌈ts⌉≤n))
 minFresh (α ⇒ β) with minFresh α | minFresh β
 ...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
-    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → mkvar n FreshIn (α ⇒ β)
+    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ⇒ β)
     freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ⇒ βpf n ⌈β⌉≤n
 ...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → mkvar n FreshIn (α ⇒ β)
+    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ⇒ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ⇒ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
 minFresh (α ∧ β) with minFresh α | minFresh β
 ...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
-    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → mkvar n FreshIn (α ∧ β)
+    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∧ β)
     freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ∧ βpf n ⌈β⌉≤n
 ...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → mkvar n FreshIn (α ∧ β)
+    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∧ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∧ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
 minFresh (α ∨ β) with minFresh α | minFresh β
 ...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
-    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → mkvar n FreshIn (α ∨ β)
+    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∨ β)
     freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ∨ βpf n ⌈β⌉≤n
 ...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → mkvar n FreshIn (α ∨ β)
+    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∨ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∨ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
-minFresh (Λ x@(mkvar k) α) with minFresh α
-...                        | ⌈α⌉ , αpf with max (suc k) (varidx ⌈α⌉)
-...                                    | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+minFresh (Λ x@(var k) α) with minFresh α
+...                      | ⌈α⌉ , αpf with max (suc k) (varidx ⌈α⌉)
+...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → mkvar n ≢ mkvar m
+    skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → mkvar n FreshIn Λ x α
+    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn Λ x α
     freshIs⌈α⌉ n ⌈α⌉≤n = Λ (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
-...                                    | more ⌈α⌉≤sk = mkvar (suc k) , freshIssk
+...                                  | more ⌈α⌉≤sk = var (suc k) , freshIssk
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → mkvar n ≢ mkvar m
+    skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
-    freshIssk : ∀ n → suc k ≤ n → mkvar n FreshIn Λ x α
+    freshIssk : ∀ n → suc k ≤ n → var n FreshIn Λ x α
     freshIssk n sk≤n = Λ (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
-minFresh (V x@(mkvar k) α) with minFresh α
-...                        | ⌈α⌉ , αpf with max (suc k) (varidx ⌈α⌉)
-...                                    | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+minFresh (V x@(var k) α) with minFresh α
+...                      | ⌈α⌉ , αpf with max (suc k) (varidx ⌈α⌉)
+...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → mkvar n ≢ mkvar m
+    skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → mkvar n FreshIn V x α
+    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn V x α
     freshIs⌈α⌉ n ⌈α⌉≤n = V (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
-...                                    | more ⌈α⌉≤sk = mkvar (suc k) , freshIssk
+...                                    | more ⌈α⌉≤sk = var (suc k) , freshIssk
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → mkvar n ≢ mkvar m
+    skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
-    freshIssk : ∀ n → suc k ≤ n → mkvar n FreshIn V x α
+    freshIssk : ∀ n → suc k ≤ n → var n FreshIn V x α
     freshIssk n sk≤n = V (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
 
 fresh : ∀ α → Σ Variable (_FreshIn α)
@@ -509,15 +509,17 @@ freshFreeFor (atom _)      = atom _ _
 freshFreeFor (xfrα ⇒ xfrβ) = freshFreeFor xfrα ⇒ freshFreeFor xfrβ
 freshFreeFor (xfrα ∧ xfrβ) = freshFreeFor xfrα ∧ freshFreeFor xfrβ
 freshFreeFor (xfrα ∨ xfrβ) = freshFreeFor xfrα ∨ freshFreeFor xfrβ
-freshFreeFor (Λ x≢y xfrα)  = Λ _ _ (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
-freshFreeFor (V x≢y xfrα)  = V _ _ (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
+freshFreeFor (Λ x≢y xfrα)  = Λ _ _
+                             (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
+freshFreeFor (V x≢y xfrα)  = V _ _
+                             (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
 
 
 subInverse : ∀{ω α x β}
              → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
-subInverse _             (ident α x)   = ident α x
-subInverse ωnfα          (notfree xnf) = notfree ωnfα
-subInverse (atom xnfts)  (atom r repts) = atom r (termsLemma xnfts repts)
+subInverse _            (ident α x)    = ident α x
+subInverse ωnfα         (notfree xnf)  = notfree ωnfα
+subInverse (atom xnfts) (atom r repts) = atom r (termsLemma xnfts repts)
   where
     termsLemma : ∀{n x ω} {us vs : Vec Term n} → ω NotFreeInTerms us
                  → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
