@@ -583,40 +583,35 @@ subNotFree xnft (V x≢y ynft p)   = V _ (subNotFree xnft p)
 
 
 freshNotFree : ∀{α x} → x FreshIn α → x NotFreeIn α
-freshNotFree (atom x) = atom x
-freshNotFree (xfrα ⇒ xfrα₁) = freshNotFree xfrα ⇒ freshNotFree xfrα₁
-freshNotFree (xfrα ∧ xfrα₁) = freshNotFree xfrα ∧ freshNotFree xfrα₁
-freshNotFree (xfrα ∨ xfrα₁) = freshNotFree xfrα ∨ freshNotFree xfrα₁
-freshNotFree (Λ x xfrα) = Λ _ (freshNotFree xfrα)
-freshNotFree (V x xfrα) = V _ (freshNotFree xfrα)
+freshNotFree (atom xnfts)  = atom xnfts
+freshNotFree (xfrα ⇒ xfrβ) = freshNotFree xfrα ⇒ freshNotFree xfrβ
+freshNotFree (xfrα ∧ xfrβ) = freshNotFree xfrα ∧ freshNotFree xfrβ
+freshNotFree (xfrα ∨ xfrβ) = freshNotFree xfrα ∨ freshNotFree xfrβ
+freshNotFree (Λ _ xfrα)    = Λ _ (freshNotFree xfrα)
+freshNotFree (V _ xfrα)    = V _ (freshNotFree xfrα)
 
 
 freshFreeFor : ∀{α x y} → x FreshIn α → (varterm x) FreeFor y In α
-freshFreeFor (atom x) = atom _ _
-freshFreeFor (xfrα ⇒ xfrα₁) = freshFreeFor xfrα ⇒ freshFreeFor xfrα₁
-freshFreeFor (xfrα ∧ xfrα₁) = freshFreeFor xfrα ∧ freshFreeFor xfrα₁
-freshFreeFor (xfrα ∨ xfrα₁) = freshFreeFor xfrα ∨ freshFreeFor xfrα₁
-freshFreeFor (Λ x xfrα) = Λ _ _ (varterm (≢sym _ _ x)) (freshFreeFor xfrα)
-  where ≢sym : (x y : Variable) → x ≢ y → y ≢ x
-        ≢sym x y x≢y refl = x≢y refl
-freshFreeFor (V x xfrα) = V _ _ (varterm (≢sym _ _ x)) (freshFreeFor xfrα)
-  where ≢sym : (x y : Variable) → x ≢ y → y ≢ x
-        ≢sym x y x≢y refl = x≢y refl
+freshFreeFor (atom _)      = atom _ _
+freshFreeFor (xfrα ⇒ xfrβ) = freshFreeFor xfrα ⇒ freshFreeFor xfrβ
+freshFreeFor (xfrα ∧ xfrβ) = freshFreeFor xfrα ∧ freshFreeFor xfrβ
+freshFreeFor (xfrα ∨ xfrβ) = freshFreeFor xfrα ∨ freshFreeFor xfrβ
+freshFreeFor (Λ x≢y xfrα)  = Λ _ _ (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
+freshFreeFor (V x≢y xfrα)  = V _ _ (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
 
 
 subInverse : ∀{ω α x β}
              → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
 subInverse _             (ident α x)   = ident α x
 subInverse ωnfα          (notfree xnf) = notfree ωnfα
-subInverse (atom xnfts)  (atom r repts) = atom r (termsLemma _ _ _ _ xnfts repts)
+subInverse (atom xnfts)  (atom r repts) = atom r (termsLemma xnfts repts)
   where
-    termsLemma : ∀{n} → (us vs : Vec Term n) → ∀ x ω → ω NotFreeInTerms us → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
-    termsLemma [] .[] x ω x₁ [] = []
-    termsLemma (.(varterm x) ∷ us) (.(varterm ω) ∷ vs) x ω (x₁ ∷ x₅) (varterm≡ ∷ x₄) = varterm≡ ∷ termsLemma us vs x ω x₅ x₄
-    termsLemma ((varterm y) ∷ us) ((varterm .y) ∷ vs) x ω (x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) with varEq ω y
-    termsLemma (varterm y ∷ us) (varterm .y ∷ vs) x .y (varterm x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) | yes refl = ⊥-elim (x₁ refl)
-    termsLemma (varterm y ∷ us) (varterm .y ∷ vs) x ω (x₁ ∷ x₅) (varterm≢ x₂ ∷ x₄) | no x₃ = varterm≢ x₃ ∷ termsLemma us vs x ω x₅ x₄
-    termsLemma (functerm f ts ∷ us) (functerm .f ss ∷ vs) x ω (functerm x₁ ∷ x₅) (functerm x₂ ∷ x₄) = functerm (termsLemma ts ss x ω x₁ x₂) ∷ termsLemma us vs x ω x₅ x₄
+    termsLemma : ∀{n x ω} {us vs : Vec Term n} → ω NotFreeInTerms us
+                 → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
+    termsLemma ωnfus [] = []
+    termsLemma (_ ∷ ωnfus) (varterm≡ ∷ repus) = varterm≡ ∷ termsLemma ωnfus repus
+    termsLemma (varterm ω≢y ∷ ωnfus) (varterm≢ x≢ω ∷ repus) = varterm≢ ω≢y ∷ termsLemma ωnfus repus
+    termsLemma (functerm ωnfts ∷ ωnfus) (functerm repts ∷ repus) = functerm (termsLemma ωnfts repts) ∷ termsLemma ωnfus repus
 subInverse (ωnfα ⇒ ωnfβ) (repα ⇒ repβ) = subInverse ωnfα repα ⇒ subInverse ωnfβ repβ
 subInverse (ωnfα ∧ ωnfβ) (repα ∧ repβ) = subInverse ωnfα repα ∧ subInverse ωnfβ repβ
 subInverse (ωnfα ∨ ωnfβ) (repα ∨ repβ) = subInverse ωnfα repα ∨ subInverse ωnfβ repβ
@@ -624,13 +619,9 @@ subInverse ωnfα          (Λ∣ x α)              = notfree ωnfα
 subInverse (Λ∣ x α)      (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
 subInverse ωnfα          (V∣ x α)              = notfree ωnfα
 subInverse (V∣ x α)      (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
-subInverse {ω} (Λ y ωnfα) (Λ x≢y ynfω repα)      with varEq ω y
+subInverse {ω} (Λ y ωnfα) (Λ x≢y ynfω repα)           with varEq ω y
+subInverse {ω} (Λ y ωnfα) (Λ x≢y ynfω repα)           | no ω≢y = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ωnfα repα)
 subInverse {.y} (Λ y ωnfα) (Λ x≢y (varterm y≢y) repα) | yes refl = ⊥-elim (y≢y refl)
-subInverse {ω} (Λ y ωnfα) (Λ x≢y ynfω repα) | no ω≢y = Λ ω≢y (varterm (≢sym x≢y)) (subInverse ωnfα repα)
-  where ≢sym : {x y : Variable} → x ≢ y → y ≢ x
-        ≢sym x≢y refl = x≢y refl
-subInverse {ω} (V y ωnfα) (V x≢y ynfω repα)      with varEq ω y
+subInverse {ω} (V y ωnfα) (V x≢y ynfω repα)           with varEq ω y
 subInverse {.y} (V y ωnfα) (V x≢y (varterm y≢y) repα) | yes refl = ⊥-elim (y≢y refl)
-subInverse {ω} (V y ωnfα) (V x≢y ynfω repα) | no ω≢y = V ω≢y (varterm (≢sym x≢y)) (subInverse ωnfα repα)
-  where ≢sym : {x y : Variable} → x ≢ y → y ≢ x
-        ≢sym x≢y refl = x≢y refl
+subInverse {ω} (V y ωnfα) (V x≢y ynfω repα)           | no ω≢y = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ωnfα repα)
