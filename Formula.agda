@@ -163,137 +163,85 @@ natEq zero (suc m) = no λ ()
 natEq (suc n) zero = no λ ()
 natEq (suc n) (suc m) with natEq n m
 ...                   | yes refl = yes refl
-...                   | no  neq  = no φ
-                                   where φ : _
-                                         φ refl = neq refl
+...                   | no  n≢m  = no λ { refl → n≢m refl }
 
 varEq : Decidable≡ Variable
 varEq (mkvar n) (mkvar m) with natEq n m
 ...                       | yes refl = yes refl
-...                       | no  neq  = no φ
-                                       where φ : _
-                                             φ refl = neq refl
+...                       | no  n≢m  = no λ { refl → n≢m refl }
 
 relEq : Decidable≡ Relation
 relEq (mkrel n j) (mkrel m k) with natEq n m
-...                           | no  neq  = no φ
-                                            where φ : _
-                                                  φ refl = neq refl
+...                           | no  n≢m  = no λ { refl → n≢m refl }
 ...                           | yes refl with natEq j k
 ...                                      | yes refl = yes refl
-...                                      | no  neq  = no φ
-                                                      where φ : _
-                                                            φ refl = neq refl
+...                                      | no  j≢k  = no λ { refl → j≢k refl }
 
 funcEq : Decidable≡ Function
 funcEq (mkfunc n j) (mkfunc m k) with natEq n m
-...                              | no  neq  = no φ
-                                              where φ : _
-                                                    φ refl = neq refl
+...                              | no  n≢m  = no λ { refl → n≢m refl }
 ...                              | yes refl with natEq j k
 ...                                         | yes refl = yes refl
-...                                         | no  neq  = no φ
-                                                         where φ : _
-                                                               φ refl = neq refl
+...                                         | no  j≢k  = no λ { refl → j≢k refl }
 
 vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
 vecEq eq [] [] = yes refl
 vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
-...                        | no  neq  = no φ
-                                        where φ : _
-                                              φ refl = neq refl
+...                        | no  x≢y  = no λ { refl → x≢y refl }
 ...                        | yes refl with vecEq eq xs ys
-...                                   | yes refl = yes refl
-...                                   | no  neq  = no φ
-                                                   where φ : _
-                                                         φ refl = neq refl
+...                                   | yes refl  = yes refl
+...                                   | no  xs≢xy = no λ { refl → xs≢xy refl }
 
 termEq : Decidable≡ Term
 termEq (varterm x)     (varterm y)     with varEq x y
 ...                                    | yes refl = yes refl
-...                                    | no x≢y   = no φ
-                                                    where φ : _
-                                                          φ refl = x≢y refl
+...                                    | no  x≢y  = no λ { refl → x≢y refl }
 termEq (varterm x)     (functerm f ts) = no λ ()
 termEq (functerm f ts) (varterm x)     = no λ ()
 termEq (functerm f []) (functerm g []) with funcEq f g
 ...                                    | yes refl = yes refl
-...                                    | no f≢g   = no φ
-                                                    where φ : _
-                                                          φ refl = f≢g refl
+...                                    | no  f≢g  = no λ { refl → f≢g refl }
 termEq (functerm f []) (functerm g (_ ∷ _)) = no λ ()
 termEq (functerm f (_ ∷ _)) (functerm g []) = no λ ()
 termEq
   (functerm (mkfunc n (suc j)) (u ∷ us)) (functerm (mkfunc m (suc k)) (v ∷ vs))
   with natEq j k
-... | no n≢m   = no φ
-                 where φ : _
-                       φ refl = n≢m refl
+... | no  j≢k  = no λ { refl → j≢k refl }
 ... | yes refl with termEq u v
-...   | no u≢v   = no φ
-                   where φ : _
-                         φ refl = u≢v refl
+...   | no  u≢v  = no λ { refl → u≢v refl }
 ...   | yes refl
         with termEq (functerm (mkfunc n j) us) (functerm (mkfunc m k) vs)
 ...     | yes refl = yes refl
-...     | no neq   = no φ
-                     where φ : _
-                           φ refl = neq refl
+...     | no  neq  = no λ { refl → neq refl }
 
 formulaEq : Decidable≡ Formula
 formulaEq (atom r xs) (atom s ys)
     with natEq (relarity r) (relarity s)
-... | no neq = no φ
-               where φ : _
-                     φ refl = neq refl
+... | no ar≢as = no λ { refl → ar≢as refl }
 ... | yes refl with (relEq r s) | (vecEq termEq xs ys)
-...            | yes refl | yes refl = yes refl
-...            | _        | no neq   = no φ
-                                       where φ : _
-                                             φ refl = neq refl
-...            | no neq   | _        = no φ
-                                       where φ : _
-                                             φ refl = neq refl
+...            | yes refl | yes refl  = yes refl
+...            | _        | no  xs≢ys = no λ { refl → xs≢ys refl }
+...            | no  r≢s  | _         = no λ { refl → r≢s refl }
 formulaEq (α ⇒ β) (γ ⇒ δ) with (formulaEq α γ) | (formulaEq β δ)
 ...                       | yes refl | yes refl = yes refl
-...                       | _        | no neq   = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
-...                       | no neq   | _        = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
+...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
+...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
 formulaEq (α ∧ β) (γ ∧ δ) with (formulaEq α γ) | (formulaEq β δ)
 ...                       | yes refl | yes refl = yes refl
-...                       | _        | no neq   = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
-...                       | no neq   | _        = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
+...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
+...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
 formulaEq (α ∨ β) (γ ∨ δ) with (formulaEq α γ) | (formulaEq β δ)
 ...                       | yes refl | yes refl = yes refl
-...                       | _        | no neq   = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
-...                       | no neq   | _        = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
+...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
+...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
 formulaEq (Λ x α) (Λ y β) with (varEq x y) | (formulaEq α β)
 ...                       | yes refl | yes refl = yes refl
-...                       | _        | no neq   = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
-...                       | no neq   | _        = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
+...                       | _        | no  α≢β  = no λ { refl → α≢β refl }
+...                       | no  x≢y  | _        = no λ { refl → x≢y refl }
 formulaEq (V x α) (V y β) with (varEq x y) | (formulaEq α β)
 ...                       | yes refl | yes refl = yes refl
-...                       | _        | no neq   = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
-...                       | no neq   | _        = no φ
-                                                  where φ : _
-                                                        φ refl = neq refl
+...                       | _        | no  α≢β  = no λ { refl → α≢β refl }
+...                       | no  x≢y  | _        = no λ { refl → x≢y refl }
 formulaEq (atom r us) (γ ⇒ δ)     = no λ ()
 formulaEq (atom r us) (γ ∧ δ)     = no λ ()
 formulaEq (atom r us) (γ ∨ δ)     = no λ ()
@@ -334,23 +282,15 @@ _notFreeInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n)
                    → Dec (x NotFreeInTerms ts)
 x notFreeInTerms [] = yes []
 x notFreeInTerms (varterm y ∷ ts) with varEq x y
-... | yes refl = no φ
-                 where φ : _
-                       φ (varterm nrefl ∷ _) = nrefl refl
+... | yes refl = no λ { (varterm nrefl ∷ _) → nrefl refl }
 ... | no x≢y   with x notFreeInTerms ts
 ...            | yes xnfts = yes (varterm x≢y ∷ xnfts)
-...            | no xfts   = no φ
-                             where φ : _
-                                   φ (_ ∷ xnfts) = xfts xnfts
+...            | no xfts   = no λ { (_ ∷ xnfts) → xfts xnfts }
 x notFreeInTerms (functerm f us ∷ ts) with x notFreeInTerms us
-... | no xfus   = no φ
-                  where φ : _
-                        φ (functerm xnfus ∷ _) = xfus xnfus
+... | no xfus   = no λ { (functerm xnfus ∷ _) → xfus xnfus }
 ... | yes xnfus with x notFreeInTerms ts
 ...             | yes xnfts = yes (functerm xnfus ∷ xnfts)
-...             | no xfts   = no φ
-                              where φ : _
-                                    φ (_ ∷ xnfts) = xfts xnfts
+...             | no xfts   = no λ { (_ ∷ xnfts) → xfts xnfts }
 
 
 _notFreeInTerm_ : (x : Variable) → (t : Term) → Dec (x NotFreeInTerm t)
@@ -362,58 +302,31 @@ x notFreeInTerm t | no npf        = no λ z → npf (z ∷ [])
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
 x notFreeIn atom r ts with x notFreeInTerms ts
 x notFreeIn atom r ts | yes bdts = yes (atom bdts)
-x notFreeIn atom r ts | no ¬bdts = no φ
-                                   where
-                                     φ : ¬(x NotFreeIn atom r ts)
-                                     φ (atom bdts) = ¬bdts bdts
+x notFreeIn atom r ts | no ¬bdts = no λ { (atom bdts) → ¬bdts bdts }
 x notFreeIn (α ⇒ β)   with x notFreeIn α | x notFreeIn β
 x notFreeIn (α ⇒ β)   | yes αbd | yes βbd = yes (αbd ⇒ βbd)
-x notFreeIn (α ⇒ β)   | _       | no ¬βbd = no φ
-                                            where
-                                              φ : ¬(x NotFreeIn (α ⇒ β))
-                                              φ (αbd ⇒ βbd) = ¬βbd βbd
-x notFreeIn (α ⇒ β)   | no ¬αbd | _       = no φ
-                                            where
-                                              φ : ¬(x NotFreeIn (α ⇒ β))
-                                              φ (αbd ⇒ βbd) = ¬αbd αbd
+x notFreeIn (α ⇒ β)   | _       | no ¬βbd = no λ { (αbd ⇒ βbd) → ¬βbd βbd }
+x notFreeIn (α ⇒ β)   | no ¬αbd | _       = no λ { (αbd ⇒ βbd) → ¬αbd αbd }
 x notFreeIn (α ∧ β)   with x notFreeIn α | x notFreeIn β
 x notFreeIn (α ∧ β)   | yes αbd | yes βbd = yes (αbd ∧ βbd)
-x notFreeIn (α ∧ β)   | _       | no ¬βbd = no φ
-                                            where
-                                              φ : ¬(x NotFreeIn (α ∧ β))
-                                              φ (αbd ∧ βbd) = ¬βbd βbd
-x notFreeIn (α ∧ β)   | no ¬αbd | _       = no φ
-                                            where
-                                              φ : ¬(x NotFreeIn (α ∧ β))
-                                              φ (αbd ∧ βbd) = ¬αbd αbd
+x notFreeIn (α ∧ β)   | _       | no ¬βbd = no λ { (αbd ∧ βbd) → ¬βbd βbd }
+x notFreeIn (α ∧ β)   | no ¬αbd | _       = no λ { (αbd ∧ βbd) → ¬αbd αbd }
 x notFreeIn (α ∨ β)   with x notFreeIn α | x notFreeIn β
 x notFreeIn (α ∨ β)   | yes αbd | yes βbd = yes (αbd ∨ βbd)
-x notFreeIn (α ∨ β)   | _       | no ¬βbd = no φ
-                                            where
-                                              φ : ¬(x NotFreeIn (α ∨ β))
-                                              φ (αbd ∨ βbd) = ¬βbd βbd
-x notFreeIn (α ∨ β)   | no ¬αbd | _       = no φ
-                                            where
-                                              φ : ¬(x NotFreeIn (α ∨ β))
-                                              φ (αbd ∨ βbd) = ¬αbd αbd
+x notFreeIn (α ∨ β)   | _       | no ¬βbd = no λ { (αbd ∨ βbd) → ¬βbd βbd }
+x notFreeIn (α ∨ β)   | no ¬αbd | _       = no λ { (αbd ∨ βbd) → ¬αbd αbd }
 x notFreeIn Λ  y α    with varEq x y
 x notFreeIn Λ .x α    | yes refl = yes (Λ∣ x α)
 x notFreeIn Λ  y α    | no x≢y with x notFreeIn α
 x notFreeIn Λ  y α    | no x≢y | yes αbd = yes (Λ y αbd)
-x notFreeIn Λ  y α    | no x≢y | no ¬αbd = no φ
-                                           where
-                                             φ : ¬(x NotFreeIn Λ y α)
-                                             φ (Λ∣ x α) = x≢y refl
-                                             φ (Λ y αbd) = ¬αbd αbd
+x notFreeIn Λ  y α    | no x≢y | no ¬αbd = no λ { (Λ∣ x α)  → x≢y refl
+                                                ; (Λ y αbd) → ¬αbd αbd }
 x notFreeIn V  y α    with varEq x y
 x notFreeIn V .x α    | yes refl = yes (V∣ x α)
 x notFreeIn V  y α    | no x≢y with x notFreeIn α
 x notFreeIn V  y α    | no x≢y | yes αbd = yes (V y αbd)
-x notFreeIn V  y α    | no x≢y | no ¬αbd = no φ
-                                           where
-                                             φ : ¬(x NotFreeIn V y α)
-                                             φ (V∣ x α) = x≢y refl
-                                             φ (V y αbd) = ¬αbd αbd
+x notFreeIn V  y α    | no x≢y | no ¬αbd = no λ { (V∣ x α)  → x≢y refl
+                                                ; (V y αbd) → ¬αbd αbd }
 
 -- Generating not-free variables
 supFreeTerms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n
