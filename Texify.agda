@@ -5,6 +5,7 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 
 open import Decidable hiding (⊥ ; ¬_)
+open import Ensemble
 open import Deduction
 open import Formula
 open import List
@@ -44,9 +45,9 @@ texterm : Term → String
 textermvec : ∀{n} → Vec Term n → String
 
 texterm (varterm x) = wrap (strvar x)
-texterm (functerm (mkfunc n f) ts) with n
-...                              | zero  = wrap (strfunc (mkfunc n f))
-...                              | suc _ = wrap (strfunc (mkfunc n f)
+texterm (functerm (func n f) ts) with n
+...                              | zero  = wrap (strfunc (func n f))
+...                              | suc _ = wrap (strfunc (func n f)
                                                  >> lp >> textermvec ts >> rp)
 
 textermvec [] = ""
@@ -66,23 +67,23 @@ parenformula p@(_ ∨ _) = lp >> texformula p >> rp
 parenformula p@(Λ _ _) = texformula p
 parenformula p@(V _ _) = texformula p
 
---``texformula (atom (mkrel n f) ts) | false with n
---``...                                      | zero        = f
---``...                                      | suc zero    = f >> textermvec ts
---``...                                      | suc (suc _) = f >> lp
---``                                                         >> textermvec ts >> rp
+--``texformula (atom (rel n f) ts) | false with n
+--``...                                    | zero        = f
+--``...                                    | suc zero    = f >> textermvec ts
+--``...                                    | suc (suc _) = f >> lp
+--``                                                       >> textermvec ts >> rp
 
 texformula a@(atom f ts) with formulaEq a ⊥
-...                              | yes _ = "\\bot"
-texformula (atom (mkrel n k) ts) | no _  with k
-...                                      | zero     = strrel (mkrel n k)
-...                                      | suc zero = strrel (mkrel n k)
-                                                      >> textermvec ts
-texformula (atom (mkrel n k) (x ∷ y ∷ []))
-                                 | no _  | suc (suc zero)
-                                                   = texterm x >> strrel (mkrel n k) >> texterm y
-...                                      | suc (suc _) = strrel (mkrel n k)  >> lp
-                                                         >> textermvec ts >> rp
+...                            | yes _ = "\\bot"
+texformula (atom (rel n k) ts) | no _  with k
+...                                    | zero     = strrel (rel n k)
+...                                    | suc zero = strrel (rel n k)
+                                                    >> textermvec ts
+texformula (atom (rel n k) (x ∷ y ∷ []))
+                               | no _  | suc (suc zero)
+                                                 = texterm x >> strrel (rel n k) >> texterm y
+...                                    | suc (suc _) = strrel (rel n k)  >> lp
+                                                       >> textermvec ts >> rp
 texformula (a ⇒ b) with formulaEq b ⊥
 ...           | yes _  = "\\Tneg{" >> parenformula a >> "}"
 ...           | no _  = parenformula a >> " \\Tarrow " >> parenformula b
@@ -138,11 +139,13 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
                                         >> inf i "TrinaryInfC" x
 
 
-dtot : ∀{α Γ} → List Formula → Γ ⊢ α → Textree
+dtot : ∀{α Γ} → Ensemble formulaEq → Γ ⊢ α → Textree
 dtot {α} o (cite s d)           = schemeax α s
-dtot {α} o (assume a) with List.decide∈ formulaEq a o
+dtot {α} o (assume a) with Ensemble._∈?_ a o
 ...                   | yes _   = openax     α
 ...                   | no  _   = closedax   α
+dtot {α} o (univrename _ _ d)   = dtot o d
+dtot {α} o (existrename _ _ d)  = dtot o d
 dtot {α} o (arrowintro a d)     = unaryinf   α "\\Tarrowintro" (dtot o d)
 dtot {α} o (arrowelim d₁ d₂)    = binaryinf  α "\\Tarrowelim"  (dtot o d₁)
                                                                     (dtot o d₂)
@@ -164,7 +167,7 @@ dtot {α} o (close _ d)          = dtot o d
 
 
 texdeduction : ∀{Γ α} → Γ ⊢ α → String
-texdeduction d = texifytree 0 (dtot [] d)
+texdeduction {Γ} d = texifytree 0 (dtot Γ d)
 
 texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y
             → Vec Formula (Scheme.arity y) → String

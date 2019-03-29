@@ -34,16 +34,10 @@ element.
 all : ∀{A} {P : Pred A} → (p : Decidable P) → (xs : List A) → Dec (All P xs)
 all p [] = yes []
 all p (x ∷ xs) with p x
-...            | no ¬Px = no ¬all
-                          where
-                            ¬all : ¬(All _ (x ∷ xs))
-                            ¬all (Px ∷ _) = ¬Px Px
+...            | no ¬Px = no λ { (Px ∷ _) → ¬Px Px }
 ...            | yes Px with all p xs
 ...                     | yes ∀xsP = yes (Px ∷ ∀xsP)
-...                     | no ¬∀xsP = no ¬all
-                                     where
-                                       ¬all : ¬(All _ (x ∷ xs))
-                                       ¬all (_ ∷ ∀xsP) = ¬∀xsP ∀xsP
+...                     | no ¬∀xsP = no λ { (_ ∷ ∀xsP) → ¬∀xsP ∀xsP }
 
 \end{code}
 
@@ -68,11 +62,8 @@ any p (x ∷ xs) with p x
 ...            | yes Px = yes [ Px ]
 ...            | no ¬Px with any p xs
 ...                     | yes ∃xsP = yes (x ∷ ∃xsP)
-...                     | no ¬∃xsP = no ¬any
-                                     where
-                                       ¬any : ¬(Any _ (x ∷ xs))
-                                       ¬any [ Px ] = ¬Px Px
-                                       ¬any ( _ ∷ ∃xsP) = ¬∃xsP ∃xsP
+...                     | no ¬∃xsP = no λ { [ Px ]      → ¬Px Px
+                                          ; ( _ ∷ ∃xsP) → ¬∃xsP ∃xsP }
 
 \end{code}
 
