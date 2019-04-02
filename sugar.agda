@@ -17,26 +17,6 @@ pattern ¬ α = α ⇒ ⊥
 pattern ¬¬ α = ¬ (¬ α)
 
 
--- Easier constructors for schemes
-nullaryscheme : String → Formula → Scheme
-nullaryscheme s f = scheme s 0 fs
-                    where
-                      fs : _
-                      fs [] = f
-
-unaryscheme : String → (Formula → Formula) → Scheme
-unaryscheme s f = scheme s 1 fs
-                  where
-                    fs : _
-                    fs (α ∷ []) = f α
-
-binaryscheme : String → (Formula → Formula → Formula) → Scheme
-binaryscheme s f = scheme s 2 fs
-                   where
-                     fs : _
-                     fs (α ∷ β ∷ []) = f α β
-
-
 -- Easier definitions for derivability
 infix 1 ⊢₀_ ⊢₁_ ⊢₂_
 
@@ -85,36 +65,6 @@ pattern C = atom Crel []
 
 pattern P t = atom Prel (t ∷ [])
 pattern Q t = atom Qrel (t ∷ [])
-
-private
-  _>>_ = primStringAppend
-  infixr 1 _>>_
-
-
--- Stdlib show is broken on my computer
-strnum : ℕ → String
-strnum zero = "0"
-strnum (suc n) = "s(" >> strnum n >> ")"
-
-strrel : Relation → String
-strrel (rel 0 k) = "\\bot"
-strrel (rel 1 k) = "A"
-strrel (rel 2 k) = "B"
-strrel (rel 3 k) = "C"
-strrel (rel 4 k) = "P"
-strrel (rel 5 k) = "Q"
-strrel (rel (suc (suc (suc (suc (suc (suc n)))))) k) = "R_" >> strnum n
-
-strvar : Variable → String
-strvar xvar = "x"
-strvar yvar = "y"
-strvar zvar = "z"
-strvar (var n) = "v_" >> strnum n
-
-strfunc : Function → String
-strfunc (func n k) = "f_" >> strnum n
-
-
 
 -- Nice generalisation notation
 pattern ∀x Φ = Λ xvar Φ

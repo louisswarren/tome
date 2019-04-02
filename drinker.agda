@@ -15,6 +15,7 @@ open import List
     _∉_        to _[∉]_        ;
     decide∈    to decide[∈]    )
 open import Formula
+open import Scheme
 open import Vec
 
 open import Texify
@@ -28,32 +29,32 @@ LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP CD : 
 lpo : Formula → Formula → Formula
 lpo Φx Ψx = ∀x (Φx ∨ Ψx) ⇒ ∀x Φx ∨ ∃x Ψx
 
-LPO = binaryscheme "LPO" lpo
+LPO = binaryscheme lpo
 
 dne : Formula → Formula
 dne Φ = ¬¬ Φ ⇒ Φ
 
-DNE = unaryscheme "DNE" dne
+DNE = unaryscheme dne
 
 efq : Formula → Formula
 efq Φ = ⊥ ⇒ Φ
 
-EFQ = unaryscheme "EFQ" efq
+EFQ = unaryscheme efq
 
 
 lem wlem : Formula → Formula
 lem  Φ = Φ ∨ ¬ Φ
 wlem Φ = ¬ Φ ∨ ¬¬ Φ
 
-LEM  = unaryscheme "LEM" lem
-WLEM = unaryscheme "WLEM" wlem
+LEM  = unaryscheme lem
+WLEM = unaryscheme wlem
 
 
 
 dgp : Formula → Formula → Formula
 dgp Φ Ψ  = (Φ ⇒ Ψ) ∨ (Ψ ⇒ Φ)
 
-DGP = binaryscheme "DGP" dgp
+DGP = binaryscheme dgp
 
 
 
@@ -63,10 +64,10 @@ glpoa Φx = ∀x Φx ∨ ∃x ¬Φx                                       where 
 gmp   Φx = ¬∀x Φx ⇒ ∃x ¬Φx                                      where ¬Φx = ¬ Φx
 wgmp  Φx = ¬∀x Φx ⇒ ¬¬(∃x ¬Φx)                                  where ¬Φx = ¬ Φx
 
-GLPO  = unaryscheme "GLPO"  glpo
-GLPOA = unaryscheme "GLPOA" glpoa
-GMP   = unaryscheme "GMP"   gmp
-WGMP  = unaryscheme "WGMP"  wgmp
+GLPO  = unaryscheme glpo
+GLPOA = unaryscheme glpoa
+GMP   = unaryscheme gmp
+WGMP  = unaryscheme wgmp
 
 
 
@@ -76,10 +77,10 @@ he  Φx = ∃x(∃x Φx ⇒ Φx)
 dpn Φx = dp (¬ Φx)
 hen Φx = he (¬ Φx)
 
-DP  = unaryscheme "DP"  dp
-HE  = unaryscheme "HE"  he
-DPN = unaryscheme "DPN" dpn
-HEN = unaryscheme "HEN" hen
+DP  = unaryscheme dp
+HE  = unaryscheme he
+DPN = unaryscheme dpn
+HEN = unaryscheme hen
 
 
 
@@ -87,13 +88,13 @@ dnsu dnse : Formula → Formula
 dnsu Φx = ∀x(¬¬ Φx) ⇒ ¬¬(∀x Φx)
 dnse Φx = ¬¬(∃x Φx) ⇒ ∃x (¬¬ Φx)
 
-DNSU = unaryscheme "DNSU" dnsu
-DNSE = unaryscheme "DNSE" dnse
+DNSU = unaryscheme dnsu
+DNSE = unaryscheme dnse
 
 cd : Formula → Formula → Formula
 cd Φx Ψ = ∀x (Φx ∨ ∃x Ψ) ⇒ ∀x Φx ∨ ∃x Ψ
 
-CD = binaryscheme "CD" cd
+CD = binaryscheme cd
 
 
 -- These are usually stated with Ψ instead of ∃x Ψ, but this is a simple way of
@@ -104,8 +105,8 @@ ud ip : Formula → Formula → Formula
 ud Φx Ψ = ∀x (Φx ∨ (∃x Ψ)) ⇒ (∀x Φx ∨ ∃x Ψ)
 ip Φx Ψ = (∃x Ψ ⇒ ∃x Φx) ⇒ ∃x(∃x Ψ ⇒ Φx)
 
-UD = binaryscheme "UD" ud
-IP = binaryscheme "IP" ip
+UD = binaryscheme ud
+IP = binaryscheme ip
 
 
 

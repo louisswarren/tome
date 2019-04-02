@@ -63,14 +63,6 @@ infixr 106 _∨_
 infixr 107 _∧_
 
 
-record Scheme : Set where
-  constructor scheme
-  field
-    idx   : String
-    arity : ℕ
-    inst  : Vec Formula arity → Formula
-
-
 -- Variable freedom
 
 infix 300 _NotFreeInTerm_ _NotFreeInTerms_ _NotFreeIn_ [_][_/_]≡_ _[_/_]≡_

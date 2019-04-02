@@ -4,7 +4,6 @@ open import Agda.Builtin.String
 
 open import Formula
 open import Ensemble
-open import List renaming (All to All[])
 
 private
   _NotFreeInAll_ : Variable → Ensemble formulaEq → Set
@@ -93,11 +92,3 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
 
 ⊢_ : Formula → Set
 ⊢ α = ∅ ⊢ α
-
-
-Derivable : Scheme → Set
-Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
-
-infix 1 _⊃_
-_⊃_ : List Scheme → Scheme → Set
-(Ω ⊃ Φ) = All[] (Derivable) Ω → Derivable Φ
