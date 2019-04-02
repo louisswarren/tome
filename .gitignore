@@ -12,3 +12,5 @@ html/
 
 _minted*
 agda.sty
+*.bbl
+*.blg
