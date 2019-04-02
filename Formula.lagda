@@ -35,10 +35,12 @@ open Function renaming (idx to funcidx ; arity to funcarity)
 
 \end{code}
 
-Note that the indices are natural numbers. While it seems equivalent and more
-useful to index using strings, strings are not supported by Agda's proof
-search. Internally, strings are not recursively defined as the natural numbers
-are; instead it is a postulated type which is bound to string literals.
+By defining these as \inline{record} types, we get destructors for accessing
+the indices and arities, which we then extract into the current module for ease
+of use. Note that the indices are natural numbers. While it seems equivalent
+and more useful to index using strings, strings are not supported by Agda's
+proof search. Internally, strings are not recursively defined as the natural
+numbers are; instead it is a postulated type which is bound to string literals.
 
 Terms are either variables, or functions applied to the appropriate number of
 arguments (zero for constants).
@@ -89,9 +91,10 @@ infixr 107 _∧_
 
 \end{code}
 
-For a given term, $x$ is bound within that term if that term is a variable
-other than $x$, or otherwise if the term is a function, and $x$ is bound in all
-arguments, which can be checked by applying \inline{All} to this definition.
+For a given term $t$, $x$ is not free in $t$ if $t$ is a variable
+other than $x$. Otherwise if the term is a function $f \overline{ts}$, then $x$
+is not free if it is not free anywhere in $ts$, which can be checked by
+applying \inline{All} to this definition.
 
 \begin{code}
 
@@ -156,7 +159,7 @@ data [_][_/_]≡_ where
 \end{code}
 
 Now, for formulae:
-\todo{Should these be $\equiv$?}
+
 \begin{code}
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
