@@ -11,6 +11,8 @@ open import Vec
 
 \end{code}
 
+\subsection{Basic definitions}
+
 We adopt the definitions of \citet{schwichtenberg}. In particular, there are
 countably many variables, and there are countably many function symbols of each
 (natural) airty. Function symbols of different arities with the same index are
@@ -90,6 +92,8 @@ infixr 106 _∨_
 infixr 107 _∧_
 
 \end{code}
+
+\subsection{Variable freedom and replacement}
 
 We define the conditions for a variable to be \emph{not free} in a formula.
 Instead of first defining \emph{free} and then taking \emph{not free} to be the
@@ -246,6 +250,7 @@ It will later be shown that, using the above definitions, there is a $\beta$
 satisfying $\alpha [x/t]\equiv \beta$ if and only if $t$ is free for $x$ in
 $\alpha$. \todo{Include this proof}
 
+
 \begin{code}
 
 data _FreshIn_ (x : Variable) : Formula → Set where
@@ -257,6 +262,8 @@ data _FreshIn_ (x : Variable) : Formula → Set where
   V    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn V y α
 
 \end{code}
+
+\subsection{Decidability}
 
 It remains to prove that equality of formulae is decidable. This follows from
 the fact that formulae are inductively defined. The proof is obtained by case
@@ -534,6 +541,8 @@ x notFreeIn V  y α    | no x≢y | no ¬αbd = no λ { (V∣ x α)  → x≢y r
 
 \end{code}
 
+\subsection{Generating fresh variables}
+
 For the purposes of variable substitution (see above), we need a way to
 generate a not-free variable for a given formula. Only finitely many variables
 occur in a given term or formula, so there is a greatest (with respect to the
@@ -689,6 +698,9 @@ fresh α with minFresh α
 Given a formula $\alpha$, variable $x$, and term $t$, a similar process to the
 one above produces a variable which is fresh (not free in $\alpha$, not equal
 to $x$, and not in $t$).
+
+\subsection{Computing substitutions}
+\todo{Move this higher}
 
 \begin{code}
 
