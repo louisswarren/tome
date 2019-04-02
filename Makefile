@@ -17,4 +17,6 @@ _minted.%.gen: %.lagda
 
 .PHONY: clean
 clean:
-	rm *.gen agda.sty tome.pdf
+	rm *.gen agda.sty tome.bbl tome.blg tome.pdf
+	rm -f _minted-tome/*.pygtex _minted-tome/*.pygstyle
+	rmdir _minted-tome
