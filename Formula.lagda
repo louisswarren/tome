@@ -11,10 +11,10 @@ open import Vec
 
 \end{code}
 
-We adopt the definitions from Proof and Computation (Schwichteberg)
-\todo{cite}. In particular, there are countably many variables, and there are
-countably many function symbols of each (natural) airty. Function symbols of
-different arities with the same index are considered different.
+We adopt the definitions of \citet{schwichtenberg}. In particular, there are
+countably many variables, and there are countably many function symbols of each
+(natural) airty. Function symbols of different arities with the same index are
+considered different.
 
 \begin{code}
 
@@ -199,6 +199,8 @@ inside the quantification.
               → α [ x / t ]≡ β → (V y α) [ x / t ]≡ (V y β)
 
 \end{code}
+
+From \citet{vandalen}:
 
 \begin{code}
 
