@@ -89,22 +89,6 @@ infixr 107 _∧_
 
 \end{code}
 
-The following notion of a Scheme is more general than usual; instead of using
-placeholder symbols which are replaced by formulae, a Scheme is just
-constructed from a function from formulae to a formula. This is much easier to
-work with.
-
-\begin{code}
-
-record Scheme : Set where
-  constructor scheme
-  field
-    idx   : String
-    arity : ℕ
-    inst  : Vec Formula arity → Formula
-
-\end{code}
-
 For a given term, $x$ is bound within that term if that term is a variable
 other than $x$, or otherwise if the term is a function, and $x$ is bound in all
 arguments, which can be checked by applying \inline{All} to this definition.

@@ -6,7 +6,6 @@ open import Agda.Builtin.String
 
 open import Formula
 open import Ensemble
-open import List renaming (All to All[])
 
 private
   _NotFreeInAll_ : Variable → Ensemble formulaEq → Set
@@ -124,19 +123,5 @@ supply them.
 
 ⊢_ : Formula → Set
 ⊢ α = ∅ ⊢ α
-
-\end{code}
-Finally, a scheme is derivable if every instance of the scheme is derivable. A
-list $\Omega$ of schemes is stronger than a scheme $\Phi$ if every instance of
-$\Phi$ is derivable from finitely many instances of schemes in $\Omega$, or
-equivalently, if all of the schemes in $\Omega$ are derivable.
-\begin{code}
-
-Derivable : Scheme → Set
-Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
-
-infix 1 _⊃_
-_⊃_ : List Scheme → Scheme → Set
-(Ω ⊃ Φ) = All[] (Derivable) Ω → Derivable Φ
 
 \end{code}

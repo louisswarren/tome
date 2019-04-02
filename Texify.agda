@@ -17,6 +17,29 @@ open import sugar
 _>>_ = primStringAppend
 infixr 1 _>>_
 
+-- Stdlib show is broken on my computer
+strnum : ℕ → String
+strnum zero = "0"
+strnum (suc n) = "s(" >> strnum n >> ")"
+
+strrel : Relation → String
+strrel (rel 0 k) = "\\bot"
+strrel (rel 1 k) = "A"
+strrel (rel 2 k) = "B"
+strrel (rel 3 k) = "C"
+strrel (rel 4 k) = "P"
+strrel (rel 5 k) = "Q"
+strrel (rel (suc (suc (suc (suc (suc (suc n)))))) k) = "R_" >> strnum n
+
+strvar : Variable → String
+strvar xvar = "x"
+strvar yvar = "y"
+strvar zvar = "z"
+strvar (var n) = "v_" >> strnum n
+
+strfunc : Function → String
+strfunc (func n k) = "f_" >> strnum n
+
 join : String → List String → String
 join delim [] = ""
 join delim (s ∷ []) = s
@@ -32,14 +55,6 @@ rp = "\\right)"
 
 wrap : String → String
 wrap s = "{" >> s >> "}"
-
-private
-  -- We assume that all schemes are derivable, and will derive their instances
-  -- by citing the schemes.
-  postulate provescheme : (s : Scheme) → Derivable s
-  proveschemes : (ss : List Scheme) → List.All Derivable ss
-  proveschemes [] = []
-  proveschemes (x ∷ ss) = provescheme x ∷ proveschemes ss
 
 texterm : Term → String
 textermvec : ∀{n} → Vec Term n → String
@@ -66,12 +81,6 @@ parenformula p@(_ ∧ _) = lp >> texformula p >> rp
 parenformula p@(_ ∨ _) = lp >> texformula p >> rp
 parenformula p@(Λ _ _) = texformula p
 parenformula p@(V _ _) = texformula p
-
---``texformula (atom (rel n f) ts) | false with n
---``...                                    | zero        = f
---``...                                    | suc zero    = f >> textermvec ts
---``...                                    | suc (suc _) = f >> lp
---``                                                       >> textermvec ts >> rp
 
 texformula a@(atom f ts) with formulaEq a ⊥
 ...                            | yes _ = "\\bot"
@@ -168,7 +177,3 @@ dtot {α} o (close _ d)          = dtot o d
 
 texdeduction : ∀{Γ α} → Γ ⊢ α → String
 texdeduction {Γ} d = texifytree 0 (dtot Γ d)
-
-texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y
-            → Vec Formula (Scheme.arity y) → String
-texreduce {xs} r αs = texdeduction (r (proveschemes xs) αs)
