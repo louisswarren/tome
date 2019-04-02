@@ -1,7 +1,7 @@
 *.agdai
 *.vim
 *.swp
-
+html/
 
 *.aux
 *.fdb_latexmk
@@ -10,6 +10,5 @@
 *.pdf
 *.synctex.gz
 
-agda.sty
-
 _minted*
+agda.sty
