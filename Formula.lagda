@@ -91,10 +91,15 @@ infixr 107 _∧_
 
 \end{code}
 
-For a given term $t$, $x$ is not free in $t$ if $t$ is a variable
-other than $x$. Otherwise if the term is a function $f \overline{ts}$, then $x$
-is not free if it is not free anywhere in $ts$, which can be checked by
-applying \inline{All} to this definition.
+We define the conditions for a variable to be \emph{not free} in a formula.
+Instead of first defining \emph{free} and then taking \emph{not free} to be the
+negation, we use a positive definition, since later definitions only ever
+require proof that a variable is not free. For a given term $t$, $x$ is not
+free in $t$ if $t$ is a variable other than $x$. Otherwise if the term is a
+function on arguments $ts$, then $x$ is not free if it is not free anywhere in
+$ts$, which can be checked by applying \inline{All} to this definition.
+Separating the declaration and definition of \inline{_NotFreeInTerm_} allows it
+to be defined mutually with the case for a vector of terms.
 
 \begin{code}
 
@@ -110,12 +115,14 @@ data _NotFreeInTerm_ x where
 
 \end{code}
 
-A variable is shown to be bound in a formula with the obvious recursive
-definition. It is bound inside a quantification over a subformula $\alpha$ if
-either it is the quantification variable, or else if it is bound in $\alpha$.
-Separate constructors are given for these. A variable is bound inside an atom
-if it is not free within that atom, meaning it is not free in the terms that
-the relation is operating on.
+A variable is shown to be not free in a formula with the obvious recursive
+definition. It is not free inside a quantification over a subformula $\alpha$
+either if it is the quantification variable, or else if it is not free in
+$\alpha$.  Separate constructors are given for these. A variable is not free
+inside an atom if it is not free within that atom, meaning it is not free in
+the terms that the relation is operating on.
+
+\todo{Notation: \inline{Λ∣}?}
 
 \begin{code}
 
@@ -133,12 +140,14 @@ data _NotFreeIn_ : Variable → Formula → Set where
 \end{code}
 
 We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
-replacing all instances of a variable $x$ with term $t$. The more general case
-of replacing terms with terms is not needed for natural deduction.
+replacing all instances of a variable $x$ with term $t$. It will later be shown
+that such a $\beta$ is unique. The definitions have a similar structure to that
+of \inline{_NotFreeIn_} above. Note that the more general case of replacing
+terms with terms is not needed for natural deduction.
 
 Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
-variable distinct from $x$ is left unchanged. For a function, $x$ is replaced
-with $t$ in all of the arguments.
+variable distinct from $x$ is left unchanged. For a function application, $x$
+is replaced with $t$ inside all of the arguments.
 
 \begin{code}
 
@@ -160,16 +169,25 @@ data [_][_/_]≡_ where
 
 Now, for formulae:
 
+\todo{Call it substitution or replacement?}
+
 \begin{code}
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
 \end{code}
 The \inline{ident} constructor gives the case that replacing $x$ with $x$
-yields the original formula. This case is actually provable from the others,
-However, in practice it is the case we usually want to use, and so we would
-like Agda's proof search to find it easily.
+yields the original formula. While this is actually a derived rule, in practice
+it is the case we usually want to use. Providing a constructor allows Agda's
+proof search to solve this case easily.
 \begin{code}
   ident : ∀ α x → α [ x / varterm x ]≡ α
+\end{code}
+If $x$ is in fact not free in $\alpha$, then replacing it with any term should
+leave $\alpha$ unchanged. This rule is not derivable when $t$ is not free for
+$x$ in $\alpha$. For example, without this constructor it would not be possible
+to prove that $(\forall y A)[x/y]\equiv A$, where $A$ is a propositional
+formula.
+\begin{code}
   notfree : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
 \end{code}
 The propositional cases are similar to those of the \inline{_NotFreeIn_} type
@@ -203,7 +221,11 @@ inside the quantification.
 
 \end{code}
 
-From \citet{vandalen}:
+Substitutions do not always exist. For example, there is no way of constructing
+a formula for $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if
+$t$ is \emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$
+would become bound inside $alpha$. This can be formalised by using (with minor
+modification) the rules of \cite{vandalen}.
 
 \begin{code}
 
@@ -218,6 +240,13 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   Λ       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
   V       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
+\end{code}
+
+It will later be shown that, using the above definitions, there is a $\beta$
+satisfying $\alpha [x/t]\equiv \beta$ if and only if $t$ is free for $x$ in
+$\alpha$. \todo{Include this proof}
+
+\begin{code}
 
 data _FreshIn_ (x : Variable) : Formula → Set where
   atom : ∀{r ts} → x NotFreeInTerms ts  → x FreshIn (atom r ts)
