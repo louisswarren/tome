@@ -116,11 +116,11 @@ t freeFor x In α with x notFreeIn α
                                                               ¬tff (V .α .y ynft _) = ¬ynft ynft
 
 -- Generating not-free variables
-supFreeTerm : ∀ t → Σ ℕ λ ⌈t⌉ → ∀ n → ⌈t⌉ < n → mkvar n NotFreeInTerm t
+supFreeTerm : ∀ t → Σ ℕ λ ⌈t⌉ → ∀ n → ⌈t⌉ < n → var n NotFreeInTerm t
 supFreeTerm t with supFreeTerms (t ∷ [])
 supFreeTerm t | s , pfs = s , notFreeIss
   where
-    notFreeIss : ∀ n → s < n → mkvar n NotFreeInTerm t
+    notFreeIss : ∀ n → s < n → var n NotFreeInTerm t
     notFreeIss n s<n with pfs n s<n
     notFreeIss n s<n | pf ∷ [] = pf
 
@@ -128,38 +128,38 @@ supFreeTerm t | s , pfs = s , notFreeIss
 -- No guarantee that this notFree is tight - in fact for the V and Λ cases it is
 -- not tight if the quantifier is the greatest variable (and does not have index
 -- zero)
-supFree : ∀ α → Σ ℕ λ ⌈α⌉ → ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn α
+supFree : ∀ α → Σ ℕ λ ⌈α⌉ → ∀ n → ⌈α⌉ < n → var n NotFreeIn α
 supFree (atom r ts) with supFreeTerms ts
 supFree (atom r ts) | ⌈ts⌉ , tspf = ⌈ts⌉ , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
 supFree (α ⇒ β) with supFree α | supFree β
 supFree (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
 supFree (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , notFreeIs⌈β⌉
   where
-    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NotFreeIn (α ⇒ β)
+    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → var n NotFreeIn (α ⇒ β)
     notFreeIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ⇒ βpf n ⌈β⌉<n
 supFree (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , notFreeIs⌈α⌉
   where
-    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn (α ⇒ β)
+    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → var n NotFreeIn (α ⇒ β)
     notFreeIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ⇒ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
 supFree (α ∧ β) with supFree α | supFree β
 supFree (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
 supFree (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , notFreeIs⌈β⌉
   where
-    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NotFreeIn (α ∧ β)
+    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → var n NotFreeIn (α ∧ β)
     notFreeIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ∧ βpf n ⌈β⌉<n
 supFree (α ∧ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , notFreeIs⌈α⌉
   where
-    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn (α ∧ β)
+    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → var n NotFreeIn (α ∧ β)
     notFreeIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∧ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
 supFree (α ∨ β) with supFree α | supFree β
 supFree (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max ⌈α⌉ ⌈β⌉
 supFree (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , notFreeIs⌈β⌉
   where
-    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → mkvar n NotFreeIn (α ∨ β)
+    notFreeIs⌈β⌉ : ∀ n → ⌈β⌉ < n → var n NotFreeIn (α ∨ β)
     notFreeIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ∨ βpf n ⌈β⌉<n
 supFree (α ∨ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , notFreeIs⌈α⌉
   where
-    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → mkvar n NotFreeIn (α ∨ β)
+    notFreeIs⌈α⌉ : ∀ n → ⌈α⌉ < n → var n NotFreeIn (α ∨ β)
     notFreeIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∨ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
 supFree (Λ x α) with supFree α
 supFree (Λ x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → Λ x (αpf n ⌈α⌉<n)
@@ -296,3 +296,25 @@ subUnique (V x α) (V x₁ x₂ p) (notfree (V .x x₃)) | refl = refl
 subUnique (V x α) (V x₁ x₂ p) (V∣ .x .α) = ⊥-elim (x₁ refl)
 subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) with subUnique α p q
 subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) | refl = refl
+
+
+sub→FreeFor : ∀{α x t β} → α [ x / t ]≡ β → t FreeFor x In α
+sub→FreeFor (ident (atom r ts) x) = atom r ts
+sub→FreeFor (ident (α ⇒ β) x) = sub→FreeFor (ident α x) ⇒ sub→FreeFor (ident β x)
+sub→FreeFor (ident (α ∧ β) x) = sub→FreeFor (ident α x) ∧ sub→FreeFor (ident β x)
+sub→FreeFor (ident (α ∨ β) x) = sub→FreeFor (ident α x) ∨ sub→FreeFor (ident β x)
+sub→FreeFor (ident (Λ y α) x) with varEq x y
+... | yes refl = Λ∣ α
+... | no x≢y = Λ α y (varterm (λ { refl → x≢y refl })) (sub→FreeFor (ident α x))
+sub→FreeFor (ident (V y α) x) with varEq x y
+... | yes refl = V∣ α
+... | no x≢y = V α y (varterm (λ { refl → x≢y refl })) (sub→FreeFor (ident α x))
+sub→FreeFor (notfree x) = notfree x
+sub→FreeFor (atom r x) = atom r _
+sub→FreeFor (repα ⇒ repβ) = sub→FreeFor repα ⇒ sub→FreeFor repβ
+sub→FreeFor (repα ∧ repβ) = sub→FreeFor repα ∧ sub→FreeFor repβ
+sub→FreeFor (repα ∨ repβ) = sub→FreeFor repα ∨ sub→FreeFor repβ
+sub→FreeFor (Λ∣ x α) = Λ∣ α
+sub→FreeFor (V∣ x α) = V∣ α
+sub→FreeFor (Λ x x₁ rep) = Λ _ _ x₁ (sub→FreeFor rep)
+sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
