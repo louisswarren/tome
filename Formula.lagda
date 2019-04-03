@@ -250,6 +250,10 @@ It will later be shown that, using the above definitions, there is a $\beta$
 satisfying $\alpha [x/t]\equiv \beta$ if and only if $t$ is free for $x$ in
 $\alpha$. \todo{Include this proof}
 
+Finally, we define a proposition for a variable being \emph{fresh}, meaning it
+appears nowhere (free or bound) in a formula. We later prove that if $x$ is
+fresh in $\alpha$ then it is not free, and for every $y$, $x$ is free for $y$
+in $\alpha$.
 
 \begin{code}
 
@@ -265,11 +269,11 @@ data _FreshIn_ (x : Variable) : Formula → Set where
 
 \subsection{Decidability}
 
-It remains to prove that equality of formulae is decidable. This follows from
-the fact that formulae are inductively defined. The proof is obtained by case
-analysis, using lemata on the types used to construct formulae. The unremarkable
-proofs are omitted from the latex-typeset form of this file, except for
-equality of natural numbers, which is included for illustrative purposes.
+Equality of formulae is decidable. Logically, this follows from the fact that
+formulae are inductively defined. The proof is obtained by case analysis, using
+lemata on the types used to construct formulae. The proofs are unremarkable,
+and are omitted from the latex-typeset form of this file, except for equality
+of natural numbers, which is included for illustrative purposes.
 
 \begin{code}
 
