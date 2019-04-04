@@ -287,16 +287,11 @@ x notFreeInTerms (functerm f us ∷ ts) with x notFreeInTerms us
 
 _notFreeInTerm_ : (x : Variable) → (t : Term) → Dec (x NotFreeInTerm t)
 x notFreeInTerm varterm y     with varEq x y
-...                           | yes refl = no φ
-                                           where φ : _
-                                                 φ (varterm x≢x) = x≢x refl
+...                           | yes refl = no λ { (varterm x≢x) → x≢x refl }
 ...                           | no x≢y  = yes (varterm x≢y)
 x notFreeInTerm functerm f ts with x notFreeInTerms ts
-...                           | yes xnfts = yes (functerm xnfts)
-...                           | no ¬xnfts = no φ
-                                            where
-                                              φ : _
-                                              φ (functerm xnfts) = ¬xnfts xnfts
+...                           | yes x∉ts = yes (functerm x∉ts)
+...                           | no ¬x∉ts = no λ { (functerm x∉ts) → ¬x∉ts x∉ts }
 
 
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
