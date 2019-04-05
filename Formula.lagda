@@ -93,6 +93,181 @@ infixr 107 _∧_
 
 \end{code}
 
+Equality of formulae is decidable. Logically, this follows from the fact that
+formulae are inductively defined. The proof is obtained by case analysis, using
+lemata on the types used to construct formulae. As these proofs are
+unremarkable, they are omitted from the latex-typeset form of this file.
+\todo{Natural number equality similar}
+
+\begin{code}
+
+varEq : Decidable≡ Variable
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+varEq (var n) (var m) with natEq n m
+...                   | yes refl = yes refl
+...                   | no  n≢m  = no λ { refl → n≢m refl }
+
+\end{code}
+}
+\begin{code}
+
+relEq : Decidable≡ Relation
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+relEq (rel n j) (rel m k) with natEq n m
+...                       | no  n≢m  = no λ { refl → n≢m refl }
+...                       | yes refl with natEq j k
+...                                  | yes refl = yes refl
+...                                  | no  j≢k  = no λ { refl → j≢k refl }
+
+\end{code}
+}
+\begin{code}
+
+funcEq : Decidable≡ Function
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+funcEq (func n j) (func m k) with natEq n m
+...                          | no  n≢m  = no λ { refl → n≢m refl }
+...                          | yes refl with natEq j k
+...                                     | yes refl = yes refl
+...                                     | no  j≢k  = no λ { refl → j≢k refl }
+
+\end{code}
+}
+\begin{code}
+
+vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+vecEq eq [] [] = yes refl
+vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
+...                        | no  x≢y  = no λ { refl → x≢y refl }
+...                        | yes refl with vecEq eq xs ys
+...                                   | yes refl  = yes refl
+...                                   | no  xs≢xy = no λ { refl → xs≢xy refl }
+
+\end{code}
+}
+\begin{code}
+
+termEq : Decidable≡ Term
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+termEq (varterm x)     (varterm y)     with varEq x y
+...                                    | yes refl = yes refl
+...                                    | no  x≢y  = no λ { refl → x≢y refl }
+termEq (varterm x)     (functerm f ts) = no λ ()
+termEq (functerm f ts) (varterm x)     = no λ ()
+termEq (functerm f []) (functerm g []) with funcEq f g
+...                                    | yes refl = yes refl
+...                                    | no  f≢g  = no λ { refl → f≢g refl }
+termEq (functerm f []) (functerm g (_ ∷ _)) = no λ ()
+termEq (functerm f (_ ∷ _)) (functerm g []) = no λ ()
+termEq
+  (functerm (func n (suc j)) (u ∷ us)) (functerm (func m (suc k)) (v ∷ vs))
+  with natEq j k
+... | no  j≢k  = no λ { refl → j≢k refl }
+... | yes refl with termEq u v
+...   | no  u≢v  = no λ { refl → u≢v refl }
+...   | yes refl
+        with termEq (functerm (func n j) us) (functerm (func m k) vs)
+...     | yes refl = yes refl
+...     | no  neq  = no λ { refl → neq refl }
+
+\end{code}
+}
+\begin{code}
+
+formulaEq : Decidable≡ Formula
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+formulaEq (atom r xs) (atom s ys)
+    with natEq (relarity r) (relarity s)
+... | no ar≢as = no λ { refl → ar≢as refl }
+... | yes refl with (relEq r s) | (vecEq termEq xs ys)
+...            | yes refl | yes refl  = yes refl
+...            | _        | no  xs≢ys = no λ { refl → xs≢ys refl }
+...            | no  r≢s  | _         = no λ { refl → r≢s refl }
+formulaEq (α ⇒ β) (γ ⇒ δ) with (formulaEq α γ) | (formulaEq β δ)
+...                       | yes refl | yes refl = yes refl
+...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
+...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
+formulaEq (α ∧ β) (γ ∧ δ) with (formulaEq α γ) | (formulaEq β δ)
+...                       | yes refl | yes refl = yes refl
+...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
+...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
+formulaEq (α ∨ β) (γ ∨ δ) with (formulaEq α γ) | (formulaEq β δ)
+...                       | yes refl | yes refl = yes refl
+...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
+...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
+formulaEq (Λ x α) (Λ y β) with (varEq x y) | (formulaEq α β)
+...                       | yes refl | yes refl = yes refl
+...                       | _        | no  α≢β  = no λ { refl → α≢β refl }
+...                       | no  x≢y  | _        = no λ { refl → x≢y refl }
+formulaEq (V x α) (V y β) with (varEq x y) | (formulaEq α β)
+...                       | yes refl | yes refl = yes refl
+...                       | _        | no  α≢β  = no λ { refl → α≢β refl }
+...                       | no  x≢y  | _        = no λ { refl → x≢y refl }
+formulaEq (atom r us) (γ ⇒ δ)     = no λ ()
+formulaEq (atom r us) (γ ∧ δ)     = no λ ()
+formulaEq (atom r us) (γ ∨ δ)     = no λ ()
+formulaEq (atom r us) (Λ y γ)     = no λ ()
+formulaEq (atom r us) (V y γ)     = no λ ()
+formulaEq (α ⇒ β)     (atom r vs) = no λ ()
+formulaEq (α ⇒ β)     (γ ∧ δ)     = no λ ()
+formulaEq (α ⇒ β)     (γ ∨ δ)     = no λ ()
+formulaEq (α ⇒ β)     (Λ y γ)     = no λ ()
+formulaEq (α ⇒ β)     (V y γ)     = no λ ()
+formulaEq (α ∧ β)     (atom r vs) = no λ ()
+formulaEq (α ∧ β)     (γ ⇒ δ)     = no λ ()
+formulaEq (α ∧ β)     (γ ∨ δ)     = no λ ()
+formulaEq (α ∧ β)     (Λ y γ)     = no λ ()
+formulaEq (α ∧ β)     (V y γ)     = no λ ()
+formulaEq (α ∨ β)     (atom r vs) = no λ ()
+formulaEq (α ∨ β)     (γ ⇒ δ)     = no λ ()
+formulaEq (α ∨ β)     (γ ∧ δ)     = no λ ()
+formulaEq (α ∨ β)     (Λ y γ)     = no λ ()
+formulaEq (α ∨ β)     (V y γ)     = no λ ()
+formulaEq (Λ x α)     (atom r vs) = no λ ()
+formulaEq (Λ x α)     (γ ⇒ δ)     = no λ ()
+formulaEq (Λ x α)     (γ ∧ δ)     = no λ ()
+formulaEq (Λ x α)     (γ ∨ δ)     = no λ ()
+formulaEq (Λ x α)     (V y γ)     = no λ ()
+formulaEq (V x α)     (atom r vs) = no λ ()
+formulaEq (V x α)     (γ ⇒ δ)     = no λ ()
+formulaEq (V x α)     (γ ∧ δ)     = no λ ()
+formulaEq (V x α)     (γ ∨ δ)     = no λ ()
+formulaEq (V x α)     (Λ y γ)     = no λ ()
+
+\end{code}
+}
+
 \subsection{Variable freedom and replacement}
 
 We define the conditions for a variable to be \emph{not free} in a formula.
@@ -267,193 +442,46 @@ data _FreshIn_ (x : Variable) : Formula → Set where
 
 \end{code}
 
+\subsection{Computing substitutions}
+
+\begin{code}
+
+[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs
+           → [ us ][ x / t ]≡ vs
+[ [] ][ x / t ] = [] , []
+[ varterm y ∷ us ][ x / t ] with [ us ][ x / t ]
+... | vs , [us][x/t]≡vs with varEq x y
+...   | yes refl = (t ∷ vs) , (varterm≡ ∷ [us][x/t]≡vs)
+...   | no x≢y   = (varterm y ∷ vs) , (varterm≢ x≢y ∷ [us][x/t]≡vs)
+[ functerm f ws ∷ us ][ x / t ] with [ us ][ x / t ]
+... | vs , [us][x/t]≡vs with [ ws ][ x / t ]
+...   | xs , [ws][x/t]≡xs = (functerm f xs ∷ vs)
+                            , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
+
+_[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
+α [ x / notfree ¬x∉fα ]          = α , notfree ¬x∉fα
+_[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
+_[_/_] {t} (atom r ts) x tff    | ts′ , tspf = atom r ts′ , atom r tspf
+(α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
+(α ∧ β) [ x / tffα ∧ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
+(α ∨ β) [ x / tffα ∨ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
+Λ y α [ .y / Λ∣ .α ]            = Λ y α , Λ∣ y α
+Λ y α [ x / Λ .α .y y∉t tffα ] with varEq x y
+...                             | yes refl = Λ y α , Λ∣ y α
+...                             | no  x≢y  with α [ x / tffα ]
+...                                        | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
+V y α [ .y / V∣ .α ]            = V y α , V∣ y α
+V y α [ x / V .α .y y∉t tffα ] with varEq x y
+...                             | yes refl = V y α , V∣ y α
+...                             | no  x≢y  with α [ x / tffα ]
+...                                        | α′ , αpf = V y α′ , V x≢y y∉t αpf
+
+\end{code}
+
 \subsection{Decidability}
-
-Equality of formulae is decidable. Logically, this follows from the fact that
-formulae are inductively defined. The proof is obtained by case analysis, using
-lemata on the types used to construct formulae. The proofs are unremarkable,
-and are omitted from the latex-typeset form of this file, except for equality
-of natural numbers, which is included for illustrative purposes.
-
-\begin{code}
-
-natEq : Decidable≡ ℕ
-natEq zero zero = yes refl
-natEq zero (suc m) = no λ ()
-natEq (suc n) zero = no λ ()
-natEq (suc n) (suc m) with natEq n m
-...                   | yes refl = yes refl
-...                   | no  n≢m  = no λ { refl → n≢m refl }
-
-\end{code}
-\begin{code}
-
-varEq : Decidable≡ Variable
--- Proof omitted
-
-\end{code}
-\AgdaHide{
-\begin{code}
-
-varEq (var n) (var m) with natEq n m
-...                   | yes refl = yes refl
-...                   | no  n≢m  = no λ { refl → n≢m refl }
-
-\end{code}
-}
-\begin{code}
-
-relEq : Decidable≡ Relation
--- Proof omitted
-
-\end{code}
-\AgdaHide{
-\begin{code}
-
-relEq (rel n j) (rel m k) with natEq n m
-...                       | no  n≢m  = no λ { refl → n≢m refl }
-...                       | yes refl with natEq j k
-...                                  | yes refl = yes refl
-...                                  | no  j≢k  = no λ { refl → j≢k refl }
-
-\end{code}
-}
-\begin{code}
-
-funcEq : Decidable≡ Function
--- Proof omitted
-
-\end{code}
-\AgdaHide{
-\begin{code}
-
-funcEq (func n j) (func m k) with natEq n m
-...                          | no  n≢m  = no λ { refl → n≢m refl }
-...                          | yes refl with natEq j k
-...                                     | yes refl = yes refl
-...                                     | no  j≢k  = no λ { refl → j≢k refl }
-
-\end{code}
-}
-\begin{code}
-
-vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
--- Proof omitted
-
-\end{code}
-\AgdaHide{
-\begin{code}
-
-vecEq eq [] [] = yes refl
-vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
-...                        | no  x≢y  = no λ { refl → x≢y refl }
-...                        | yes refl with vecEq eq xs ys
-...                                   | yes refl  = yes refl
-...                                   | no  xs≢xy = no λ { refl → xs≢xy refl }
-
-\end{code}
-}
-\begin{code}
-
-termEq : Decidable≡ Term
--- Proof omitted
-
-\end{code}
-\AgdaHide{
-\begin{code}
-
-termEq (varterm x)     (varterm y)     with varEq x y
-...                                    | yes refl = yes refl
-...                                    | no  x≢y  = no λ { refl → x≢y refl }
-termEq (varterm x)     (functerm f ts) = no λ ()
-termEq (functerm f ts) (varterm x)     = no λ ()
-termEq (functerm f []) (functerm g []) with funcEq f g
-...                                    | yes refl = yes refl
-...                                    | no  f≢g  = no λ { refl → f≢g refl }
-termEq (functerm f []) (functerm g (_ ∷ _)) = no λ ()
-termEq (functerm f (_ ∷ _)) (functerm g []) = no λ ()
-termEq
-  (functerm (func n (suc j)) (u ∷ us)) (functerm (func m (suc k)) (v ∷ vs))
-  with natEq j k
-... | no  j≢k  = no λ { refl → j≢k refl }
-... | yes refl with termEq u v
-...   | no  u≢v  = no λ { refl → u≢v refl }
-...   | yes refl
-        with termEq (functerm (func n j) us) (functerm (func m k) vs)
-...     | yes refl = yes refl
-...     | no  neq  = no λ { refl → neq refl }
-
-\end{code}
-}
-\begin{code}
-
-formulaEq : Decidable≡ Formula
--- Proof omitted
-
-\end{code}
-\AgdaHide{
-\begin{code}
-
-formulaEq (atom r xs) (atom s ys)
-    with natEq (relarity r) (relarity s)
-... | no ar≢as = no λ { refl → ar≢as refl }
-... | yes refl with (relEq r s) | (vecEq termEq xs ys)
-...            | yes refl | yes refl  = yes refl
-...            | _        | no  xs≢ys = no λ { refl → xs≢ys refl }
-...            | no  r≢s  | _         = no λ { refl → r≢s refl }
-formulaEq (α ⇒ β) (γ ⇒ δ) with (formulaEq α γ) | (formulaEq β δ)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
-...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
-formulaEq (α ∧ β) (γ ∧ δ) with (formulaEq α γ) | (formulaEq β δ)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
-...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
-formulaEq (α ∨ β) (γ ∨ δ) with (formulaEq α γ) | (formulaEq β δ)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
-...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
-formulaEq (Λ x α) (Λ y β) with (varEq x y) | (formulaEq α β)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  α≢β  = no λ { refl → α≢β refl }
-...                       | no  x≢y  | _        = no λ { refl → x≢y refl }
-formulaEq (V x α) (V y β) with (varEq x y) | (formulaEq α β)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  α≢β  = no λ { refl → α≢β refl }
-...                       | no  x≢y  | _        = no λ { refl → x≢y refl }
-formulaEq (atom r us) (γ ⇒ δ)     = no λ ()
-formulaEq (atom r us) (γ ∧ δ)     = no λ ()
-formulaEq (atom r us) (γ ∨ δ)     = no λ ()
-formulaEq (atom r us) (Λ y γ)     = no λ ()
-formulaEq (atom r us) (V y γ)     = no λ ()
-formulaEq (α ⇒ β)     (atom r vs) = no λ ()
-formulaEq (α ⇒ β)     (γ ∧ δ)     = no λ ()
-formulaEq (α ⇒ β)     (γ ∨ δ)     = no λ ()
-formulaEq (α ⇒ β)     (Λ y γ)     = no λ ()
-formulaEq (α ⇒ β)     (V y γ)     = no λ ()
-formulaEq (α ∧ β)     (atom r vs) = no λ ()
-formulaEq (α ∧ β)     (γ ⇒ δ)     = no λ ()
-formulaEq (α ∧ β)     (γ ∨ δ)     = no λ ()
-formulaEq (α ∧ β)     (Λ y γ)     = no λ ()
-formulaEq (α ∧ β)     (V y γ)     = no λ ()
-formulaEq (α ∨ β)     (atom r vs) = no λ ()
-formulaEq (α ∨ β)     (γ ⇒ δ)     = no λ ()
-formulaEq (α ∨ β)     (γ ∧ δ)     = no λ ()
-formulaEq (α ∨ β)     (Λ y γ)     = no λ ()
-formulaEq (α ∨ β)     (V y γ)     = no λ ()
-formulaEq (Λ x α)     (atom r vs) = no λ ()
-formulaEq (Λ x α)     (γ ⇒ δ)     = no λ ()
-formulaEq (Λ x α)     (γ ∧ δ)     = no λ ()
-formulaEq (Λ x α)     (γ ∨ δ)     = no λ ()
-formulaEq (Λ x α)     (V y γ)     = no λ ()
-formulaEq (V x α)     (atom r vs) = no λ ()
-formulaEq (V x α)     (γ ⇒ δ)     = no λ ()
-formulaEq (V x α)     (γ ∧ δ)     = no λ ()
-formulaEq (V x α)     (γ ∨ δ)     = no λ ()
-formulaEq (V x α)     (Λ y γ)     = no λ ()
-
-\end{code}
-}
 
 Variable freedom within a vector of terms is decidable, simply by searching
 through the vector for occurences. To check against a variable term, use the
@@ -618,10 +646,10 @@ $\max\{\lceil\alpha\rceil, \lceil\alpha\rceil\}$ will be not free in $\alpha
 free in $\alpha \rightarrow \beta$. A similar process is followed for other
 logical connectors.
 
-Note that there will be variables which bound, or which do not occur at all,
-which are not generated by this process. If $x, y, z$ have indicies $0, 1,$ and
-$2$, then $\forall x \forall y R x y$ and $P y \lor \lnot P y$ will both have
-$z$ as the least not-free variable generated.
+Note that there will be variables which are bound, or which do not occur at
+all, which are not generated by this process. If $x, y, z$ have indicies $0,
+1,$ and $2$, then $\forall x \forall y R x y$ and $P y \lor \lnot P y$ will
+both have $z$ as the least not-free variable generated.
 
 \begin{code}
 
@@ -697,46 +725,6 @@ fresh α with minFresh α
 Given a formula $\alpha$, variable $x$, and term $t$, a similar process to the
 one above produces a variable which is fresh (not free in $\alpha$, not equal
 to $x$, and not in $t$).
-
-\subsection{Computing substitutions}
-\todo{Move this higher}
-
-\begin{code}
-
-[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs
-           → [ us ][ x / t ]≡ vs
-[ [] ][ x / t ] = [] , []
-[ varterm y ∷ us ][ x / t ] with [ us ][ x / t ]
-... | vs , [us][x/t]≡vs with varEq x y
-...   | yes refl = (t ∷ vs) , (varterm≡ ∷ [us][x/t]≡vs)
-...   | no x≢y   = (varterm y ∷ vs) , (varterm≢ x≢y ∷ [us][x/t]≡vs)
-[ functerm f ws ∷ us ][ x / t ] with [ us ][ x / t ]
-... | vs , [us][x/t]≡vs with [ ws ][ x / t ]
-...   | xs , [ws][x/t]≡xs = (functerm f xs ∷ vs)
-                            , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
-
-_[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
-α [ x / notfree ¬x∉fα ]          = α , notfree ¬x∉fα
-_[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
-_[_/_] {t} (atom r ts) x tff    | ts′ , tspf = atom r ts′ , atom r tspf
-(α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
-(α ∧ β) [ x / tffα ∧ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
-(α ∨ β) [ x / tffα ∨ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
-Λ y α [ .y / Λ∣ .α ]            = Λ y α , Λ∣ y α
-Λ y α [ x / Λ .α .y y∉t tffα ] with varEq x y
-...                             | yes refl = Λ y α , Λ∣ y α
-...                             | no  x≢y  with α [ x / tffα ]
-...                                        | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
-V y α [ .y / V∣ .α ]            = V y α , V∣ y α
-V y α [ x / V .α .y y∉t tffα ] with varEq x y
-...                             | yes refl = V y α , V∣ y α
-...                             | no  x≢y  with α [ x / tffα ]
-...                                        | α′ , αpf = V y α′ , V x≢y y∉t αpf
-
-\end{code}
 
 \subsection{Lemata}
 

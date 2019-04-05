@@ -8,6 +8,21 @@ open import Decidable
 
 \end{code}
 
+Equality of natural numbers is decidable.
+\todo{Explain}
+
+\begin{code}
+
+natEq : Decidable≡ ℕ
+natEq zero zero = yes refl
+natEq zero (suc m) = no λ ()
+natEq (suc n) zero = no λ ()
+natEq (suc n) (suc m) with natEq n m
+...                   | yes refl = yes refl
+...                   | no  n≢m  = no λ { refl → n≢m refl }
+
+\end{code}
+
 We augment the built-in definition of the natural numbers with a propositional
 ordering.
 
