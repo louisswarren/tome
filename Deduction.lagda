@@ -1,3 +1,5 @@
+\begin{code}
+
 module Deduction where
 
 open import Agda.Builtin.String
@@ -9,12 +11,30 @@ private
   _NotFreeInAll_ : Variable → Ensemble formulaEq → Set
   x NotFreeInAll Γ = All (x NotFreeIn_) Γ
 
-
 infix 1 _⊢_ ⊢_
 data _⊢_ : Ensemble formulaEq → Formula → Set where
+
+\end{code}
+The first constructor is used for typesetting later; a deduction can be
+abbreviated to a label. This will be used for lemmas, and for applying assumed
+axiom schemes.
+\begin{code}
+
   cite        : ∀{α} → String → ∅ ⊢ α → ∅ ⊢ α
 
+\end{code}
+The following constructor exists for two reasons:
+\begin{enumerate}
+  \item If $\Gamma \vdash \alpha$ then $\Gamma, \beta \vdash \alpha$
+  \item We want to be able to normalise $\Gamma$, for example from $\{\alpha\}
+    \setminus \alpha$ to $\emptyset$.
+\end{enumerate}
+\begin{code}
+
   close       : ∀{Γ Δ α} → Γ ⊂ Δ  → Γ ⊢ α → Δ ⊢ α
+
+\end{code}
+\begin{code}
 
   univrename  : ∀{Γ α α[x/y] x y}
                 → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
@@ -27,6 +47,10 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
                 →                              Γ ⊢ V x α
                                             ----------------
                 →                            Γ ⊢ V y α[x/y]
+
+\end{code}
+The remaining constructors correspond to the usual natural deduction rules.
+\begin{code}
 
   assume      : (α : Formula)
                 →                              α ∷ ∅ ⊢ α
@@ -66,6 +90,13 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
                              ------------------------------------------ ∨⁻
                 →                   Γ₁ ∪ (Γ₂ - α) ∪ (Γ₃ - β) ⊢ γ
 
+\end{code}
+The constructors for first order logic require an extra proof to be supplied,
+either of variable boundedness or variable replacement. The propositions proved
+here have been formulated so that Agda's built-in proof search should be able to
+supply them.
+\begin{code}
+
   univintro   : ∀{Γ α} → (x : Variable)
                 → x NotFreeInAll Γ
                 →                                   Γ ⊢ α
@@ -92,3 +123,5 @@ data _⊢_ : Ensemble formulaEq → Formula → Set where
 
 ⊢_ : Formula → Set
 ⊢ α = ∅ ⊢ α
+
+\end{code}

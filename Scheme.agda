@@ -9,6 +9,11 @@ open import List
 open import Texify
 open import Vec
 
+--The following notion of a Scheme is more general than usual; instead of using
+--placeholder symbols which are replaced by formulae, a Scheme is just
+--constructed from a function from formulae to a formula. This is much easier to
+--work with.
+
 record Scheme : Set where
   constructor scheme
   field
@@ -26,6 +31,10 @@ unaryscheme f = scheme 1 λ { (α ∷ []) → f α }
 binaryscheme : (Formula → Formula → Formula) → Scheme
 binaryscheme f = scheme 2 λ { (α ∷ β ∷ []) → f α β }
 
+--Finally, a scheme is derivable if every instance of the scheme is derivable. A
+--list $\Omega$ of schemes is stronger than a scheme $\Phi$ if every instance of
+--$\Phi$ is derivable from finitely many instances of schemes in $\Omega$, or
+--equivalently, if all of the schemes in $\Omega$ are derivable.
 
 Derivable : Scheme → Set
 Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
