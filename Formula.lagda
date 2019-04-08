@@ -365,7 +365,7 @@ If $x$ is in fact not free in $\alpha$, then replacing it with any term should
 leave $\alpha$ unchanged. This rule is not derivable when $t$ is not free for
 $x$ in $\alpha$. For example, without this constructor it would not be possible
 to prove that $(\forall y A)[x/y]\equiv A$, where $A$ is a propositional
-formula.
+\todo{nullary predicate} formula.
 \begin{code}
   notfree : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
 \end{code}
@@ -444,10 +444,17 @@ data _FreshIn_ (x : Variable) : Formula → Set where
 
 \subsection{Computing substitutions}
 
+The definitions above for variable substitution lead directly to a procedure
+for computing substitutions. Given $\alpha$, $x$ and $t$, we compute a $\beta$,
+and a proof that $\alpha [ x / t ]\equiv \beta$. The sigma (dependent sum) type
+can be used to encapsulate both a value and a proof regarding that value.
+
+First for vectors of terms, recurse through all function arguments, and replace
+any variables equal to $x$ with $t$.
+
 \begin{code}
 
-[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) λ vs
-           → [ us ][ x / t ]≡ vs
+[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) [ us ][ x / t ]≡_
 [ [] ][ x / t ] = [] , []
 [ varterm y ∷ us ][ x / t ] with [ us ][ x / t ]
 ... | vs , [us][x/t]≡vs with varEq x y
@@ -458,8 +465,17 @@ data _FreshIn_ (x : Variable) : Formula → Set where
 ...   | xs , [ws][x/t]≡xs = (functerm f xs ∷ vs)
                             , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
 
+\end{code}
+
+For formulae, recurse down to atomic formulae, and then use the above lemma.
+When encountering a quantifier, check if $x$ is that quantifier, and if so do
+nothing. Inside proofs, we will use names like \inline{x∉α} to denote proofs of
+`$x$ is not free in $\alpha$`
+
+\begin{code}
+
 _[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
-α [ x / notfree ¬x∉fα ]          = α , notfree ¬x∉fα
+α [ x / notfree ¬x∉α ]          = α , notfree ¬x∉α
 _[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
 _[_/_] {t} (atom r ts) x tff    | ts′ , tspf = atom r ts′ , atom r tspf
 (α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
