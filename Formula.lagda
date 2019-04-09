@@ -555,32 +555,32 @@ variable is the quantifying variable for the quantifiers.
 
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
 x notFreeIn atom r ts with x notFreeInTerms ts
-x notFreeIn atom r ts | yes bdts = yes (atom bdts)
-x notFreeIn atom r ts | no ¬bdts = no λ { (atom bdts) → ¬bdts bdts }
+...                   | yes x∉ts = yes (atom x∉ts)
+...                   | no ¬x∉ts = no λ { (atom x∉ts) → ¬x∉ts x∉ts }
 x notFreeIn (α ⇒ β)   with x notFreeIn α | x notFreeIn β
-x notFreeIn (α ⇒ β)   | yes αbd | yes βbd = yes (αbd ⇒ βbd)
-x notFreeIn (α ⇒ β)   | _       | no ¬βbd = no λ { (αbd ⇒ βbd) → ¬βbd βbd }
-x notFreeIn (α ⇒ β)   | no ¬αbd | _       = no λ { (αbd ⇒ βbd) → ¬αbd αbd }
+...                   | yes x∉α | yes x∉β = yes (x∉α ⇒ x∉β)
+...                   | _       | no ¬x∉β = no λ { (x∉α ⇒ x∉β) → ¬x∉β x∉β }
+...                   | no ¬x∉α | _       = no λ { (x∉α ⇒ x∉β) → ¬x∉α x∉α }
 x notFreeIn (α ∧ β)   with x notFreeIn α | x notFreeIn β
-x notFreeIn (α ∧ β)   | yes αbd | yes βbd = yes (αbd ∧ βbd)
-x notFreeIn (α ∧ β)   | _       | no ¬βbd = no λ { (αbd ∧ βbd) → ¬βbd βbd }
-x notFreeIn (α ∧ β)   | no ¬αbd | _       = no λ { (αbd ∧ βbd) → ¬αbd αbd }
+...                   | yes x∉α | yes x∉β = yes (x∉α ∧ x∉β)
+...                   | _       | no ¬x∉β = no λ { (x∉α ∧ x∉β) → ¬x∉β x∉β }
+...                   | no ¬x∉α | _       = no λ { (x∉α ∧ x∉β) → ¬x∉α x∉α }
 x notFreeIn (α ∨ β)   with x notFreeIn α | x notFreeIn β
-x notFreeIn (α ∨ β)   | yes αbd | yes βbd = yes (αbd ∨ βbd)
-x notFreeIn (α ∨ β)   | _       | no ¬βbd = no λ { (αbd ∨ βbd) → ¬βbd βbd }
-x notFreeIn (α ∨ β)   | no ¬αbd | _       = no λ { (αbd ∨ βbd) → ¬αbd αbd }
+...                   | yes x∉α | yes x∉β = yes (x∉α ∨ x∉β)
+...                   | _       | no ¬x∉β = no λ { (x∉α ∨ x∉β) → ¬x∉β x∉β }
+...                   | no ¬x∉α | _       = no λ { (x∉α ∨ x∉β) → ¬x∉α x∉α }
 x notFreeIn Λ  y α    with varEq x y
-x notFreeIn Λ .x α    | yes refl = yes (Λ∣ x α)
-x notFreeIn Λ  y α    | no x≢y with x notFreeIn α
-x notFreeIn Λ  y α    | no x≢y | yes αbd = yes (Λ y αbd)
-x notFreeIn Λ  y α    | no x≢y | no ¬αbd = no λ { (Λ∣ x α)  → x≢y refl
-                                                ; (Λ y αbd) → ¬αbd αbd }
+...                   | yes refl = yes (Λ∣ x α)
+...                   | no x≢y with x notFreeIn α
+...                            | yes x∉α = yes (Λ y x∉α)
+...                            | no ¬x∉α = no λ { (Λ∣ x α)  → x≢y refl
+                                                ; (Λ y x∉α) → ¬x∉α x∉α }
 x notFreeIn V  y α    with varEq x y
-x notFreeIn V .x α    | yes refl = yes (V∣ x α)
-x notFreeIn V  y α    | no x≢y with x notFreeIn α
-x notFreeIn V  y α    | no x≢y | yes αbd = yes (V y αbd)
-x notFreeIn V  y α    | no x≢y | no ¬αbd = no λ { (V∣ x α)  → x≢y refl
-                                                ; (V y αbd) → ¬αbd αbd }
+...                   | yes refl = yes (V∣ x α)
+...                   | no x≢y with x notFreeIn α
+...                            | yes x∉α = yes (V y x∉α)
+...                            | no ¬x∉α = no λ { (V∣ x α)  → x≢y refl
+                                                ; (V y x∉α) → ¬x∉α x∉α }
 
 \end{code}
 
