@@ -500,25 +500,28 @@ V y α [ x / V .α .y y∉t tffα ] with varEq x y
 \subsection{Decidability}
 
 Variable freedom within a vector of terms is decidable, simply by searching
-through the vector for occurences. To check against a variable term, use the
-decidable equality of variables. To check against a function term, recurse over
-the arguments.
+through the vector for occurences.
 
 \begin{code}
 
-_notFreeInTerms_ : ∀{n} → (x : Variable) → (ts : Vec Term n)
-                   → Dec (x NotFreeInTerms ts)
+_notFreeInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotFreeInTerms ts)
 x notFreeInTerms [] = yes []
+\end{code}
+To check against a variable term, use the decidable equality of variables.
+\begin{code}
 x notFreeInTerms (varterm y ∷ ts) with varEq x y
-... | yes refl = no λ { (varterm x≢x ∷ _) → x≢x refl }
-... | no x≢y   with x notFreeInTerms ts
-...            | yes x∉ts = yes (varterm x≢y ∷ x∉ts)
-...            | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
+...    | yes refl = no λ { (varterm x≢x ∷ _) → x≢x refl }
+...    | no  x≢y  with x notFreeInTerms ts
+...               | yes x∉ts = yes (varterm x≢y ∷ x∉ts)
+...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
+\end{code}
+To check against a function term, recurse over the arguments.
+\begin{code}
 x notFreeInTerms (functerm f us ∷ ts) with x notFreeInTerms us
-... | no ¬x∉us = no λ { (functerm x∉us ∷ _) → ¬x∉us x∉us }
-... | yes x∉us with x notFreeInTerms ts
-...             | yes x∉ts = yes (functerm x∉us ∷ x∉ts)
-...             | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
+...    | no ¬x∉us = no λ { (functerm x∉us ∷ _) → ¬x∉us x∉us }
+...    | yes x∉us with x notFreeInTerms ts
+...               | yes x∉ts = yes (functerm x∉us ∷ x∉ts)
+...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
 
 \end{code}
 
