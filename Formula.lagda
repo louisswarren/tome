@@ -268,7 +268,7 @@ formulaEq (V x α)     (Λ y γ)     = no λ ()
 \end{code}
 }
 
-\subsection{Variable freedom and replacement}
+\subsection{Variable freedom and substitution}
 
 We define the conditions for a variable to be \emph{not free} in a formula.
 Instead of first defining \emph{free} and then taking \emph{not free} to be the
@@ -450,20 +450,21 @@ and a proof that $\alpha [ x / t ]\equiv \beta$. The sigma (dependent sum) type
 can be used to encapsulate both a value and a proof regarding that value.
 
 First for vectors of terms, recurse through all function arguments, and replace
-any variables equal to $x$ with $t$.
+any variables equal to $x$ with $t$. In the code below, we do a case split on
+the first term, and use a \inline{with} block to get the substitution for the
+rest of the vector simultaneously, since this substitution is required in
+either case.
 
 \begin{code}
 
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) [ us ][ x / t ]≡_
 [ [] ][ x / t ] = [] , []
-[ varterm y ∷ us ][ x / t ] with [ us ][ x / t ]
-... | vs , [us][x/t]≡vs with varEq x y
-...   | yes refl = (t ∷ vs) , (varterm≡ ∷ [us][x/t]≡vs)
-...   | no x≢y   = (varterm y ∷ vs) , (varterm≢ x≢y ∷ [us][x/t]≡vs)
-[ functerm f ws ∷ us ][ x / t ] with [ us ][ x / t ]
-... | vs , [us][x/t]≡vs with [ ws ][ x / t ]
-...   | xs , [ws][x/t]≡xs = (functerm f xs ∷ vs)
-                            , (functerm [ws][x/t]≡xs ∷ [us][x/t]≡vs)
+[ u ∷ us ][ x / t ] with [ us ][ x / t ]
+[ varterm y     ∷ us ][ x / t ] | vs , vspf with varEq x y
+...    | yes refl = (t         ∷ vs) , (varterm≡     ∷ vspf)
+...    | no  x≢y  = (varterm y ∷ vs) , (varterm≢ x≢y ∷ vspf)
+[ functerm f ws ∷ us ][ x / t ] | vs , vspf with [ ws ][ x / t ]
+...    | xs , xspf = (functerm f xs ∷ vs) , (functerm xspf ∷ vspf)
 
 \end{code}
 
@@ -747,7 +748,7 @@ to $x$, and not in $t$).
 
 \subsection{Lemata}
 
-If a variable has been replaced with a term not involving that variable, then
+If a variable has been substituted by a term not involving that variable, then
 the variable is not free in the resulting term.
 
 \begin{code}
