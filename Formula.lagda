@@ -445,9 +445,10 @@ data _FreshIn_ (x : Variable) : Formula → Set where
 \subsection{Computing substitutions}
 
 The definitions above for variable substitution lead directly to a procedure
-for computing substitutions. Given $\alpha$, $x$ and $t$, we compute a $\beta$,
-and a proof that $\alpha [ x / t ]\equiv \beta$. The sigma (dependent sum) type
-can be used to encapsulate both a value and a proof regarding that value.
+for computing substitutions. Given $\alpha$, $x$, $t$, and a proof that $t$ is
+free for $x$ in $\alpha$, we compute a $\beta$ and a proof that
+$\alpha[x/t] \equiv \beta$. The sigma (dependent sum) type can be used to
+encapsulate both a value and a proof regarding that value.
 
 First for vectors of terms, recurse through all function arguments, and replace
 any variables equal to $x$ with $t$. In the code below, we do a case split on
@@ -468,23 +469,35 @@ either case.
 
 \end{code}
 
-For formulae, recurse down to atomic formulae, and then use the above lemma.
-When encountering a quantifier, check if $x$ is that quantifier, and if so do
-nothing. Inside proofs, we will use names like \inline{x∉α} to denote proofs of
-`$x$ is not free in $\alpha$`
+For formulae, a proof that $t$ is free for $x$ in the formula must be supplied.
+Given such a proof, $t$ is fixed, so for convenience of notation, the proof is
+supplied in place of the term. Inside proofs, we will use names like
+\inline{x∉α} to denote proofs of `$x$ is not free in $\alpha$`.
+
+\todo{Explain the strange term argument}
 
 \begin{code}
 
 _[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
 α [ x / notfree ¬x∉α ]          = α , notfree ¬x∉α
+\end{code}
+For atomic formulae, apply the above lemma.
+\begin{code}
 _[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
-_[_/_] {t} (atom r ts) x tff    | ts′ , tspf = atom r ts′ , atom r tspf
+...                             | ts′ , tspf = atom r ts′ , atom r tspf
+\end{code}
+For the propositional connectives, the substitution is obtained recursively.
+\begin{code}
 (α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
 ...                             | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
 (α ∧ β) [ x / tffα ∧ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
 ...                             | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
 (α ∨ β) [ x / tffα ∨ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
 ...                             | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
+\end{code}
+For generalisation, check if $x$ is the quantifier, and if so do nothing.
+Otherwise, recurse.
+\begin{code}
 Λ y α [ .y / Λ∣ .α ]            = Λ y α , Λ∣ y α
 Λ y α [ x / Λ .α .y y∉t tffα ] with varEq x y
 ...                             | yes refl = Λ y α , Λ∣ y α
@@ -525,6 +538,12 @@ x notFreeInTerms (functerm f us ∷ ts) with x notFreeInTerms us
 ...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
 
 \end{code}
+Note that each case must check if $x$ is free in the remaining terms in the
+vector. A shorter proof would do this check at the same time as doing a case
+split on the first term, as was done for variable substitution in a vector of
+terms above. However, if a term for which $x$ is free is found, it is not
+necessary to continue recursing through the vector, so it is better
+computationally not to do so.
 
 The same logic can be used for a single term, calling the above function to
 check function arguments. The proposition \inline{_NotFreeInTerms_} is defined
@@ -803,26 +822,26 @@ subInverse : ∀{ω α x β}
              → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
 subInverse _           (ident α x)    = ident α x
 subInverse ω∉α         (notfree x∉α)  = notfree ω∉α
-subInverse (atom x∉ts) (atom r repts) = atom r (termsLemma x∉ts repts)
+subInverse (atom x∉ts) (atom r subts) = atom r (termsLemma x∉ts subts)
   where
     termsLemma : ∀{n x ω} {us vs : Vec Term n} → ω NotFreeInTerms us
                  → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
     termsLemma ω∉us [] = []
-    termsLemma (_ ∷ ω∉us) (varterm≡ ∷ repus) = varterm≡ ∷ termsLemma ω∉us repus
-    termsLemma (varterm ω≢y ∷ ω∉us) (varterm≢ x≢ω ∷ repus) = varterm≢ ω≢y ∷ termsLemma ω∉us repus
-    termsLemma (functerm ω∉ts ∷ ω∉us) (functerm repts ∷ repus) = functerm (termsLemma ω∉ts repts) ∷ termsLemma ω∉us repus
-subInverse (ω∉α ⇒ ω∉β) (repα ⇒ repβ) = subInverse ω∉α repα ⇒ subInverse ω∉β repβ
-subInverse (ω∉α ∧ ω∉β) (repα ∧ repβ) = subInverse ω∉α repα ∧ subInverse ω∉β repβ
-subInverse (ω∉α ∨ ω∉β) (repα ∨ repβ) = subInverse ω∉α repα ∨ subInverse ω∉β repβ
+    termsLemma (_ ∷ ω∉us) (varterm≡ ∷ subus) = varterm≡ ∷ termsLemma ω∉us subus
+    termsLemma (varterm ω≢y ∷ ω∉us) (varterm≢ x≢ω ∷ subus) = varterm≢ ω≢y ∷ termsLemma ω∉us subus
+    termsLemma (functerm ω∉ts ∷ ω∉us) (functerm subts ∷ subus) = functerm (termsLemma ω∉ts subts) ∷ termsLemma ω∉us subus
+subInverse (ω∉α ⇒ ω∉β) (subα ⇒ subβ) = subInverse ω∉α subα ⇒ subInverse ω∉β subβ
+subInverse (ω∉α ∧ ω∉β) (subα ∧ subβ) = subInverse ω∉α subα ∧ subInverse ω∉β subβ
+subInverse (ω∉α ∨ ω∉β) (subα ∨ subβ) = subInverse ω∉α subα ∨ subInverse ω∉β subβ
 subInverse ω∉α          (Λ∣ x α)              = notfree ω∉α
 subInverse (Λ∣ x α)      (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
 subInverse ω∉α          (V∣ x α)              = notfree ω∉α
 subInverse (V∣ x α)      (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
-subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω repα)           with varEq ω y
-subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω repα)           | no ω≢y = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α repα)
-subInverse {.y} (Λ y ω∉α) (Λ x≢y (varterm y≢y) repα) | yes refl = ⊥-elim (y≢y refl)
-subInverse {ω} (V y ω∉α) (V x≢y y∉ω repα)           with varEq ω y
-subInverse {.y} (V y ω∉α) (V x≢y (varterm y≢y) repα) | yes refl = ⊥-elim (y≢y refl)
-subInverse {ω} (V y ω∉α) (V x≢y y∉ω repα)           | no ω≢y = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α repα)
+subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω subα)           with varEq ω y
+subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω subα)           | no ω≢y = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
+subInverse {.y} (Λ y ω∉α) (Λ x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
+subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           with varEq ω y
+subInverse {.y} (V y ω∉α) (V x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
+subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           | no ω≢y = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
 
 \end{code}
