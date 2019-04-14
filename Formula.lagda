@@ -400,6 +400,25 @@ inside the quantification.
 
 \end{code}
 
+\todo{Explain}
+
+\begin{code}
+
+infix 50 _≈_
+data _≈_ : Formula → Formula → Set where
+  refl : ∀{α} → α ≈ α
+  _⇒_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ⇒ β ≈ α′ ⇒ β′
+  _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
+  _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
+  Λ    : ∀{α α′ x} → α ≈ α′ → Λ x α ≈ Λ x α′
+  Λ/   : ∀{α β′ x y} → ∀ β → y NotFreeIn α → α [ x / varterm y ]≡ β
+                       → β ≈ β′ → Λ x α ≈ Λ y β′
+  V    : ∀{α α′ x} → α ≈ α′ → V x α ≈ V x α′
+  V/   : ∀{α β′ x y} → ∀ β → y NotFreeIn α → α [ x / varterm y ]≡ β
+                       → β ≈ β′ → V x α ≈ V y β′
+
+\end{code}
+
 Substitutions do not always exist. For example, there is no way of constructing
 a formula for $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if
 $t$ is \emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$

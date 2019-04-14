@@ -153,8 +153,7 @@ dtot {α} o (cite s d)           = schemeax α s
 dtot {α} o (assume a) with Ensemble._∈?_ a o
 ...                   | yes _   = openax     α
 ...                   | no  _   = closedax   α
-dtot {α} o (univrename _ _ d)   = dtot o d
-dtot {α} o (existrename _ _ d)  = dtot o d
+dtot {α} o (rename _ d)         = dtot o d
 dtot {α} o (arrowintro a d)     = unaryinf   α "\\Tarrowintro" (dtot o d)
 dtot {α} o (arrowelim d₁ d₂)    = binaryinf  α "\\Tarrowelim"  (dtot o d₁)
                                                                     (dtot o d₂)
