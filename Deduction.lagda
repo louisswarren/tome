@@ -34,6 +34,7 @@ The following constructor exists for two reasons:
   close       : ∀{Γ Δ α} → Γ ⊂ Δ  → Γ ⊢ α → Δ ⊢ α
 
 \end{code}
+\todo{Justify}
 \begin{code}
 
   univrename  : ∀{Γ α α[x/y] x y}
@@ -50,6 +51,8 @@ The following constructor exists for two reasons:
 
 \end{code}
 The remaining constructors correspond to the usual natural deduction rules.
+Agda's comment syntax (\inline{--}) allows these rules to be formatted as
+Gentzen style inferences.
 \begin{code}
 
   assume      : (α : Formula)
@@ -120,6 +123,12 @@ supply them.
                 →                         Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
                                          --------------------------- ∃⁻
                 →                             Γ₁ ∪ (Γ₂ - α) ⊢ β
+
+\end{code}
+
+Finally, we define the following shorthand.
+
+\begin{code}
 
 ⊢_ : Formula → Set
 ⊢ α = ∅ ⊢ α
