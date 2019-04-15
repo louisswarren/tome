@@ -9,6 +9,7 @@ open import Ensemble
 open import Deduction
 open import Formula
 open import List
+open import Scheme
 open import Vec
 open import sugar
 
@@ -177,3 +178,16 @@ dtot {α} o (close _ d)          = dtot o d
 
 texdeduction : ∀{Γ α} → Γ ⊢ α → String
 texdeduction {Γ} d = texifytree 0 (dtot Γ d)
+
+
+-- We assume that all schemes are derivable, and will derive their instances
+-- by citing the schemes.
+
+texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y
+            → Vec Formula (Scheme.arity y) → String
+texreduce {xs} r αs = texdeduction (r (proveschemes xs) αs)
+  where
+    postulate provescheme : (s : Scheme) → Derivable s
+    proveschemes : (ss : List Scheme) → List.All Derivable ss
+    proveschemes [] = []
+    proveschemes (x ∷ ss) = provescheme x ∷ proveschemes ss

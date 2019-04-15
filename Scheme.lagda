@@ -16,17 +16,6 @@ open import Vec
 
 \end{code}
 
-The module Texify contains a function
-\inline{texdeduction : ∀{Γ α} → Γ ⊢ α → String}
-which gives a \LaTeX representation of a deduction. Its implementation has no
-mathematical content, so will be included only in the appendix \todo{appendix}.
-
-\begin{code}
-
-open import Texify using (texdeduction)
-
-\end{code}
-
 A \emph{scheme} is often thought of as a formula containing schematic
 variables, which can be replaced by subformulae to produce a new formula. The
 following notion is more general than this; instead, a Scheme is just
@@ -77,23 +66,5 @@ Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
 infix 1 _⊃_
 _⊃_ : List Scheme → Scheme → Set
 Ω ⊃ Φ = List.All (Derivable) Ω → Derivable Φ
-
-\end{code}
-
-\todo{Unsafe - should be in texify instead}
-
-\begin{code}
-
--- We assume that all schemes are derivable, and will derive their instances
--- by citing the schemes.
-
-texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y
-            → Vec Formula (Scheme.arity y) → String
-texreduce {xs} r αs = texdeduction (r (proveschemes xs) αs)
-  where
-    postulate provescheme : (s : Scheme) → Derivable s
-    proveschemes : (ss : List Scheme) → List.All Derivable ss
-    proveschemes [] = []
-    proveschemes (x ∷ ss) = provescheme x ∷ proveschemes ss
 
 \end{code}
