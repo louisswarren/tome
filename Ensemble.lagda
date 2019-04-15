@@ -71,38 +71,9 @@ All P αs = All P ⟨ αs ∖ [] ⟩
 \end{code}
 
 If $P$ is decidable, then checking if $P$ holds in all of an ensemble is also
-decidable. First, some lemata for breaking down instances of the above
-proposition:
-
-\begin{code}
-
-private
-  headAll : ∀{A α xs} {eq : Decidable≡ A} {αs : Ensemble eq} {P : Pred A}
-            → All P ⟨ α ∷ αs ∖ xs ⟩ → α [∉] xs → P α
-  headAll (Pα ∷ al)    α∉xs = Pα
-  headAll (α∈xs -∷ al) α∉xs = ⊥-elim (α∉xs α∈xs)
-
-  tailAll : ∀{A α xs} {eq : Decidable≡ A} {αs : Ensemble eq} {P : Pred A}
-            → All P ⟨ α ∷ αs ∖ xs ⟩ → All P ⟨ αs ∖ xs ⟩
-  tailAll (_  ∷ ∀αs∖xsP) = ∀αs∖xsP
-  tailAll (_ -∷ ∀αs∖xsP) = ∀αs∖xsP
-
-  plusAll : ∀{A α xs} {eq : Decidable≡ A} {αs : Ensemble eq} {P : Pred A}
-            → All P ⟨ αs - α ∖ xs ⟩ → All P ⟨ αs ∖ α ∷ xs ⟩
-  plusAll (_ ~ ∀αs∖α∷xs) = ∀αs∖α∷xs
-
-  leftAll : ∀{A xs} {eq : Decidable≡ A} {αs βs : Ensemble eq} {P : Pred A}
-            → All P ⟨ αs ∪ βs ∖ xs ⟩ → All P ⟨ αs ∖ xs ⟩
-  leftAll (∀αs∖xsP ∪ _) = ∀αs∖xsP
-
-  rightAll : ∀{A xs} {eq : Decidable≡ A} {αs βs : Ensemble eq} {P : Pred A}
-            → All P ⟨ αs ∪ βs ∖ xs ⟩ → All P ⟨ βs ∖ xs ⟩
-  rightAll (_ ∪ ∀βs∖xsP) = ∀βs∖xsP
-
-\end{code}
-
-Now we show decidability for all starting values for the accumulated list of
-removed elements, and then in particular for starting with an empty list.
+decidable.  First, show decidability for all starting values for the
+accumulated list of removed elements, and then in particular for starting with
+an empty list.
 
 \begin{code}
 
@@ -112,20 +83,23 @@ all_⟨_∖_⟩ : {A : Set} {_≟_ : Decidable≡ A} {P : Pred A}
 all p ⟨ ∅ ∖ xs ⟩ = yes ∅
 all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs with decide[∈] eq α xs
 all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | no α∉xs with p α
-... | no ¬Pα = no λ f → ¬Pα (headAll f α∉xs)
+... | no ¬Pα = no λ { (Pα ∷ _)    → ¬Pα Pα
+                    ; (α∈xs -∷ _) → α∉xs α∈xs }
 ... | yes Pα with all p ⟨ αs ∖ xs ⟩
 ...          | yes Pαs = yes (Pα ∷ Pαs)
-...          | no ¬Pαs = no λ φ → ¬Pαs (tailAll φ)
+...          | no ¬Pαs = no λ { (_ ∷ Pαs)   → ¬Pαs Pαs
+                              ; (α∈xs -∷ _) → α∉xs α∈xs }
 all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | yes α∈xs with all p ⟨ αs ∖ xs ⟩
 ... | yes Pαs = yes (α∈xs -∷ Pαs)
-... | no ¬Pαs = no λ φ → ¬Pαs (tailAll φ)
+... | no ¬Pαs = no λ { (_ ∷ Pαs)  → ¬Pαs Pαs
+                     ; (_ -∷ Pαs) → ¬Pαs Pαs }
 all p ⟨ αs - α ∖ xs ⟩  with all p ⟨ αs ∖ α ∷ xs ⟩
 ...                    | yes Pαs = yes (α ~ Pαs)
-...                    | no ¬Pαs = no λ φ → ¬Pαs (plusAll φ)
+...                    | no ¬Pαs = no λ { (_ ~ Pαs) → ¬Pαs Pαs }
 all p ⟨ αs ∪ βs ∖ xs ⟩ with all p ⟨ αs ∖ xs ⟩ | all p ⟨ βs ∖ xs ⟩
 ...                    | yes Pαs | yes Pβs = yes (Pαs ∪ Pβs)
-...                    | no ¬Pαs | _       = no λ φ → ¬Pαs (leftAll φ)
-...                    | _       | no ¬Pβs = no λ φ → ¬Pβs (rightAll φ)
+...                    | no ¬Pαs | _       = no λ { (Pαs ∪ _) → ¬Pαs Pαs }
+...                    | _       | no ¬Pβs = no λ { (_ ∪ Pβs) → ¬Pβs Pβs }
 
 all : {A : Set} {eq : Decidable≡ A} {P : Pred A}
       → (p : Decidable P) → (αs : Ensemble eq) → Dec (All P αs)
@@ -156,29 +130,6 @@ decidable.
 
 \begin{code}
 
-private
-  hereAny : ∀{A α xs} {eq : Decidable≡ A} {αs : Ensemble eq} {P : Pred A}
-            → Any P ⟨ α ∷ αs ∖ xs ⟩ → ¬ Any P ⟨ αs ∖ xs ⟩ → P α
-  hereAny [ Pα , _ ]    ¬∃αs∖xsP = Pα
-  hereAny (_ ∷ ∃αs∖xsP) ¬∃αs∖xsP = ⊥-elim (¬∃αs∖xsP ∃αs∖xsP)
-
-  thereAny : ∀{A α xs} {eq : Decidable≡ A} {αs : Ensemble eq} {P : Pred A}
-            → Any P ⟨ α ∷ αs ∖ xs ⟩ → α [∈] xs → Any P ⟨ αs ∖ xs ⟩
-  thereAny [ _ , α[∉]xs ] α[∈]xs = ⊥-elim (α[∉]xs α[∈]xs)
-  thereAny (_ ∷ ∃αs∖xs)   α[∈]xs = ∃αs∖xs
-
-  plusAny : ∀{A α xs} {eq : Decidable≡ A} {αs : Ensemble eq} {P : Pred A}
-            → Any P ⟨ αs - α ∖ xs ⟩ → Any P ⟨ αs ∖ α ∷ xs ⟩
-  plusAny (_ ~ ∃αs∖α∷xs) = ∃αs∖α∷xs
-
-  unionAny : ∀{A xs} {eq : Decidable≡ A} {αs βs : Ensemble eq} {P : Pred A}
-            → {Φ : Set}
-            → Any P ⟨ αs ∪ βs ∖ xs ⟩
-            → (Any P ⟨ αs ∖ xs ⟩ → Φ) → (Any P ⟨ βs ∖ xs ⟩ → Φ) → Φ
-  unionAny (αs ∣∪ ∃βsP) ∃αsP→Φ ∃βsP→Φ = ∃βsP→Φ ∃βsP
-  unionAny (∃αsP ∪∣ βs) ∃αsP→Φ ∃βsP→Φ = ∃αsP→Φ ∃αsP
-
-
 any_⟨_∖_⟩ : {A : Set} {_≟_ : Decidable≡ A} {P : Pred A}
               → (p : Decidable P) → (αs : Ensemble _≟_) → (xs : List A)
               → Dec (Any P ⟨ αs ∖ xs ⟩)
@@ -188,17 +139,20 @@ any_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | no α∉xs with p α
 ... | yes Pα = yes [ Pα , α∉xs ]
 ... | no ¬Pα with any p ⟨ αs ∖ xs ⟩
 ...          | yes ∃αsP = yes (α ∷ ∃αsP)
-...          | no ¬∃αsP = no λ φ → ¬Pα (hereAny φ ¬∃αsP)
+...          | no ¬∃αsP = no λ { [ Pα , _ ] → ¬Pα Pα
+                               ; (_ ∷ ∃αsP) → ¬∃αsP ∃αsP }
 any_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | yes α∈xs with any p ⟨ αs ∖ xs ⟩
 ... | yes ∃αsP = yes (α ∷ ∃αsP)
-... | no ¬∃αsP = no λ φ → ¬∃αsP (thereAny φ α∈xs)
+... | no ¬∃αsP = no λ { [ _ , α∉xs ] → α∉xs α∈xs
+                      ; (_ ∷ ∃αsP)   → ¬∃αsP ∃αsP }
 any p ⟨ αs - α ∖ xs ⟩  with any p ⟨ αs ∖ α ∷ xs ⟩
 ...                    | yes ∃αsP = yes (α ~ ∃αsP)
-...                    | no ¬∃αsP = no λ φ → ¬∃αsP (plusAny φ)
+...                    | no ¬∃αsP = no λ { (_ ~ ∃αsP) → ¬∃αsP ∃αsP }
 any p ⟨ αs ∪ βs ∖ xs ⟩ with any p ⟨ αs ∖ xs ⟩ | any p ⟨ βs ∖ xs ⟩
 ...                    | yes ∃αsP | _        = yes (∃αsP ∪∣ βs)
 ...                    | _        | yes ∃βsP = yes (αs ∣∪ ∃βsP)
-any p ⟨ αs ∪ βs ∖ xs ⟩ | no ¬∃αsP | no ¬∃βsP = no λ φ → unionAny φ ¬∃αsP ¬∃βsP
+any p ⟨ αs ∪ βs ∖ xs ⟩ | no ¬∃αsP | no ¬∃βsP = no λ { (_ ∣∪ ∃βsP) → ¬∃βsP ∃βsP
+                                                    ; (∃αsP ∪∣ _) → ¬∃αsP ∃αsP }
 
 any : {A : Set} {eq : Decidable≡ A} {P : Pred A}
       → (p : Decidable P) → (αs : Ensemble eq) → Dec (Any P αs)
