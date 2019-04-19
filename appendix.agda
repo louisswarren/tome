@@ -2,7 +2,7 @@ open import Agda.Builtin.Sigma
 
 open import Decidable
 open import Formula
-open import Nat
+open import Nat hiding (_-_)
 open import Vec
 
 -- Prove that ident is a derived rule. Note that this proof does not make use
@@ -318,3 +318,30 @@ sub→FreeFor (Λ∣ x α) = Λ∣ α
 sub→FreeFor (V∣ x α) = V∣ α
 sub→FreeFor (Λ x x₁ rep) = Λ _ _ x₁ (sub→FreeFor rep)
 sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
+
+module _ where
+  open import Deduction hiding (univrename ; existrename)
+  open import Ensemble
+  open import List renaming (Any to All[])
+
+  univrename  : ∀{Γ α α[x/y] x y}
+                → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
+                →                              Γ ⊢ Λ x α
+                                            ----------------
+                →                            Γ ⊢ Λ y α[x/y]
+  univrename y∉α sub d = close {!   !} (arrowelim (arrowintro ? {!   !}) (univelim (varterm _) sub d))
+
+  existrename : ∀{Γ α α[x/y] x y}
+                → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
+                →                              Γ ⊢ V x α
+                                            ----------------
+                →                            Γ ⊢ V y α[x/y]
+  existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d with varEq x y
+  ... | yes refl = ?
+  ... | no x≢y = close (closelemma Γ α) (existelim (V y (subNotFree (varterm x≢y) sub) ∷ α ~ [ refl ] -∷ ∅) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))
+    where
+      closelemma : (Γ : Ensemble formulaEq) → ∀ α → (Γ ∪ ((α ∷ ∅) - α)) ⊂ Γ
+      closelemma ∅ α = ∅ ∪ α ~ [ refl ] -∷ ∅
+      closelemma (x ∷ Γ) α = {!   !}
+      closelemma (Γ - x) α = {!   !}
+      closelemma (Γ ∪ Γ₁) α = {!   !}
