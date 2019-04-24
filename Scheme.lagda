@@ -60,11 +60,11 @@ s$ implies the derivability of $\Phi$.
 
 \begin{code}
 
-Derivable : Scheme → Set
+Derivable : Scheme → Set₁
 Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
 
-infix 1 _⊃_
-_⊃_ : List Scheme → Scheme → Set
-Ω ⊃ Φ = List.All (Derivable) Ω → Derivable Φ
+--infix 1 _⊃_
+--_⊃_ : List Scheme → Scheme → Set
+--Ω ⊃ Φ = List.All (Derivable) Ω → Derivable Φ
 
 \end{code}

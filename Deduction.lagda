@@ -4,15 +4,16 @@ module Deduction where
 
 open import Agda.Builtin.String
 
-open import Formula
-open import Ensemble
+open import Formula hiding (_∷_)
+open import Menge
+open import Decidable
 
 private
-  _NotFreeInAll_ : Variable → Ensemble formulaEq → Set
+  _NotFreeInAll_ : Variable → Pred Formula → Set
   x NotFreeInAll Γ = All (x NotFreeIn_) Γ
 
 infix 1 _⊢_ ⊢_
-data _⊢_ : Ensemble formulaEq → Formula → Set where
+data _⊢_ : Pred Formula → Formula → Set₁ where
 
 \end{code}
 The first constructor is used for typesetting later; a deduction can be
@@ -130,7 +131,7 @@ Finally, we define the following shorthand.
 
 \begin{code}
 
-⊢_ : Formula → Set
+⊢_ : Formula → Set₁
 ⊢ α = ∅ ⊢ α
 
 \end{code}
