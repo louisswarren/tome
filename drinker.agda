@@ -132,14 +132,16 @@ dne→lem ⊢dne α = close
 
 dne→efq : ⊢₁ dne → ⊢₁ efq
 dne→efq ⊢dne α = close
-                  (λ { δ (⊥≢δ , inl δ∈∅)               → δ∈∅
-                     ; δ (⊥≢δ , inr (α⇒⊥≢δ , inl ⊥≡δ)) → ⊥≢δ ⊥≡δ
-                     ; δ (⊥≢δ , inr (α⇒⊥≢δ , inr δ∈∅)) → δ∈∅     })
+                  (λ x₁ z₁ → z₁ (λ z₂ → ⊥-elim (z₂ (λ z₃ → z₃) (λ z₃ → ⊥-elim (z₃ (λ z₄ → z₁ (λ _ → z₄)))))))
+--                  (λ { δ (⊥≢δ , inl δ∈∅)               → δ∈∅
+--                     ; δ (⊥≢δ , inr (α⇒⊥≢δ , inl ⊥≡δ)) → ⊥≢δ ⊥≡δ
+--                     ; δ (⊥≢δ , inr (α⇒⊥≢δ , inr δ∈∅)) → δ∈∅     })
                   (arrowintro ⊥ (arrowelim (cite "DNE" (⊢dne α)) (arrowintro (¬ α) (assume ⊥))))
 
 lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
 lem,efq→dne ⊢lem ⊢efq α = close
-                           ? -- (¬¬ α ~ ∅ ∪ (α ~ [ refl ] -∷ ∅) ∪ ¬ α ~ ∅ ∪ ((¬ α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅)
+                           {! ⊥-elim -t 60  !}
+                           -- (¬¬ α ~ ∅ ∪ (α ~ [ refl ] -∷ ∅) ∪ ¬ α ~ ∅ ∪ ((¬ α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅)
                            (arrowintro (¬¬ α) (disjelim (cite "LEM" (⊢lem α)) (assume α) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
 
 
