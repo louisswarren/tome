@@ -116,7 +116,7 @@ IP = binaryscheme ip
 
 dne→lem : ⊢₁ dne → ⊢₁ lem
 dne→lem ⊢dne α = close
-                  ? -- (∅ ∪ ((α ∨ (α ⇒ atom (rel zero zero) []) ⇒ atom (rel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
+                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃)  (λ z₃ →  z₃  (λ z₄ z₅ →     z₅ (λ z₆ → z₆ z₄ (λ z₇ → z₇))     (λ z₆ →     z₆     (λ z₇ z₈ →     z₈ (λ z₉ → z₉ z₄ (λ z₁₀ → z₁₀)) (λ z₉ → z₉ z₇ (λ z₁₀ → z₁₀)))))))) -- (∅ ∪ ((α ∨ (α ⇒ atom (rel zero zero) []) ⇒ atom (rel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (arrowelim
                    (cite "DNE" (⊢dne (α ∨ ¬ α)))
                    (arrowintro (¬ (α ∨ ¬ α))
@@ -132,33 +132,36 @@ dne→lem ⊢dne α = close
 
 dne→efq : ⊢₁ dne → ⊢₁ efq
 dne→efq ⊢dne α = close
-                  (λ δ δ∈Γ → δ∈Γ λ δ∈∅∪[⊥∷∅-¬α]→δ≡⊥ → {!   !})
--- δ ∈ (∅ ∪ ((`⊥'∷∅ - `¬'α) - `⊥')) → δ ∈ ∅
--- δ ∈ (∅ ∪ ((`⊥'∷∅ - `¬'α) - `⊥')) → δ ∈ ∅
--- (δ ∉ ∅ → δ ∈ ((`⊥'∷∅ - `¬'α) - `⊥')) → δ ∈ ∅
--- (δ ∉ ∅ → δ ∈ ((`⊥'∷∅ - `¬'α) - `⊥')) → δ ∈ ∅
--- (δ ∉ ∅ → ¬(δ ∈ (`⊥'∷∅ - `¬'α) → δ ≡ `⊥')) → δ ∈ ∅
--- (δ ∉ ∅ → ¬(¬(δ ∈ `⊥'∷∅ → δ ≡ `¬'α) → δ ≡ `⊥')) → δ ∈ ∅
--- (δ ∉ ∅ → ¬(¬((δ ≢ `⊥' → δ ∈ ∅) → δ ≡ `¬'α) → δ ≡ `⊥')) → δ ∈ ∅
---                  (λ x₁ z₁ → z₁ (λ z₂ → ⊥-elim (z₂ (λ z₃ → z₃) (λ z₃ → ⊥-elim (z₃ (λ z₄ → z₁ (λ _ → z₄)))))))
---                  (λ { δ (⊥≢δ , inl δ∈∅)               → δ∈∅
---                     ; δ (⊥≢δ , inr (α⇒⊥≢δ , inl ⊥≡δ)) → ⊥≢δ ⊥≡δ
---                     ; δ (⊥≢δ , inr (α⇒⊥≢δ , inr δ∈∅)) → δ∈∅     })
+                  (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ _ z₆ → z₆ z₃ (λ z₇ → z₇))))))
                   (arrowintro ⊥ (arrowelim (cite "DNE" (⊢dne α)) (arrowintro (¬ α) (assume ⊥))))
 
 lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
 lem,efq→dne ⊢lem ⊢efq α = close
-                           {! ⊥-elim -t 60  !}
+                           (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ → z₆ (λ z₇ z₈ → z₈ z₇ (λ z₉ → z₉))) (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ (λ z₁₀ → z₁₀ z₃ (λ z₁₁ → z₁₁)) (λ z₁₀ → z₁₀ z₇ (λ z₁₁ → z₁₁)))))))))
                            -- (¬¬ α ~ ∅ ∪ (α ~ [ refl ] -∷ ∅) ∪ ¬ α ~ ∅ ∪ ((¬ α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅)
                            (arrowintro (¬¬ α) (disjelim (cite "LEM" (⊢lem α)) (assume α) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
 
 
---he→ip : ⊢₁ he → ⊢₂ ip
---he→ip ⊢he α β = close
---                 ? -- ((∃x β ⇒ ∃x α) ~ (∅ ∪ ((∃x α ⇒ α) ~(∃x β ~ (((∃x β ∷ [ refl ]) -∷ ∅) ∪ (((∃x β ∷ ((∃x α ⇒ α) ∷ [ refl ])) -∷ ∅) ∪ ([ refl ] -∷ ∅)))))))
---                 (arrowintro (∃x β ⇒ ∃x α) (existelim (V∣ xvar (∃x β ⇒ α) ∷ ((∃x α ⇒ α) ~ (∃x β ~(((∃x β ∷ [ refl ]) -∷ ∅) ∪ (((V∣ xvar β ⇒ V∣ xvar α) ∷ ∅) ∪ (V∣ xvar β ∷ ∅)))))) (cite "HE" (⊢he α)) (existintro x xvar (ident (∃x β ⇒ α) xvar) (arrowintro (∃x β) (arrowelim (assume (∃x α ⇒ α)) (arrowelim (assume (∃x β ⇒ ∃x α)) (assume (∃x β))))))))
---
---
+ttttt : ∀ α → Menge.All (λ k → (xvar NotFreeIn k)) (∃x α Menge.∷ ∅)
+ttttt α = V∣ xvar α all∷ all∅
+
+he→ip : ⊢₁ he → ⊢₂ ip
+he→ip ⊢he α β = close
+                 (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ →  z₄ (λ z₅ → z₅)  (λ z₅ →     z₅     (λ z₆ z₇ →     z₇     (λ z₈ z₉ →     z₉ (λ z₁₀ → z₁₀ z₆ (λ z₁₁ → z₁₁))     (λ z₁₀ →     z₁₀ (λ z₁₁ → z₁₁ z₃ (λ z₁₂ → z₁₂))     (λ z₁₁ → z₁₁ z₈ (λ z₁₂ → z₁₂)))))))))
+                 (arrowintro (∃x β ⇒ ∃x α)
+                  (existelim
+                   (V∣ xvar (∃x β ⇒ α) all∷ ((∃x α ⇒ α) all~ (∃x β all~ (((∃x β List.∷ [ refl ]) all-∷ all∅) all∪ (((V∣ xvar β ⇒ V∣ xvar α) all∷ all∅) all∪ (V∣ xvar β all∷ all∅))))))
+                   (cite "HE" (⊢he α))
+                   (existintro x xvar
+                    (ident (∃x β ⇒ α) xvar)
+                    (arrowintro (∃x β)
+                    (arrowelim
+                     (assume (∃x α ⇒ α))
+                     (arrowelim
+                      (assume (∃x β ⇒ ∃x α))
+                      (assume (∃x β))))))))
+
+
 --ip→he : ⊢₂ ip → ⊢₁ he
 --ip→he ⊢ip α = close ((∅ ∪ (∃x α ~ ([ refl ] -∷ ∅))) ∪ ((∃x α ⇒ α) ~ ([ refl ] -∷ ∅))) (existelim (V∣ xvar (∃x α ⇒ α) ∷ ((∃x α ⇒ α) ~ ([ refl ] -∷ ∅))) (arrowelim (cite "IP" (⊢ip α α)) (arrowintro (∃x α) (assume (∃x α)))) (existintro x xvar (ident (∃x α ⇒ α) xvar) (assume (∃x α ⇒ α))))
 --
