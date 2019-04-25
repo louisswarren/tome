@@ -38,17 +38,11 @@ The following constructor exists for two reasons:
 \todo{Justify}
 \begin{code}
 
-  univrename  : ∀{Γ α α[x/y] x y}
-                → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
-                →                              Γ ⊢ Λ x α
-                                            ----------------
-                →                            Γ ⊢ Λ y α[x/y]
-
-  existrename : ∀{Γ α α[x/y] x y}
-                → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
-                →                              Γ ⊢ V x α
-                                            ----------------
-                →                            Γ ⊢ V y α[x/y]
+  rename      : ∀{Γ α α′}
+                → α ≈ α′
+                →                                Γ ⊢ α
+                                                --------
+                →                                Γ ⊢ α′
 
 \end{code}
 The remaining constructors correspond to the usual natural deduction rules.
