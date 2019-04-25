@@ -9,7 +9,7 @@ open import Menge
 open import Decidable
 
 private
-  _NotFreeInAll_ : Variable → Pred Formula → Set
+  _NotFreeInAll_ : Variable → Pred Formula → Set₁
   x NotFreeInAll Γ = All (x NotFreeIn_) Γ
 
 infix 1 _⊢_ ⊢_

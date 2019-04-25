@@ -318,3 +318,25 @@ sub→FreeFor (Λ∣ x α) = Λ∣ α
 sub→FreeFor (V∣ x α) = V∣ α
 sub→FreeFor (Λ x x₁ rep) = Λ _ _ x₁ (sub→FreeFor rep)
 sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
+
+
+open import Deduction hiding (univrename ; existrename)
+open import Menge
+open import List
+
+univrename  : ∀{Γ α α[x/y] x y}
+              → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
+              →                              Γ ⊢ Λ x α
+                                          ----------------
+              →                            Γ ⊢ Λ y α[x/y]
+univrename {Γ} {α} {α[x/y]} {x} {y} x∉α sub d = close (λ x z → z (λ z₁ → z₁ (λ z₂ z₃ → z₃ z₂ (λ z₄ → z₄)))) (arrowelim (arrowintro (Λ x α) (univintro y (Λ x x∉α all∷ all∅) (univelim (varterm y) sub (assume (Λ x α))))) d)
+
+
+existrename : ∀{Γ α α[x/y] x y}
+              → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
+              →                              Γ ⊢ V x α
+                                          ----------------
+              →                            Γ ⊢ V y α[x/y]
+existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d with varEq x y
+existrename {Γ} {α} {α[x/y]} {x} {.x} y∉α sub d | yes refl = {!   !}
+existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅)))) (existelim (V y (subNotFree (varterm x≢y) sub) all∷ (α all~ ([ refl ] all-∷ all∅))) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))

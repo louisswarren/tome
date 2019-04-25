@@ -162,25 +162,36 @@ he→ip ⊢he α β = close
                       (assume (∃x β))))))))
 
 
---ip→he : ⊢₂ ip → ⊢₁ he
---ip→he ⊢ip α = close ((∅ ∪ (∃x α ~ ([ refl ] -∷ ∅))) ∪ ((∃x α ⇒ α) ~ ([ refl ] -∷ ∅))) (existelim (V∣ xvar (∃x α ⇒ α) ∷ ((∃x α ⇒ α) ~ ([ refl ] -∷ ∅))) (arrowelim (cite "IP" (⊢ip α α)) (arrowintro (∃x α) (assume (∃x α)))) (existintro x xvar (ident (∃x α ⇒ α) xvar) (assume (∃x α ⇒ α))))
---
---
---lem→glpo : ⊢₁ lem → ⊢₁ glpo
---lem→glpo ⊢lem α = close
---                   (∅ ∪ (∃x α ~ [ refl ] -∷ ∅) ∪ ¬∃x α ~ α ~ ((α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅)
---                   (disjelim
---                    (cite "LEM" (⊢lem (∃x α)))
---                    (disjintro₂ (∀x¬ α)
---                     (assume (∃x α)))
---                    (disjintro₁ (∃x α)
---                     (univintro xvar (α ~ (((V∣ xvar α ⇒ atom []) ∷ ∅) ∪ ([ refl ] -∷ ∅)))
---                      (arrowintro α
---                       (arrowelim
---                        (assume (¬∃x α))
---                        (existintro x xvar (ident α xvar)
---                         (assume α)))))))
---
+ip→he : ⊢₂ ip → ⊢₁ he
+ip→he ⊢ip α = close
+               (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃ (λ z₄ → z₄) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇)))) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄ (λ z₆ → z₆)))))
+               (existelim
+                (V∣ xvar (∃x α ⇒ α) all∷ ((∃x α ⇒ α) all~ ([ refl ] all-∷ all∅)))
+                (arrowelim
+                 (cite "IP" (⊢ip α α))
+                 (arrowintro (∃x α)
+                  (assume (∃x α))))
+                (existintro x xvar
+                 (ident (∃x α ⇒ α) xvar)
+                 (assume (∃x α ⇒ α))))
+
+
+lem→glpo : ⊢₁ lem → ⊢₁ glpo
+lem→glpo ⊢lem α = close
+                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇))) (λ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉ z₅ (λ z₁₀ → z₁₀)) (λ z₉ → z₉ z₇ (λ z₁₀ → z₁₀))))))))
+                   (disjelim
+                    (cite "LEM" (⊢lem (∃x α)))
+                    (disjintro₂ (∀x¬ α)
+                     (assume (∃x α)))
+                    (disjintro₁ (∃x α)
+                     (univintro xvar
+                      (α all~ (((V∣ xvar α ⇒ atom []) all∷ all∅) all∪ ([ refl ] all-∷ all∅)))
+                      (arrowintro α
+                       (arrowelim
+                        (assume (¬∃x α))
+                        (existintro x xvar (ident α xvar)
+                         (assume α)))))))
+
 --glpo→lem : ⊢₁ glpo → ⊢₁ lem
 --glpo→lem ⊢glpo α with xvar notFreeIn α
 --glpo→lem ⊢glpo α | yes xnfα = close
