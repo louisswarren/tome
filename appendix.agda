@@ -320,7 +320,7 @@ sub→FreeFor (Λ x x₁ rep) = Λ _ _ x₁ (sub→FreeFor rep)
 sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
 
 
-open import Deduction hiding (univrename ; existrename)
+open import Deduction
 open import Menge
 open import List
 
@@ -338,5 +338,5 @@ existrename : ∀{Γ α α[x/y] x y}
                                           ----------------
               →                            Γ ⊢ V y α[x/y]
 existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d with varEq x y
-existrename {Γ} {α} {α[x/y]} {x} {.x} y∉α sub d | yes refl = {!   !}
+existrename {Γ} {α} {α[x/y]} {x} {.x} y∉α sub d | yes refl rewrite subUnique α sub (ident α x) = d
 existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅)))) (existelim (V y (subNotFree (varterm x≢y) sub) all∷ (α all~ ([ refl ] all-∷ all∅))) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))
