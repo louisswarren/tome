@@ -63,8 +63,8 @@ s$ implies the derivability of $\Phi$.
 Derivable : Scheme → Set₁
 Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
 
---infix 1 _⊃_
---_⊃_ : List Scheme → Scheme → Set
---Ω ⊃ Φ = List.All (Derivable) Ω → Derivable Φ
+infix 1 _⊃_
+_⊃_ : List Scheme → Scheme → Set₁
+Ω ⊃ Φ = (∀ ω → ω List.∈ Ω → Derivable ω) → Derivable Φ
 
 \end{code}

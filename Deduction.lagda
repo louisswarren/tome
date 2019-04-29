@@ -32,7 +32,7 @@ The following constructor exists for two reasons:
 \end{enumerate}
 \begin{code}
 
-  close       : ∀{Γ Δ α} → Γ ⊂ Δ  → Γ ⊢ α → Δ ⊢ α
+  close       : ∀{Γ Δ α} → DecMenge formulaEq Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
 
 \end{code}
 \todo{Justify}
@@ -127,5 +127,24 @@ Finally, we define the following shorthand.
 
 ⊢_ : Formula → Set₁
 ⊢ α = ∅ ⊢ α
+
+
+dm⊢ : ∀{Γ α} → Γ ⊢ α → DecMenge formulaEq Γ
+dm⊢ (cite x d) = dm⊢ d
+dm⊢ (close x x₁ d) = x
+dm⊢ (univrename x x₁ d) = dm⊢ d
+dm⊢ (existrename x x₁ d) = dm⊢ d
+dm⊢ (assume α) = from α ∷ from∅
+dm⊢ (arrowintro α d) = from dm⊢ d - α
+dm⊢ (arrowelim d d₁) = from dm⊢ d ∪ dm⊢ d₁
+dm⊢ (conjintro d d₁) = from dm⊢ d ∪ dm⊢ d₁
+dm⊢ (conjelim d d₁) = from dm⊢ d ∪ (from from dm⊢ d₁ - _ - _)
+dm⊢ (disjintro₁ β d) = dm⊢ d
+dm⊢ (disjintro₂ α d) = dm⊢ d
+dm⊢ (disjelim d d₁ d₂) = from dm⊢ d ∪ (from from dm⊢ d₁ - _ ∪ (from dm⊢ d₂ - _))
+dm⊢ (univintro x x₁ d) = dm⊢ d
+dm⊢ (univelim r x d) = dm⊢ d
+dm⊢ (existintro r x x₁ d) = dm⊢ d
+dm⊢ (existelim x₁ d d₁) = from dm⊢ d ∪ (from dm⊢ d₁ - _)
 
 \end{code}

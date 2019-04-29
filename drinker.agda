@@ -18,7 +18,7 @@ open import Formula
 open import Scheme
 open import Vec
 
---open import Texify
+open import Texify
 
 open import sugar
 
@@ -115,7 +115,7 @@ IP = binaryscheme ip
 
 
 dne→lem : ⊢₁ dne → ⊢₁ lem
-dne→lem ⊢dne α = close
+dne→lem ⊢dne α = close from∅
                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃)  (λ z₃ →  z₃  (λ z₄ z₅ →     z₅ (λ z₆ → z₆ z₄ (λ z₇ → z₇))     (λ z₆ →     z₆     (λ z₇ z₈ →     z₈ (λ z₉ → z₉ z₄ (λ z₁₀ → z₁₀)) (λ z₉ → z₉ z₇ (λ z₁₀ → z₁₀)))))))) -- (∅ ∪ ((α ∨ (α ⇒ atom (rel zero zero) []) ⇒ atom (rel zero zero) [])   ~   ((List.[ refl ] -∷ ∅) ∪ (α ~ (((α ∷ List.[ refl ]) -∷ ∅) ∪ (List.[ refl ] -∷ ∅))))))
                   (arrowelim
                    (cite "DNE" (⊢dne (α ∨ ¬ α)))
@@ -128,15 +128,19 @@ dne→lem ⊢dne α = close
                         (assume (¬ (α ∨ ¬ α)))
                         (disjintro₁ (¬ α)
                          (assume α))))))))
+DNE⊃LEM : DNE List.∷ [] ⊃ LEM
+DNE⊃LEM x₁ (α Vec.∷ []) = dne→lem (descheme₁ (x₁ DNE [ refl ])) α
+
+k = texreduce DNE⊃LEM (A Vec.∷ [])
 
 
 dne→efq : ⊢₁ dne → ⊢₁ efq
-dne→efq ⊢dne α = close
+dne→efq ⊢dne α = close from∅
                   (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ _ z₆ → z₆ z₃ (λ z₇ → z₇))))))
                   (arrowintro ⊥ (arrowelim (cite "DNE" (⊢dne α)) (arrowintro (¬ α) (assume ⊥))))
 
 lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
-lem,efq→dne ⊢lem ⊢efq α = close
+lem,efq→dne ⊢lem ⊢efq α = close from∅
                            (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ → z₆ (λ z₇ z₈ → z₈ z₇ (λ z₉ → z₉))) (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ (λ z₁₀ → z₁₀ z₃ (λ z₁₁ → z₁₁)) (λ z₁₀ → z₁₀ z₇ (λ z₁₁ → z₁₁)))))))))
                            -- (¬¬ α ~ ∅ ∪ (α ~ [ refl ] -∷ ∅) ∪ ¬ α ~ ∅ ∪ ((¬ α ∷ [ refl ]) -∷ ∅) ∪ [ refl ] -∷ ∅)
                            (arrowintro (¬¬ α) (disjelim (cite "LEM" (⊢lem α)) (assume α) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
@@ -146,7 +150,7 @@ ttttt : ∀ α → Menge.All (λ k → (xvar NotFreeIn k)) (∃x α Menge.∷ �
 ttttt α = V∣ xvar α all∷ all∅
 
 he→ip : ⊢₁ he → ⊢₂ ip
-he→ip ⊢he α β = close
+he→ip ⊢he α β = close from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ →  z₄ (λ z₅ → z₅)  (λ z₅ →     z₅     (λ z₆ z₇ →     z₇     (λ z₈ z₉ →     z₉ (λ z₁₀ → z₁₀ z₆ (λ z₁₁ → z₁₁))     (λ z₁₀ →     z₁₀ (λ z₁₁ → z₁₁ z₃ (λ z₁₂ → z₁₂))     (λ z₁₁ → z₁₁ z₈ (λ z₁₂ → z₁₂)))))))))
                  (arrowintro (∃x β ⇒ ∃x α)
                   (existelim
@@ -163,7 +167,7 @@ he→ip ⊢he α β = close
 
 
 ip→he : ⊢₂ ip → ⊢₁ he
-ip→he ⊢ip α = close
+ip→he ⊢ip α = close from∅
                (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃ (λ z₄ → z₄) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇)))) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄ (λ z₆ → z₆)))))
                (existelim
                 (V∣ xvar (∃x α ⇒ α) all∷ ((∃x α ⇒ α) all~ ([ refl ] all-∷ all∅)))
@@ -177,7 +181,7 @@ ip→he ⊢ip α = close
 
 
 lem→glpo : ⊢₁ lem → ⊢₁ glpo
-lem→glpo ⊢lem α = close
+lem→glpo ⊢lem α = close from∅
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇))) (λ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉ z₅ (λ z₁₀ → z₁₀)) (λ z₉ → z₉ z₇ (λ z₁₀ → z₁₀))))))))
                    (disjelim
                     (cite "LEM" (⊢lem (∃x α)))
