@@ -10,14 +10,6 @@ open import List
     _∉_        to _[∉]_        ;
     decide∈    to decide[∈]    )
 
-
-data _⊎_ (A B : Set) : Set where
-  inl : A → A ⊎ B
-  inr : B → A ⊎ B
-
-_×_ : Set → Set → Set
-A × B = Σ A λ _ → B
-
 infix 4 _∈_ _∉_
 
 _∈_ : {A : Set} → A → Pred A → Set
@@ -43,6 +35,32 @@ _∪_ : {A : Set} → Pred A → Pred A → Pred A
 
 _⊂_ : {A : Set} → Pred A → Pred A → Set
 αs ⊂ βs = ∀ x → x ∈ αs → ¬(x ∉ βs)
+
+data DecMenge {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
+  from∅ : DecMenge eq ∅
+  from_∷_ : ∀{αs} → (α : A) → DecMenge eq αs → DecMenge eq (α ∷ αs)
+  from_-_ : ∀{αs} → DecMenge eq αs → (α : A) → DecMenge eq (αs - α)
+  from_∪_ : ∀{αs βs} → DecMenge eq αs → DecMenge eq βs → DecMenge eq (αs ∪ βs)
+
+decide∈ : {A : Set} {αs : Pred A}
+          → (eq : Decidable≡ A) → (α : A) → DecMenge eq αs → Dec (α ∈ αs)
+decide∈ eq x from∅ = no (λ z → z)
+decide∈ eq x (from α ∷ dmαs) with eq x α
+...                          | yes refl = yes (λ x x₁ → x refl)
+...                          | no x≢α   with decide∈ eq x dmαs
+...                                     | yes x₁ = yes (λ x₂ x₃ → x₃ x₁)
+...                                     | no x₁ = no (λ z → z x≢α x₁)
+decide∈ eq x (from dmαs - α) with eq x α
+...                          | yes refl = no (λ z → z (λ x x₁ → x refl))
+...                          | no x≢α   with decide∈ eq x dmαs
+...                                     | yes x₁ = yes (λ x₂ → x₂ x≢α x₁)
+...                                     | no x₁ = no (λ z → z (λ x → x₁))
+decide∈ eq x (from dmαs ∪ dmβs) with decide∈ eq x dmαs
+...                             | yes x₁ = yes (λ x₂ x₃ → x₂ x₁)
+...                             | no x₁  with decide∈ eq x dmβs
+...                                      | yes x₂ = yes (λ x₃ x₄ → x₄ x₂)
+...                                      | no x₂ = no (λ z → z x₁ x₂)
+
 
 data All_⟨_∖_⟩ {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
   all∅ : ∀{xs}       → All P ⟨ ∅ ∖ xs ⟩

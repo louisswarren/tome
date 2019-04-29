@@ -5,10 +5,10 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 
 open import Decidable hiding (⊥ ; ¬_)
-open import Ensemble
 open import Deduction
 open import Formula
 open import List
+open import Menge hiding (_∷_)
 open import Scheme
 open import Vec
 open import sugar
@@ -149,9 +149,9 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
                                         >> inf i "TrinaryInfC" x
 
 
-dtot : ∀{α Γ} → Ensemble formulaEq → Γ ⊢ α → Textree
+dtot : ∀{α Γ} {ω : Pred Formula} → DecMenge formulaEq ω → Γ ⊢ α → Textree
 dtot {α} o (cite s d)           = schemeax α s
-dtot {α} o (assume a) with Ensemble._∈?_ a o
+dtot {α} o (assume a) with Menge.decide∈ formulaEq a o
 ...                   | yes _   = openax     α
 ...                   | no  _   = closedax   α
 dtot {α} o (univrename _ _ d)   = dtot o d
@@ -173,11 +173,11 @@ dtot {α} o (univelim r _ d)     = unaryinf   α "\\Tunivelim"   (dtot o d)
 dtot {α} o (existintro r x _ d) = unaryinf   α "\\Texistintro" (dtot o d)
 dtot {α} o (existelim _ d₁ d₂)  = binaryinf  α "\\Texistelim"  (dtot o d₁)
                                                                     (dtot o d₂)
-dtot {α} o (close _ d)          = dtot o d
+dtot {α} o (close _ _ d)        = dtot o d
 
 
 texdeduction : ∀{Γ α} → Γ ⊢ α → String
-texdeduction {Γ} d = texifytree 0 (dtot Γ d)
+texdeduction d = texifytree 0 (dtot (dm⊢ d) d)
 
 
 -- We assume that all schemes are derivable, and will derive their instances
@@ -185,9 +185,8 @@ texdeduction {Γ} d = texifytree 0 (dtot Γ d)
 
 texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y
             → Vec Formula (Scheme.arity y) → String
-texreduce {xs} r αs = texdeduction (r (proveschemes xs) αs)
+texreduce {xs} r αs = texdeduction (r proveschemes αs)
   where
     postulate provescheme : (s : Scheme) → Derivable s
-    proveschemes : (ss : List Scheme) → List.All Derivable ss
-    proveschemes [] = []
-    proveschemes (x ∷ ss) = provescheme x ∷ proveschemes ss
+    proveschemes : (y : Scheme) → y List.∈ xs → Derivable y
+    proveschemes y _ = provescheme y
