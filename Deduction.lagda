@@ -132,8 +132,7 @@ Finally, we define the following shorthand.
 dm⊢ : ∀{Γ α} → Γ ⊢ α → DecMenge formulaEq Γ
 dm⊢ (cite x d) = dm⊢ d
 dm⊢ (close x x₁ d) = x
-dm⊢ (univrename x x₁ d) = dm⊢ d
-dm⊢ (existrename x x₁ d) = dm⊢ d
+dm⊢ (rename x d) = dm⊢ d
 dm⊢ (assume α) = from α ∷ from∅
 dm⊢ (arrowintro α d) = from dm⊢ d - α
 dm⊢ (arrowelim d d₁) = from dm⊢ d ∪ dm⊢ d₁
