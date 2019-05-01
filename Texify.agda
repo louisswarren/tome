@@ -8,7 +8,7 @@ open import Decidable hiding (⊥ ; ¬_)
 open import Deduction
 open import Formula
 open import List
-open import Menge hiding (_∷_)
+open import Menge
 open import Scheme
 open import Vec
 open import sugar

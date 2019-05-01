@@ -18,14 +18,14 @@ _∈_ : {A : Set} → A → Pred A → Set
 _∉_ : {A : Set} → A → Pred A → Set
 α ∉ αs = ¬(α ∈ αs)
 
-infixr 5 _∷_ _∪_
+infixr 5 _∪_
 infixl 5 _-_
 
 ∅ : {A : Set} → Pred A
 ∅ _ = ⊥
 
-_∷_ : {A : Set} → A → Pred A → Pred A
-(α ∷ αs) x = x ≢ α → ¬(x ∉ αs)
+⟨_⟩ : {A : Set} → A → Pred A
+⟨ α ⟩ x = x ≡ α
 
 _-_ : {A : Set} → Pred A → A → Pred A
 (αs - α) x = ¬(x ≢ α → x ∉ αs)
@@ -37,19 +37,17 @@ _⊂_ : {A : Set} → Pred A → Pred A → Set
 αs ⊂ βs = ∀ x → x ∈ αs → ¬(x ∉ βs)
 
 data DecMenge {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
-  from∅ : DecMenge eq ∅
-  from_∷_ : ∀{αs} → (α : A) → DecMenge eq αs → DecMenge eq (α ∷ αs)
+  from∅   : DecMenge eq ∅
+  from⟨_⟩ : (α : A) → DecMenge eq (⟨ α ⟩)
   from_-_ : ∀{αs} → DecMenge eq αs → (α : A) → DecMenge eq (αs - α)
   from_∪_ : ∀{αs βs} → DecMenge eq αs → DecMenge eq βs → DecMenge eq (αs ∪ βs)
 
 decide∈ : {A : Set} {αs : Pred A}
           → (eq : Decidable≡ A) → (α : A) → DecMenge eq αs → Dec (α ∈ αs)
 decide∈ eq x from∅ = no (λ z → z)
-decide∈ eq x (from α ∷ dmαs) with eq x α
-...                          | yes refl = yes (λ x x₁ → x refl)
-...                          | no x≢α   with decide∈ eq x dmαs
-...                                     | yes x₁ = yes (λ x₂ x₃ → x₃ x₁)
-...                                     | no x₁ = no (λ z → z x≢α x₁)
+decide∈ eq x (from⟨ α ⟩) with eq x α
+...                          | yes refl = yes refl
+...                          | no x≢α   = eq x α
 decide∈ eq x (from dmαs - α) with eq x α
 ...                          | yes refl = no (λ z → z (λ x x₁ → x refl))
 ...                          | no x≢α   with decide∈ eq x dmαs
@@ -64,8 +62,8 @@ decide∈ eq x (from dmαs ∪ dmβs) with decide∈ eq x dmαs
 
 data All_⟨_∖_⟩ {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
   all∅ : ∀{xs}       → All P ⟨ ∅ ∖ xs ⟩
-  _all∷_  : ∀{αs xs α}  → P α      → All P ⟨ αs ∖ xs ⟩ → All P ⟨ α ∷ αs ∖ xs ⟩
-  _all-∷_ : ∀{αs xs α}  → α [∈] xs → All P ⟨ αs ∖ xs ⟩ → All P ⟨ α ∷ αs ∖ xs ⟩
+  all⟨_⟩  : ∀{xs α}  → P α     → All P ⟨ ⟨ α ⟩ ∖ xs ⟩
+  all-⟨_⟩ : ∀{xs α}  → α [∈] xs → All P ⟨ ⟨ α ⟩ ∖ xs ⟩
   _all~_  : ∀{αs xs}    → ∀ x → All P ⟨ αs ∖ x [∷] xs ⟩ → All P ⟨ αs - x ∖ xs ⟩
   _all∪_  : ∀{αs βs xs} → All P ⟨ αs ∖ xs ⟩ → All P ⟨ βs ∖ xs ⟩
                      → All P ⟨ αs ∪ βs ∖ xs ⟩

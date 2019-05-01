@@ -4,7 +4,7 @@ module Deduction where
 
 open import Agda.Builtin.String
 
-open import Formula hiding (_∷_)
+open import Formula
 open import Menge
 open import Decidable
 
@@ -57,7 +57,7 @@ Gentzen style inferences.
 \begin{code}
 
   assume      : (α : Formula)
-                →                              α ∷ ∅ ⊢ α
+                →                              ⟨ α ⟩ ⊢ α
 
   arrowintro  : ∀{Γ β} → (α : Formula)
                 →                                  Γ ⊢ β
@@ -120,7 +120,7 @@ supply them.
                 →                                Γ ⊢ V x α
 
   existelim   : ∀{Γ₁ Γ₂ α β x}
-                → x NotFreeInAll (β ∷ (Γ₂ - α))
+                → x NotFreeInAll (⟨ β ⟩ ∪ (Γ₂ - α))
                 →                         Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
                                          --------------------------- ∃⁻
                 →                             Γ₁ ∪ (Γ₂ - α) ⊢ β
@@ -140,7 +140,7 @@ dm⊢ (cite x d) = dm⊢ d
 dm⊢ (close x x₁ d) = x
 dm⊢ (univrename x x₁ d) = dm⊢ d
 dm⊢ (existrename x x₁ d) = dm⊢ d
-dm⊢ (assume α) = from α ∷ from∅
+dm⊢ (assume α) = from⟨ α ⟩
 dm⊢ (arrowintro α d) = from dm⊢ d - α
 dm⊢ (arrowelim d d₁) = from dm⊢ d ∪ dm⊢ d₁
 dm⊢ (conjintro d d₁) = from dm⊢ d ∪ dm⊢ d₁
