@@ -42,22 +42,22 @@ data DecMenge {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
   from_-_ : ∀{αs} → DecMenge eq αs → (α : A) → DecMenge eq (αs - α)
   from_∪_ : ∀{αs βs} → DecMenge eq αs → DecMenge eq βs → DecMenge eq (αs ∪ βs)
 
-decide∈ : {A : Set} {αs : Pred A}
-          → (eq : Decidable≡ A) → (α : A) → DecMenge eq αs → Dec (α ∈ αs)
-decide∈ eq x from∅ = no (λ z → z)
-decide∈ eq x (from⟨ α ⟩) with eq x α
-...                          | yes refl = yes refl
-...                          | no x≢α   = eq x α
-decide∈ eq x (from dmαs - α) with eq x α
-...                          | yes refl = no (λ z → z (λ x x₁ → x refl))
-...                          | no x≢α   with decide∈ eq x dmαs
-...                                     | yes x₁ = yes (λ x₂ → x₂ x≢α x₁)
-...                                     | no x₁ = no (λ z → z (λ x → x₁))
-decide∈ eq x (from dmαs ∪ dmβs) with decide∈ eq x dmαs
-...                             | yes x₁ = yes (λ x₂ x₃ → x₂ x₁)
-...                             | no x₁  with decide∈ eq x dmβs
-...                                      | yes x₂ = yes (λ x₃ x₄ → x₄ x₂)
-...                                      | no x₂ = no (λ z → z x₁ x₂)
+decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
+          → (α : A) → DecMenge eq αs → Dec (α ∈ αs)
+decide∈ x from∅ = no (λ z → z)
+decide∈ {A} {eq} x (from⟨ α ⟩) with eq x α
+...                            | yes refl = yes refl
+...                            | no x≢α   = eq x α
+decide∈ {A} {eq} x (from dmαs - α) with eq x α
+...                                | yes refl = no (λ z → z (λ x x₁ → x refl))
+...                                | no x≢α   with decide∈ x dmαs
+...                                           | yes x₁ = yes (λ x₂ → x₂ x≢α x₁)
+...                                           | no x₁ = no (λ z → z (λ x → x₁))
+decide∈ x (from dmαs ∪ dmβs) with decide∈ x dmαs
+...                          | yes x₁ = yes (λ x₂ x₃ → x₂ x₁)
+...                          | no x₁  with decide∈ x dmβs
+...                                   | yes x₂ = yes (λ x₃ x₄ → x₄ x₂)
+...                                   | no x₂ = no (λ z → z x₁ x₂)
 
 
 data All_⟨_∖_⟩ {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
@@ -72,8 +72,13 @@ All : {A : Set} → Pred A → Pred A → Set₁
 All P αs = All P ⟨ αs ∖ [] ⟩
 
 
-test : {A : Set} → (αs : Pred A) → (α : A) → α ∉ (αs - α)
-test αs α x = x (λ z _ → z refl)
-
-test2 : {A : Set} → (αs : Pred A) → (α x : A) → α ∉ αs → α ∉ (αs - x)
-test2 αs α x α∉αs x₂ = x₂ (λ _ → α∉αs)
+test : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
+       → (P : Pred A) → DecMenge eq αs → All P αs
+       → (x : A) → x ∈ αs → P x
+test P dm all∅ x ()
+test P dm all⟨ x₁ ⟩ x refl = x₁
+test P dm all-⟨ () ⟩ x refl
+test P dm (x₁ all~ al) x x∈αs = {!   !}
+test P dm (al all∪ al₁) x x∈αs with decide∈ x dm
+test P dm (al all∪ al₁) x x∈αs | yes x₁ = {!   !}
+test P dm (al all∪ al₁) x x∈αs | no x₁ = ⊥-elim (x₁ x∈αs)
