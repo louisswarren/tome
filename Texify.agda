@@ -151,7 +151,7 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
 
 dtot : ∀{α Γ} {ω : Pred Formula} → DecMenge formulaEq ω → Γ ⊢ α → Textree
 dtot {α} o (cite s d)           = schemeax α s
-dtot {α} o (assume a) with Menge.decide∈ formulaEq a o
+dtot {α} o (assume a) with Menge.decide∈ a o
 ...                   | yes _   = openax     α
 ...                   | no  _   = closedax   α
 dtot {α} o (univrename _ _ d)   = dtot o d

@@ -329,7 +329,7 @@ univrename  : ∀{Γ α α[x/y] x y}
               →                              Γ ⊢ Λ x α
                                           ----------------
               →                            Γ ⊢ Λ y α[x/y]
-univrename {Γ} {α} {α[x/y]} {x} {y} x∉α sub d = close (λ x z → z (λ z₁ → z₁ (λ z₂ z₃ → z₃ z₂ (λ z₄ → z₄)))) (arrowelim (arrowintro (Λ x α) (univintro y (Λ x x∉α all∷ all∅) (univelim (varterm y) sub (assume (Λ x α))))) d)
+univrename {Γ} {α} {α[x/y]} {x} {y} x∉α sub d = close (dm⊢ d) (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂))) (arrowelim (arrowintro (Λ x α) (univintro y all⟨ Λ x x∉α ⟩ (univelim (varterm y) sub (assume (Λ x α))))) d)
 
 
 existrename : ∀{Γ α α[x/y] x y}
@@ -338,5 +338,5 @@ existrename : ∀{Γ α α[x/y] x y}
                                           ----------------
               →                            Γ ⊢ V y α[x/y]
 existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d with varEq x y
-existrename {Γ} {α} {α[x/y]} {x} {.x} y∉α sub d | yes refl = {!   !}
-existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅)))) (existelim (V y (subNotFree (varterm x≢y) sub) all∷ (α all~ ([ refl ] all-∷ all∅))) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))
+existrename {Γ} {α} {α[x/y]} {x} {.x} y∉α sub d | yes refl rewrite subUnique α sub (ident α x) = d
+existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (dm⊢ d) (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩ all∪  (α all~ all-⟨ [ refl ] ⟩)) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))
