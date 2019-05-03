@@ -14,12 +14,19 @@ private
 _⊂_ : (αs βs : List Formula) → Set
 αs ⊂ βs = All (_∈ βs) αs
 
+
+_++_ : {A : Set} -> List A -> List A -> List A
+[]       ++ ys = ys
+(x ∷ xs) ++ ys = x ∷ (xs ++ ys)
+
+if_then_else_ : {A B : Set} → Dec A → List B → List B → List B
+if yes x then y else z = y
+if no  x then y else z = z
+
 infixl 4 _-_
 _-_ : List Formula → Formula → List Formula
 [] - β = []
-(α ∷ αs) - β with formulaEq α β
-((β ∷ αs) - .β) | yes refl = αs - β
-((α ∷ αs) -  β) | no  _    = α ∷ (αs - β)
+(α ∷ αs) - β = (if formulaEq α β then [] else (α ∷ [])) ++ (αs - β)
 
 infixl 6 _∪_
 _∪_ : List Formula → List Formula → List Formula
