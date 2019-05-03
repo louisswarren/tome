@@ -149,7 +149,7 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
                                         >> inf i "TrinaryInfC" x
 
 
-dtot : ∀{α Γ} {ω : Pred Formula} → DecMenge formulaEq ω → Γ ⊢ α → Textree
+dtot : ∀{α Γ} {ω : Pred Formula} → Assembled formulaEq ω → Γ ⊢ α → Textree
 dtot {α} o (cite s d)           = schemeax α s
 dtot {α} o (assume a) with Menge.decide∈ a o
 ...                   | yes _   = openax     α

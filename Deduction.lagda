@@ -32,7 +32,7 @@ The following constructor exists for two reasons:
 \end{enumerate}
 \begin{code}
 
-  close       : ∀{Γ Δ α} → DecMenge formulaEq Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
+  close       : ∀{Γ Δ α} → Assembled formulaEq Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
 
 \end{code}
 \todo{Justify}
@@ -135,7 +135,7 @@ Finally, we define the following shorthand.
 ⊢ α = ∅ ⊢ α
 
 
-dm⊢ : ∀{Γ α} → Γ ⊢ α → DecMenge formulaEq Γ
+dm⊢ : ∀{Γ α} → Γ ⊢ α → Assembled formulaEq Γ
 dm⊢ (cite x d) = dm⊢ d
 dm⊢ (close x x₁ d) = x
 dm⊢ (univrename x x₁ d) = dm⊢ d

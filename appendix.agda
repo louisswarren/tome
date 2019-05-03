@@ -322,7 +322,7 @@ sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
 
 open import Deduction hiding (univrename ; existrename)
 open import Menge
-open import List
+open import List using (List ; [] ; _∷_)
 
 univrename  : ∀{Γ α α[x/y] x y}
               → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
@@ -339,4 +339,25 @@ existrename : ∀{Γ α α[x/y] x y}
               →                            Γ ⊢ V y α[x/y]
 existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d with varEq x y
 existrename {Γ} {α} {α[x/y]} {x} {.x} y∉α sub d | yes refl rewrite subUnique α sub (ident α x) = d
-existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (dm⊢ d) (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩ all∪  (α all~ all-⟨ [ refl ] ⟩)) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))
+existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (dm⊢ d) (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩ all∪ (α all~ (all- List.[ refl ]))) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))
+
+
+foo : {A : Set} → (eq : Decidable≡ A) → (P : Pred A) → (αs : Pred A) → (xs : List A) → Assembled eq αs → (∀ x → x Menge.∈ αs → x List.∉ xs → P x) → All P [ αs ∖ xs ]
+foo eq P .(λ _ → ⊥) xs from∅ x₁ = all∅
+foo eq P .(λ x → x ≡ α) xs from⟨ α ⟩ x₁ with List.decide∈ eq α xs
+foo eq P _ xs from⟨ α ⟩ x₁ | yes x = all- x
+foo eq P _ xs from⟨ α ⟩ x₁ | no x = all⟨ x₁ α refl x ⟩
+foo eq P _ xs (from x - α) x₁ = α all~ foo eq P _ (α ∷ xs) x (λ x z z₁ → x₁ x (λ z₂ → z₂ (λ z₃ → z₁ List.[ z₃ ]) z) (λ z₂ → z₁ (α ∷ z₂)))
+foo eq P _ xs (from x ∪ x₂) x₁ = foo eq P _ xs x (λ x z → x₁ x (λ z₁ _ → z₁ z)) all∪ foo eq P _ xs x₂ (λ x z → x₁ x (λ _ z₁ → z₁ z))
+
+bar : {A : Set} → (eq : Decidable≡ A) → (P : Pred A) → (αs : Pred A) → Assembled eq αs → (∀ x → x Menge.∈ αs → P x) → Menge.All P αs
+bar eq P αs x x₁ = foo eq P αs [] x (λ x z _ → x₁ x z)
+
+--baz : {A : Set} → (eq : Decidable≡ A) → (P : Pred A) → (αs : Pred A) → (xs : List A) → Assembled eq αs → Menge.All P [ αs ∖ xs ] → (∀ x → x ∈ αs → x List.∉ xs → P x)
+--baz eq P .(λ _ → ⊥) xs Aαs all∅ y () y∉xs
+--baz eq P .(λ x → x ≡ y) xs Aαs all⟨ x₁ ⟩ y refl y∉xs = x₁
+--baz eq P .(λ x → x ≡ y) xs Aαs (all- x₁) y refl y∉xs = ⊥-elim (y∉xs x₁)
+--baz eq P .(λ x₁ → ((x₁ ≡ x → ⊥) → _ x₁ → ⊥) → ⊥) xs Aαs (x all~ allαs) y y∈αs y∉xs with eq x y
+--baz eq P _ xs Aαs (x all~ allαs) .x y∈αs y∉xs | yes refl = {!   !}
+--baz eq P _ xs Aαs (x all~ allαs) y y∈αs y∉xs | no x₁ = baz eq P _ (x ∷ xs) {!   !} allαs y {!   !} λ { List.[ refl ] → y∈αs (λ z _ → z refl) ; (x ∷ k) → y∉xs k }
+--baz eq P .(λ x → (_ x → ⊥) → (_ x → ⊥) → ⊥) xs Aαs (allαs all∪ allαs₁) y y∈αs y∉xs = {!   !}

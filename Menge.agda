@@ -70,3 +70,6 @@ data All_[_∖_] {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
 
 All : {A : Set} → Pred A → Pred A → Set₁
 All P αs = All P [ αs ∖ [] ]
+
+
+
