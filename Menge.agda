@@ -59,6 +59,8 @@ decide∈ x (from dmαs ∪ dmβs) with decide∈ x dmαs
 ...                                   | yes x₂ = yes (λ x₃ x₄ → x₄ x₂)
 ...                                   | no x₂ = no (λ z → z x₁ x₂)
 
+infixr 5 _all∪_
+infixl 5 _all~_
 
 data All_⟨_∖_⟩ {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
   all∅ : ∀{xs}       → All P ⟨ ∅ ∖ xs ⟩
@@ -70,15 +72,3 @@ data All_⟨_∖_⟩ {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
 
 All : {A : Set} → Pred A → Pred A → Set₁
 All P αs = All P ⟨ αs ∖ [] ⟩
-
-
-test : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
-       → (P : Pred A) → DecMenge eq αs → All P αs
-       → (x : A) → x ∈ αs → P x
-test P dm all∅ x ()
-test P dm all⟨ x₁ ⟩ x refl = x₁
-test P dm all-⟨ () ⟩ x refl
-test P dm (x₁ all~ al) x x∈αs = {!   !}
-test P dm (al all∪ al₁) x x∈αs with decide∈ x dm
-test P dm (al all∪ al₁) x x∈αs | yes x₁ = {!   !}
-test P dm (al all∪ al₁) x x∈αs | no x₁ = ⊥-elim (x₁ x∈αs)
