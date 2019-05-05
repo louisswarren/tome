@@ -6,9 +6,9 @@ open import Agda.Builtin.String
 
 open import Decidable hiding (⊥ ; ¬_)
 open import Deduction
+open import Ensemble
 open import Formula
 open import List
-open import Menge
 open import Scheme
 open import Vec
 open import sugar
@@ -151,7 +151,7 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
 
 dtot : ∀{α Γ} {ω : Pred Formula} → Assembled formulaEq ω → Γ ⊢ α → Textree
 dtot {α} o (cite s d)           = schemeax α s
-dtot {α} o (assume a) with Menge.decide∈ a o
+dtot {α} o (assume a) with Ensemble.decide∈ a o
 ...                   | yes _   = openax     α
 ...                   | no  _   = closedax   α
 dtot {α} o (univrename _ _ d)   = dtot o d

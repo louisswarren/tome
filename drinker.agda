@@ -5,15 +5,8 @@ open import Agda.Builtin.Sigma
 
 open import Decidable hiding (⊥ ; ¬_)
 open import Deduction
-open import Menge
+open import Ensemble
 open import List
-  hiding (Any ; any)
-  renaming (
-    All        to All[]        ;
-    all        to all[]        ;
-    _∈_        to _[∈]_        ;
-    _∉_        to _[∉]_        ;
-    decide∈    to decide[∈]    )
 open import Formula
 open import Scheme
 open import Vec
@@ -131,8 +124,6 @@ dne→lem ⊢dne α = close from∅
 DNE⊃LEM : DNE List.∷ [] ⊃ LEM
 DNE⊃LEM x₁ (α Vec.∷ []) = dne→lem (descheme₁ (x₁ DNE [ refl ])) α
 
-k = texreduce DNE⊃LEM (A Vec.∷ [])
-
 
 dne→efq : ⊢₁ dne → ⊢₁ efq
 dne→efq ⊢dne α = close from∅
@@ -144,9 +135,6 @@ lem,efq→dne ⊢lem ⊢efq α = close from∅
                            (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ →  z₄ (λ z₅ → z₅)  (λ z₅ →     z₅ (λ z₆ → z₆ (λ z₇ → z₇))     (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ z₃ z₇)))))))
                            (arrowintro (¬¬ α) (disjelim (cite "LEM" (⊢lem α)) (assume α) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
 
-
-ttttt : ∀ α → Menge.All (λ k → (xvar NotFreeIn k)) (⟨ ∃x α ⟩)
-ttttt α = all⟨ V∣ xvar α ⟩
 
 he→ip : ⊢₁ he → ⊢₂ ip
 he→ip ⊢he α β = close from∅

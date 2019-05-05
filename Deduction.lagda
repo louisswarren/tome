@@ -5,7 +5,7 @@ module Deduction where
 open import Agda.Builtin.String
 
 open import Formula
-open import Menge
+open import Ensemble
 open import Decidable
 
 private

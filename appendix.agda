@@ -321,7 +321,7 @@ sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
 
 
 open import Deduction hiding (univrename ; existrename)
-open import Menge
+open import Ensemble
 open import List using (List ; [] ; _∷_)
 
 univrename  : ∀{Γ α α[x/y] x y}
@@ -344,7 +344,7 @@ existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (dm⊢ d
 
 All_[_∖_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
               → (P : Pred A) → Assembled eq αs → (xs : List A)
-              → (∀ x → x Menge.∈ αs → x List.∉ xs → P x)
+              → (∀ x → x Ensemble.∈ αs → x List.∉ xs → P x)
               → All P [ αs ∖ xs ]
 All P [ from∅          ∖ xs ]← fall = all∅
 All_[_∖_]←_ {A} {eq} P from⟨ α ⟩ xs fall with List.decide∈ eq α xs
@@ -362,6 +362,6 @@ All P [ from Aαs ∪ Aβs ∖ xs ]← fall = (All P [ Aαs ∖ xs ]← (λ x z 
 
 All_[_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
             → (P : Pred A) → Assembled eq αs
-            → (∀ x → x Menge.∈ αs → P x)
-            → Menge.All P αs
+            → (∀ x → x Ensemble.∈ αs → P x)
+            → Ensemble.All P αs
 All P [ Aαs ]← fall = All P [ Aαs ∖ [] ]← (λ x x∈αs _ → fall x x∈αs)
