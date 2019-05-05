@@ -38,17 +38,11 @@ The following constructor exists for two reasons:
 \todo{Justify}
 \begin{code}
 
-  univrename  : ∀{Γ α α[x/y] x y}
-                → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
-                →                              Γ ⊢ Λ x α
-                                            ----------------
-                →                            Γ ⊢ Λ y α[x/y]
-
-  existrename : ∀{Γ α α[x/y] x y}
-                → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
-                →                              Γ ⊢ V x α
-                                            ----------------
-                →                            Γ ⊢ V y α[x/y]
+  rename      : ∀{Γ α α′}
+                → α ≈ α′
+                →                                Γ ⊢ α
+                                                --------
+                →                                Γ ⊢ α′
 
 \end{code}
 The remaining constructors correspond to the usual natural deduction rules.
@@ -138,8 +132,7 @@ Finally, we define the following shorthand.
 dm⊢ : ∀{Γ α} → Γ ⊢ α → Assembled formulaEq Γ
 dm⊢ (cite x d) = dm⊢ d
 dm⊢ (close x x₁ d) = x
-dm⊢ (univrename x x₁ d) = dm⊢ d
-dm⊢ (existrename x x₁ d) = dm⊢ d
+dm⊢ (rename x d) = dm⊢ d
 dm⊢ (assume α) = from⟨ α ⟩
 dm⊢ (arrowintro α d) = from dm⊢ d - α
 dm⊢ (arrowelim d d₁) = from dm⊢ d ∪ dm⊢ d₁

@@ -320,7 +320,7 @@ sub→FreeFor (Λ x x₁ rep) = Λ _ _ x₁ (sub→FreeFor rep)
 sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
 
 
-open import Deduction hiding (univrename ; existrename)
+open import Deduction
 open import Ensemble
 open import List using (List ; [] ; _∷_)
 
