@@ -12,189 +12,116 @@ equality-checking of formulae, and so proofs must include both the case where
 the equality is as expected, and the degenerate case. See \todo{appendix} for
 details.
 
-We define an extension of the list type, called ensemble. This has a
-constructor for removal. While list concatenation does not have the same issues
-as removal, concatenation of ensembles is nontrivial to compute due to this
-constructor, and so a union constructor is also given. Ensembles are defined
-only over types with decidable equality, so that it is always possible to
-determine the elements of an ensemble. Note that this corresponds to finite
-sets, as sets must be defined with an equality. However, no constructor is
-given for comprehension.
-
 \begin{code}
 
 open import Agda.Builtin.Equality
 
 open import Decidable
-open import List
-  hiding (All ; all ; Any ; any)
-  renaming (
-    _∈_        to _[∈]_        ;
-    _∉_        to _[∉]_        ;
-    decide∈    to decide[∈]    )
+open import List using (List ; [] ; _∷_)
 
-infixr 5 _∷_ _∪_
+\end{code}
+
+
+
+\begin{code}
+
+infix 4 _∈_ _∉_
+
+_∈_ : {A : Set} → A → Pred A → Set
+α ∈ αs = αs α
+
+_∉_ : {A : Set} → A → Pred A → Set
+α ∉ αs = ¬(α ∈ αs)
+
+\end{code}
+
+
+
+\begin{code}
+
+infixr 5 _∪_
 infixl 5 _-_
 
-data Ensemble {A : Set} (eq : Decidable≡ A) : Set where
-  ∅   : Ensemble eq
-  _∷_ : A           → Ensemble eq → Ensemble eq
-  _-_ : Ensemble eq → A           → Ensemble eq
-  _∪_ : Ensemble eq → Ensemble eq → Ensemble eq
+∅ : {A : Set} → Pred A
+∅ _ = ⊥
+
+⟨_⟩ : {A : Set} → A → Pred A
+⟨ α ⟩ x = x ≡ α
+
+_-_ : {A : Set} → Pred A → A → Pred A
+(αs - α) x = ¬(x ≢ α → x ∉ αs)
+
+_∪_ : {A : Set} → Pred A → Pred A → Pred A
+(αs ∪ βs) x = x ∉ αs → ¬(x ∉ βs)
+
+\end{code}
+
+
+
+\begin{code}
+
+data Assembled {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
+  from∅   : Assembled eq ∅
+  from⟨_⟩ : (α : A) → Assembled eq (⟨ α ⟩)
+  from_-_ : ∀{αs} → Assembled eq αs → (α : A) → Assembled eq (αs - α)
+  from_∪_ : ∀{αs βs} → Assembled eq αs → Assembled eq βs → Assembled eq (αs ∪ βs)
+
+\end{code}
+
+
+
+\begin{code}
+
+decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
+          → (x : A) → Assembled eq αs → Dec (x ∈ αs)
+decide∈ x from∅ = no λ x∈∅ → x∈∅
+decide∈ {A} {eq} x (from⟨ α ⟩) with eq x α
+...                            | yes refl = yes refl
+...                            | no x≢α   = eq x α
+decide∈ {A} {eq} x (from Aαs - α) with eq x α
+...                               | yes refl = no λ α∈αs-α → α∈αs-α λ α≢α _ → α≢α refl
+...                               | no x≢α   with decide∈ x Aαs
+...                                          | yes x∈αs = yes λ x≢α→x∉αs → x≢α→x∉αs x≢α x∈αs
+...                                          | no  x∉αs = no  λ x∈αs-α → x∈αs-α λ _ _ → x∈αs-α λ _ _ → x∈αs-α (λ _ → x∉αs)
+decide∈ x (from Aαs ∪ Aβs) with decide∈ x Aαs
+...                        | yes x∈αs = yes λ x∉αs _ → x∉αs x∈αs
+...                        | no  x∉αs with decide∈ x Aβs
+...                                   | yes x∈βs = yes λ _ x∉βs → x∉βs x∈βs
+...                                   | no  x∉βs = no λ x∉αs∪βs → x∉αs∪βs x∉αs x∉βs
+
+\end{code}
+
+
+
+\begin{code}
+
+_⊂_ : {A : Set} → Pred A → Pred A → Set
+αs ⊂ βs = ∀ x → x ∈ αs → ¬(x ∉ βs)
 
 \end{code}
 
 We define what it means for a property $P$ to hold on every member of an
 ensemble $\alpha s$. We recurse through the ensemble, forking at unions. When
-reaching a removal constructor, the removed element is added to a list which
-accumulates removed elements. For each element, we require either that $P$
-holds for the element, or else that it is in the list of removed elements.
-Finally, $P$ holds on all of $\alpha s$ if it holds according to the above
-procedure, with the removed element list starting empty.
+reaching a removal, the removed element is added to a list which accumulates
+removed elements. For each element, we require either that $P$ holds for the
+element, or else that it is in the list of removed elements.  Finally, $P$
+holds on all of $\alpha s$ if it holds according to the above procedure, with
+the removed element list starting empty.
 
 \begin{code}
 
-infixr 5 _-∷_ _~_
+infixr 5 _all∪_
+infixl 5 _all~_
 
-data All_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) :
-    Ensemble eq → List A → Set where
-  ∅    : ∀{xs}       → All P ⟨ ∅ ∖ xs ⟩
-  _∷_  : ∀{αs xs α}  → P α      → All P ⟨ αs ∖ xs ⟩ → All P ⟨ α ∷ αs ∖ xs ⟩
-  _-∷_ : ∀{αs xs α}  → α [∈] xs → All P ⟨ αs ∖ xs ⟩ → All P ⟨ α ∷ αs ∖ xs ⟩
-  _~_  : ∀{αs xs}    → ∀ x → All P ⟨ αs ∖ x ∷ xs ⟩ → All P ⟨ αs - x ∖ xs ⟩
-  _∪_  : ∀{αs βs xs} → All P ⟨ αs ∖ xs ⟩ → All P ⟨ βs ∖ xs ⟩
-                     → All P ⟨ αs ∪ βs ∖ xs ⟩
+data All_[_∖_] {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
+  all∅    : ∀{xs}    → All P [ ∅ ∖ xs ]
+  all⟨_⟩  : ∀{xs α}  → P α         → All P [ ⟨ α ⟩ ∖ xs ]
+  all-_   : ∀{xs α}  → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
+  _all~_  : ∀{αs xs} → ∀ x → All P [ αs ∖ x ∷ xs ] → All P [ αs - x ∖ xs ]
+  _all∪_  : ∀{αs βs xs}
+              → All P [ αs ∖ xs ] → All P [ βs ∖ xs ] → All P [ αs ∪ βs ∖ xs ]
 
-All : {A : Set} {eq : Decidable≡ A} → (P : Pred A) → Ensemble eq → Set
-All P αs = All P ⟨ αs ∖ [] ⟩
-
-\end{code}
-
-If $P$ is decidable, then checking if $P$ holds in all of an ensemble is also
-decidable.  First, show decidability for all starting values for the
-accumulated list of removed elements, and then in particular for starting with
-an empty list.
-
-\begin{code}
-
-all_⟨_∖_⟩ : {A : Set} {_≟_ : Decidable≡ A} {P : Pred A}
-              → (p : Decidable P) → (αs : Ensemble _≟_) → (xs : List A)
-              → Dec (All P ⟨ αs ∖ xs ⟩)
-all p ⟨ ∅ ∖ xs ⟩ = yes ∅
-all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs with decide[∈] eq α xs
-all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | no α∉xs with p α
-... | no ¬Pα = no λ { (Pα ∷ _)    → ¬Pα Pα
-                    ; (α∈xs -∷ _) → α∉xs α∈xs }
-... | yes Pα with all p ⟨ αs ∖ xs ⟩
-...          | yes Pαs = yes (Pα ∷ Pαs)
-...          | no ¬Pαs = no λ { (_ ∷ Pαs)   → ¬Pαs Pαs
-                              ; (α∈xs -∷ _) → α∉xs α∈xs }
-all_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | yes α∈xs with all p ⟨ αs ∖ xs ⟩
-... | yes Pαs = yes (α∈xs -∷ Pαs)
-... | no ¬Pαs = no λ { (_ ∷ Pαs)  → ¬Pαs Pαs
-                     ; (_ -∷ Pαs) → ¬Pαs Pαs }
-all p ⟨ αs - α ∖ xs ⟩  with all p ⟨ αs ∖ α ∷ xs ⟩
-...                    | yes Pαs = yes (α ~ Pαs)
-...                    | no ¬Pαs = no λ { (_ ~ Pαs) → ¬Pαs Pαs }
-all p ⟨ αs ∪ βs ∖ xs ⟩ with all p ⟨ αs ∖ xs ⟩ | all p ⟨ βs ∖ xs ⟩
-...                    | yes Pαs | yes Pβs = yes (Pαs ∪ Pβs)
-...                    | no ¬Pαs | _       = no λ { (Pαs ∪ _) → ¬Pαs Pαs }
-...                    | _       | no ¬Pβs = no λ { (_ ∪ Pβs) → ¬Pβs Pβs }
-
-all : {A : Set} {eq : Decidable≡ A} {P : Pred A}
-      → (p : Decidable P) → (αs : Ensemble eq) → Dec (All P αs)
-all p αs = all p ⟨ αs ∖ [] ⟩
-
-\end{code}
-
-To define `Any' for ensembles, we also use an accumulating list for removed
-elements, and require that the element satisfying $P$ not be in that list.
-
-\begin{code}
-
-data Any_⟨_∖_⟩ {A : Set} {eq : Decidable≡ A} (P : Pred A) :
-    Ensemble eq → List A → Set where
-  [_,_] : ∀{αs xs α} → P α  → α [∉] xs              → Any P ⟨ α ∷ αs ∖ xs ⟩
-  _∷_   : ∀{αs xs}   → ∀ α  → Any P ⟨ αs ∖ xs ⟩     → Any P ⟨ α ∷ αs ∖ xs ⟩
-  _~_   : ∀{αs xs}   → ∀ x  → Any P ⟨ αs ∖ x ∷ xs ⟩ → Any P ⟨ αs - x ∖ xs ⟩
-  _∣∪_  : ∀{βs xs}   → ∀ αs → Any P ⟨ βs ∖ xs ⟩     → Any P ⟨ αs ∪ βs ∖ xs ⟩
-  _∪∣_  : ∀{αs xs}   → Any P ⟨ αs ∖ xs ⟩     → ∀ βs → Any P ⟨ αs ∪ βs ∖ xs ⟩
-
-Any : {A : Set} {eq : Decidable≡ A} → (P : Pred A) → Ensemble eq → Set
-Any P αs = Any P ⟨ αs ∖ [] ⟩
-
-\end{code}
-
-Checking if a decidable property holds on any element of an ensemble is also
-decidable.
-
-\begin{code}
-
-any_⟨_∖_⟩ : {A : Set} {_≟_ : Decidable≡ A} {P : Pred A}
-              → (p : Decidable P) → (αs : Ensemble _≟_) → (xs : List A)
-              → Dec (Any P ⟨ αs ∖ xs ⟩)
-any p ⟨ ∅ ∖ xs ⟩ = no λ ()
-any_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs with decide[∈] eq α xs
-any_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | no α∉xs with p α
-... | yes Pα = yes [ Pα , α∉xs ]
-... | no ¬Pα with any p ⟨ αs ∖ xs ⟩
-...          | yes ∃αsP = yes (α ∷ ∃αsP)
-...          | no ¬∃αsP = no λ { [ Pα , _ ] → ¬Pα Pα
-                               ; (_ ∷ ∃αsP) → ¬∃αsP ∃αsP }
-any_⟨_∖_⟩ {_} {eq} p (α ∷ αs) xs | yes α∈xs with any p ⟨ αs ∖ xs ⟩
-... | yes ∃αsP = yes (α ∷ ∃αsP)
-... | no ¬∃αsP = no λ { [ _ , α∉xs ] → α∉xs α∈xs
-                      ; (_ ∷ ∃αsP)   → ¬∃αsP ∃αsP }
-any p ⟨ αs - α ∖ xs ⟩  with any p ⟨ αs ∖ α ∷ xs ⟩
-...                    | yes ∃αsP = yes (α ~ ∃αsP)
-...                    | no ¬∃αsP = no λ { (_ ~ ∃αsP) → ¬∃αsP ∃αsP }
-any p ⟨ αs ∪ βs ∖ xs ⟩ with any p ⟨ αs ∖ xs ⟩ | any p ⟨ βs ∖ xs ⟩
-...                    | yes ∃αsP | _        = yes (∃αsP ∪∣ βs)
-...                    | _        | yes ∃βsP = yes (αs ∣∪ ∃βsP)
-any p ⟨ αs ∪ βs ∖ xs ⟩ | no ¬∃αsP | no ¬∃βsP = no λ { (_ ∣∪ ∃βsP) → ¬∃βsP ∃βsP
-                                                    ; (∃αsP ∪∣ _) → ¬∃αsP ∃αsP }
-
-any : {A : Set} {eq : Decidable≡ A} {P : Pred A}
-      → (p : Decidable P) → (αs : Ensemble eq) → Dec (Any P αs)
-any p αs = any p ⟨ αs ∖ [] ⟩
-
-\end{code}
-
-As with lists, membership can be defined in terms of `All' and `Any'. Note that
-membership is always decidable for ensembles.
-
-\begin{code}
-
-_∈_∖_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → List A → Set
-α ∈ αs ∖ xs = Any (α ≡_) ⟨ αs ∖ xs ⟩
-
-_∉_∖_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → List A → Set
-α ∉ αs ∖ xs = ¬(α ∈ αs ∖ xs)
-
-
-infix 4 _∈_ _∉_
-
-_∈_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
-α ∈ αs = α ∈ αs ∖ []
-
-_∉_ : {A : Set} {_≟_ : Decidable≡ A} → A → Ensemble _≟_ → Set
-α ∉ αs = ¬(α ∈ αs)
-
-
-_∈?_ : {A : Set} {eq : Decidable≡ A}
-       → (α : A) → (αs : Ensemble eq) → Dec (α ∈ αs)
-_∈?_ {_} {eq} α αs = any (eq α) αs
-
-\end{code}
-
-Subsets follow from membership.
-
-\begin{code}
-
-_⊂_ : {A : Set} {_≟_ : Decidable≡ A} → (αs βs : Ensemble _≟_) → Set
-αs ⊂ βs = All (_∈ βs) αs
-
-_⊂?_ : {A : Set} {_≟_ : Decidable≡ A} → (αs βs : Ensemble _≟_) → Dec (αs ⊂ βs)
-_⊂?_ {A} {_≟_} αs βs = all (λ x → any _≟_ x ⟨ βs ∖ [] ⟩) ⟨ αs ∖ [] ⟩
+All : {A : Set} → Pred A → Pred A → Set₁
+All P αs = All P [ αs ∖ [] ]
 
 \end{code}

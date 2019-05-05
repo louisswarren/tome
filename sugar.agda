@@ -20,13 +20,13 @@ pattern ¬¬ α = ¬ (¬ α)
 -- Easier definitions for derivability
 infix 1 ⊢₀_ ⊢₁_ ⊢₂_
 
-⊢₀_ : Formula → Set
+⊢₀_ : Formula → Set₁
 ⊢₀ α = ⊢ α
 
-⊢₁_ : (Formula → Formula) → Set
+⊢₁_ : (Formula → Formula) → Set₁
 ⊢₁ s = ∀ α → ⊢ s α
 
-⊢₂_ : (Formula → Formula → Formula) → Set
+⊢₂_ : (Formula → Formula → Formula) → Set₁
 ⊢₂ s = ∀ α β → ⊢ s α β
 
 descheme₀ : {f : Vec Formula 0 → Formula}

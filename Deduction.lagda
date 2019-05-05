@@ -6,13 +6,14 @@ open import Agda.Builtin.String
 
 open import Formula
 open import Ensemble
+open import Decidable
 
 private
-  _NotFreeInAll_ : Variable → Ensemble formulaEq → Set
+  _NotFreeInAll_ : Variable → Pred Formula → Set₁
   x NotFreeInAll Γ = All (x NotFreeIn_) Γ
 
 infix 1 _⊢_ ⊢_
-data _⊢_ : Ensemble formulaEq → Formula → Set where
+data _⊢_ : Pred Formula → Formula → Set₁ where
 
 \end{code}
 The first constructor is used for typesetting later; a deduction can be
@@ -31,7 +32,7 @@ The following constructor exists for two reasons:
 \end{enumerate}
 \begin{code}
 
-  close       : ∀{Γ Δ α} → Γ ⊂ Δ  → Γ ⊢ α → Δ ⊢ α
+  close       : ∀{Γ Δ α} → Assembled formulaEq Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
 
 \end{code}
 \todo{Justify}
@@ -56,7 +57,7 @@ Gentzen style inferences.
 \begin{code}
 
   assume      : (α : Formula)
-                →                              α ∷ ∅ ⊢ α
+                →                              ⟨ α ⟩ ⊢ α
 
   arrowintro  : ∀{Γ β} → (α : Formula)
                 →                                  Γ ⊢ β
@@ -119,7 +120,7 @@ supply them.
                 →                                Γ ⊢ V x α
 
   existelim   : ∀{Γ₁ Γ₂ α β x}
-                → x NotFreeInAll (β ∷ (Γ₂ - α))
+                → x NotFreeInAll (⟨ β ⟩ ∪ (Γ₂ - α))
                 →                         Γ₁ ⊢ V x α    →    Γ₂ ⊢ β
                                          --------------------------- ∃⁻
                 →                             Γ₁ ∪ (Γ₂ - α) ⊢ β
@@ -130,7 +131,26 @@ Finally, we define the following shorthand.
 
 \begin{code}
 
-⊢_ : Formula → Set
+⊢_ : Formula → Set₁
 ⊢ α = ∅ ⊢ α
+
+
+dm⊢ : ∀{Γ α} → Γ ⊢ α → Assembled formulaEq Γ
+dm⊢ (cite x d) = dm⊢ d
+dm⊢ (close x x₁ d) = x
+dm⊢ (univrename x x₁ d) = dm⊢ d
+dm⊢ (existrename x x₁ d) = dm⊢ d
+dm⊢ (assume α) = from⟨ α ⟩
+dm⊢ (arrowintro α d) = from dm⊢ d - α
+dm⊢ (arrowelim d d₁) = from dm⊢ d ∪ dm⊢ d₁
+dm⊢ (conjintro d d₁) = from dm⊢ d ∪ dm⊢ d₁
+dm⊢ (conjelim d d₁) = from dm⊢ d ∪ (from from dm⊢ d₁ - _ - _)
+dm⊢ (disjintro₁ β d) = dm⊢ d
+dm⊢ (disjintro₂ α d) = dm⊢ d
+dm⊢ (disjelim d d₁ d₂) = from dm⊢ d ∪ (from from dm⊢ d₁ - _ ∪ (from dm⊢ d₂ - _))
+dm⊢ (univintro x x₁ d) = dm⊢ d
+dm⊢ (univelim r x d) = dm⊢ d
+dm⊢ (existintro r x x₁ d) = dm⊢ d
+dm⊢ (existelim x₁ d d₁) = from dm⊢ d ∪ (from dm⊢ d₁ - _)
 
 \end{code}

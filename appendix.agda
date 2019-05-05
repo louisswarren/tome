@@ -318,3 +318,50 @@ sub→FreeFor (Λ∣ x α) = Λ∣ α
 sub→FreeFor (V∣ x α) = V∣ α
 sub→FreeFor (Λ x x₁ rep) = Λ _ _ x₁ (sub→FreeFor rep)
 sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
+
+
+open import Deduction hiding (univrename ; existrename)
+open import Ensemble
+open import List using (List ; [] ; _∷_)
+
+univrename  : ∀{Γ α α[x/y] x y}
+              → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
+              →                              Γ ⊢ Λ x α
+                                          ----------------
+              →                            Γ ⊢ Λ y α[x/y]
+univrename {Γ} {α} {α[x/y]} {x} {y} x∉α sub d = close (dm⊢ d) (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂))) (arrowelim (arrowintro (Λ x α) (univintro y all⟨ Λ x x∉α ⟩ (univelim (varterm y) sub (assume (Λ x α))))) d)
+
+
+existrename : ∀{Γ α α[x/y] x y}
+              → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
+              →                              Γ ⊢ V x α
+                                          ----------------
+              →                            Γ ⊢ V y α[x/y]
+existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d with varEq x y
+existrename {Γ} {α} {α[x/y]} {x} {.x} y∉α sub d | yes refl rewrite subUnique α sub (ident α x) = d
+existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (dm⊢ d) (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩ all∪ (α all~ (all- List.[ refl ]))) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))
+
+
+All_[_∖_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
+              → (P : Pred A) → Assembled eq αs → (xs : List A)
+              → (∀ x → x Ensemble.∈ αs → x List.∉ xs → P x)
+              → All P [ αs ∖ xs ]
+All P [ from∅          ∖ xs ]← fall = all∅
+All_[_∖_]←_ {A} {eq} P from⟨ α ⟩ xs fall with List.decide∈ eq α xs
+...                                      | yes α∈xs = all- α∈xs
+...                                      | no  α∉xs = all⟨ fall α refl α∉xs ⟩
+All P [ from Aαs - α   ∖ xs ]← fall = α all~ (All P [ Aαs ∖ α ∷ xs ]← fall-α)
+  where
+    fall-α : _
+    fall-α x x∈αs x∉α∷xs = fall x
+                            (λ x≢α→x∉αs
+                             → x≢α→x∉αs (λ x≡α → x∉α∷xs List.[ x≡α ]) x∈αs)
+                            (λ x∉xs → x∉α∷xs (α ∷ x∉xs))
+All P [ from Aαs ∪ Aβs ∖ xs ]← fall = (All P [ Aαs ∖ xs ]← (λ x z → fall x (λ z₁ _ → z₁ z))) all∪ (All P [ Aβs ∖ xs ]← (λ x z → fall x (λ _ z₁ → z₁ z)))
+
+
+All_[_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
+            → (P : Pred A) → Assembled eq αs
+            → (∀ x → x Ensemble.∈ αs → P x)
+            → Ensemble.All P αs
+All P [ Aαs ]← fall = All P [ Aαs ∖ [] ]← (λ x x∈αs _ → fall x x∈αs)
