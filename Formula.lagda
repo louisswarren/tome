@@ -411,11 +411,9 @@ data _≈_ : Formula → Formula → Set where
   _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
   _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
   Λ    : ∀{α α′ x} → α ≈ α′ → Λ x α ≈ Λ x α′
-  Λ/   : ∀{α β′ x y} → ∀ β → y NotFreeIn α → α [ x / varterm y ]≡ β
-                       → β ≈ β′ → Λ x α ≈ Λ y β′
+  Λ/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → Λ x α ≈ Λ y β
   V    : ∀{α α′ x} → α ≈ α′ → V x α ≈ V x α′
-  V/   : ∀{α β′ x y} → ∀ β → y NotFreeIn α → α [ x / varterm y ]≡ β
-                       → β ≈ β′ → V x α ≈ V y β′
+  V/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → V x α ≈ V y β
 
 \end{code}
 
