@@ -122,18 +122,22 @@ dne→lem ⊢dne α = close from∅
                         (disjintro₁ (¬ α)
                          (assume α))))))))
 DNE⊃LEM : DNE List.∷ [] ⊃ LEM
-DNE⊃LEM x₁ (α Vec.∷ []) = dne→lem (descheme₁ (x₁ DNE [ refl ])) α
+DNE⊃LEM ⊢lhs (α Vec.∷ []) = dne→lem (descheme₁ (⊢lhs DNE [ refl ])) α
 
 
 dne→efq : ⊢₁ dne → ⊢₁ efq
 dne→efq ⊢dne α = close from∅
                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ _ → z₃)))))
                   (arrowintro ⊥ (arrowelim (cite "DNE" (⊢dne α)) (arrowintro (¬ α) (assume ⊥))))
+DNE⊃EFQ : DNE ∷ [] ⊃ EFQ
+DNE⊃EFQ ⊢lhs (α ∷ []) = dne→efq (descheme₁ (⊢lhs DNE [ refl ])) α
 
 lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
 lem,efq→dne ⊢lem ⊢efq α = close from∅
                            (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ →  z₄ (λ z₅ → z₅)  (λ z₅ →     z₅ (λ z₆ → z₆ (λ z₇ → z₇))     (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ z₃ z₇)))))))
                            (arrowintro (¬¬ α) (disjelim (cite "LEM" (⊢lem α)) (assume α) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
+LEM,EFQ⊃DNE : LEM ∷ EFQ ∷ [] ⊃ DNE
+LEM,EFQ⊃DNE ⊢lhs (α ∷ []) = lem,efq→dne (descheme₁ (⊢lhs LEM [ refl ])) (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ]))) α
 
 
 he→ip : ⊢₁ he → ⊢₂ ip
@@ -151,6 +155,8 @@ he→ip ⊢he α β = close from∅
                      (arrowelim
                       (assume (∃x β ⇒ ∃x α))
                       (assume (∃x β))))))))
+HE⊃IP : HE ∷ [] ⊃ IP
+HE⊃IP ⊢lhs (α ∷ β ∷ []) = he→ip (descheme₁ (⊢lhs HE [ refl ])) α β
 
 
 ip→he : ⊢₂ ip → ⊢₁ he
@@ -165,6 +171,8 @@ ip→he ⊢ip α = close from∅
                 (existintro x xvar
                  (ident (∃x α ⇒ α) xvar)
                  (assume (∃x α ⇒ α))))
+IP⊃HE : IP ∷ [] ⊃ HE
+IP⊃HE ⊢lhs (α ∷ []) = ip→he (descheme₂ (⊢lhs IP [ refl ])) α
 
 
 lem→glpo : ⊢₁ lem → ⊢₁ glpo
@@ -182,6 +190,9 @@ lem→glpo ⊢lem α = close from∅
                         (assume (¬∃x α))
                         (existintro x xvar (ident α xvar)
                          (assume α)))))))
+LEM⊃GLPO : LEM ∷ [] ⊃ GLPO
+LEM⊃GLPO ⊢lhs (α ∷ []) = lem→glpo (descheme₁ (⊢lhs LEM [ refl ])) α
+
 
 glpo→lem : ⊢₁ glpo → ⊢₁ lem
 glpo→lem ⊢glpo α with xvar notFreeIn α
@@ -234,6 +245,8 @@ glpo→lem ⊢glpo α | no ¬xnfα = close
                     αω[ω/x]≡α = subInverse ωnf αωpf
                     αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
                     αω∨¬αω[ω/x]≡α∨¬α = αω[ω/x]≡α ∨ (αω[ω/x]≡α ⇒ notfree (atom []))
+GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
+GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) α
 
 
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
@@ -250,6 +263,8 @@ dp→gmp ⊢dp α = close
                      (arrowelim
                       (assume (α ⇒ ∀x α))
                       (assume α)))))))
+DP⊃GMP : DP ∷ [] ⊃ GMP
+DP⊃GMP ⊢lhs (α ∷ []) = dp→gmp (descheme₁ (⊢lhs DP [ refl ])) α
 
 
 dp→lpo : ⊢₁ dp → ⊢₂ lpo
@@ -270,6 +285,8 @@ dp→lpo ⊢dp α β = close
                      (disjintro₂ (∀x α)
                       (existintro x xvar (ident β xvar)
                        (assume β))))))
+DP⊃LPO : DP ∷ [] ⊃ LPO
+DP⊃LPO ⊢lhs (α ∷ β ∷ []) = dp→lpo (descheme₁ (⊢lhs DP [ refl ])) α β
 
 
 dp→cd : ⊢₁ dp → ⊢₂ cd
@@ -284,4 +301,5 @@ dp→cd ⊢dp α β = close
                      (assume (∀x (α ∨ ∃x β))))
                     (disjintro₁ (∃x β) (arrowelim (assume (α ⇒ ∀x α)) (assume α)))
                     (disjintro₂ (∀x α) (assume (∃x β))))))
-
+DP⊃CD : DP ∷ [] ⊃ CD
+DP⊃CD ⊢lhs (α ∷ β ∷ []) = dp→cd (descheme₁ (⊢lhs DP [ refl ])) α β
