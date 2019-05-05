@@ -3,7 +3,6 @@
 module Formula where
 
 open import Agda.Builtin.Sigma
-open import Agda.Builtin.String
 
 open import Decidable
 open import Nat
