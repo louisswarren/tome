@@ -59,8 +59,7 @@ n < m = suc n ≤ m
 
 \end{code}
 
-Some lemata which will be useful later:
-
+The relation \inline{_≤_} is reflexive and transitive.
 \begin{code}
 
 ≤refl : ∀{n} → n ≤ n
@@ -74,25 +73,29 @@ Some lemata which will be useful later:
 \end{code}
 
 Given natural numbers $n$ and $m$, it is possible to compute whether $n \leq m$
-or $m \leq n$. To prove this, we first create a proposition $\mathrm{Max}\, n\, m$
-which is constructed by a proof of either of these.  It then remains to show
-that given any $n$ and $m$, we may construct $\mathrm{Max}\, n\, m$.
-
+or $m \leq n$. To prove this, we first create a proposition \inline{Order n m}
+which is constructed by a proof of either of these.
 \begin{code}
 
-data Max (n m : ℕ) : Set where
-  less : n ≤ m → Max n m
-  more : m ≤ n → Max n m
-
-max : ∀ n m → Max n m
-max zero    m       = less 0≤n
-max (suc n) zero    = more 0≤n
-max (suc n) (suc m) with max n m
-max (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
-max (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
+data Order (n m : ℕ) : Set where
+  less : n ≤ m → Order n m
+  more : m ≤ n → Order n m
 
 \end{code}
+It remains to show that given any $n$ and $m$, we may construct
+\inline{Order n m}, and so \inline{_≤_} is a total order.
+\todo{connex? Haven't shown antisymmetric}
+\begin{code}
 
+≤total : ∀ n m → Order n m
+≤total zero    m       = less 0≤n
+≤total (suc n) zero    = more 0≤n
+≤total (suc n) (suc m) with ≤total n m
+≤total (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
+≤total (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
+
+\end{code}
 While it is possible to directly define a function which returns the greater of
 two natural numbers, this method preserves the proposition showing which is
-greater. This is a common technique, and it will be used often.
+greater. Defining a relation, and giving a function to construct from all
+arguments is a common technique, and it will be used often.

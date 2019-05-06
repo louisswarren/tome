@@ -645,7 +645,7 @@ greatest \todo{supremum} free variable of the rest of the terms. If not, use the
 variable from the rest of the terms.
 \begin{code}
 supFreeTerms (varterm (var m) ∷ ts) with supFreeTerms ts
-... | ⌈ts⌉ , tspf with max m ⌈ts⌉
+... | ⌈ts⌉ , tspf with ≤total m ⌈ts⌉
 ...               | less m≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
   where
     orderneq : ∀{n m} → n < m → var m ≢ var n
@@ -673,7 +673,7 @@ its arguments is greater than the greatest free variable of the rest of the
 terms. If not, use the variable from the rest of the terms.
 \begin{code}
 supFreeTerms (functerm f us     ∷ ts) with supFreeTerms us | supFreeTerms ts
-... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with max ⌈us⌉ ⌈ts⌉
+... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with ≤total ⌈us⌉ ⌈ts⌉
 ...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
   where
     notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n
@@ -713,7 +713,7 @@ minFresh (atom r ts) with supFreeTerms ts
 minFresh (atom r ts) | ⌈ts⌉ , tspf = var (suc ⌈ts⌉)
                                      , (λ n ⌈ts⌉≤n → atom (tspf n ⌈ts⌉≤n))
 minFresh (α ⇒ β) with minFresh α | minFresh β
-...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max (varidx ⌈α⌉) (varidx ⌈β⌉)
+...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ⇒ β)
@@ -723,7 +723,7 @@ minFresh (α ⇒ β) with minFresh α | minFresh β
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ⇒ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ⇒ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
 minFresh (α ∧ β) with minFresh α | minFresh β
-...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max (varidx ⌈α⌉) (varidx ⌈β⌉)
+...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∧ β)
@@ -733,7 +733,7 @@ minFresh (α ∧ β) with minFresh α | minFresh β
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∧ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∧ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
 minFresh (α ∨ β) with minFresh α | minFresh β
-...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with max (varidx ⌈α⌉) (varidx ⌈β⌉)
+...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∨ β)
@@ -743,7 +743,7 @@ minFresh (α ∨ β) with minFresh α | minFresh β
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∨ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∨ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
 minFresh (Λ x@(var k) α) with minFresh α
-...                      | ⌈α⌉ , αpf with max (suc k) (varidx ⌈α⌉)
+...                      | ⌈α⌉ , αpf with ≤total (suc k) (varidx ⌈α⌉)
 ...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
     skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
@@ -757,7 +757,7 @@ minFresh (Λ x@(var k) α) with minFresh α
     freshIssk : ∀ n → suc k ≤ n → var n FreshIn Λ x α
     freshIssk n sk≤n = Λ (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
 minFresh (V x@(var k) α) with minFresh α
-...                      | ⌈α⌉ , αpf with max (suc k) (varidx ⌈α⌉)
+...                      | ⌈α⌉ , αpf with ≤total (suc k) (varidx ⌈α⌉)
 ...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
     skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
