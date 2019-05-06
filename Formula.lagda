@@ -16,7 +16,6 @@ We adopt the definitions of \citet{schwichtenberg}. In particular, there are
 countably many variables, and there are countably many function symbols of each
 (natural) airty. Function symbols of different arities with the same index are
 considered different.
-
 \begin{code}
 
 record Variable : Set where
@@ -35,17 +34,16 @@ record Function : Set where
 open Function renaming (idx to funcidx ; arity to funcarity)
 
 \end{code}
-
 By defining these as \inline{record} types, we get destructors for accessing
 the indices and arities, which we then extract into the current module for ease
 of use. Note that the indices are natural numbers. While it seems equivalent
 and more useful to index using strings, strings are not supported by Agda's
 proof search. Internally, strings are not recursively defined as the natural
-numbers are; instead it is a postulated type which is bound to string literals.
+numbers are; instead the string type is a postulated type which is bound to
+string literals.
 
 Terms are either variables, or functions applied to the appropriate number of
 arguments (zero for constants).
-
 \begin{code}
 
 data Term : Set where
@@ -55,7 +53,6 @@ data Term : Set where
 \end{code}
 
 Relation symbols work the same way as function symbols.
-
 \begin{code}
 
 record Relation : Set where
@@ -71,7 +68,6 @@ open Relation renaming (idx to relidx ; arity to relarity)
 We now define atoms (prime formulae), and the logical connectives, using
 $\bigwedge$ and $\bigvee$ in place of $\forall$ and $\exists$, since $\forall$
 is reserved by Agda.
-
 \todo{Rename $\Lambda$ and $V$}
 \begin{code}
 
@@ -95,9 +91,9 @@ infixr 107 _∧_
 Equality of formulae is decidable. Logically, this follows from the fact that
 formulae are inductively defined. The proof is obtained by case analysis, using
 lemata on the types used to construct formulae. As these proofs are
-unremarkable, they are omitted from the latex-typeset form of this file.
-\todo{Natural number equality similar}
-
+unremarkable, and follow the same pattern as the proof for decidable equality
+of natural numbers above, they are omitted from the latex-typeset form of this
+file.
 \begin{code}
 
 varEq : Decidable≡ Variable
@@ -278,7 +274,6 @@ function on arguments $ts$, then $x$ is not free if it is not free anywhere in
 $ts$, which can be checked by applying \inline{All} to this definition.
 Separating the declaration and definition of \inline{_NotFreeInTerm_} allows it
 to be defined mutually with the case for a vector of terms.
-
 \begin{code}
 
 data _NotFreeInTerm_ (x : Variable) : Term → Set
@@ -299,9 +294,7 @@ either if it is the quantification variable, or else if it is not free in
 $\alpha$.  Separate constructors are given for these. A variable is not free
 inside an atom if it is not free within that atom, meaning it is not free in
 the terms that the relation is operating on.
-
 \todo{Notation: \inline{Λ∣}?}
-
 \begin{code}
 
 data _NotFreeIn_ : Variable → Formula → Set where
@@ -326,7 +319,6 @@ terms with terms is not needed for natural deduction.
 Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
 variable distinct from $x$ is left unchanged. For a function application, $x$
 is replaced with $t$ inside all of the arguments.
-
 \begin{code}
 
 data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
@@ -345,10 +337,7 @@ data [_][_/_]≡_ where
 
 \end{code}
 
-Now, for formulae:
-
-\todo{Call it substitution or replacement?}
-
+The definition for formulae follows.
 \begin{code}
 
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
@@ -399,8 +388,10 @@ inside the quantification.
 
 \end{code}
 
-\todo{Explain}
-
+\todo{Move this elsewhere?}
+Formulae are equivalent if they are equal up to renaming bound variables. Here,
+renaming means substituting a variable for another variable which is not free,
+so that the meaning of the formula does not change.
 \begin{code}
 
 infix 50 _≈_
