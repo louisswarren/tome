@@ -86,6 +86,6 @@ Decidable≡ : Set → Set
 Decidable≡ A = (x y : A) → Dec (x ≡ y)
 
 \end{code}
-Intuitively, recursively defined types which are not constructed from functions
+Intuitively, inductively defined types which are not constructed from functions
 will have a decidable equality, simply by case analysis on the components from
 which they are constructed.
