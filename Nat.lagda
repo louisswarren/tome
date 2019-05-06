@@ -1,31 +1,53 @@
+There is a built-in module for natural numbers, which defines the arithmetic
+operations and boolean relations, including a boolean-valued equality. We
+import and augment this with some propositions and predicates. The
+(unicode-renamed) definition of natural numbers is commented below.
+
 \begin{code}
 
 module Nat where
 
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_<_) public
 
+{-
+  data Nat : Set where
+    zero : Nat
+    suc  : Nat → Nat
+-}
+
 open import Decidable
 
 \end{code}
 
-Equality of natural numbers is decidable.
-\todo{Explain}
+The built-in boolean valued equality \inline{_==_} can be evaluated to check
+that \inline{1 + 1 == 2} is \inline{true}. However, this is not useful as a
+lemma. Instead, we would like to have a binary predicate for natural numbers
+which gives either a proof of equality or a proof of inequality. Such a
+predicate is itself a proof that equality of natural numbers is decidable,
+given the definition of \inline{Decidable≡} above.
 
+The proof is by case analysis on the arguments. In the case where both numbers
+are zero, they can be proven equal simply by \inline{refl}. Where only one
+number is a successor, they can be proven not equal by doing case analysis on
+what their equality would be. As the only constructor for \inline{_≡_} requires
+that the left and right sides are the same, and \inline{zero} cannot be unified
+\todo{unified?}
+with \inline{suc _}, the cases are empty. Finally, if both numbers are
+successors, check if their predecessors are equal. If so, then equality
+follows. Otherwise, assuming the numbers are equal leads to a contradiction.
 \begin{code}
 
 natEq : Decidable≡ ℕ
-natEq zero zero = yes refl
-natEq zero (suc m) = no λ ()
-natEq (suc n) zero = no λ ()
+natEq zero    zero    = yes refl
+natEq zero    (suc m) = no λ ()
+natEq (suc n) zero    = no λ ()
 natEq (suc n) (suc m) with natEq n m
 ...                   | yes refl = yes refl
-...                   | no  n≢m  = no λ { refl → n≢m refl }
+...                   | no  n≢m  = no  λ { refl → n≢m refl }
 
 \end{code}
 
-We augment the built-in definition of the natural numbers with a propositional
-ordering.
-
+A propositional order relation on the natural numbers can be defined as usual.
 \begin{code}
 
 data _≤_ : ℕ → ℕ → Set where
@@ -40,10 +62,6 @@ n < m = suc n ≤ m
 Some lemata which will be useful later:
 
 \begin{code}
-
-¬<refl : ∀{n} → ¬(n < n)
-¬<refl {zero}  ()
-¬<refl {suc n} (sn≤sm x) = ¬<refl x
 
 ≤refl : ∀{n} → n ≤ n
 ≤refl {zero}  = 0≤n
