@@ -396,13 +396,13 @@ so that the meaning of the formula does not change.
 
 infix 50 _≈_
 data _≈_ : Formula → Formula → Set where
-  refl : ∀{α} → α ≈ α
+  atom : ∀ r ts → atom r ts ≈ atom r ts
   _⇒_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ⇒ β ≈ α′ ⇒ β′
   _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
   _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
-  Λ    : ∀{α α′ x} → α ≈ α′ → Λ x α ≈ Λ x α′
+  Λ    : ∀{α α′} → ∀ x → α ≈ α′ → Λ x α ≈ Λ x α′
   Λ/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → Λ x α ≈ Λ y β
-  V    : ∀{α α′ x} → α ≈ α′ → V x α ≈ V x α′
+  V    : ∀{α α′} → ∀ x → α ≈ α′ → V x α ≈ V x α′
   V/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → V x α ≈ V y β
 
 \end{code}
