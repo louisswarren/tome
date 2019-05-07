@@ -412,7 +412,6 @@ a formula for $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if
 $t$ is \emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$
 would become bound inside $alpha$. This can be formalised by using (with minor
 modification) the rules of \cite{vandalen}.
-
 \begin{code}
 
 data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
@@ -427,7 +426,6 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   V       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
 \end{code}
-
 It will later be shown that, using the above definitions, there is a $\beta$
 satisfying $\alpha [x/t]\equiv \beta$ if and only if $t$ is free for $x$ in
 $\alpha$. \todo{Include this proof}
@@ -436,7 +434,6 @@ Finally, we define a proposition for a variable being \emph{fresh}, meaning it
 appears nowhere (free or bound) in a formula. We later prove that if $x$ is
 fresh in $\alpha$ then it is not free, and for every $y$, $x$ is free for $y$
 in $\alpha$.
-
 \begin{code}
 
 data _FreshIn_ (x : Variable) : Formula → Set where
@@ -462,7 +459,6 @@ any variables equal to $x$ with $t$. In the code below, we do a case split on
 the first term, and use a \inline{with} block to get the substitution for the
 rest of the vector simultaneously, since this substitution is required in
 either case.
-
 \begin{code}
 
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) [ us ][ x / t ]≡_
@@ -477,12 +473,10 @@ either case.
 \end{code}
 
 For formulae, a proof that $t$ is free for $x$ in the formula must be supplied.
-Given such a proof, $t$ is fixed, so for convenience of notation, the proof is
-supplied in place of the term. Inside proofs, we will use names like
-\inline{x∉α} to denote proofs of `$x$ is not free in $\alpha$`.
-
-\todo{Explain the strange term argument}
-
+The term $t$ is fixed by supplying such a proof, so for convenience of
+notation, the proof is supplied in place of the term. In the following code we
+will use names like \inline{x∉α} to denote proofs of `$x$ is not free in
+$\alpha$`.
 \begin{code}
 
 _[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
@@ -522,7 +516,6 @@ V y α [ x / V .α .y y∉t tffα ] with varEq x y
 
 Variable freedom within a vector of terms is decidable, simply by searching
 through the vector for occurences.
-
 \begin{code}
 
 _notFreeInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotFreeInTerms ts)
@@ -564,7 +557,6 @@ which is in fact primitively recursive. However, if it instead depended on the
 result of \inline{all (x notFreeInTerm_) ts}, Agda cannot determine that
 \inline{x notFreeInTerm_} will be applied only to arguments structurally
 smaller than \inline{t ∷ ts}.
-
 \begin{code}
 
 _notFreeInTerm_ : (x : Variable) → (t : Term) → Dec (x NotFreeInTerm t)
@@ -580,7 +572,6 @@ x notFreeInTerm functerm f ts with x notFreeInTerms ts
 Now for formulae, to determine if a variable is not free, we apply the above
 for atoms, check recursively for the logical connectives, and check if the
 variable is the quantifying variable for the quantifiers.
-
 \begin{code}
 
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
@@ -617,14 +608,14 @@ x notFreeIn V  y α    with varEq x y
 \subsection{Generating fresh variables}
 
 For the purposes of variable substitution (see above), we need a way to
-generate a not-free variable for a given formula. Only finitely many variables
+generate a fresh variable for a given formula. Only finitely many variables
 occur in a given term or formula, so there is a greatest (with respect to the
-natural number indexing) free variable in each term or formula; all variables
-greater than this are not free. We first compute this variable for terms, and
-then specialise to a single term, for termination reasons similar to that of
-\inline{_notFreeInTerms_}.
+natural number indexing) variable occuring in each term or formula; all
+variables greater than this are fresh. We first compute this variable for
+terms, and then specialise to a single term, for termination reasons similar to
+that of \inline{_notFreeInTerms_}. Note that for terms, there is no distinction
+between being fresh and being not-free.
 \todo{Explain \mintinline{agda}{Σ}}
-
 \begin{code}
 
 supFreeTerms : ∀{k} → (ts : Vec Term k) → Σ ℕ λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n
