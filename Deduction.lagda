@@ -4,13 +4,14 @@ module Deduction where
 
 open import Agda.Builtin.String
 
-open import Formula
-open import Ensemble
 open import Decidable
+open import Ensemble
+open import Formula
+open import List
 
 private
   _NotFreeInAll_ : Variable → Pred Formula → Set₁
-  x NotFreeInAll Γ = All (x NotFreeIn_) Γ
+  x NotFreeInAll Γ = Ensemble.All (x NotFreeIn_) Γ
 
 infix 1 _⊢_ ⊢_
 data _⊢_ : Pred Formula → Formula → Set₁ where
@@ -134,5 +135,86 @@ dm⊢ (univintro x x₁ d) = dm⊢ d
 dm⊢ (univelim r x d) = dm⊢ d
 dm⊢ (existintro r x x₁ d) = dm⊢ d
 dm⊢ (existelim x₁ d d₁) = from dm⊢ d ∪ (from dm⊢ d₁ - _)
+
+
+rename      : ∀{Γ α α′}
+              → α ≈ α′
+              →                                Γ ⊢ α
+                                              --------
+              →                                Γ ⊢ α′
+rename {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts) d = d
+rename {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ) d =
+  close
+   (dm⊢ d)
+   (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
+   (arrowintro α′
+    (rename apβ
+     (arrowelim
+      d
+      (rename (≈sym apα)
+       (assume α′)))))
+rename {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ) d =
+  close
+   (dm⊢ d)
+   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
+   (conjelim
+    d
+    (conjintro
+     (rename apα
+      (assume α))
+     (rename apβ
+      (assume β))))
+rename {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ) d =
+  close
+   (dm⊢ d)
+   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
+   (disjelim
+    d
+    (disjintro₁ β′
+     (rename apα
+      (assume α)))
+    (disjintro₂ α′
+     (rename apβ
+      (assume β))))
+rename {Γ} {Λ x α} {Λ .x α′} (Λ y ap) d =
+  close
+   (dm⊢ d)
+   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ x α)
+     (univintro x (all⟨ Λ∣ x α ⟩)
+      (rename ap
+       (univelim (varterm x) (ident α x)
+        (assume (Λ x α))))))
+    d)
+rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub) d =
+  close
+   (dm⊢ d)
+   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ x α)
+     (univintro y (all⟨ Λ x y∉α ⟩)
+      (univelim (varterm y) sub
+       (assume (Λ x α)))))
+    d)
+rename {Γ} {V x α} {V .x β} (V y ap) d =
+  close
+   (dm⊢ d)
+   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
+   (existelim (all⟨ V∣ x β ⟩ all∪ (α all~ (all- List.[ refl ])))
+    d
+    (existintro (varterm x) x (ident β x)
+     (rename ap
+      (assume α))))
+rename {Γ} {V x α} {V y β} (V/ y∉α sub) d with varEq x y
+... | yes refl rewrite coident sub = d
+... | no x≢y   = close
+                  (dm⊢ d)
+                  (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
+                  (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
+                              all∪ (α all~ (all- List.[ refl ])))
+                   d
+                   (existintro (varterm x) y (subInverse y∉α sub)
+                    (assume α)))
 
 \end{code}

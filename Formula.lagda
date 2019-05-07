@@ -842,4 +842,46 @@ subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           with varEq ω y
 subInverse {.y} (V y ω∉α) (V x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
 subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           | no ω≢y = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
 
+coidentTerms : ∀{n x} {us vs : Vec Term n} → [ us ][ x / varterm x ]≡ vs → us ≡ vs
+coidentTerms [] = refl
+coidentTerms (x ∷ rep) with coidentTerms rep
+coidentTerms (varterm≡ ∷ rep)    | refl = refl
+coidentTerms (varterm≢ x ∷ rep)  | refl = refl
+coidentTerms (functerm ts ∷ rep) | refl with coidentTerms ts
+coidentTerms (functerm ts ∷ rep) | refl | refl = refl
+
+coident : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
+coident (ident α x) = refl
+coident (notfree x) = refl
+coident (atom r ts) with coidentTerms ts
+coident (atom r ts) | refl = refl
+coident (repα ⇒ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (repα ∧ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (repα ∨ repβ) with coident repα | coident repβ
+...                   | refl | refl = refl
+coident (Λ∣ x α) = refl
+coident (V∣ x α) = refl
+coident (Λ x x₁ rep) with coident rep
+coident (Λ x x₁ rep) | refl = refl
+coident (V x x₁ rep) with coident rep
+coident (V x x₁ rep) | refl = refl
+
+
+≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
+≈sym                  (atom r ts)  = atom r ts
+≈sym                  (apα ⇒ apβ)  = ≈sym apα ⇒ ≈sym apβ
+≈sym                  (apα ∧ apβ)  = ≈sym apα ∧ ≈sym apβ
+≈sym                  (apα ∨ apβ)  = ≈sym apα ∨ ≈sym apβ
+≈sym                  (Λ x ap)     = Λ x (≈sym ap)
+≈sym {Λ x α} {Λ y α′} (Λ/ y∉α sub) with varEq x y
+... | yes refl rewrite coident sub = Λ/ y∉α (ident α′ x)
+... | no x≢y = Λ/ (subNotFree (varterm x≢y) sub) (subInverse y∉α sub)
+≈sym                  (V x ap)     = V x (≈sym ap)
+≈sym {V x α} {V y α′} (V/ y∉α sub) with varEq x y
+... | yes refl rewrite coident sub = V/ y∉α (ident α′ x)
+... | no x≢y = V/ (subNotFree (varterm x≢y) sub) (subInverse y∉α sub)
+
+
 \end{code}
