@@ -35,16 +35,6 @@ The following constructor exists for two reasons:
   close       : ∀{Γ Δ α} → Assembled formulaEq Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
 
 \end{code}
-\todo{Justify}
-\begin{code}
-
-  rename      : ∀{Γ α α′}
-                → α ≈ α′
-                →                                Γ ⊢ α
-                                                --------
-                →                                Γ ⊢ α′
-
-\end{code}
 The remaining constructors correspond to the usual natural deduction rules.
 Agda's comment syntax (\inline{--}) allows these rules to be formatted as
 Gentzen style inferences.
@@ -132,7 +122,6 @@ Finally, we define the following shorthand.
 dm⊢ : ∀{Γ α} → Γ ⊢ α → Assembled formulaEq Γ
 dm⊢ (cite x d) = dm⊢ d
 dm⊢ (close x x₁ d) = x
-dm⊢ (rename x d) = dm⊢ d
 dm⊢ (assume α) = from⟨ α ⟩
 dm⊢ (arrowintro α d) = from dm⊢ d - α
 dm⊢ (arrowelim d d₁) = from dm⊢ d ∪ dm⊢ d₁
