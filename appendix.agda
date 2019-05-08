@@ -298,24 +298,6 @@ open import Deduction
 open import Ensemble
 open import List using (List ; [] ; _∷_)
 
-univrename  : ∀{Γ α α[x/y] x y}
-              → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
-              →                              Γ ⊢ Λ x α
-                                          ----------------
-              →                            Γ ⊢ Λ y α[x/y]
-univrename {Γ} {α} {α[x/y]} {x} {y} x∉α sub d = close (dm⊢ d) (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂))) (arrowelim (arrowintro (Λ x α) (univintro y all⟨ Λ x x∉α ⟩ (univelim (varterm y) sub (assume (Λ x α))))) d)
-
-
-existrename : ∀{Γ α α[x/y] x y}
-              → y NotFreeIn α → α [ x / varterm y ]≡ α[x/y]
-              →                              Γ ⊢ V x α
-                                          ----------------
-              →                            Γ ⊢ V y α[x/y]
-existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d with varEq x y
-existrename {Γ} {α} {α[x/y]} {x} {.x} y∉α sub d | yes refl rewrite subUnique α sub (ident α x) = d
-existrename {Γ} {α} {α[x/y]} {x} {y} y∉α sub d | no x≢y = close (dm⊢ d) (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩ all∪ (α all~ (all- List.[ refl ]))) d (existintro (varterm x) y (subInverse y∉α sub) (assume α)))
-
-
 All_[_∖_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
               → (P : Pred A) → Assembled eq αs → (xs : List A)
               → (∀ x → x Ensemble.∈ αs → x List.∉ xs → P x)
