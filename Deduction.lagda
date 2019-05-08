@@ -142,7 +142,26 @@ rename      : ∀{Γ α α′}
               →                                Γ ⊢ α
                                               --------
               →                                Γ ⊢ α′
+\end{code}
+The atomic case is trivial, since an atomic formula is equivalent only to
+itself.
+\begin{code}
 rename {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts) d = d
+\end{code}
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\alpha \rightarrow \beta$}
+      \AxiomC{[$\alpha'$]}
+      \RightLabel{induction}
+      \UnaryInfC{$\alpha$}
+    \BinaryInfC{$\beta$}
+    \RightLabel{induction}
+    \UnaryInfC{$\beta'$}
+    \RightLabel{$\rightarrow^-$}
+    \UnaryInfC{$\alpha' \rightarrow \beta'$}
+\end{prooftree}
+\begin{code}
 rename {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ) d =
   close
    (dm⊢ d)
@@ -153,6 +172,23 @@ rename {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ) d =
       d
       (rename (≈sym apα)
        (assume α′)))))
+\end{code}
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\alpha \land \beta$}
+    \AxiomC{[$\alpha$]}
+    \RightLabel{induction}
+    \UnaryInfC{$\alpha'$}
+        \AxiomC{[$\beta$]}
+        \RightLabel{induction}
+        \UnaryInfC{$\beta'$}
+      \RightLabel{$\land^+$}
+      \BinaryInfC{$\alpha' \land \beta'$}
+    \RightLabel{$\land^-$}
+    \BinaryInfC{$\alpha' \land \beta'$}
+\end{prooftree}
+\begin{code}
 rename {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ) d =
   close
    (dm⊢ d)
@@ -164,6 +200,25 @@ rename {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ) d =
       (assume α))
      (rename apβ
       (assume β))))
+\end{code}
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\alpha \lor \beta$}
+    \AxiomC{[$\alpha$]}
+    \RightLabel{induction}
+    \UnaryInfC{$\alpha'$}
+    \RightLabel{$\lor^+$}
+    \UnaryInfC{$\alpha' \lor \beta'$}
+      \AxiomC{[$\beta$]}
+      \RightLabel{induction}
+      \UnaryInfC{$\beta'$}
+      \RightLabel{$\lor^+$}
+      \UnaryInfC{$\alpha' \lor \beta'$}
+    \RightLabel{$\lor^-$}
+    \TrinaryInfC{$\alpha' \lor \beta'$}
+\end{prooftree}
+\begin{code}
 rename {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ) d =
   close
    (dm⊢ d)
