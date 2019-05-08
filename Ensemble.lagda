@@ -25,12 +25,15 @@ open import List using (List ; [] ; _∷_)
 
 \begin{code}
 
+Ensemble : Set → Set₁
+Ensemble A = A → Set
+
 infix 4 _∈_ _∉_
 
-_∈_ : {A : Set} → A → Pred A → Set
+_∈_ : {A : Set} → A → Ensemble A → Set
 α ∈ αs = αs α
 
-_∉_ : {A : Set} → A → Pred A → Set
+_∉_ : {A : Set} → A → Ensemble A → Set
 α ∉ αs = ¬(α ∈ αs)
 
 \end{code}
@@ -42,16 +45,16 @@ _∉_ : {A : Set} → A → Pred A → Set
 infixr 5 _∪_
 infixl 5 _-_
 
-∅ : {A : Set} → Pred A
+∅ : {A : Set} → Ensemble A
 ∅ _ = ⊥
 
-⟨_⟩ : {A : Set} → A → Pred A
+⟨_⟩ : {A : Set} → A → Ensemble A
 ⟨ α ⟩ x = x ≡ α
 
-_-_ : {A : Set} → Pred A → A → Pred A
+_-_ : {A : Set} → Ensemble A → A → Ensemble A
 (αs - α) x = ¬(x ≢ α → x ∉ αs)
 
-_∪_ : {A : Set} → Pred A → Pred A → Pred A
+_∪_ : {A : Set} → Ensemble A → Ensemble A → Ensemble A
 (αs ∪ βs) x = x ∉ αs → ¬(x ∉ βs)
 
 \end{code}
@@ -72,7 +75,7 @@ data Assembled {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
 
 \begin{code}
 
-decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
+decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Ensemble A}
           → (x : A) → Assembled eq αs → Dec (x ∈ αs)
 decide∈ x from∅ = no λ x∈∅ → x∈∅
 decide∈ {A} {eq} x (from⟨ α ⟩) with eq x α
@@ -95,7 +98,7 @@ decide∈ x (from Aαs ∪ Aβs) with decide∈ x Aαs
 
 \begin{code}
 
-_⊂_ : {A : Set} → Pred A → Pred A → Set
+_⊂_ : {A : Set} → Ensemble A → Ensemble A → Set
 αs ⊂ βs = ∀ x → x ∈ αs → ¬(x ∉ βs)
 
 \end{code}
@@ -113,7 +116,7 @@ the removed element list starting empty.
 infixr 5 _all∪_
 infixl 5 _all~_
 
-data All_[_∖_] {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
+data All_[_∖_] {A : Set} (P : Pred A) : Ensemble A → List A → Set₁ where
   all∅    : ∀{xs}    → All P [ ∅ ∖ xs ]
   all⟨_⟩  : ∀{xs α}  → P α         → All P [ ⟨ α ⟩ ∖ xs ]
   all-_   : ∀{xs α}  → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
@@ -121,7 +124,7 @@ data All_[_∖_] {A : Set} (P : Pred A) : Pred A → List A → Set₁ where
   _all∪_  : ∀{αs βs xs}
               → All P [ αs ∖ xs ] → All P [ βs ∖ xs ] → All P [ αs ∪ βs ∖ xs ]
 
-All : {A : Set} → Pred A → Pred A → Set₁
+All : {A : Set} → Pred A → Ensemble A → Set₁
 All P αs = All P [ αs ∖ [] ]
 
 \end{code}
