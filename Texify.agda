@@ -175,7 +175,7 @@ dtot {α} o (close _ _ d)        = dtot o d
 
 
 texdeduction : ∀{Γ α} → Γ ⊢ α → String
-texdeduction d = texifytree 0 (dtot (dm⊢ d) d)
+texdeduction d = texifytree 0 (dtot (assembled-context d) d)
 
 
 -- We assume that all schemes are derivable, and will derive their instances

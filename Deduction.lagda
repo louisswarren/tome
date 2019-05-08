@@ -38,7 +38,7 @@ The following constructor exists for two reasons:
 \end{code}
 The remaining constructors correspond to the usual natural deduction rules.
 Agda's comment syntax (\inline{--}) allows these rules to be formatted as
-Gentzen style inferences.
+Gentzen-style inferences.
 \begin{code}
 
   assume      : (α : Formula)
@@ -113,30 +113,43 @@ supply them.
 \end{code}
 
 Finally, we define the following shorthand.
-
 \begin{code}
 
 ⊢_ : Formula → Set₁
 ⊢ α = ∅ ⊢ α
 
+\end{code}
 
-dm⊢ : ∀{Γ α} → Γ ⊢ α → Assembled formulaEq Γ
-dm⊢ (cite x d) = dm⊢ d
-dm⊢ (close x x₁ d) = x
-dm⊢ (assume α) = from⟨ α ⟩
-dm⊢ (arrowintro α d) = from dm⊢ d - α
-dm⊢ (arrowelim d d₁) = from dm⊢ d ∪ dm⊢ d₁
-dm⊢ (conjintro d d₁) = from dm⊢ d ∪ dm⊢ d₁
-dm⊢ (conjelim d d₁) = from dm⊢ d ∪ (from from dm⊢ d₁ - _ - _)
-dm⊢ (disjintro₁ β d) = dm⊢ d
-dm⊢ (disjintro₂ α d) = dm⊢ d
-dm⊢ (disjelim d d₁ d₂) = from dm⊢ d ∪ (from from dm⊢ d₁ - _ ∪ (from dm⊢ d₂ - _))
-dm⊢ (univintro x x₁ d) = dm⊢ d
-dm⊢ (univelim r x d) = dm⊢ d
-dm⊢ (existintro r x x₁ d) = dm⊢ d
-dm⊢ (existelim x₁ d d₁) = from dm⊢ d ∪ (from dm⊢ d₁ - _)
+It is trivial to show that the context of a deduction is assembled (and so
+membership is decidable), simply by recursing over the deduction rules. The
+proof is ommitted.
+\begin{code}
+assembled-context : ∀{Γ α} → Γ ⊢ α → Assembled formulaEq Γ
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+assembled-context (cite _ d)           = assembled-context d
+assembled-context (close AΓ _ d)       = AΓ
+assembled-context (assume _)           = from⟨ _ ⟩
+assembled-context (arrowintro _ d)     = from assembled-context d - _
+assembled-context (arrowelim d₁ d₂)    = from assembled-context d₁ ∪ assembled-context d₂
+assembled-context (conjintro d₁ d₂)    = from assembled-context d₁ ∪ assembled-context d₂
+assembled-context (conjelim d₁ d₂)     = from assembled-context d₁ ∪ (from from assembled-context d₂ - _ - _)
+assembled-context (disjintro₁ _ d)     = assembled-context d
+assembled-context (disjintro₂ _ d)     = assembled-context d
+assembled-context (disjelim d₁ d₂ d₃)  = from assembled-context d₁ ∪ (from from assembled-context d₂ - _ ∪ (from assembled-context d₃ - _))
+assembled-context (univintro _ _ d)    = assembled-context d
+assembled-context (univelim _ _ d)     = assembled-context d
+assembled-context (existintro _ _ _ d) = assembled-context d
+assembled-context (existelim _ d₁ d₂)  = from assembled-context d₁ ∪ (from assembled-context d₂ - _)
+
+\end{code}
+}
 
 
+\begin{code}
 rename      : ∀{Γ α α′}
               → α ≈ α′
               →                                Γ ⊢ α
@@ -164,7 +177,7 @@ rename {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts) d = d
 \begin{code}
 rename {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ) d =
   close
-   (dm⊢ d)
+   (assembled-context d)
    (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
    (arrowintro α′
     (rename apβ
@@ -191,7 +204,7 @@ rename {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ) d =
 \begin{code}
 rename {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ) d =
   close
-   (dm⊢ d)
+   (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
    (conjelim
     d
@@ -221,7 +234,7 @@ rename {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ) d =
 \begin{code}
 rename {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ) d =
   close
-   (dm⊢ d)
+   (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
    (disjelim
     d
@@ -252,7 +265,7 @@ We cannot assume that $x$ is not free in $\Gamma$.
 \begin{code}
 rename {Γ} {Λ x α} {Λ .x α′} (Λ y ap) d =
   close
-   (dm⊢ d)
+   (assembled-context d)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α)
@@ -281,7 +294,7 @@ also not free in $\forall x \alpha$.
 \begin{code}
 rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub) d =
   close
-   (dm⊢ d)
+   (assembled-context d)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α)
@@ -305,7 +318,7 @@ rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub) d =
 \begin{code}
 rename {Γ} {V x α} {V .x β} (V y ap) d =
   close
-   (dm⊢ d)
+   (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
    (existelim (all⟨ V∣ x β ⟩ all∪ (α all~ (all- List.[ refl ])))
     d
@@ -330,7 +343,7 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
 rename {Γ} {V x α} {V y β} (V/ y∉α sub) d with varEq x y
 ... | yes refl rewrite coident sub = d
 ... | no x≢y   = close
-                  (dm⊢ d)
+                  (assembled-context d)
                   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
                   (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
                               all∪ (α all~ (all- List.[ refl ])))
