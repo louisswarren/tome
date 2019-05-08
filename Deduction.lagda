@@ -231,6 +231,25 @@ rename {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ) d =
     (disjintro₂ α′
      (rename apβ
       (assume β))))
+\end{code}
+We cannot assume that $x$ is not free in $\Gamma$.
+\begin{prooftree}
+  \AxiomC{[$\forall x \alpha$]}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\alpha$}
+  \RightLabel{induction}
+  \UnaryInfC{$\alpha'$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall x \alpha$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\forall x \alpha \rightarrow \forall x \alpha'$}
+      \AxiomC{$\Gamma$}
+      \UnaryInfC{$\vdots$}
+      \UnaryInfC{$\forall x \alpha$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\forall x \alpha'$}
+\end{prooftree}
+\begin{code}
 rename {Γ} {Λ x α} {Λ .x α′} (Λ y ap) d =
   close
    (dm⊢ d)
@@ -242,6 +261,24 @@ rename {Γ} {Λ x α} {Λ .x α′} (Λ y ap) d =
        (univelim (varterm x) (ident α x)
         (assume (Λ x α))))))
     d)
+\end{code}
+Renaming $x$ to $y$ requires that $y$ is not free in $\alpha$, and so it is
+also not free in $\forall x \alpha$.
+\begin{prooftree}
+  \AxiomC{[$\forall x \alpha$]}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\alpha[x/y]$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall y \alpha[x/y]$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\forall x \alpha \rightarrow \forall y \alpha[x/y]$}
+      \AxiomC{$\Gamma$}
+      \UnaryInfC{$\vdots$}
+      \UnaryInfC{$\forall x \alpha$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\forall y \alpha[x/y]$}
+\end{prooftree}
+\begin{code}
 rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub) d =
   close
    (dm⊢ d)
@@ -252,6 +289,20 @@ rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub) d =
       (univelim (varterm y) sub
        (assume (Λ x α)))))
     d)
+\end{code}
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\exists x \alpha$}
+      \AxiomC{[$\alpha$]}
+      \RightLabel{induction}
+      \UnaryInfC{$\alpha'$}
+      \RightLabel{$\exists^+$}
+      \UnaryInfC{$\exists x \alpha'$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists x \alpha'$}
+\end{prooftree}
+\begin{code}
 rename {Γ} {V x α} {V .x β} (V y ap) d =
   close
    (dm⊢ d)
@@ -261,6 +312,21 @@ rename {Γ} {V x α} {V .x β} (V y ap) d =
     (existintro (varterm x) x (ident β x)
      (rename ap
       (assume α))))
+\end{code}
+This case is trivial if the variable is being replaced with itself. Note that
+$x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
+\alpha[x/y]$.
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\exists x \alpha$}
+      \AxiomC{[$\alpha$]}
+      \RightLabel{$\exists^+$}
+      \UnaryInfC{$\exists y \alpha[x/y]$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists y \alpha[x/y]$}
+\end{prooftree}
+\begin{code}
 rename {Γ} {V x α} {V y β} (V/ y∉α sub) d with varEq x y
 ... | yes refl rewrite coident sub = d
 ... | no x≢y   = close
