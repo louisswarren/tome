@@ -1,16 +1,27 @@
-Within a natural deduction proof, the context (collection of open assumptions)
-must be manipulated. In particular, when an assumption is discharged it is
-removed from the context. Some deductive rules require that a particular
-variable not be free in any open assumption. At the end of a deduction, we
-require that the remaining open assumptions are all contained within the
-premise of the statement being derived. Both of these requirements involve
-proving that a property holds on every remaining member of the context, but not
-necessarily on assumptions that have been removed.  While removal of elements
-from a list of formulae can be defined with a function, it is unweildy to give
-proofs regarding the results of such computations, as they depend on
+Serious consideration must be given to the data type used to describe the
+context of a natural deduction tree. In a proof tree for $\Gamma \vdash
+\alpha$, it must be verified that the remaining open assumptions are all
+members of $\Gamma$, so the type must have a notion of `subset'. For universal
+generalisation introduction, and existential generalisation elimination, it
+will also be necessary to verify that a given variable is not free in any open
+assumption, so the type must also have a notion for a predicate holding on all
+elements. Throughout the natural deduction proof, the collection of open
+assumptions is modified, either by making new assumptions, combining
+collections of assumptions, or by discharging assumptions. Finally, while we
+will giving proofs about natural deduction trees, we would also like to give
+proofs regarding actual formulae (and axiom schemes). While doing these, the
+focus should be on the structure of the tree, as it would when doing such a
+deduction by hand. We would like Agda's proof search to be able to fill in
+proof terms regarding variable freedom and open assumptions.
+
+The \inline{List} (or \inline{Vec}) type is not suitable.  While removal of
+elements from a list of formulae can be defined with a function, it is unwieldy
+to give proofs regarding the results of such computations, as they depend on
 equality-checking of formulae, and so proofs must include both the case where
-the equality is as expected, and the degenerate case. See \todo{appendix} for
-details.
+the equality is as expected, and the degenerate case.
+\todo{example}
+
+Predicates can be used for this purpose.
 
 \begin{code}
 
