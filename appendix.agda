@@ -306,6 +306,7 @@ All P [ from∅          ∖ xs ]← fall = all∅
 All_[_∖_]←_ {A} {eq} P from⟨ α ⟩ xs fall with List.decide∈ eq α xs
 ...                                      | yes α∈xs = all- α∈xs
 ...                                      | no  α∉xs = all⟨ fall α refl α∉xs ⟩
+All P [ from Aαs ∪ Aβs ∖ xs ]← fall = (All P [ Aαs ∖ xs ]← (λ x z → fall x (λ z₁ _ → z₁ z))) all∪ (All P [ Aβs ∖ xs ]← (λ x z → fall x (λ _ z₁ → z₁ z)))
 All P [ from Aαs - α   ∖ xs ]← fall = α all~ (All P [ Aαs ∖ α ∷ xs ]← fall-α)
   where
     fall-α : _
@@ -313,7 +314,6 @@ All P [ from Aαs - α   ∖ xs ]← fall = α all~ (All P [ Aαs ∖ α ∷ xs 
                             (λ x≢α→x∉αs
                              → x≢α→x∉αs (λ x≡α → x∉α∷xs List.[ x≡α ]) x∈αs)
                             (λ x∉xs → x∉α∷xs (α ∷ x∉xs))
-All P [ from Aαs ∪ Aβs ∖ xs ]← fall = (All P [ Aαs ∖ xs ]← (λ x z → fall x (λ z₁ _ → z₁ z))) all∪ (All P [ Aβs ∖ xs ]← (λ x z → fall x (λ _ z₁ → z₁ z)))
 
 
 All_[_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}

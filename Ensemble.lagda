@@ -55,8 +55,14 @@ _∉_ : {A : Set} → A → Ensemble A → Set
 
 \end{code}
 
+The ensembles created in the manner below involve negations. While a sensible
+definition of subset is $A \subset B \coloneqq forall x (x \in A \rightarrow x
+\in B)$, a proof of this could require EFQ. Inside a lambda expression, this
+can be done by use of the lemma \inline{⊥-elim}, but this would have to be
+hinted in order for a proof search to find it. For convenience, we adopt a
+\todo{minimal} translation by taking the double negative of the right side of
+the implication.
 \begin{code}
-
 _⊂_ : {A : Set} → Ensemble A → Ensemble A → Set
 αs ⊂ βs = ∀ x → x ∈ αs → ¬(x ∉ βs)
 
@@ -80,7 +86,7 @@ have to do a case analysis on a proof of $x \in A \cup B$. As of Agda 2.6.0
 \todo{how to cite this?}, Agda's proof search does not support pattern matching
 lambda expressions. A definition involving only functions is $x \in A \cup B
 \coloneqq x \not\in A \rightarrow x \in B$. We take the double negative of the
-right side of the implication \todo{why?}.
+right side of the implication.
 \begin{code}
 
 infixr 5 _∪_
@@ -92,10 +98,10 @@ Instead of defining a set difference, define notation for removing a single
 element from an ensemble. Since we intend to use ensembles only for finite
 collections, this is not a limitation. Proofs involving a conjunction (either
 by from a cartesian product type or a new data type), expressing that $x \in A
-- a$ means $x \in A \text{ and } x \neq A$, would have the same pattern matching
-requirements as disjoint unions. A translation to functions is $x \in A - a
-\coloneqq \lnot(x \in A \rightarrow x = a)$ \todo{Am I using $=$ or $\equiv$?}.
-Take the contrapositive of the inner implication \todo{why?}.
+- a$ means $x \in A \text{ and } x \neq A$, would have the same pattern
+  matching requirements as disjoint unions. A translation to functions is $x
+  \in A - a \coloneqq \lnot(x \in A \rightarrow x = a)$ \todo{Am I using $=$ or
+  $\equiv$?}.  Take the contrapositive of the inner implication.
 \begin{code}
 
 infixl 5 _-_
@@ -104,8 +110,11 @@ _-_ : {A : Set} → Ensemble A → A → Ensemble A
 
 \end{code}
 
-
-
+Of course, ensembles are just predicates, so they can be created in any way
+that functions can be created. We can define a type to keep track of the
+creation of a predicate, to ensure it was created using (something equal to)
+the functions above. Additionally, the type requires that the predicate is over
+a type with a decidable equality.
 \begin{code}
 
 data Assembled {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
@@ -116,31 +125,45 @@ data Assembled {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
 
 \end{code}
 
-
-
+Assembled ensembles have decidable membership.
 \begin{code}
 
 decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Ensemble A}
           → (x : A) → Assembled eq αs → Dec (x ∈ αs)
+\end{code}
+Nothing is in the empty ensemble.
+\begin{code}
 decide∈ x from∅ = no λ x∈∅ → x∈∅
-decide∈ {A} {eq} x (from⟨ α ⟩) with eq x α
-...                            | yes refl = yes refl
-...                            | no x≢α   = eq x α
+\end{code}
+Membership of a singleton is defined by an equality, and so its decidability is
+just the the decidable equality from \inline{Assembled}.
+\begin{code}
+decide∈ {A} {eq} x (from⟨ α ⟩) = eq x α
+\end{code}
+To check membership for a union, simply check first for membership of the left
+ensemble, then the right. The lambda expression proofs given here are
+non-trivial, but can be provided by Agda's proof search.
+\begin{code}
 decide∈ x (from Aαs ∪ Aβs) with decide∈ x Aαs
-...                        | yes x∈αs = yes λ x∉αs _ → x∉αs x∈αs
-...                        | no  x∉αs with decide∈ x Aβs
-...                                   | yes x∈βs = yes λ _ x∉βs → x∉βs x∈βs
-...                                   | no  x∉βs = no λ x∉αs∪βs → x∉αs∪βs x∉αs x∉βs
+...   | yes x∈αs = yes λ x∉αs _ → x∉αs x∈αs
+...   | no  x∉αs with decide∈ x Aβs
+...              | yes x∈βs = yes λ _ x∉βs → x∉βs x∈βs
+...              | no  x∉βs = no λ x∉αs∪βs → x∉αs∪βs x∉αs x∉βs
+\end{code}
+Finally, in the case of an element being removed, use the decidability from
+\inline{Assembled} to check if the given element was removed, and otherwise
+check if the given element is in the inner ensemble.
+\begin{code}
 decide∈ {A} {eq} x (from Aαs - α) with eq x α
-...                               | yes refl = no λ α∈αs-α → α∈αs-α λ α≢α _ → α≢α refl
-...                               | no x≢α   with decide∈ x Aαs
-...                                          | yes x∈αs = yes λ x≢α→x∉αs → x≢α→x∉αs x≢α x∈αs
-...                                          | no  x∉αs = no  λ x∈αs-α → x∈αs-α λ _ _ → x∈αs-α λ _ _ → x∈αs-α (λ _ → x∉αs)
+...   | yes refl = no λ α∈αs-α → α∈αs-α λ α≢α _ → α≢α refl
+...   | no x≢α   with decide∈ x Aαs
+...              | yes x∈αs = yes λ x≢α→x∉αs → x≢α→x∉αs x≢α x∈αs
+...              | no  x∉αs = no  λ x∈αs-α
+                                    → x∈αs-α (λ _ _
+                                              → x∈αs-α (λ _ _
+                                                        → x∈αs-α (λ _ → x∉αs)))
 
 \end{code}
-
-
-
 
 We define what it means for a property $P$ to hold on every member of an
 ensemble $\alpha s$. We recurse through the ensemble, forking at unions. When
@@ -149,6 +172,7 @@ removed elements. For each element, we require either that $P$ holds for the
 element, or else that it is in the list of removed elements.  Finally, $P$
 holds on all of $\alpha s$ if it holds according to the above procedure, with
 the removed element list starting empty.
+\todo{Explain, motivation}
 
 \begin{code}
 
