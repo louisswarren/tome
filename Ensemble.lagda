@@ -32,12 +32,18 @@ open import List using (List ; [] ; _∷_)
 
 \end{code}
 
-
-
+We define the type \inline{Ensemble}. It is actually another name for
+\inline{Pred}, but will be used to refer to predicates which should be thought
+of as being created in the manner below. This is only for ease of
+understanding, and is not an actual restriction.
 \begin{code}
 
 Ensemble : Set → Set₁
 Ensemble A = A → Set
+
+\end{code}
+Membership is defined by satisfying the predicate.
+\begin{code}
 
 infix 4 _∈_ _∉_
 
@@ -49,24 +55,52 @@ _∉_ : {A : Set} → A → Ensemble A → Set
 
 \end{code}
 
+\begin{code}
 
+_⊂_ : {A : Set} → Ensemble A → Ensemble A → Set
+αs ⊂ βs = ∀ x → x ∈ αs → ¬(x ∉ βs)
 
+\end{code}
+
+The empty ensemble and singleton ensembles are defined in the obvious way.
+\begin{code}
+
+∅ : {A : Set} → Ensemble A
+∅ = λ _ → ⊥
+
+⟨_⟩ : {A : Set} → A → Ensemble A
+⟨ α ⟩ = λ x → x ≡ α
+
+\end{code}
+It would be reasonable to define union in terms of a disjoint union type, so
+that a proof of $x \in A \cup B$ would be either a proof of $x \in A$ or of $x
+\in B$. However, we want Agda's proof search to fill in proofs regarding
+subsets. For a proof that $A \cup B \subset A \cup B \cup \emptyset$, we would
+have to do a case analysis on a proof of $x \in A \cup B$. As of Agda 2.6.0
+\todo{how to cite this?}, Agda's proof search does not support pattern matching
+lambda expressions. A definition involving only functions is $x \in A \cup B
+\coloneqq x \not\in A \rightarrow x \in B$. We take the double negative of the
+right side of the implication \todo{why?}.
 \begin{code}
 
 infixr 5 _∪_
-infixl 5 _-_
-
-∅ : {A : Set} → Ensemble A
-∅ _ = ⊥
-
-⟨_⟩ : {A : Set} → A → Ensemble A
-⟨ α ⟩ x = x ≡ α
-
-_-_ : {A : Set} → Ensemble A → A → Ensemble A
-(αs - α) x = ¬(x ≢ α → x ∉ αs)
-
 _∪_ : {A : Set} → Ensemble A → Ensemble A → Ensemble A
-(αs ∪ βs) x = x ∉ αs → ¬(x ∉ βs)
+(αs ∪ βs) = λ x → x ∉ αs → ¬(x ∉ βs)
+
+\end{code}
+Instead of defining a set difference, define notation for removing a single
+element from an ensemble. Since we intend to use ensembles only for finite
+collections, this is not a limitation. Proofs involving a conjunction (either
+by from a cartesian product type or a new data type), expressing that $x \in A
+- a$ means $x \in A \text{ and } x \neq A$, would have the same pattern matching
+requirements as disjoint unions. A translation to functions is $x \in A - a
+\coloneqq \lnot(x \in A \rightarrow x = a)$ \todo{Am I using $=$ or $\equiv$?}.
+Take the contrapositive of the inner implication \todo{why?}.
+\begin{code}
+
+infixl 5 _-_
+_-_ : {A : Set} → Ensemble A → A → Ensemble A
+(αs - α) = λ x → ¬(x ≢ α → x ∉ αs)
 
 \end{code}
 
@@ -77,8 +111,8 @@ _∪_ : {A : Set} → Ensemble A → Ensemble A → Ensemble A
 data Assembled {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
   from∅   : Assembled eq ∅
   from⟨_⟩ : (α : A) → Assembled eq (⟨ α ⟩)
-  from_-_ : ∀{αs} → Assembled eq αs → (α : A) → Assembled eq (αs - α)
   from_∪_ : ∀{αs βs} → Assembled eq αs → Assembled eq βs → Assembled eq (αs ∪ βs)
+  from_-_ : ∀{αs} → Assembled eq αs → (α : A) → Assembled eq (αs - α)
 
 \end{code}
 
@@ -92,27 +126,21 @@ decide∈ x from∅ = no λ x∈∅ → x∈∅
 decide∈ {A} {eq} x (from⟨ α ⟩) with eq x α
 ...                            | yes refl = yes refl
 ...                            | no x≢α   = eq x α
-decide∈ {A} {eq} x (from Aαs - α) with eq x α
-...                               | yes refl = no λ α∈αs-α → α∈αs-α λ α≢α _ → α≢α refl
-...                               | no x≢α   with decide∈ x Aαs
-...                                          | yes x∈αs = yes λ x≢α→x∉αs → x≢α→x∉αs x≢α x∈αs
-...                                          | no  x∉αs = no  λ x∈αs-α → x∈αs-α λ _ _ → x∈αs-α λ _ _ → x∈αs-α (λ _ → x∉αs)
 decide∈ x (from Aαs ∪ Aβs) with decide∈ x Aαs
 ...                        | yes x∈αs = yes λ x∉αs _ → x∉αs x∈αs
 ...                        | no  x∉αs with decide∈ x Aβs
 ...                                   | yes x∈βs = yes λ _ x∉βs → x∉βs x∈βs
 ...                                   | no  x∉βs = no λ x∉αs∪βs → x∉αs∪βs x∉αs x∉βs
+decide∈ {A} {eq} x (from Aαs - α) with eq x α
+...                               | yes refl = no λ α∈αs-α → α∈αs-α λ α≢α _ → α≢α refl
+...                               | no x≢α   with decide∈ x Aαs
+...                                          | yes x∈αs = yes λ x≢α→x∉αs → x≢α→x∉αs x≢α x∈αs
+...                                          | no  x∉αs = no  λ x∈αs-α → x∈αs-α λ _ _ → x∈αs-α λ _ _ → x∈αs-α (λ _ → x∉αs)
 
 \end{code}
 
 
 
-\begin{code}
-
-_⊂_ : {A : Set} → Ensemble A → Ensemble A → Set
-αs ⊂ βs = ∀ x → x ∈ αs → ¬(x ∉ βs)
-
-\end{code}
 
 We define what it means for a property $P$ to hold on every member of an
 ensemble $\alpha s$. We recurse through the ensemble, forking at unions. When
@@ -130,10 +158,10 @@ infixl 5 _all~_
 data All_[_∖_] {A : Set} (P : Pred A) : Ensemble A → List A → Set₁ where
   all∅    : ∀{xs}    → All P [ ∅ ∖ xs ]
   all⟨_⟩  : ∀{xs α}  → P α         → All P [ ⟨ α ⟩ ∖ xs ]
-  all-_   : ∀{xs α}  → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
-  _all~_  : ∀{αs xs} → ∀ x → All P [ αs ∖ x ∷ xs ] → All P [ αs - x ∖ xs ]
   _all∪_  : ∀{αs βs xs}
               → All P [ αs ∖ xs ] → All P [ βs ∖ xs ] → All P [ αs ∪ βs ∖ xs ]
+  all-_   : ∀{xs α}  → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
+  _all~_  : ∀{αs xs} → ∀ x → All P [ αs ∖ x ∷ xs ] → All P [ αs - x ∖ xs ]
 
 All : {A : Set} → Pred A → Ensemble A → Set₁
 All P αs = All P [ αs ∖ [] ]
