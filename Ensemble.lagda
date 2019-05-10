@@ -56,7 +56,7 @@ _∉_ : {A : Set} → A → Ensemble A → Set
 \end{code}
 
 The ensembles created in the manner below involve negations. While a sensible
-definition of subset is $A \subset B \coloneqq forall x (x \in A \rightarrow x
+definition of subset is $A \subset B \coloneqq \forall x (x \in A \rightarrow x
 \in B)$, a proof of this could require EFQ. Inside a lambda expression, this
 can be done by use of the lemma \inline{⊥-elim}, but this would have to be
 hinted in order for a proof search to find it. For convenience, we adopt a
@@ -189,29 +189,16 @@ data All_[_∖_] {A : Set} (P : Pred A) : Ensemble A → List A → Set₁ where
 All : {A : Set} → Pred A → Ensemble A → Set₁
 All P αs = All P [ αs ∖ [] ]
 
-All_[_∖_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
-              → (P : Pred A) → Assembled eq αs → (xs : List A)
-              → (∀ x → x ∈ αs → x List.∉ xs → P x)
-              → All P [ αs ∖ xs ]
-All P [ from∅          ∖ xs ]← fall = all∅
-All_[_∖_]←_ {A} {eq} P from⟨ α ⟩ xs fall with List.decide∈ eq α xs
-...                                      | yes α∈xs = all⟨- α∈xs ⟩
-...                                      | no  α∉xs = all⟨ fall α refl α∉xs ⟩
-All P [ from Aαs ∪ Aβs ∖ xs ]← fall = (All P [ Aαs ∖ xs ]← (λ x z → fall x (λ z₁ _ → z₁ z))) all∪ (All P [ Aβs ∖ xs ]← (λ x z → fall x (λ _ z₁ → z₁ z)))
-All P [ from Aαs - α   ∖ xs ]← fall = all- (All P [ Aαs ∖ α ∷ xs ]← fall-α)
+FAll→All : {A : Set} {eq : Decidable≡ A} {P : Pred A} {αs : Ensemble A}
+            → Assembled eq αs → (∀ x → x ∈ αs → P x) → All P αs
+FAll→All {A} {eq} {P} Aαs fall = lemma Aαs [] λ x x∈αs _ → fall x x∈αs
   where
-    fall-α : _
-    fall-α x x∈αs x∉α∷xs = fall x
-                            (λ x≢α→x∉αs
-                             → x≢α→x∉αs (λ x≡α → x∉α∷xs List.[ x≡α ]) x∈αs)
-                            (λ x∉xs → x∉α∷xs (α ∷ x∉xs))
-
-
-All_[_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
-            → (P : Pred A) → Assembled eq αs
-            → (∀ x → x ∈ αs → P x)
-            → All P αs
-All P [ Aαs ]← fall = All P [ Aαs ∖ [] ]← (λ x x∈αs _ → fall x x∈αs)
-
-
+    lemma : ∀{αs} → Assembled eq αs → ∀ xs → (∀ x → x ∈ αs → x List.∉ xs → P x)
+            → All P [ αs ∖ xs ]
+    lemma from∅            xs fall = all∅
+    lemma from⟨ α ⟩        xs fall with List.decide∈ eq α xs
+    ...                    | yes α∈xs = all⟨- α∈xs ⟩
+    ...                    | no  α∉xs = all⟨ fall α refl α∉xs ⟩
+    lemma (from Aαs ∪ Aβs) xs fall = lemma Aαs xs (λ x x∈αs → fall x (λ x∉αs _ → x∉αs x∈αs)) all∪ lemma Aβs xs λ x x∈βs → fall x (λ _ x∉βs → x∉βs x∈βs)
+    lemma (from Aαs - α)   xs fall = all- lemma Aαs (α ∷ xs) λ x x∈αs x∉α∷xs → fall x (λ x∈αs-α → x∈αs-α (λ x≡α → x∉α∷xs List.[ x≡α ]) x∈αs) λ x∉xs → x∉α∷xs (α ∷ x∉xs)
 \end{code}
