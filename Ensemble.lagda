@@ -191,14 +191,27 @@ All P αs = All P [ αs ∖ [] ]
 
 FAll→All : {A : Set} {eq : Decidable≡ A} {P : Pred A} {αs : Ensemble A}
             → Assembled eq αs → (∀ x → x ∈ αs → P x) → All P αs
-FAll→All {A} {eq} {P} Aαs fall = lemma Aαs [] λ x x∈αs _ → fall x x∈αs
+FAll→All {A} {eq} {P} Aαs fall = φ Aαs [] (λ x x∈αs _ → fall x x∈αs)
   where
-    lemma : ∀{αs} → Assembled eq αs → ∀ xs → (∀ x → x ∈ αs → x List.∉ xs → P x)
-            → All P [ αs ∖ xs ]
-    lemma from∅            xs fall = all∅
-    lemma from⟨ α ⟩        xs fall with List.decide∈ eq α xs
+    φ : ∀{αs} → Assembled eq αs → ∀ xs → (∀ x → x ∈ αs → x List.∉ xs → P x)
+        → All P [ αs ∖ xs ]
+    φ from∅            xs fall = all∅
+    φ from⟨ α ⟩        xs fall with List.decide∈ eq α xs
     ...                    | yes α∈xs = all⟨- α∈xs ⟩
     ...                    | no  α∉xs = all⟨ fall α refl α∉xs ⟩
-    lemma (from Aαs ∪ Aβs) xs fall = lemma Aαs xs (λ x x∈αs → fall x (λ x∉αs _ → x∉αs x∈αs)) all∪ lemma Aβs xs λ x x∈βs → fall x (λ _ x∉βs → x∉βs x∈βs)
-    lemma (from Aαs - α)   xs fall = all- lemma Aαs (α ∷ xs) λ x x∈αs x∉α∷xs → fall x (λ x∈αs-α → x∈αs-α (λ x≡α → x∉α∷xs List.[ x≡α ]) x∈αs) λ x∉xs → x∉α∷xs (α ∷ x∉xs)
+    φ (from Aαs ∪ Aβs) xs fall = (φ Aαs xs fallαs) all∪ (φ Aβs xs fallβs)
+      where
+        fallαs : _
+        fallαs x x∈αs = fall x (λ x∉αs _    → x∉αs x∈αs)
+        fallβs : _
+        fallβs x x∈βs = fall x (λ _    x∉βs → x∉βs x∈βs)
+    φ (from Aαs - α)   xs fall = all- (φ Aαs (α ∷ xs) fallαs-α)
+      where
+        fallαs-α : _
+        fallαs-α x x∈αs x∉α∷xs =
+          let x∈αs-α : _
+              x∈αs-α x≢α→x∉αs = x≢α→x∉αs (λ x≢α → x∉α∷xs List.[ x≢α ]) x∈αs
+              x∉xs   : x List.∉ xs
+              x∉xs   x∈xs = x∉α∷xs (α ∷ x∈xs)
+          in  fall x x∈αs-α x∉xs
 \end{code}
