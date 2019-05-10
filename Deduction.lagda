@@ -320,7 +320,7 @@ rename {Γ} {V x α} {V .x β} (V y ap) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x β ⟩ all∪ (α all~ (all- List.[ refl ])))
+   (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩))
     d
     (existintro (varterm x) x (ident β x)
      (rename ap
@@ -346,7 +346,7 @@ rename {Γ} {V x α} {V y β} (V/ y∉α sub) d with varEq x y
                   (assembled-context d)
                   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
                   (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
-                              all∪ (α all~ (all- List.[ refl ])))
+                              all∪ (all- all⟨- [ refl ] ⟩))
                    d
                    (existintro (varterm x) y (subInverse y∉α sub)
                     (assume α)))

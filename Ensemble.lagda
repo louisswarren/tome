@@ -177,17 +177,41 @@ the removed element list starting empty.
 \begin{code}
 
 infixr 5 _all∪_
-infixl 5 _all~_
 
 data All_[_∖_] {A : Set} (P : Pred A) : Ensemble A → List A → Set₁ where
-  all∅    : ∀{xs}    → All P [ ∅ ∖ xs ]
-  all⟨_⟩  : ∀{xs α}  → P α         → All P [ ⟨ α ⟩ ∖ xs ]
-  _all∪_  : ∀{αs βs xs}
-              → All P [ αs ∖ xs ] → All P [ βs ∖ xs ] → All P [ αs ∪ βs ∖ xs ]
-  all-_   : ∀{xs α}  → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
-  _all~_  : ∀{αs xs} → ∀ x → All P [ αs ∖ x ∷ xs ] → All P [ αs - x ∖ xs ]
+  all∅    : ∀{xs}       → All P [ ∅ ∖ xs ]
+  all⟨_⟩  : ∀{xs α}     → P α         → All P [ ⟨ α ⟩ ∖ xs ]
+  all⟨-_⟩ : ∀{xs α}     → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
+  _all∪_  : ∀{αs βs xs} → All P [ αs ∖ xs ] → All P [ βs ∖ xs ]
+                          → All P [ αs ∪ βs ∖ xs ]
+  all-_   : ∀{αs x xs}  → All P [ αs ∖ x ∷ xs ] → All P [ αs - x ∖ xs ]
 
 All : {A : Set} → Pred A → Ensemble A → Set₁
 All P αs = All P [ αs ∖ [] ]
+
+All_[_∖_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
+              → (P : Pred A) → Assembled eq αs → (xs : List A)
+              → (∀ x → x ∈ αs → x List.∉ xs → P x)
+              → All P [ αs ∖ xs ]
+All P [ from∅          ∖ xs ]← fall = all∅
+All_[_∖_]←_ {A} {eq} P from⟨ α ⟩ xs fall with List.decide∈ eq α xs
+...                                      | yes α∈xs = all⟨- α∈xs ⟩
+...                                      | no  α∉xs = all⟨ fall α refl α∉xs ⟩
+All P [ from Aαs ∪ Aβs ∖ xs ]← fall = (All P [ Aαs ∖ xs ]← (λ x z → fall x (λ z₁ _ → z₁ z))) all∪ (All P [ Aβs ∖ xs ]← (λ x z → fall x (λ _ z₁ → z₁ z)))
+All P [ from Aαs - α   ∖ xs ]← fall = all- (All P [ Aαs ∖ α ∷ xs ]← fall-α)
+  where
+    fall-α : _
+    fall-α x x∈αs x∉α∷xs = fall x
+                            (λ x≢α→x∉αs
+                             → x≢α→x∉αs (λ x≡α → x∉α∷xs List.[ x≡α ]) x∈αs)
+                            (λ x∉xs → x∉α∷xs (α ∷ x∉xs))
+
+
+All_[_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
+            → (P : Pred A) → Assembled eq αs
+            → (∀ x → x ∈ αs → P x)
+            → All P αs
+All P [ Aαs ]← fall = All P [ Aαs ∖ [] ]← (λ x x∈αs _ → fall x x∈αs)
+
 
 \end{code}

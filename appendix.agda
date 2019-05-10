@@ -294,34 +294,6 @@ sub→FreeFor (Λ x x₁ rep) = Λ _ _ x₁ (sub→FreeFor rep)
 sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
 
 
-open import Deduction
-open import Ensemble
-open import List using (List ; [] ; _∷_)
-
-All_[_∖_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
-              → (P : Pred A) → Assembled eq αs → (xs : List A)
-              → (∀ x → x Ensemble.∈ αs → x List.∉ xs → P x)
-              → All P [ αs ∖ xs ]
-All P [ from∅          ∖ xs ]← fall = all∅
-All_[_∖_]←_ {A} {eq} P from⟨ α ⟩ xs fall with List.decide∈ eq α xs
-...                                      | yes α∈xs = all- α∈xs
-...                                      | no  α∉xs = all⟨ fall α refl α∉xs ⟩
-All P [ from Aαs ∪ Aβs ∖ xs ]← fall = (All P [ Aαs ∖ xs ]← (λ x z → fall x (λ z₁ _ → z₁ z))) all∪ (All P [ Aβs ∖ xs ]← (λ x z → fall x (λ _ z₁ → z₁ z)))
-All P [ from Aαs - α   ∖ xs ]← fall = α all~ (All P [ Aαs ∖ α ∷ xs ]← fall-α)
-  where
-    fall-α : _
-    fall-α x x∈αs x∉α∷xs = fall x
-                            (λ x≢α→x∉αs
-                             → x≢α→x∉αs (λ x≡α → x∉α∷xs List.[ x≡α ]) x∈αs)
-                            (λ x∉xs → x∉α∷xs (α ∷ x∉xs))
-
-
-All_[_]←_ : {A : Set} {eq : Decidable≡ A} {αs : Pred A}
-            → (P : Pred A) → Assembled eq αs
-            → (∀ x → x Ensemble.∈ αs → P x)
-            → Ensemble.All P αs
-All P [ Aαs ]← fall = All P [ Aαs ∖ [] ]← (λ x x∈αs _ → fall x x∈αs)
-
 
 ≈refl : ∀{α} → α ≈ α
 ≈refl {atom r ts} = atom r ts
