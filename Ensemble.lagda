@@ -165,29 +165,55 @@ decide∈ {A} {eq} x (from Aαs - α) with eq x α
 
 \end{code}
 
-We define what it means for a property $P$ to hold on every member of an
-ensemble $\alpha s$. We recurse through the ensemble, forking at unions. When
-reaching a removal, the removed element is added to a list which accumulates
-removed elements. For each element, we require either that $P$ holds for the
-element, or else that it is in the list of removed elements.  Finally, $P$
-holds on all of $\alpha s$ if it holds according to the above procedure, with
-the removed element list starting empty.
-\todo{Explain, motivation}
+Given an ensemble $A$, a sensiblble definition for a predicate $P$ holding on
+every element of $A$ would be $\forall x (x \in A \rightarrow P x)$. However,
+for inductively defined predicates (like \inline{_notFreeIn α} for some
+$\alpha$), this is not easy to work with, either by hand or using proof search.
+For example, to prove that the variable $y$ is not-free in all members of
+$\{\forall y Q y\}\cup\{\bot\}$, it would be necessary to show that any member
+$x$ is either equal to $\forall y Q y$ or $\bot$, and only then supply the
+required constructors for each case. Once again, this requires pattern matching
+\todo{among other things?}.
 
+Instead, for an assembled ensemble, we give a definition for \inline{All} which
+utilises the structure of the ensemble, and describes what computation must be
+performed to check that a predicate holds on all members. To do so, maintain a list of all elements which have been removed from the ensemble.
 \begin{code}
 
 infixr 5 _all∪_
 
 data All_[_∖_] {A : Set} (P : Pred A) : Ensemble A → List A → Set₁ where
   all∅    : ∀{xs}       → All P [ ∅ ∖ xs ]
+\end{code}
+$P$ holds on all of a singleton if it holds on the element of the singleton, or
+else if that element has already been removed.
+\begin{code}
   all⟨_⟩  : ∀{xs α}     → P α         → All P [ ⟨ α ⟩ ∖ xs ]
   all⟨-_⟩ : ∀{xs α}     → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
+\end{code}
+In the case of a union, simply recurse over both.
+\begin{code}
   _all∪_  : ∀{αs βs xs} → All P [ αs ∖ xs ] → All P [ βs ∖ xs ]
                           → All P [ αs ∪ βs ∖ xs ]
+\end{code}
+Finally, when an ensemble has been created by removing an element from another,
+check that $P$ holds on the other ensemble for all values other than the
+removed one.
+\begin{code}
   all-_   : ∀{αs x xs}  → All P [ αs ∖ x ∷ xs ] → All P [ αs - x ∖ xs ]
+
+\end{code}
+Now, $P$ holds on all of $\alpha s$ if it holds according to the above
+procedure, with the removed element list starting empty.
+\begin{code}
 
 All : {A : Set} → Pred A → Ensemble A → Set₁
 All P αs = All P [ αs ∖ [] ]
+
+\end{code}
+
+
+\begin{code}
 
 FAll→All : {A : Set} {eq : Decidable≡ A} {P : Pred A} {αs : Ensemble A}
             → Assembled eq αs → (∀ x → x ∈ αs → P x) → All P αs
