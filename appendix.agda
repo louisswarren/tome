@@ -272,28 +272,6 @@ subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) with subUnique α p q
 subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) | refl = refl
 
 
-sub→FreeFor : ∀{α x t β} → α [ x / t ]≡ β → t FreeFor x In α
-sub→FreeFor (ident (atom r ts) x) = atom r ts
-sub→FreeFor (ident (α ⇒ β) x) = sub→FreeFor (ident α x) ⇒ sub→FreeFor (ident β x)
-sub→FreeFor (ident (α ∧ β) x) = sub→FreeFor (ident α x) ∧ sub→FreeFor (ident β x)
-sub→FreeFor (ident (α ∨ β) x) = sub→FreeFor (ident α x) ∨ sub→FreeFor (ident β x)
-sub→FreeFor (ident (Λ y α) x) with varEq x y
-... | yes refl = Λ∣ α
-... | no x≢y = Λ α y (varterm (λ { refl → x≢y refl })) (sub→FreeFor (ident α x))
-sub→FreeFor (ident (V y α) x) with varEq x y
-... | yes refl = V∣ α
-... | no x≢y = V α y (varterm (λ { refl → x≢y refl })) (sub→FreeFor (ident α x))
-sub→FreeFor (notfree x) = notfree x
-sub→FreeFor (atom r x) = atom r _
-sub→FreeFor (repα ⇒ repβ) = sub→FreeFor repα ⇒ sub→FreeFor repβ
-sub→FreeFor (repα ∧ repβ) = sub→FreeFor repα ∧ sub→FreeFor repβ
-sub→FreeFor (repα ∨ repβ) = sub→FreeFor repα ∨ sub→FreeFor repβ
-sub→FreeFor (Λ∣ x α) = Λ∣ α
-sub→FreeFor (V∣ x α) = V∣ α
-sub→FreeFor (Λ x x₁ rep) = Λ _ _ x₁ (sub→FreeFor rep)
-sub→FreeFor (V x x₁ rep) = V _ _ x₁ (sub→FreeFor rep)
-
-
 
 ≈refl : ∀{α} → α ≈ α
 ≈refl {atom r ts} = atom r ts
