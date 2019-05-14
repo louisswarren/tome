@@ -628,19 +628,19 @@ freshNotFree (V _ xfrα)    = V _ (freshNotFree xfrα)
 }
 \begin{code}
 
-freshFreeFor : ∀{α x y} → x FreshIn α → (varterm x) FreeFor y In α
+freshFreeFor : ∀{α x} → x FreshIn α → ∀ y → (varterm x) FreeFor y In α
 -- Proof omitted
 
 \end{code}
 \AgdaHide{
 \begin{code}
 
-freshFreeFor (atom _)      = atom _ _
-freshFreeFor (xfrα ⇒ xfrβ) = freshFreeFor xfrα ⇒ freshFreeFor xfrβ
-freshFreeFor (xfrα ∧ xfrβ) = freshFreeFor xfrα ∧ freshFreeFor xfrβ
-freshFreeFor (xfrα ∨ xfrβ) = freshFreeFor xfrα ∨ freshFreeFor xfrβ
-freshFreeFor (Λ x≢y xfrα)  = Λ _ _ (varterm x≢y) (freshFreeFor xfrα)
-freshFreeFor (V x≢y xfrα)  = V _ _ (varterm x≢y) (freshFreeFor xfrα)
+freshFreeFor (atom _)      y = atom _ _
+freshFreeFor (xfrα ⇒ xfrβ) y = freshFreeFor xfrα y ⇒ freshFreeFor xfrβ y
+freshFreeFor (xfrα ∧ xfrβ) y = freshFreeFor xfrα y ∧ freshFreeFor xfrβ y
+freshFreeFor (xfrα ∨ xfrβ) y = freshFreeFor xfrα y ∨ freshFreeFor xfrβ y
+freshFreeFor (Λ x≢y xfrα)  y = Λ _ _ (varterm x≢y) (freshFreeFor xfrα y)
+freshFreeFor (V x≢y xfrα)  y = V _ _ (varterm x≢y) (freshFreeFor xfrα y)
 
 \end{code}
 }

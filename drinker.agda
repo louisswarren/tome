@@ -230,7 +230,7 @@ glpo→lem ⊢glpo α | no ¬xnfα = close
                     ωnf : ω NotFreeIn α
                     ωnf = freshNotFree ωFresh
                     ωff : (varterm ω) FreeFor xvar In α
-                    ωff = freshFreeFor ωFresh
+                    ωff = freshFreeFor ωFresh xvar
                     αω : Formula
                     αω = fst (α [ xvar / ωff ])
                     αωpf : α [ xvar / varterm ω ]≡ αω
