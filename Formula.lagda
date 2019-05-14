@@ -601,8 +601,8 @@ data _FreshIn_ (x : Variable) : Formula → Set where
   _⇒_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
   _∧_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∧ β
   _∨_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∨ β
-  Λ    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn Λ y α
-  V    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn V y α
+  Λ    : ∀{α y} → y ≢ x → x FreshIn α → x FreshIn Λ y α
+  V    : ∀{α y} → y ≢ x → x FreshIn α → x FreshIn V y α
 
 \end{code}
 
@@ -639,10 +639,8 @@ freshFreeFor (atom _)      = atom _ _
 freshFreeFor (xfrα ⇒ xfrβ) = freshFreeFor xfrα ⇒ freshFreeFor xfrβ
 freshFreeFor (xfrα ∧ xfrβ) = freshFreeFor xfrα ∧ freshFreeFor xfrβ
 freshFreeFor (xfrα ∨ xfrβ) = freshFreeFor xfrα ∨ freshFreeFor xfrβ
-freshFreeFor (Λ x≢y xfrα)  = Λ _ _
-                             (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
-freshFreeFor (V x≢y xfrα)  = V _ _
-                             (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
+freshFreeFor (Λ x≢y xfrα)  = Λ _ _ (varterm x≢y) (freshFreeFor xfrα)
+freshFreeFor (V x≢y xfrα)  = V _ _ (varterm x≢y) (freshFreeFor xfrα)
 
 \end{code}
 }
@@ -798,13 +796,13 @@ minFresh (Λ x@(var k) α) with minFresh α
 ...                      | ⌈α⌉ , αpf with ≤total (suc k) (varidx ⌈α⌉)
 ...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
+    skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn Λ x α
     freshIs⌈α⌉ n ⌈α⌉≤n = Λ (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
 ...                                  | more ⌈α⌉≤sk = var (suc k) , freshIssk
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
+    skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
     freshIssk : ∀ n → suc k ≤ n → var n FreshIn Λ x α
     freshIssk n sk≤n = Λ (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
@@ -815,13 +813,13 @@ minFresh (V x@(var k) α) with minFresh α
 ...                      | ⌈α⌉ , αpf with ≤total (suc k) (varidx ⌈α⌉)
 ...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
+    skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn V x α
     freshIs⌈α⌉ n ⌈α⌉≤n = V (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
 ...                                    | more ⌈α⌉≤sk = var (suc k) , freshIssk
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → var n ≢ var m
+    skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
     freshIssk : ∀ n → suc k ≤ n → var n FreshIn V x α
     freshIssk n sk≤n = V (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
