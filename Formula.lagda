@@ -430,22 +430,6 @@ It will later be shown that, using the above definitions, there is a $\beta$
 satisfying $\alpha [x/t]\equiv \beta$ if and only if $t$ is free for $x$ in
 $\alpha$. \todo{Include this proof}
 
-Finally, we define a proposition for a variable being \emph{fresh}, meaning it
-appears nowhere (free or bound) in a formula. We later prove that if $x$ is
-fresh in $\alpha$ then it is not free, and for every $y$, $x$ is free for $y$
-in $\alpha$.
-\begin{code}
-
-data _FreshIn_ (x : Variable) : Formula → Set where
-  atom : ∀{r ts} → x NotFreeInTerms ts  → x FreshIn (atom r ts)
-  _⇒_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
-  _∧_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∧ β
-  _∨_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∨ β
-  Λ    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn Λ y α
-  V    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn V y α
-
-\end{code}
-
 \subsection{Computing substitutions}
 
 The definitions above for variable substitution lead directly to a procedure
@@ -606,6 +590,62 @@ x notFreeIn V  y α    with varEq x y
 \end{code}
 
 \subsection{Generating fresh variables}
+
+A variable is \emph{fresh} if appears nowhere (free or bound) in a formula. We
+later prove that if $x$ is fresh in $\alpha$ then it is not free, and for every
+$y$, $x$ is free for $y$ in $\alpha$.
+\begin{code}
+
+data _FreshIn_ (x : Variable) : Formula → Set where
+  atom : ∀{r ts} → x NotFreeInTerms ts  → x FreshIn (atom r ts)
+  _⇒_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
+  _∧_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∧ β
+  _∨_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∨ β
+  Λ    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn Λ y α
+  V    : ∀{α y} → x ≢ y → x FreshIn α → x FreshIn V y α
+
+\end{code}
+
+Certainly, if a variable is fresh in a formula, then it is also not free, and
+every term is free for that variable. The proofs are trivial, and are omitted.
+\begin{code}
+
+freshNotFree : ∀{α x} → x FreshIn α → x NotFreeIn α
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+freshNotFree (atom x∉ts)   = atom x∉ts
+freshNotFree (xfrα ⇒ xfrβ) = freshNotFree xfrα ⇒ freshNotFree xfrβ
+freshNotFree (xfrα ∧ xfrβ) = freshNotFree xfrα ∧ freshNotFree xfrβ
+freshNotFree (xfrα ∨ xfrβ) = freshNotFree xfrα ∨ freshNotFree xfrβ
+freshNotFree (Λ _ xfrα)    = Λ _ (freshNotFree xfrα)
+freshNotFree (V _ xfrα)    = V _ (freshNotFree xfrα)
+
+\end{code}
+}
+\begin{code}
+
+freshFreeFor : ∀{α x y} → x FreshIn α → (varterm x) FreeFor y In α
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+freshFreeFor (atom _)      = atom _ _
+freshFreeFor (xfrα ⇒ xfrβ) = freshFreeFor xfrα ⇒ freshFreeFor xfrβ
+freshFreeFor (xfrα ∧ xfrβ) = freshFreeFor xfrα ∧ freshFreeFor xfrβ
+freshFreeFor (xfrα ∨ xfrβ) = freshFreeFor xfrα ∨ freshFreeFor xfrβ
+freshFreeFor (Λ x≢y xfrα)  = Λ _ _
+                             (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
+freshFreeFor (V x≢y xfrα)  = V _ _
+                             (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
+
+\end{code}
+}
 
 For the purposes of variable substitution, we need a way to generate a fresh
 variable for a given formula. Only finitely many variables occur in a given
@@ -825,28 +865,10 @@ subNotFree x∉t (V∣ y α)         = V∣ y α
 subNotFree x∉t (V x≢y y∉t p)   = V _ (subNotFree x∉t p)
 
 
-freshNotFree : ∀{α x} → x FreshIn α → x NotFreeIn α
-freshNotFree (atom x∉ts)   = atom x∉ts
-freshNotFree (xfrα ⇒ xfrβ) = freshNotFree xfrα ⇒ freshNotFree xfrβ
-freshNotFree (xfrα ∧ xfrβ) = freshNotFree xfrα ∧ freshNotFree xfrβ
-freshNotFree (xfrα ∨ xfrβ) = freshNotFree xfrα ∨ freshNotFree xfrβ
-freshNotFree (Λ _ xfrα)    = Λ _ (freshNotFree xfrα)
-freshNotFree (V _ xfrα)    = V _ (freshNotFree xfrα)
-
-
-freshFreeFor : ∀{α x y} → x FreshIn α → (varterm x) FreeFor y In α
-freshFreeFor (atom _)      = atom _ _
-freshFreeFor (xfrα ⇒ xfrβ) = freshFreeFor xfrα ⇒ freshFreeFor xfrβ
-freshFreeFor (xfrα ∧ xfrβ) = freshFreeFor xfrα ∧ freshFreeFor xfrβ
-freshFreeFor (xfrα ∨ xfrβ) = freshFreeFor xfrα ∨ freshFreeFor xfrβ
-freshFreeFor (Λ x≢y xfrα)  = Λ _ _
-                             (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
-freshFreeFor (V x≢y xfrα)  = V _ _
-                             (varterm λ { refl → x≢y refl }) (freshFreeFor xfrα)
-
 \end{code}
 
-The result of $\alpha [ x / t ]$ should be a formula $\beta$ satisfying $\alpha [ x / t ]\equiv \beta$. Such a $\beta$ is computable.
+The result of $\alpha [ x / t ]$ should be a formula $\beta$ satisfying $\alpha
+[ x / t ]\equiv \beta$. Such a $\beta$ is computable.
 
 \begin{code}
 
