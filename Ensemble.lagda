@@ -25,6 +25,8 @@ Predicates can be used for this purpose.
 
 \begin{code}
 
+module Ensemble where
+
 open import Agda.Builtin.Equality
 
 open import Decidable
@@ -212,7 +214,9 @@ All P αs = All P [ αs ∖ [] ]
 
 \end{code}
 
-
+This definition of all is weaker than the functional definition. We use a lemma
+to show that this is the case for all values of the removed list of elements,
+and apply it to the case of the empty list.
 \begin{code}
 
 FAll→All : {A : Set} {eq : Decidable≡ A} {P : Pred A} {αs : Ensemble A}
@@ -221,23 +225,48 @@ FAll→All {A} {eq} {P} Aαs fall = φ Aαs [] (λ x x∈αs _ → fall x x∈α
   where
     φ : ∀{αs} → Assembled eq αs → ∀ xs → (∀ x → x ∈ αs → x List.∉ xs → P x)
         → All P [ αs ∖ xs ]
-    φ from∅            xs fall = all∅
-    φ from⟨ α ⟩        xs fall with List.decide∈ eq α xs
+    φ from∅            xs fall∅ = all∅
+\end{code}
+For a singleton $\{\alpha\}$, either $\alpha$ has been removed, or otherwise it
+has not been removed, in which case we use the functional all to prove $P
+\alpha$.
+\begin{code}
+    φ from⟨ α ⟩        xs fall⟨α⟩ with List.decide∈ eq α xs
     ...                    | yes α∈xs = all⟨- α∈xs ⟩
-    ...                    | no  α∉xs = all⟨ fall α refl α∉xs ⟩
-    φ (from Aαs ∪ Aβs) xs fall = (φ Aαs xs fallαs) all∪ (φ Aβs xs fallβs)
+    ...                    | no  α∉xs = all⟨ fall⟨α⟩ α refl α∉xs ⟩
+\end{code}
+Since unions are defined using a double negation, to show that the functional
+all for a union means functional all for each of the two ensembles can be done
+by a contradiction for each.
+\begin{code}
+    φ (from Aαs ∪ Aβs) xs fallαs∪βs = (φ Aαs xs fallαs) all∪ (φ Aβs xs fallβs)
       where
         fallαs : _
-        fallαs x x∈αs = fall x (λ x∉αs _    → x∉αs x∈αs)
+        fallαs x x∈αs = fallαs∪βs x (λ x∉αs _    → x∉αs x∈αs)
         fallβs : _
-        fallβs x x∈βs = fall x (λ _    x∉βs → x∉βs x∈βs)
-    φ (from Aαs - α)   xs fall = all- (φ Aαs (α ∷ xs) fallαs-α)
+        fallβs x x∈βs = fallαs∪βs x (λ _    x∉βs → x∉βs x∈βs)
+\end{code}
+In the case of $\alpha s - \alpha$, we show first that if $x \in \alpha s$ then
+$x \in \alpha s - \alpha$, and that if $x \not\in \alpha \Colon xs$ then $x
+\not\in xs$.
+\begin{code}
+    φ (from Aαs - α)   xs fallαs-α = all- (φ Aαs (α ∷ xs) fallαs)
       where
-        fallαs-α : _
-        fallαs-α x x∈αs x∉α∷xs =
+        fallαs : _
+        fallαs x x∈αs x∉α∷xs =
           let x∈αs-α : _
               x∈αs-α x≢α→x∉αs = x≢α→x∉αs (λ x≢α → x∉α∷xs List.[ x≢α ]) x∈αs
               x∉xs   : x List.∉ xs
               x∉xs   x∈xs = x∉α∷xs (α ∷ x∈xs)
-          in  fall x x∈αs-α x∉xs
+          in  fallαs-α x x∈αs-α x∉xs
 \end{code}
+The converse cannot be proved; \inline{All} is in fact strictly weaker than the
+functional definition. While it could be expected that pattern matching on both
+\inline{All} and \inline{Assembled} would lead to a proof, this will not work
+because Agda cannot unify function types. For example, in the case that an
+ensemble was assembled by \inline{from Aαs ∪ Aβs}, case analysis of the proof
+of \inline{All P (αs ∪ βs)} does not show that the only constructor is
+\inline{_all∪_}; Agda cannot determine that $λ x → x ∉ αs → ¬(x ∉ βs)$ does not
+unify with $λ _ → ⊥$, so \inline{all∅} may or may not be a constructor.  If we
+wanted a stronger type which is equivalent to the functional definition, the
+assembled structure would need to be included in \inline{All}.
