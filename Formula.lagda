@@ -410,7 +410,7 @@ data _≈_ : Formula → Formula → Set where
 Substitutions do not always exist. For example, there is no way of constructing
 a formula for $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if
 $t$ is \emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$
-would become bound inside $alpha$. This can be formalised by using (with minor
+would become bound inside $\alpha$. This can be formalised by using (with minor
 modification) the rules of \cite{vandalen}.
 \begin{code}
 
@@ -909,18 +909,18 @@ coident (ident α x) = refl
 coident (notfree x) = refl
 coident (atom r ts) with coidentTerms ts
 coident (atom r ts) | refl = refl
-coident (repα ⇒ repβ) with coident repα | coident repβ
+coident (subα ⇒ subβ) with coident subα | coident subβ
 ...                   | refl | refl = refl
-coident (repα ∧ repβ) with coident repα | coident repβ
+coident (subα ∧ subβ) with coident subα | coident subβ
 ...                   | refl | refl = refl
-coident (repα ∨ repβ) with coident repα | coident repβ
+coident (subα ∨ subβ) with coident subα | coident subβ
 ...                   | refl | refl = refl
 coident (Λ∣ x α) = refl
 coident (V∣ x α) = refl
-coident (Λ x x₁ rep) with coident rep
-coident (Λ x x₁ rep) | refl = refl
-coident (V x x₁ rep) with coident rep
-coident (V x x₁ rep) | refl = refl
+coident (Λ x x₁ sub) with coident sub
+coident (Λ x x₁ sub) | refl = refl
+coident (V x x₁ sub) with coident sub
+coident (V x x₁ sub) | refl = refl
 
 
 ≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
