@@ -220,23 +220,34 @@ conotfree (subα ∨ subβ) (x∉α ∨ x∉β) with conotfree subα x∉α | co
 ...                                 | refl | refl = refl
 conotfree (Λ∣ x α) _ = refl
 conotfree (V∣ x α) _ = refl
-conotfree (Λ x x₁ r) (Λ∣ x₂ α) = {!   !}
-conotfree (Λ x x₁ r) (Λ y x∉α) = {!   !}
-conotfree (V x x₁ r) x∉α = {!   !}
+conotfree (Λ x≢x _ r) (Λ∣ x α) = ⊥-elim (x≢x refl)
+conotfree (Λ x≢y _ r) (Λ y x∉α) rewrite conotfree r x∉α = refl
+conotfree (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
+conotfree (V x≢y _ r) (V y x∉α) rewrite conotfree r x∉α = refl
 
 subUnique : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
-subUnique (ident α x) r = coident r
+subUnique (ident α x)   r = coident r
 subUnique (notfree x∉α) r = conotfree r x∉α
-subUnique r (ident α x) rewrite coident r = refl
+subUnique r (ident α x)   rewrite coident r       = refl
 subUnique r (notfree x∉α) rewrite conotfree r x∉α = refl
-subUnique (atom r₁ x) r = {!   !}
-subUnique (s ⇒ s₁) (r ⇒ r₁) = {!   !}
-subUnique (s ∧ s₁) (r ∧ r₁) = {!   !}
-subUnique (s ∨ s₁) (r ∨ r₁) = {!   !}
-subUnique (Λ∣ x α) r = {!   !}
-subUnique (V∣ x α) r = {!   !}
-subUnique (Λ x x₁ s) r = {!   !}
-subUnique (V x x₁ s) r = {!   !}
+subUnique (atom p s) (atom .p r) with subUniqueTerms ? s r
+...                              | refl = refl
+subUnique (s₁ ⇒ s₂) (r₁ ⇒ r₂)    with subUnique s₁ r₁ | subUnique s₂ r₂
+...                              | refl | refl = refl
+subUnique (s₁ ∧ s₂) (r₁ ∧ r₂)    with subUnique s₁ r₁ | subUnique s₂ r₂
+...                              | refl | refl = refl
+subUnique (s₁ ∨ s₂) (r₁ ∨ r₂)    with subUnique s₁ r₁ | subUnique s₂ r₂
+...                              | refl | refl = refl
+subUnique (Λ∣ x α) (Λ∣ .x .α)    = refl
+subUnique (Λ∣ x α) (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
+subUnique (V∣ x α) (V∣ .x .α)    = refl
+subUnique (V∣ x α) (V x≢x _ r)   = ⊥-elim (x≢x refl)
+subUnique (Λ x≢x _ s) (Λ∣ x α)   = ⊥-elim (x≢x refl)
+subUnique (Λ _ _ s) (Λ _ _ r)    with subUnique s r
+...                              | refl = refl
+subUnique (V x≢x _ s) (V∣ x α)   = ⊥-elim (x≢x refl)
+subUnique (V _ _ s) (V _ _ r)    with subUnique s r
+...                              | refl = refl
 
 --subUnique : ∀ α → ∀{x t β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
 --subUnique _ (ident α x) q = coident q
