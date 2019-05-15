@@ -294,3 +294,25 @@ subUnique (V x α) (V x₁ x₂ p) (V x₃ x₄ q) | refl = refl
 --≈trans (V x x₁) (V/ x₂ x₃) = {!   !}
 --≈trans (V/ x x₁) (V x₂ x₃) = {!   !}
 --≈trans (V/ x x₁) (V/ x₂ x₃) = {!   !}
+
+unfree : ∀ α x → Σ Formula (λ β → Σ Variable λ y
+         → Σ (x NotFreeIn β) λ _ → (β [ y / varterm x ]≡ α))
+unfree α x with x notFreeIn α
+...    | yes x∉α = α , x , x∉α , ident α x
+...    | no ¬x∉α = β , y , subNotFree x∉y α[x/y]≡β , subInverse y∉α α[x/y]≡β
+  where
+    yfr : Σ Variable (_FreshIn α)
+    yfr = fresh α
+    y : Variable
+    y = fst yfr
+    y∉α : y NotFreeIn α
+    y∉α = freshNotFree (snd yfr)
+    x∉y : x NotFreeInTerm (varterm y)
+    x∉y = varterm λ { refl → ¬x∉α (freshNotFree (snd yfr)) }
+    βsub : Σ Formula (α [ x / varterm y ]≡_)
+    βsub = α [ x / freshFreeFor (snd yfr) x ]
+    β : Formula
+    β = fst βsub
+    α[x/y]≡β : α [ x / varterm y ]≡ β
+    α[x/y]≡β = snd βsub
+
