@@ -263,7 +263,7 @@ formulaEq (V x α)     (Λ y γ)     = no λ ()
 \end{code}
 }
 
-\subsection{Variable freedom and substitution}
+\subsection{Variable freedom}
 
 We define the conditions for a variable to be \emph{not free} in a formula.
 Instead of first defining \emph{free} and then taking \emph{not free} to be the
@@ -309,194 +309,6 @@ data _NotFreeIn_ : Variable → Formula → Set where
   V    : ∀{x α}   → ∀ y → x NotFreeIn α → x NotFreeIn V y α
 
 \end{code}
-
-We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
-replacing all instances of a variable $x$ with term $t$. It will later be shown
-that such a $\beta$ is unique. The definitions have a similar structure to that
-of \inline{_NotFreeIn_} above. Note that the more general case of replacing
-terms with terms is not needed for natural deduction.
-
-Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
-variable distinct from $x$ is left unchanged. For a function application, $x$
-is replaced with $t$ inside all of the arguments.
-\begin{code}
-
-data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
-
-data ⟨_⟩[_/_]≡_ : Term → Variable → Term → Term → Set where
-  varterm≡ : ∀{x t} → ⟨ varterm x ⟩[ x / t ]≡ t
-  varterm≢ : ∀{x t y} → x ≢ y → ⟨ varterm y ⟩[ x / t ]≡ varterm y
-  functerm : ∀{x t f us vs} → [ us ][ x  / t ]≡ vs
-               → ⟨ functerm f us ⟩[ x / t ]≡ functerm f vs
-
-data [_][_/_]≡_ where
-  []  : ∀{x t} → [ [] ][ x / t ]≡ []
-  _∷_ : ∀{x t u v n} {us vs : Vec Term n}
-        → ⟨ u ⟩[ x / t ]≡ v → [ us ][ x / t ]≡ vs
-        → [ u ∷ us ][ x / t ]≡ (v ∷ vs)
-
-\end{code}
-
-The definition for formulae follows.
-\begin{code}
-
-data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
-\end{code}
-The \inline{ident} constructor gives the case that replacing $x$ with $x$
-yields the original formula. While this is actually a derived rule, in practice
-it is the case we usually want to use. Providing a constructor allows Agda's
-proof search to solve this case easily.
-\begin{code}
-  ident : ∀ α x → α [ x / varterm x ]≡ α
-\end{code}
-If $x$ is in fact not free in $\alpha$, then replacing it with any term should
-leave $\alpha$ unchanged. This rule is not derivable when $t$ is not free for
-$x$ in $\alpha$. For example, without this constructor it would not be possible
-to prove that $(\forall y A)[x/y]\equiv A$, where $A$ is a propositional
-\todo{nullary predicate} formula.
-\begin{code}
-  notfree : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
-\end{code}
-The propositional cases are similar to those of the \inline{_NotFreeIn_} type
-above.
-\begin{code}
-  atom    : ∀{x t}
-              → (r : Relation) → {xs ys : Vec Term (relarity r)}
-              → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
-  _⇒_     : ∀{α α′ β β′ x t}
-              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ⇒ β) [ x / t ]≡ (α′ ⇒ β′)
-  _∧_     : ∀{α α′ β β′ x t}
-              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∧ β) [ x / t ]≡ (α′ ∧ β′)
-  _∨_     : ∀{α α′ β β′ x t}
-              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
-\end{code}
-Variable substitution for a quantified formula has two cases, which are similar
-to their counterparts in \inline{_NotFreeIn_}. If $x$ is the quantification
-variable, then the formula is unchanged.
-\begin{code}
-  Λ∣      : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
-  V∣      : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
-\end{code}
-If $x$ is not the quantification variable and $t$ is free for $x$ in in the
-formula ($x$ is not free in term $t$), then the substitution simply occurs
-inside the quantification.
-\begin{code}
-  Λ       : ∀{α β x y t} → x ≢ y → y NotFreeInTerm t
-              → α [ x / t ]≡ β → (Λ y α) [ x / t ]≡ (Λ y β)
-  V       : ∀{α β x y t} → x ≢ y → y NotFreeInTerm t
-              → α [ x / t ]≡ β → (V y α) [ x / t ]≡ (V y β)
-
-\end{code}
-
-\todo{Move this elsewhere?}
-Formulae are equivalent if they are equal up to renaming bound variables. Here,
-renaming means substituting a variable for another variable which is not free,
-so that the meaning of the formula does not change.
-\begin{code}
-
-infix 50 _≈_
-data _≈_ : Formula → Formula → Set where
-  atom : ∀ r ts → atom r ts ≈ atom r ts
-  _⇒_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ⇒ β ≈ α′ ⇒ β′
-  _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
-  _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
-  Λ    : ∀{α α′} → ∀ x → α ≈ α′ → Λ x α ≈ Λ x α′
-  Λ/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → Λ x α ≈ Λ y β
-  V    : ∀{α α′} → ∀ x → α ≈ α′ → V x α ≈ V x α′
-  V/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → V x α ≈ V y β
-
-\end{code}
-
-Substitutions do not always exist. For example, there is no way of constructing
-a formula for $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if
-$t$ is \emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$
-would become bound inside $\alpha$. This can be formalised by using (with minor
-modification) the rules of \cite{vandalen}.
-\begin{code}
-
-data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
-  notfree : ∀{α} → x NotFreeIn α → t FreeFor x In α
-  atom    : ∀ r us → t FreeFor x In atom r us
-  _⇒_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ⇒ β
-  _∧_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∧ β
-  _∨_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∨ β
-  Λ∣      : ∀ α → t FreeFor x In Λ x α
-  V∣      : ∀ α → t FreeFor x In V x α
-  Λ       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
-  V       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
-
-\end{code}
-It will later be shown that, using the above definitions, there is a $\beta$
-satisfying $\alpha [x/t]\equiv \beta$ if and only if $t$ is free for $x$ in
-$\alpha$. \todo{Include this proof}
-
-\subsection{Computing substitutions}
-
-The definitions above for variable substitution lead directly to a procedure
-for computing substitutions. Given $\alpha$, $x$, $t$, and a proof that $t$ is
-free for $x$ in $\alpha$, we compute a $\beta$ and a proof that
-$\alpha[x/t] \equiv \beta$. The sigma (dependent sum) type can be used to
-encapsulate both a value and a proof regarding that value.
-
-First for vectors of terms, recurse through all function arguments, and replace
-any variables equal to $x$ with $t$. In the code below, we do a case split on
-the first term, and use a \inline{with} block to get the substitution for the
-rest of the vector simultaneously, since this substitution is required in
-either case.
-\begin{code}
-
-[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) [ us ][ x / t ]≡_
-[ [] ][ x / t ] = [] , []
-[ u ∷ us ][ x / t ] with [ us ][ x / t ]
-[ varterm y     ∷ us ][ x / t ] | vs , vspf with varEq x y
-...    | yes refl = (t         ∷ vs) , (varterm≡     ∷ vspf)
-...    | no  x≢y  = (varterm y ∷ vs) , (varterm≢ x≢y ∷ vspf)
-[ functerm f ws ∷ us ][ x / t ] | vs , vspf with [ ws ][ x / t ]
-...    | xs , xspf = (functerm f xs ∷ vs) , (functerm xspf ∷ vspf)
-
-\end{code}
-
-For formulae, a proof that $t$ is free for $x$ in the formula must be supplied.
-The term $t$ is fixed by supplying such a proof, so for convenience of
-notation, the proof is supplied in place of the term. In the following code we
-will use names like \inline{x∉α} to denote proofs of `$x$ is not free in
-$\alpha$`.
-\begin{code}
-
-_[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
-α [ x / notfree ¬x∉α ]          = α , notfree ¬x∉α
-\end{code}
-For atomic formulae, apply the above lemma.
-\begin{code}
-_[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
-...                             | ts′ , tspf = atom r ts′ , atom r tspf
-\end{code}
-For the propositional connectives, the substitution is obtained recursively.
-\begin{code}
-(α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
-(α ∧ β) [ x / tffα ∧ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
-(α ∨ β) [ x / tffα ∨ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
-\end{code}
-For generalisation, check if $x$ is the quantifier, and if so do nothing.
-Otherwise, recurse.
-\begin{code}
-Λ y α [ .y / Λ∣ .α ]            = Λ y α , Λ∣ y α
-Λ y α [ x / Λ .α .y y∉t tffα ] with varEq x y
-...                             | yes refl = Λ y α , Λ∣ y α
-...                             | no  x≢y  with α [ x / tffα ]
-...                                        | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
-V y α [ .y / V∣ .α ]            = V y α , V∣ y α
-V y α [ x / V .α .y y∉t tffα ] with varEq x y
-...                             | yes refl = V y α , V∣ y α
-...                             | no  x≢y  with α [ x / tffα ]
-...                                        | α′ , αpf = V y α′ , V x≢y y∉t αpf
-
-\end{code}
-
-\subsection{Decidability}
 
 Variable freedom within a vector of terms is decidable, simply by searching
 through the vector for occurences.
@@ -589,11 +401,328 @@ x notFreeIn V  y α    with varEq x y
 
 \end{code}
 
-\subsection{Generating fresh variables}
 
-A variable is \emph{fresh} if appears nowhere (free or bound) in a formula. We
-later prove that if $x$ is fresh in $\alpha$ then it is not free, and for every
-$y$, $x$ is free for $y$ in $\alpha$.
+\subsection{Substitutions}
+
+We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
+replacing all instances of a variable $x$ with term $t$. It will later be shown
+that such a $\beta$ is unique. The definitions have a similar structure to that
+of \inline{_NotFreeIn_} above. Note that the more general case of replacing
+terms with terms is not needed for natural deduction.
+
+Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
+variable distinct from $x$ is left unchanged. For a function application, $x$
+is replaced with $t$ inside all of the arguments.
+\begin{code}
+
+data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
+
+data ⟨_⟩[_/_]≡_ : Term → Variable → Term → Term → Set where
+  varterm≡ : ∀{x t} → ⟨ varterm x ⟩[ x / t ]≡ t
+  varterm≢ : ∀{x t y} → x ≢ y → ⟨ varterm y ⟩[ x / t ]≡ varterm y
+  functerm : ∀{x t f us vs} → [ us ][ x  / t ]≡ vs
+               → ⟨ functerm f us ⟩[ x / t ]≡ functerm f vs
+
+data [_][_/_]≡_ where
+  []  : ∀{x t} → [ [] ][ x / t ]≡ []
+  _∷_ : ∀{x t u v n} {us vs : Vec Term n}
+        → ⟨ u ⟩[ x / t ]≡ v → [ us ][ x / t ]≡ vs
+        → [ u ∷ us ][ x / t ]≡ (v ∷ vs)
+
+\end{code}
+
+The definition for formulae follows.
+\begin{code}
+
+data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
+\end{code}
+The \inline{ident} constructor gives the case that replacing $x$ with $x$
+yields the original formula. While this is actually a derived rule, in practice
+it is the case we usually want to use. Providing a constructor allows Agda's
+proof search to solve this case easily.
+\begin{code}
+  ident : ∀ α x → α [ x / varterm x ]≡ α
+\end{code}
+If $x$ is in fact not free in $\alpha$, then replacing it with any term should
+leave $\alpha$ unchanged. This rule is not derivable when $t$ is not free for
+$x$ in $\alpha$. For example, without this constructor it would not be possible
+to prove that $(\forall y A)[x/y]\equiv A$, where $A$ is a propositional
+\todo{nullary predicate} formula.
+\begin{code}
+  notfree : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
+\end{code}
+The propositional cases are similar to those of the \inline{_NotFreeIn_} type
+above.
+\begin{code}
+  atom    : ∀{x t}
+              → (r : Relation) → {xs ys : Vec Term (relarity r)}
+              → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
+  _⇒_     : ∀{α α′ β β′ x t}
+              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ⇒ β) [ x / t ]≡ (α′ ⇒ β′)
+  _∧_     : ∀{α α′ β β′ x t}
+              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∧ β) [ x / t ]≡ (α′ ∧ β′)
+  _∨_     : ∀{α α′ β β′ x t}
+              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
+\end{code}
+Variable substitution for a quantified formula has two cases, which are similar
+to their counterparts in \inline{_NotFreeIn_}. If $x$ is the quantification
+variable, then the formula is unchanged.
+\begin{code}
+  Λ∣      : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
+  V∣      : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
+\end{code}
+If $x$ is not the quantification variable and $t$ is free for $x$ in in the
+formula ($x$ is not free in term $t$), then the substitution simply occurs
+inside the quantification.
+\begin{code}
+  Λ       : ∀{α β x y t} → x ≢ y → y NotFreeInTerm t
+              → α [ x / t ]≡ β → (Λ y α) [ x / t ]≡ (Λ y β)
+  V       : ∀{α β x y t} → x ≢ y → y NotFreeInTerm t
+              → α [ x / t ]≡ β → (V y α) [ x / t ]≡ (V y β)
+
+\end{code}
+
+Substitutions do not always exist. For example, there is no way of constructing
+a formula for $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if
+$t$ is \emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$
+would become bound inside $\alpha$. This can be formalised by using (with minor
+modification) the rules of \cite{vandalen}.
+\begin{code}
+
+data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
+  notfree : ∀{α} → x NotFreeIn α → t FreeFor x In α
+  atom    : ∀ r us → t FreeFor x In atom r us
+  _⇒_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ⇒ β
+  _∧_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∧ β
+  _∨_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∨ β
+  Λ∣      : ∀ α → t FreeFor x In Λ x α
+  V∣      : ∀ α → t FreeFor x In V x α
+  Λ       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
+  V       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
+
+\end{code}
+It will later be shown that, using the above definitions, there is a $\beta$
+satisfying $\alpha [x/t]\equiv \beta$ if and only if $t$ is free for $x$ in
+$\alpha$. \todo{Include this proof}
+
+The definitions above for variable substitution lead directly to a procedure
+for computing substitutions. Given $\alpha$, $x$, $t$, and a proof that $t$ is
+free for $x$ in $\alpha$, we compute a $\beta$ and a proof that
+$\alpha[x/t] \equiv \beta$. The sigma (dependent sum) type can be used to
+encapsulate both a value and a proof regarding that value.
+
+First for vectors of terms, recurse through all function arguments, and replace
+any variables equal to $x$ with $t$. In the code below, we do a case split on
+the first term, and use a \inline{with} block to get the substitution for the
+rest of the vector simultaneously, since this substitution is required in
+either case.
+\begin{code}
+
+[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) [ us ][ x / t ]≡_
+[ [] ][ x / t ] = [] , []
+[ u ∷ us ][ x / t ] with [ us ][ x / t ]
+[ varterm y     ∷ us ][ x / t ] | vs , vspf with varEq x y
+...    | yes refl = (t         ∷ vs) , (varterm≡     ∷ vspf)
+...    | no  x≢y  = (varterm y ∷ vs) , (varterm≢ x≢y ∷ vspf)
+[ functerm f ws ∷ us ][ x / t ] | vs , vspf with [ ws ][ x / t ]
+...    | xs , xspf = (functerm f xs ∷ vs) , (functerm xspf ∷ vspf)
+
+\end{code}
+
+For formulae, a proof that $t$ is free for $x$ in the formula must be supplied.
+The term $t$ is fixed by supplying such a proof, so for convenience of
+notation, the proof is supplied in place of the term. In the following code we
+will use names like \inline{x∉α} to denote proofs of `$x$ is not free in
+$\alpha$`.
+\begin{code}
+
+_[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
+α [ x / notfree ¬x∉α ]          = α , notfree ¬x∉α
+\end{code}
+For atomic formulae, apply the above lemma.
+\begin{code}
+_[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
+...                             | ts′ , tspf = atom r ts′ , atom r tspf
+\end{code}
+For the propositional connectives, the substitution is obtained recursively.
+\begin{code}
+(α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
+(α ∧ β) [ x / tffα ∧ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
+(α ∨ β) [ x / tffα ∨ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
+...                             | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
+\end{code}
+For generalisation, check if $x$ is the quantifier, and if so do nothing.
+Otherwise, recurse.
+\begin{code}
+Λ y α [ .y / Λ∣ .α ]            = Λ y α , Λ∣ y α
+Λ y α [ x / Λ .α .y y∉t tffα ] with varEq x y
+...                             | yes refl = Λ y α , Λ∣ y α
+...                             | no  x≢y  with α [ x / tffα ]
+...                                        | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
+V y α [ .y / V∣ .α ]            = V y α , V∣ y α
+V y α [ x / V .α .y y∉t tffα ] with varEq x y
+...                             | yes refl = V y α , V∣ y α
+...                             | no  x≢y  with α [ x / tffα ]
+...                                        | α′ , αpf = V y α′ , V x≢y y∉t αpf
+
+
+subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
+subIdentFunc (ident α x) = refl
+subIdentFunc (notfree x) = refl
+subIdentFunc (atom r ts) = vecEq→Eq (termsLemma ts)
+  where
+    vecEq→Eq : {us vs : Vec Term (relarity r)} → us ≡ vs → atom r us ≡ atom r vs
+    vecEq→Eq refl = refl
+    termsLemma : ∀{n x} {us vs : Vec Term n}
+                   → [ us ][ x / varterm x ]≡ vs → us ≡ vs
+    termsLemma []                  = refl
+    termsLemma (r            ∷ rs) with termsLemma rs
+    termsLemma (varterm≡     ∷ rs) | refl = refl
+    termsLemma (varterm≢ x≢y ∷ rs) | refl = refl
+    termsLemma (functerm ts  ∷ rs) | refl rewrite termsLemma ts = refl
+subIdentFunc (subα ⇒ subβ) with subIdentFunc subα | subIdentFunc subβ
+...                   | refl | refl = refl
+subIdentFunc (subα ∧ subβ) with subIdentFunc subα | subIdentFunc subβ
+...                   | refl | refl = refl
+subIdentFunc (subα ∨ subβ) with subIdentFunc subα | subIdentFunc subβ
+...                   | refl | refl = refl
+subIdentFunc (Λ∣ x α) = refl
+subIdentFunc (V∣ x α) = refl
+subIdentFunc (Λ x x₁ sub) with subIdentFunc sub
+subIdentFunc (Λ x x₁ sub) | refl = refl
+subIdentFunc (V x x₁ sub) with subIdentFunc sub
+subIdentFunc (V x x₁ sub) | refl = refl
+
+
+subNotFreeFunc : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
+subNotFreeFunc (ident α x) x∉α = refl
+subNotFreeFunc (notfree x) x∉α = refl
+subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
+  where
+    vecEq→Eq : {us vs : Vec Term (relarity p)} → us ≡ vs → atom p us ≡ atom p vs
+    vecEq→Eq refl = refl
+    termsLemma : ∀{n x t} {us vs : Vec Term n}
+                  → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
+    termsLemma [] x∉us = refl
+    termsLemma (r ∷ rs) (x∉u ∷ x∉us) with termsLemma rs x∉us
+    termsLemma (varterm≡     ∷ rs) (varterm x≢x   ∷ x∉us) | refl = ⊥-elim (x≢x refl)
+    termsLemma (varterm≢ x≢y ∷ rs) (x∉u           ∷ x∉us) | refl = refl
+    termsLemma (functerm rt  ∷ rs) (functerm x∉ts ∷ x∉us) | refl
+               rewrite termsLemma rt x∉ts = refl
+subNotFreeFunc (subα ⇒ subβ) (x∉α ⇒ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
+...                                 | refl | refl = refl
+subNotFreeFunc (subα ∧ subβ) (x∉α ∧ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
+...                                 | refl | refl = refl
+subNotFreeFunc (subα ∨ subβ) (x∉α ∨ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
+...                                 | refl | refl = refl
+subNotFreeFunc (Λ∣ x α) _ = refl
+subNotFreeFunc (V∣ x α) _ = refl
+subNotFreeFunc (Λ x≢x _ r) (Λ∣ x α) = ⊥-elim (x≢x refl)
+subNotFreeFunc (Λ x≢y _ r) (Λ y x∉α) rewrite subNotFreeFunc r x∉α = refl
+subNotFreeFunc (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
+subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
+
+
+subFuncTerms : ∀{n x t} {us vs ws : Vec Term n}
+               → [ us ][ x / t ]≡ vs → [ us ][ x / t ]≡ ws → vs ≡ ws
+subFuncTerms [] [] = refl
+subFuncTerms (s ∷ ss) (r ∷ rs) with subFuncTerms ss rs
+subFuncTerms (varterm≡     ∷ ss) (varterm≡     ∷ rs) | refl = refl
+subFuncTerms (varterm≡     ∷ ss) (varterm≢ x≢x ∷ rs) | refl = ⊥-elim (x≢x refl)
+subFuncTerms (varterm≢ x≢x ∷ ss) (varterm≡     ∷ rs) | refl = ⊥-elim (x≢x refl)
+subFuncTerms (varterm≢ x≢y ∷ ss) (varterm≢ _   ∷ rs) | refl = refl
+subFuncTerms (functerm st  ∷ ss) (functerm rt  ∷ rs) | refl
+             rewrite subFuncTerms st rt = refl
+
+subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
+subFunc (ident α x)   r             = subIdentFunc r
+subFunc (notfree x∉α) r             = subNotFreeFunc r x∉α
+subFunc r             (ident α x)   rewrite subIdentFunc r       = refl
+subFunc r             (notfree x∉α) rewrite subNotFreeFunc r x∉α = refl
+subFunc (atom p s)    (atom .p r)   with subFuncTerms s r
+...                                 | refl = refl
+subFunc (s₁ ⇒ s₂)     (r₁ ⇒ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+...                                 | refl | refl = refl
+subFunc (s₁ ∧ s₂)     (r₁ ∧ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+...                                 | refl | refl = refl
+subFunc (s₁ ∨ s₂)     (r₁ ∨ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+...                                 | refl | refl = refl
+subFunc (Λ∣ x α)      (Λ∣ .x .α)    = refl
+subFunc (Λ∣ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
+subFunc (V∣ x α)      (V∣ .x .α)    = refl
+subFunc (V∣ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
+subFunc (Λ x≢x _ s)   (Λ∣ x α)      = ⊥-elim (x≢x refl)
+subFunc (Λ _ _ s)     (Λ _ _ r)     rewrite subFunc s r = refl
+subFunc (V x≢x _ s)   (V∣ x α)      = ⊥-elim (x≢x refl)
+subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
+
+\end{code}
+
+If a variable has been substituted by a term not involving that variable, then
+the variable is not free in the resulting term.
+\begin{code}
+
+subNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
+subNotFree (varterm x≢x) (ident α x) = ⊥-elim (x≢x refl)
+subNotFree x∉t (notfree x∉α)   = x∉α
+subNotFree x∉t (atom r p)       = atom (termsLemma x∉t p)
+  where
+    termsLemma : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t
+                      → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
+    termsLemma x∉t []                  = []
+    termsLemma x∉t (varterm≡ ∷ ps)     = x∉t ∷ termsLemma x∉t ps
+    termsLemma x∉t (varterm≢ neq ∷ ps) = varterm neq ∷ termsLemma x∉t ps
+    termsLemma x∉t (functerm sub ∷ ps) = functerm (termsLemma x∉t sub)
+                                           ∷ termsLemma x∉t ps
+subNotFree x∉t (pα ⇒ pβ)        = subNotFree x∉t pα ⇒ subNotFree x∉t pβ
+subNotFree x∉t (pα ∧ pβ)        = subNotFree x∉t pα ∧ subNotFree x∉t pβ
+subNotFree x∉t (pα ∨ pβ)        = subNotFree x∉t pα ∨ subNotFree x∉t pβ
+subNotFree x∉t (Λ∣ y α)         = Λ∣ y α
+subNotFree x∉t (Λ x≢y y∉t p)   = Λ _ (subNotFree x∉t p)
+subNotFree x∉t (V∣ y α)         = V∣ y α
+subNotFree x∉t (V x≢y y∉t p)   = V _ (subNotFree x∉t p)
+
+
+\end{code}
+
+The result of $\alpha [ x / t ]$ should be a formula $\beta$ satisfying $\alpha
+[ x / t ]\equiv \beta$. Such a $\beta$ is computable.
+\begin{code}
+
+subInverse : ∀{ω α x β}
+             → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
+subInverse _           (ident α x)    = ident α x
+subInverse ω∉α         (notfree x∉α)  = notfree ω∉α
+subInverse (atom x∉ts) (atom r subts) = atom r (termsLemma x∉ts subts)
+  where
+    termsLemma : ∀{n x ω} {us vs : Vec Term n} → ω NotFreeInTerms us
+                 → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
+    termsLemma ω∉us [] = []
+    termsLemma (_ ∷ ω∉us) (varterm≡ ∷ subus) = varterm≡ ∷ termsLemma ω∉us subus
+    termsLemma (varterm ω≢y ∷ ω∉us) (varterm≢ x≢ω ∷ subus) = varterm≢ ω≢y ∷ termsLemma ω∉us subus
+    termsLemma (functerm ω∉ts ∷ ω∉us) (functerm subts ∷ subus) = functerm (termsLemma ω∉ts subts) ∷ termsLemma ω∉us subus
+subInverse (ω∉α ⇒ ω∉β) (subα ⇒ subβ) = subInverse ω∉α subα ⇒ subInverse ω∉β subβ
+subInverse (ω∉α ∧ ω∉β) (subα ∧ subβ) = subInverse ω∉α subα ∧ subInverse ω∉β subβ
+subInverse (ω∉α ∨ ω∉β) (subα ∨ subβ) = subInverse ω∉α subα ∨ subInverse ω∉β subβ
+subInverse ω∉α          (Λ∣ x α)              = notfree ω∉α
+subInverse (Λ∣ x α)      (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
+subInverse ω∉α          (V∣ x α)              = notfree ω∉α
+subInverse (V∣ x α)      (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
+subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω subα)           with varEq ω y
+subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω subα)           | no ω≢y = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
+subInverse {.y} (Λ y ω∉α) (Λ x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
+subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           with varEq ω y
+subInverse {.y} (V y ω∉α) (V x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
+subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           | no ω≢y = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
+
+
+\end{code}
+
+\subsection{Fresh variables}
+
+A variable is \emph{fresh} if appears nowhere (free or bound) in a formula.
 \begin{code}
 
 data _FreshIn_ (x : Variable) : Formula → Set where
@@ -645,7 +774,9 @@ freshFreeFor (V x≢y xfrα)  y = V _ _ (varterm x≢y) (freshFreeFor xfrα y)
 \end{code}
 }
 
-For the purposes of variable substitution, we need a way to generate a fresh
+For the purposes of variable substitution, we need a way
+\todo{why?}
+to generate a fresh
 variable for a given formula. Only finitely many variables occur in a given
 term or formula, so there is a greatest (with respect to the natural number
 indexing) variable occuring in each term or formula; all variables greater than
@@ -835,158 +966,28 @@ fresh α with minFresh α
 
 \end{code}
 
-\subsection{Lemata}
+\subsection{Formula equivalence}
 
-If a variable has been substituted by a term not involving that variable, then
-the variable is not free in the resulting term.
-
+Formulae are equivalent if they are equal up to renaming bound variables. Here,
+renaming means substituting a variable for another variable which is not free,
+so that the meaning of the formula does not change.
 \begin{code}
 
-subNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
-subNotFree (varterm x≢x) (ident α x) = ⊥-elim (x≢x refl)
-subNotFree x∉t (notfree x∉α)   = x∉α
-subNotFree x∉t (atom r p)       = atom (termsLemma x∉t p)
-  where
-    termsLemma : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t
-                      → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
-    termsLemma x∉t []                  = []
-    termsLemma x∉t (varterm≡ ∷ ps)     = x∉t ∷ termsLemma x∉t ps
-    termsLemma x∉t (varterm≢ neq ∷ ps) = varterm neq ∷ termsLemma x∉t ps
-    termsLemma x∉t (functerm sub ∷ ps) = functerm (termsLemma x∉t sub)
-                                           ∷ termsLemma x∉t ps
-subNotFree x∉t (pα ⇒ pβ)        = subNotFree x∉t pα ⇒ subNotFree x∉t pβ
-subNotFree x∉t (pα ∧ pβ)        = subNotFree x∉t pα ∧ subNotFree x∉t pβ
-subNotFree x∉t (pα ∨ pβ)        = subNotFree x∉t pα ∨ subNotFree x∉t pβ
-subNotFree x∉t (Λ∣ y α)         = Λ∣ y α
-subNotFree x∉t (Λ x≢y y∉t p)   = Λ _ (subNotFree x∉t p)
-subNotFree x∉t (V∣ y α)         = V∣ y α
-subNotFree x∉t (V x≢y y∉t p)   = V _ (subNotFree x∉t p)
-
+infix 50 _≈_
+data _≈_ : Formula → Formula → Set where
+  atom : ∀ r ts → atom r ts ≈ atom r ts
+  _⇒_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ⇒ β ≈ α′ ⇒ β′
+  _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
+  _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
+  Λ    : ∀{α α′} → ∀ x → α ≈ α′ → Λ x α ≈ Λ x α′
+  Λ/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → Λ x α ≈ Λ y β
+  V    : ∀{α α′} → ∀ x → α ≈ α′ → V x α ≈ V x α′
+  V/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → V x α ≈ V y β
 
 \end{code}
 
-The result of $\alpha [ x / t ]$ should be a formula $\beta$ satisfying $\alpha
-[ x / t ]\equiv \beta$. Such a $\beta$ is computable.
-
+It is important that this relation is symmetric
 \begin{code}
-
-subInverse : ∀{ω α x β}
-             → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
-subInverse _           (ident α x)    = ident α x
-subInverse ω∉α         (notfree x∉α)  = notfree ω∉α
-subInverse (atom x∉ts) (atom r subts) = atom r (termsLemma x∉ts subts)
-  where
-    termsLemma : ∀{n x ω} {us vs : Vec Term n} → ω NotFreeInTerms us
-                 → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
-    termsLemma ω∉us [] = []
-    termsLemma (_ ∷ ω∉us) (varterm≡ ∷ subus) = varterm≡ ∷ termsLemma ω∉us subus
-    termsLemma (varterm ω≢y ∷ ω∉us) (varterm≢ x≢ω ∷ subus) = varterm≢ ω≢y ∷ termsLemma ω∉us subus
-    termsLemma (functerm ω∉ts ∷ ω∉us) (functerm subts ∷ subus) = functerm (termsLemma ω∉ts subts) ∷ termsLemma ω∉us subus
-subInverse (ω∉α ⇒ ω∉β) (subα ⇒ subβ) = subInverse ω∉α subα ⇒ subInverse ω∉β subβ
-subInverse (ω∉α ∧ ω∉β) (subα ∧ subβ) = subInverse ω∉α subα ∧ subInverse ω∉β subβ
-subInverse (ω∉α ∨ ω∉β) (subα ∨ subβ) = subInverse ω∉α subα ∨ subInverse ω∉β subβ
-subInverse ω∉α          (Λ∣ x α)              = notfree ω∉α
-subInverse (Λ∣ x α)      (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
-subInverse ω∉α          (V∣ x α)              = notfree ω∉α
-subInverse (V∣ x α)      (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
-subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω subα)           with varEq ω y
-subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω subα)           | no ω≢y = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
-subInverse {.y} (Λ y ω∉α) (Λ x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
-subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           with varEq ω y
-subInverse {.y} (V y ω∉α) (V x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
-subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           | no ω≢y = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
-
-
-subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
-subIdentFunc (ident α x) = refl
-subIdentFunc (notfree x) = refl
-subIdentFunc (atom r ts) = vecEq→Eq (termsLemma ts)
-  where
-    vecEq→Eq : {us vs : Vec Term (relarity r)} → us ≡ vs → atom r us ≡ atom r vs
-    vecEq→Eq refl = refl
-    termsLemma : ∀{n x} {us vs : Vec Term n}
-                   → [ us ][ x / varterm x ]≡ vs → us ≡ vs
-    termsLemma []                  = refl
-    termsLemma (r            ∷ rs) with termsLemma rs
-    termsLemma (varterm≡     ∷ rs) | refl = refl
-    termsLemma (varterm≢ x≢y ∷ rs) | refl = refl
-    termsLemma (functerm ts  ∷ rs) | refl rewrite termsLemma ts = refl
-subIdentFunc (subα ⇒ subβ) with subIdentFunc subα | subIdentFunc subβ
-...                   | refl | refl = refl
-subIdentFunc (subα ∧ subβ) with subIdentFunc subα | subIdentFunc subβ
-...                   | refl | refl = refl
-subIdentFunc (subα ∨ subβ) with subIdentFunc subα | subIdentFunc subβ
-...                   | refl | refl = refl
-subIdentFunc (Λ∣ x α) = refl
-subIdentFunc (V∣ x α) = refl
-subIdentFunc (Λ x x₁ sub) with subIdentFunc sub
-subIdentFunc (Λ x x₁ sub) | refl = refl
-subIdentFunc (V x x₁ sub) with subIdentFunc sub
-subIdentFunc (V x x₁ sub) | refl = refl
-
-
-subNotFreeFunc : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
-subNotFreeFunc (ident α x) x∉α = refl
-subNotFreeFunc (notfree x) x∉α = refl
-subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
-  where
-    vecEq→Eq : {us vs : Vec Term (relarity p)} → us ≡ vs → atom p us ≡ atom p vs
-    vecEq→Eq refl = refl
-    termsLemma : ∀{n x t} {us vs : Vec Term n}
-                  → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
-    termsLemma [] x∉us = refl
-    termsLemma (r ∷ rs) (x∉u ∷ x∉us) with termsLemma rs x∉us
-    termsLemma (varterm≡     ∷ rs) (varterm x≢x   ∷ x∉us) | refl = ⊥-elim (x≢x refl)
-    termsLemma (varterm≢ x≢y ∷ rs) (x∉u           ∷ x∉us) | refl = refl
-    termsLemma (functerm rt  ∷ rs) (functerm x∉ts ∷ x∉us) | refl
-               rewrite termsLemma rt x∉ts = refl
-subNotFreeFunc (subα ⇒ subβ) (x∉α ⇒ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
-...                                 | refl | refl = refl
-subNotFreeFunc (subα ∧ subβ) (x∉α ∧ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
-...                                 | refl | refl = refl
-subNotFreeFunc (subα ∨ subβ) (x∉α ∨ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
-...                                 | refl | refl = refl
-subNotFreeFunc (Λ∣ x α) _ = refl
-subNotFreeFunc (V∣ x α) _ = refl
-subNotFreeFunc (Λ x≢x _ r) (Λ∣ x α) = ⊥-elim (x≢x refl)
-subNotFreeFunc (Λ x≢y _ r) (Λ y x∉α) rewrite subNotFreeFunc r x∉α = refl
-subNotFreeFunc (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
-subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
-
-
-subFuncTerms : ∀{n x t} {us vs ws : Vec Term n}
-               → [ us ][ x / t ]≡ vs → [ us ][ x / t ]≡ ws → vs ≡ ws
-subFuncTerms [] [] = refl
-subFuncTerms (s ∷ ss) (r ∷ rs) with subFuncTerms ss rs
-subFuncTerms (varterm≡     ∷ ss) (varterm≡     ∷ rs) | refl = refl
-subFuncTerms (varterm≡     ∷ ss) (varterm≢ x≢x ∷ rs) | refl = ⊥-elim (x≢x refl)
-subFuncTerms (varterm≢ x≢x ∷ ss) (varterm≡     ∷ rs) | refl = ⊥-elim (x≢x refl)
-subFuncTerms (varterm≢ x≢y ∷ ss) (varterm≢ _   ∷ rs) | refl = refl
-subFuncTerms (functerm st  ∷ ss) (functerm rt  ∷ rs) | refl
-             rewrite subFuncTerms st rt = refl
-
-subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
-subFunc (ident α x)   r             = subIdentFunc r
-subFunc (notfree x∉α) r             = subNotFreeFunc r x∉α
-subFunc r             (ident α x)   rewrite subIdentFunc r       = refl
-subFunc r             (notfree x∉α) rewrite subNotFreeFunc r x∉α = refl
-subFunc (atom p s)    (atom .p r)   with subFuncTerms s r
-...                                 | refl = refl
-subFunc (s₁ ⇒ s₂)     (r₁ ⇒ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
-...                                 | refl | refl = refl
-subFunc (s₁ ∧ s₂)     (r₁ ∧ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
-...                                 | refl | refl = refl
-subFunc (s₁ ∨ s₂)     (r₁ ∨ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
-...                                 | refl | refl = refl
-subFunc (Λ∣ x α)      (Λ∣ .x .α)    = refl
-subFunc (Λ∣ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
-subFunc (V∣ x α)      (V∣ .x .α)    = refl
-subFunc (V∣ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
-subFunc (Λ x≢x _ s)   (Λ∣ x α)      = ⊥-elim (x≢x refl)
-subFunc (Λ _ _ s)     (Λ _ _ r)     rewrite subFunc s r = refl
-subFunc (V x≢x _ s)   (V∣ x α)      = ⊥-elim (x≢x refl)
-subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
-
 
 ≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
 ≈sym                  (atom r ts)  = atom r ts
