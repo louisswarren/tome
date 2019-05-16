@@ -897,58 +897,61 @@ subInverse {.y} (V y ω∉α) (V x≢y (varterm y≢y) subα) | yes refl = ⊥-e
 subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           | no ω≢y = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
 
 
-coidentTerms : ∀{n x} {us vs : Vec Term n} → [ us ][ x / varterm x ]≡ vs → us ≡ vs
-coidentTerms [] = refl
-coidentTerms (x ∷ rep) with coidentTerms rep
-coidentTerms (varterm≡ ∷ rep)    | refl = refl
-coidentTerms (varterm≢ x ∷ rep)  | refl = refl
-coidentTerms (functerm ts ∷ rep) | refl with coidentTerms ts
-coidentTerms (functerm ts ∷ rep) | refl | refl = refl
-
-coident : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
-coident (ident α x) = refl
-coident (notfree x) = refl
-coident (atom r ts) with coidentTerms ts
-coident (atom r ts) | refl = refl
-coident (subα ⇒ subβ) with coident subα | coident subβ
+subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
+subIdentFunc (ident α x) = refl
+subIdentFunc (notfree x) = refl
+subIdentFunc (atom r ts) = vecEq→Eq (termsLemma ts)
+  where
+    vecEq→Eq : {us vs : Vec Term (relarity r)} → us ≡ vs → atom r us ≡ atom r vs
+    vecEq→Eq refl = refl
+    termsLemma : ∀{n x} {us vs : Vec Term n}
+                   → [ us ][ x / varterm x ]≡ vs → us ≡ vs
+    termsLemma []                  = refl
+    termsLemma (r            ∷ rs) with termsLemma rs
+    termsLemma (varterm≡     ∷ rs) | refl = refl
+    termsLemma (varterm≢ x≢y ∷ rs) | refl = refl
+    termsLemma (functerm ts  ∷ rs) | refl rewrite termsLemma ts = refl
+subIdentFunc (subα ⇒ subβ) with subIdentFunc subα | subIdentFunc subβ
 ...                   | refl | refl = refl
-coident (subα ∧ subβ) with coident subα | coident subβ
+subIdentFunc (subα ∧ subβ) with subIdentFunc subα | subIdentFunc subβ
 ...                   | refl | refl = refl
-coident (subα ∨ subβ) with coident subα | coident subβ
+subIdentFunc (subα ∨ subβ) with subIdentFunc subα | subIdentFunc subβ
 ...                   | refl | refl = refl
-coident (Λ∣ x α) = refl
-coident (V∣ x α) = refl
-coident (Λ x x₁ sub) with coident sub
-coident (Λ x x₁ sub) | refl = refl
-coident (V x x₁ sub) with coident sub
-coident (V x x₁ sub) | refl = refl
+subIdentFunc (Λ∣ x α) = refl
+subIdentFunc (V∣ x α) = refl
+subIdentFunc (Λ x x₁ sub) with subIdentFunc sub
+subIdentFunc (Λ x x₁ sub) | refl = refl
+subIdentFunc (V x x₁ sub) with subIdentFunc sub
+subIdentFunc (V x x₁ sub) | refl = refl
 
 
-conotfreeTerms : ∀{n x t} {us vs : Vec Term n}
-               → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
-conotfreeTerms [] x∉us = refl
-conotfreeTerms (r ∷ rs) (x∉u ∷ x∉us) with conotfreeTerms rs x∉us
-conotfreeTerms (varterm≡     ∷ rs) (varterm x≢x   ∷ x∉us) | refl = ⊥-elim (x≢x refl)
-conotfreeTerms (varterm≢ x≢y ∷ rs) (x∉u           ∷ x∉us) | refl = refl
-conotfreeTerms (functerm rt  ∷ rs) (functerm x∉ts ∷ x∉us) | refl
-               rewrite conotfreeTerms rt x∉ts = refl
-
-conotfree : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
-conotfree (ident α x) x∉α = refl
-conotfree (notfree x) x∉α = refl
-conotfree (atom p r) (atom x∉xs) rewrite conotfreeTerms r x∉xs = refl
-conotfree (subα ⇒ subβ) (x∉α ⇒ x∉β) with conotfree subα x∉α | conotfree subβ x∉β
+subNotFreeFunc : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
+subNotFreeFunc (ident α x) x∉α = refl
+subNotFreeFunc (notfree x) x∉α = refl
+subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
+  where
+    vecEq→Eq : {us vs : Vec Term (relarity p)} → us ≡ vs → atom p us ≡ atom p vs
+    vecEq→Eq refl = refl
+    termsLemma : ∀{n x t} {us vs : Vec Term n}
+                  → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
+    termsLemma [] x∉us = refl
+    termsLemma (r ∷ rs) (x∉u ∷ x∉us) with termsLemma rs x∉us
+    termsLemma (varterm≡     ∷ rs) (varterm x≢x   ∷ x∉us) | refl = ⊥-elim (x≢x refl)
+    termsLemma (varterm≢ x≢y ∷ rs) (x∉u           ∷ x∉us) | refl = refl
+    termsLemma (functerm rt  ∷ rs) (functerm x∉ts ∷ x∉us) | refl
+               rewrite termsLemma rt x∉ts = refl
+subNotFreeFunc (subα ⇒ subβ) (x∉α ⇒ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
 ...                                 | refl | refl = refl
-conotfree (subα ∧ subβ) (x∉α ∧ x∉β) with conotfree subα x∉α | conotfree subβ x∉β
+subNotFreeFunc (subα ∧ subβ) (x∉α ∧ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
 ...                                 | refl | refl = refl
-conotfree (subα ∨ subβ) (x∉α ∨ x∉β) with conotfree subα x∉α | conotfree subβ x∉β
+subNotFreeFunc (subα ∨ subβ) (x∉α ∨ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
 ...                                 | refl | refl = refl
-conotfree (Λ∣ x α) _ = refl
-conotfree (V∣ x α) _ = refl
-conotfree (Λ x≢x _ r) (Λ∣ x α) = ⊥-elim (x≢x refl)
-conotfree (Λ x≢y _ r) (Λ y x∉α) rewrite conotfree r x∉α = refl
-conotfree (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
-conotfree (V x≢y _ r) (V y x∉α) rewrite conotfree r x∉α = refl
+subNotFreeFunc (Λ∣ x α) _ = refl
+subNotFreeFunc (V∣ x α) _ = refl
+subNotFreeFunc (Λ x≢x _ r) (Λ∣ x α) = ⊥-elim (x≢x refl)
+subNotFreeFunc (Λ x≢y _ r) (Λ y x∉α) rewrite subNotFreeFunc r x∉α = refl
+subNotFreeFunc (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
+subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
 
 
 subFuncTerms : ∀{n x t} {us vs ws : Vec Term n}
@@ -963,10 +966,10 @@ subFuncTerms (functerm st  ∷ ss) (functerm rt  ∷ rs) | refl
              rewrite subFuncTerms st rt = refl
 
 subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
-subFunc (ident α x)   r             = coident r
-subFunc (notfree x∉α) r             = conotfree r x∉α
-subFunc r             (ident α x)   rewrite coident r       = refl
-subFunc r             (notfree x∉α) rewrite conotfree r x∉α = refl
+subFunc (ident α x)   r             = subIdentFunc r
+subFunc (notfree x∉α) r             = subNotFreeFunc r x∉α
+subFunc r             (ident α x)   rewrite subIdentFunc r       = refl
+subFunc r             (notfree x∉α) rewrite subNotFreeFunc r x∉α = refl
 subFunc (atom p s)    (atom .p r)   with subFuncTerms s r
 ...                                 | refl = refl
 subFunc (s₁ ⇒ s₂)     (r₁ ⇒ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
@@ -992,11 +995,11 @@ subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
 ≈sym                  (apα ∨ apβ)  = ≈sym apα ∨ ≈sym apβ
 ≈sym                  (Λ x ap)     = Λ x (≈sym ap)
 ≈sym {Λ x α} {Λ y α′} (Λ/ y∉α sub) with varEq x y
-... | yes refl rewrite coident sub = Λ/ y∉α (ident α′ x)
+... | yes refl rewrite subIdentFunc sub = Λ/ y∉α (ident α′ x)
 ... | no x≢y = Λ/ (subNotFree (varterm x≢y) sub) (subInverse y∉α sub)
 ≈sym                  (V x ap)     = V x (≈sym ap)
 ≈sym {V x α} {V y α′} (V/ y∉α sub) with varEq x y
-... | yes refl rewrite coident sub = V/ y∉α (ident α′ x)
+... | yes refl rewrite subIdentFunc sub = V/ y∉α (ident α′ x)
 ... | no x≢y = V/ (subNotFree (varterm x≢y) sub) (subInverse y∉α sub)
 
 \end{code}

@@ -8,14 +8,14 @@ open import Vec
 -- Prove that ident is a derived rule. Note that this proof does not make use
 -- of Formula.ident
 derived-ident : ∀ α x → α [ x / varterm x ]≡ α
-derived-ident (atom r ts) x = atom r (identTerms ts x)
+derived-ident (atom r ts) x = atom r (termsLemma ts)
   where
-    identTerms : ∀{n} → (ts : Vec Term n) → ∀ x → [ ts ][ x / varterm x ]≡ ts
-    identTerms [] x = []
-    identTerms (varterm y ∷ ts) x with varEq x y
-    ...                           | yes refl = varterm≡ ∷ identTerms ts x
-    ...                           | no  x≢y  = varterm≢ x≢y ∷ identTerms ts x
-    identTerms (functerm f us ∷ ts) x = functerm (identTerms us x) ∷ identTerms ts x
+    termsLemma : ∀{n} → (ts : Vec Term n) → [ ts ][ x / varterm x ]≡ ts
+    termsLemma [] = []
+    termsLemma (varterm y     ∷ ts) with varEq x y
+    ...                             | yes refl = varterm≡     ∷ termsLemma ts
+    ...                             | no  x≢y  = varterm≢ x≢y ∷ termsLemma ts
+    termsLemma (functerm f us ∷ ts) = functerm (termsLemma us) ∷ termsLemma ts
 derived-ident (α ⇒ β) x = derived-ident α x ⇒ derived-ident β x
 derived-ident (α ∧ β) x = derived-ident α x ∧ derived-ident β x
 derived-ident (α ∨ β) x = derived-ident α x ∨ derived-ident β x
@@ -115,15 +115,6 @@ t freeFor x In α with x notFreeIn α
                                                               ¬tff (V∣ .α) = x≢y refl
                                                               ¬tff (V .α .y ynft _) = ¬ynft ynft
 
--- Generating not-free variables
-supFreeTerm : ∀ t → Σ ℕ λ ⌈t⌉ → ∀ n → ⌈t⌉ < n → var n NotFreeInTerm t
-supFreeTerm t with supFreeTerms (t ∷ [])
-supFreeTerm t | s , pfs = s , notFreeIss
-  where
-    notFreeIss : ∀ n → s < n → var n NotFreeInTerm t
-    notFreeIss n s<n with pfs n s<n
-    notFreeIss n s<n | pf ∷ [] = pf
-
 
 -- No guarantee that this notFree is tight - in fact for the V and Λ cases it is
 -- not tight if the quantifier is the greatest variable (and does not have index
@@ -166,6 +157,7 @@ supFree (Λ x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → Λ x (αpf 
 supFree (V x α) with supFree α
 supFree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n ⌈α⌉<n)
 
+
 -- We have proved that if t is free for x in α then α [ x / t ] exists. The
 -- converse is also true, meaning _FreeFor_In_ precisely captures the notion of
 -- a substitution being possible.
@@ -191,7 +183,6 @@ subFreeFor (Λ x x₁ rep) = Λ _ _ x₁ (subFreeFor rep)
 subFreeFor (V x x₁ rep) = V _ _ x₁ (subFreeFor rep)
 
 
--- Show that substutution is functional
 ≈refl : ∀{α} → α ≈ α
 ≈refl {atom r ts} = atom r ts
 ≈refl {α ⇒ β} = ≈refl ⇒ ≈refl
@@ -214,6 +205,7 @@ subFreeFor (V x x₁ rep) = V _ _ x₁ (subFreeFor rep)
 --≈trans (V/ x x₁) (V x₂ x₃) = {!   !}
 --≈trans (V/ x x₁) (V/ x₂ x₃) = {!   !}
 
+
 unfree : ∀ α x → Σ Formula (λ β → Σ Variable λ y
          → Σ (x NotFreeIn β) λ _ → (β [ y / varterm x ]≡ α))
 unfree α x with x notFreeIn α
@@ -234,4 +226,3 @@ unfree α x with x notFreeIn α
     β = fst βsub
     α[x/y]≡β : α [ x / varterm y ]≡ β
     α[x/y]≡β = snd βsub
-
