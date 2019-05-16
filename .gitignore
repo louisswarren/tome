@@ -1,16 +1,18 @@
 *.agdai
-*.vim
 *.swp
+*.vim
+
 html/
 
 *.aux
+*.bbl
+*.blg
 *.fdb_latexmk
 *.fls
 *.log
 *.pdf
 *.synctex.gz
+*.toc
 
 _minted*
 agda.sty
-*.bbl
-*.blg
