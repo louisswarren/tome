@@ -208,10 +208,18 @@ subNotFreeIdentTerms [] x = []
 subNotFreeIdentTerms (varterm x₁ ∷ us) (varterm x ∷ x₂) = varterm≢ x ∷ subNotFreeIdentTerms us x₂
 subNotFreeIdentTerms (functerm f ts ∷ us) (functerm x ∷ x₁) = functerm (subNotFreeIdentTerms ts x) ∷ subNotFreeIdentTerms us x₁
 
+conotfreeterms : ∀{n x t} {us vs : Vec Term n} → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
+conotfreeterms [] x∉us = refl
+conotfreeterms (r ∷ rs) (x∉u ∷ x∉us) with conotfreeterms rs x∉us
+conotfreeterms (varterm≡ ∷ rs)     (varterm x≢x ∷ x∉us)   | refl = ⊥-elim (x≢x refl)
+conotfreeterms (varterm≢ x≢y ∷ rs) (x∉u ∷ x∉us)           | refl = refl
+conotfreeterms (functerm r ∷ rs)   (functerm x∉ts ∷ x∉us) | refl with conotfreeterms r x∉ts
+conotfreeterms (functerm r ∷ rs)   (functerm x∉ts ∷ x∉us) | refl | refl = refl
+
 conotfree : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
 conotfree (ident α x) x∉α = refl
 conotfree (notfree x) x∉α = refl
-conotfree (atom r x) x∉α = {!   !}
+conotfree (atom p r) (atom x∉xs) rewrite conotfreeterms r x∉xs = refl
 conotfree (subα ⇒ subβ) (x∉α ⇒ x∉β) with conotfree subα x∉α | conotfree subβ x∉β
 ...                                 | refl | refl = refl
 conotfree (subα ∧ subβ) (x∉α ∧ x∉β) with conotfree subα x∉α | conotfree subβ x∉β
