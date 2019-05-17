@@ -483,10 +483,20 @@ inside the quantification.
 
 Given $\alpha$, $x$, $t$, the $\beta$ satisfying $\alpha[x/t]\equiv \beta$
 should be unique, so that variable substitution is functional. This can first
-be shown for the special cases \inline{ident} and \inline{notfree}.
+be shown for the special cases \inline{ident} and \inline{notfree}, by
+recursing through the constructors down to the atomic case, and recursing
+through the term substitutions down to the variable terms. The proofs simply
+have \inline{refl} on the right side of every line, and are omitted. Their
+structures are very similar to the next two proofs.
 \begin{code}
 
 subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
 subIdentFunc (ident α x) = refl
 subIdentFunc (notfree x) = refl
 subIdentFunc (atom r ts) = vecEq→Eq (termsLemma ts)
@@ -511,8 +521,16 @@ subIdentFunc (V∣ x α) = refl
 subIdentFunc (Λ x≢y y∉x sub) rewrite subIdentFunc sub = refl
 subIdentFunc (V x≢y y∉x sub) rewrite subIdentFunc sub = refl
 
-
+\end{code}
+}
+\begin{code}
 subNotFreeFunc : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
+-- Proof omitted.
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
 subNotFreeFunc (ident α x) x∉α = refl
 subNotFreeFunc (notfree x) x∉α = refl
 subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
@@ -540,38 +558,93 @@ subNotFreeFunc (Λ x≢y _ r) (Λ y x∉α) rewrite subNotFreeFunc r x∉α = re
 subNotFreeFunc (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
 subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
 
+\end{code}
+}
 
-subFuncTerms : ∀{n x t} {us vs ws : Vec Term n}
+Variable substitution inside a vector of terms is functional.
+\begin{code}
+
+subTermsFunc : ∀{n x t} {us vs ws : Vec Term n}
                → [ us ][ x / t ]≡ vs → [ us ][ x / t ]≡ ws → vs ≡ ws
-subFuncTerms [] [] = refl
-subFuncTerms (s ∷ ss) (r ∷ rs) with subFuncTerms ss rs
-subFuncTerms (varterm≡     ∷ ss) (varterm≡     ∷ rs) | refl = refl
-subFuncTerms (varterm≡     ∷ ss) (varterm≢ x≢x ∷ rs) | refl = ⊥-elim (x≢x refl)
-subFuncTerms (varterm≢ x≢x ∷ ss) (varterm≡     ∷ rs) | refl = ⊥-elim (x≢x refl)
-subFuncTerms (varterm≢ x≢y ∷ ss) (varterm≢ _   ∷ rs) | refl = refl
-subFuncTerms (functerm st  ∷ ss) (functerm rt  ∷ rs) | refl
-             rewrite subFuncTerms st rt = refl
+subTermsFunc [] [] = refl
+\end{code}
+First recurse over the rest of the two vectors.
+\begin{code}
+subTermsFunc (s ∷ ss) (r ∷ rs) with subTermsFunc ss rs
+\end{code}
+It is possible to pattern match inside the \inline{with} block to examine the
+two substitutions made for the heads of the vectors. In the case that the first
+term is substituted using \inline{varterm≡} in each case, the resulting vectors
+must both have $x$ at the head, so the proof is \inline{refl}.
+\begin{code}
+subTermsFunc (varterm≡     ∷ _) (varterm≡     ∷ _) | refl = refl
+\end{code}
+It would be contradictory for the first term in $us$ to both match and differ
+from $x$.
+\begin{code}
+subTermsFunc (varterm≡     ∷ _) (varterm≢ x≢x ∷ _) | refl = ⊥-elim (x≢x refl)
+subTermsFunc (varterm≢ x≢x ∷ _) (varterm≡     ∷ _) | refl = ⊥-elim (x≢x refl)
+\end{code}
+If the head of $us$ is a variable different from $x$, then it is unchanged in
+each case, so the proof is \inline{refl}.
+\begin{code}
+subTermsFunc (varterm≢ x≢y ∷ _) (varterm≢ _   ∷ _) | refl = refl
+\end{code}
+Finally, in the case of a function, recurse over the vector of arguments.
+\todo{explain rewrite}
+\begin{code}
+subTermsFunc (functerm st  ∷ _) (functerm rt  ∷ _)
+             | refl rewrite subTermsFunc st rt = refl
+
+\end{code}
+
+Now, show variable substitution is functional.
+\begin{code}
 
 subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
+\end{code}
+If either substitution came from \inline{ident} or \inline{notfree}, invoke one
+of the above lemata. Note that if they occured in the right substitution, the
+lemata prove $\gamma \equiv \beta$, so \inline{rewrite} is used to recover
+$\beta \equiv \gamma$.
+\begin{code}
 subFunc (ident α x)   r             = subIdentFunc r
 subFunc (notfree x∉α) r             = subNotFreeFunc r x∉α
 subFunc r             (ident α x)   rewrite subIdentFunc r       = refl
 subFunc r             (notfree x∉α) rewrite subNotFreeFunc r x∉α = refl
-subFunc (atom p s)    (atom .p r)   with subFuncTerms s r
-...                                 | refl = refl
+\end{code}
+The atomic case comes from the above lemma.
+\begin{code}
+subFunc (atom p s)    (atom .p r)   rewrite subTermsFunc s r = refl
+\end{code}
+The propositional connectives can be proved inductively.
+\begin{code}
 subFunc (s₁ ⇒ s₂)     (r₁ ⇒ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
 ...                                 | refl | refl = refl
 subFunc (s₁ ∧ s₂)     (r₁ ∧ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
 ...                                 | refl | refl = refl
 subFunc (s₁ ∨ s₂)     (r₁ ∨ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
 ...                                 | refl | refl = refl
+\end{code}
+If the formula is a quantification over $x$, then neither substitution changes
+the formula.
+\begin{code}
 subFunc (Λ∣ x α)      (Λ∣ .x .α)    = refl
-subFunc (Λ∣ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
 subFunc (V∣ x α)      (V∣ .x .α)    = refl
+\end{code}
+It is contradictory for one substitution to occur by matching $x$
+with the quantifier, and the other to have a different quantifier.
+\begin{code}
+subFunc (Λ∣ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
 subFunc (V∣ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
 subFunc (Λ x≢x _ s)   (Λ∣ x α)      = ⊥-elim (x≢x refl)
-subFunc (Λ _ _ s)     (Λ _ _ r)     rewrite subFunc s r = refl
 subFunc (V x≢x _ s)   (V∣ x α)      = ⊥-elim (x≢x refl)
+\end{code}
+Finally, if the formula is a quantification over a variable other than $x$,
+then substitution occurs inside the quantified formula, so recurse inside those
+substitutions.
+\begin{code}
+subFunc (Λ _ _ s)     (Λ _ _ r)     rewrite subFunc s r = refl
 subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
 
 \end{code}
@@ -606,6 +679,7 @@ free for $x$ in $\alpha$, we compute a $\beta$ and a proof that
 $\alpha[x/t] \equiv \beta$. The sigma (dependent sum) type can be used to
 encapsulate both a value and a proof regarding that value.
 
+\todo{recurse or recur?}
 First for vectors of terms, recurse through all function arguments, and replace
 any variables equal to $x$ with $t$. In the code below, we do a case split on
 the first term, and use a \inline{with} block to get the substitution for the
