@@ -486,20 +486,30 @@ should be unique, so that variable substitution is functional. This can first
 be shown for the special cases \inline{ident} and \inline{notfree}.
 \begin{code}
 
+private ident[]Func : ∀{n x} {us vs : Vec Term n}
+                         → [ us ][ x / varterm x ]≡ vs → us ≡ vs
+ident[]Func [] = refl
+ident[]Func (r ∷ rs) with ident[]Func rs
+ident[]Func (varterm≡     ∷ _) | refl = refl
+ident[]Func (varterm≢ x≢y ∷ _) | refl = refl
+ident[]Func (functerm ts  ∷ _) | refl rewrite ident[]Func ts = refl
+
+private notfree[]Func : ∀{n x t} {us vs : Vec Term n}
+                           → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
+notfree[]Func [] x∉us = refl
+notfree[]Func (r ∷ rs) (x∉u ∷ x∉us) with notfree[]Func rs x∉us
+notfree[]Func (varterm≡     ∷ _) (varterm x≢x   ∷ _) | refl = ⊥-elim (x≢x refl)
+notfree[]Func (varterm≢ x≢y ∷ _) (x∉u           ∷ _) | refl = refl
+notfree[]Func (functerm rt  ∷ _) (functerm x∉ts ∷ _) | refl
+               rewrite notfree[]Func rt x∉ts = refl
+
+\end{code}
+\begin{code}
+
 subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
 subIdentFunc (ident α x) = refl
 subIdentFunc (notfree x) = refl
-subIdentFunc (atom r ts) = vecEq→Eq (termsLemma ts)
-  where
-    vecEq→Eq : {us vs : Vec Term (relarity r)} → us ≡ vs → atom r us ≡ atom r vs
-    vecEq→Eq refl = refl
-    termsLemma : ∀{n x} {us vs : Vec Term n}
-                   → [ us ][ x / varterm x ]≡ vs → us ≡ vs
-    termsLemma []                  = refl
-    termsLemma (r            ∷ rs) with termsLemma rs
-    termsLemma (varterm≡     ∷ rs) | refl = refl
-    termsLemma (varterm≢ x≢y ∷ rs) | refl = refl
-    termsLemma (functerm ts  ∷ rs) | refl rewrite termsLemma ts = refl
+subIdentFunc (atom r subts) rewrite ident[]Func subts = refl
 subIdentFunc (subα ⇒ subβ) with subIdentFunc subα | subIdentFunc subβ
 ...                   | refl | refl = refl
 subIdentFunc (subα ∧ subβ) with subIdentFunc subα | subIdentFunc subβ
@@ -515,18 +525,7 @@ subIdentFunc (V x≢y y∉x sub) rewrite subIdentFunc sub = refl
 subNotFreeFunc : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
 subNotFreeFunc (ident α x) x∉α = refl
 subNotFreeFunc (notfree x) x∉α = refl
-subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
-  where
-    vecEq→Eq : {us vs : Vec Term (relarity p)} → us ≡ vs → atom p us ≡ atom p vs
-    vecEq→Eq refl = refl
-    termsLemma : ∀{n x t} {us vs : Vec Term n}
-                  → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
-    termsLemma [] x∉us = refl
-    termsLemma (r ∷ rs) (x∉u ∷ x∉us) with termsLemma rs x∉us
-    termsLemma (varterm≡     ∷ rs) (varterm x≢x   ∷ x∉us) | refl = ⊥-elim (x≢x refl)
-    termsLemma (varterm≢ x≢y ∷ rs) (x∉u           ∷ x∉us) | refl = refl
-    termsLemma (functerm rt  ∷ rs) (functerm x∉ts ∷ x∉us) | refl
-               rewrite termsLemma rt x∉ts = refl
+subNotFreeFunc (atom p subts) (atom x∉xs) rewrite notfree[]Func subts x∉xs = refl
 subNotFreeFunc (subα ⇒ subβ) (x∉α ⇒ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
 ...                                 | refl | refl = refl
 subNotFreeFunc (subα ∧ subβ) (x∉α ∧ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
