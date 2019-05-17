@@ -405,10 +405,9 @@ x notFreeIn V  y α    with varEq x y
 \subsection{Substitutions}
 
 We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
-replacing all instances of a variable $x$ with term $t$. It will later be shown
-that such a $\beta$ is unique. The definitions have a similar structure to that
-of \inline{_NotFreeIn_} above. Note that the more general case of replacing
-terms with terms is not needed for natural deduction.
+replacing all instances of a variable $x$ with term $t$.  The definitions have
+a similar structure to that of \inline{_NotFreeIn_} above. Note that the more
+general case of replacing terms with terms is not needed for natural deduction.
 
 Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
 variable distinct from $x$ is left unchanged. For a function application, $x$
@@ -481,6 +480,102 @@ inside the quantification.
               → α [ x / t ]≡ β → (V y α) [ x / t ]≡ (V y β)
 
 \end{code}
+
+Given $\alpha$, $x$, $t$, the $\beta$ satisfying $\alpha[x/t]\equiv \beta$
+should be unique, so that variable substitution is functional. This can first
+be shown for the special cases \inline{ident} and \inline{notfree}.
+\begin{code}
+
+subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
+subIdentFunc (ident α x) = refl
+subIdentFunc (notfree x) = refl
+subIdentFunc (atom r ts) = vecEq→Eq (termsLemma ts)
+  where
+    vecEq→Eq : {us vs : Vec Term (relarity r)} → us ≡ vs → atom r us ≡ atom r vs
+    vecEq→Eq refl = refl
+    termsLemma : ∀{n x} {us vs : Vec Term n}
+                   → [ us ][ x / varterm x ]≡ vs → us ≡ vs
+    termsLemma []                  = refl
+    termsLemma (r            ∷ rs) with termsLemma rs
+    termsLemma (varterm≡     ∷ rs) | refl = refl
+    termsLemma (varterm≢ x≢y ∷ rs) | refl = refl
+    termsLemma (functerm ts  ∷ rs) | refl rewrite termsLemma ts = refl
+subIdentFunc (subα ⇒ subβ) with subIdentFunc subα | subIdentFunc subβ
+...                   | refl | refl = refl
+subIdentFunc (subα ∧ subβ) with subIdentFunc subα | subIdentFunc subβ
+...                   | refl | refl = refl
+subIdentFunc (subα ∨ subβ) with subIdentFunc subα | subIdentFunc subβ
+...                   | refl | refl = refl
+subIdentFunc (Λ∣ x α) = refl
+subIdentFunc (V∣ x α) = refl
+subIdentFunc (Λ x≢y y∉x sub) rewrite subIdentFunc sub = refl
+subIdentFunc (V x≢y y∉x sub) rewrite subIdentFunc sub = refl
+
+
+subNotFreeFunc : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
+subNotFreeFunc (ident α x) x∉α = refl
+subNotFreeFunc (notfree x) x∉α = refl
+subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
+  where
+    vecEq→Eq : {us vs : Vec Term (relarity p)} → us ≡ vs → atom p us ≡ atom p vs
+    vecEq→Eq refl = refl
+    termsLemma : ∀{n x t} {us vs : Vec Term n}
+                  → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
+    termsLemma [] x∉us = refl
+    termsLemma (r ∷ rs) (x∉u ∷ x∉us) with termsLemma rs x∉us
+    termsLemma (varterm≡     ∷ rs) (varterm x≢x   ∷ x∉us) | refl = ⊥-elim (x≢x refl)
+    termsLemma (varterm≢ x≢y ∷ rs) (x∉u           ∷ x∉us) | refl = refl
+    termsLemma (functerm rt  ∷ rs) (functerm x∉ts ∷ x∉us) | refl
+               rewrite termsLemma rt x∉ts = refl
+subNotFreeFunc (subα ⇒ subβ) (x∉α ⇒ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
+...                                 | refl | refl = refl
+subNotFreeFunc (subα ∧ subβ) (x∉α ∧ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
+...                                 | refl | refl = refl
+subNotFreeFunc (subα ∨ subβ) (x∉α ∨ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
+...                                 | refl | refl = refl
+subNotFreeFunc (Λ∣ x α) _ = refl
+subNotFreeFunc (V∣ x α) _ = refl
+subNotFreeFunc (Λ x≢x _ r) (Λ∣ x α) = ⊥-elim (x≢x refl)
+subNotFreeFunc (Λ x≢y _ r) (Λ y x∉α) rewrite subNotFreeFunc r x∉α = refl
+subNotFreeFunc (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
+subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
+
+
+subFuncTerms : ∀{n x t} {us vs ws : Vec Term n}
+               → [ us ][ x / t ]≡ vs → [ us ][ x / t ]≡ ws → vs ≡ ws
+subFuncTerms [] [] = refl
+subFuncTerms (s ∷ ss) (r ∷ rs) with subFuncTerms ss rs
+subFuncTerms (varterm≡     ∷ ss) (varterm≡     ∷ rs) | refl = refl
+subFuncTerms (varterm≡     ∷ ss) (varterm≢ x≢x ∷ rs) | refl = ⊥-elim (x≢x refl)
+subFuncTerms (varterm≢ x≢x ∷ ss) (varterm≡     ∷ rs) | refl = ⊥-elim (x≢x refl)
+subFuncTerms (varterm≢ x≢y ∷ ss) (varterm≢ _   ∷ rs) | refl = refl
+subFuncTerms (functerm st  ∷ ss) (functerm rt  ∷ rs) | refl
+             rewrite subFuncTerms st rt = refl
+
+subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
+subFunc (ident α x)   r             = subIdentFunc r
+subFunc (notfree x∉α) r             = subNotFreeFunc r x∉α
+subFunc r             (ident α x)   rewrite subIdentFunc r       = refl
+subFunc r             (notfree x∉α) rewrite subNotFreeFunc r x∉α = refl
+subFunc (atom p s)    (atom .p r)   with subFuncTerms s r
+...                                 | refl = refl
+subFunc (s₁ ⇒ s₂)     (r₁ ⇒ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+...                                 | refl | refl = refl
+subFunc (s₁ ∧ s₂)     (r₁ ∧ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+...                                 | refl | refl = refl
+subFunc (s₁ ∨ s₂)     (r₁ ∨ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+...                                 | refl | refl = refl
+subFunc (Λ∣ x α)      (Λ∣ .x .α)    = refl
+subFunc (Λ∣ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
+subFunc (V∣ x α)      (V∣ .x .α)    = refl
+subFunc (V∣ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
+subFunc (Λ x≢x _ s)   (Λ∣ x α)      = ⊥-elim (x≢x refl)
+subFunc (Λ _ _ s)     (Λ _ _ r)     rewrite subFunc s r = refl
+subFunc (V x≢x _ s)   (V∣ x α)      = ⊥-elim (x≢x refl)
+subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
+
+\end{code}
+
 
 Substitutions do not always exist. For example, there is no way of constructing
 a formula for $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if
@@ -566,97 +661,6 @@ V y α [ x / V .α .y y∉t tffα ] with varEq x y
 ...                             | yes refl = V y α , V∣ y α
 ...                             | no  x≢y  with α [ x / tffα ]
 ...                                        | α′ , αpf = V y α′ , V x≢y y∉t αpf
-
-
-subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
-subIdentFunc (ident α x) = refl
-subIdentFunc (notfree x) = refl
-subIdentFunc (atom r ts) = vecEq→Eq (termsLemma ts)
-  where
-    vecEq→Eq : {us vs : Vec Term (relarity r)} → us ≡ vs → atom r us ≡ atom r vs
-    vecEq→Eq refl = refl
-    termsLemma : ∀{n x} {us vs : Vec Term n}
-                   → [ us ][ x / varterm x ]≡ vs → us ≡ vs
-    termsLemma []                  = refl
-    termsLemma (r            ∷ rs) with termsLemma rs
-    termsLemma (varterm≡     ∷ rs) | refl = refl
-    termsLemma (varterm≢ x≢y ∷ rs) | refl = refl
-    termsLemma (functerm ts  ∷ rs) | refl rewrite termsLemma ts = refl
-subIdentFunc (subα ⇒ subβ) with subIdentFunc subα | subIdentFunc subβ
-...                   | refl | refl = refl
-subIdentFunc (subα ∧ subβ) with subIdentFunc subα | subIdentFunc subβ
-...                   | refl | refl = refl
-subIdentFunc (subα ∨ subβ) with subIdentFunc subα | subIdentFunc subβ
-...                   | refl | refl = refl
-subIdentFunc (Λ∣ x α) = refl
-subIdentFunc (V∣ x α) = refl
-subIdentFunc (Λ x x₁ sub) with subIdentFunc sub
-subIdentFunc (Λ x x₁ sub) | refl = refl
-subIdentFunc (V x x₁ sub) with subIdentFunc sub
-subIdentFunc (V x x₁ sub) | refl = refl
-
-
-subNotFreeFunc : ∀{α x t β} → α [ x / t ]≡ β → x NotFreeIn α → α ≡ β
-subNotFreeFunc (ident α x) x∉α = refl
-subNotFreeFunc (notfree x) x∉α = refl
-subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
-  where
-    vecEq→Eq : {us vs : Vec Term (relarity p)} → us ≡ vs → atom p us ≡ atom p vs
-    vecEq→Eq refl = refl
-    termsLemma : ∀{n x t} {us vs : Vec Term n}
-                  → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
-    termsLemma [] x∉us = refl
-    termsLemma (r ∷ rs) (x∉u ∷ x∉us) with termsLemma rs x∉us
-    termsLemma (varterm≡     ∷ rs) (varterm x≢x   ∷ x∉us) | refl = ⊥-elim (x≢x refl)
-    termsLemma (varterm≢ x≢y ∷ rs) (x∉u           ∷ x∉us) | refl = refl
-    termsLemma (functerm rt  ∷ rs) (functerm x∉ts ∷ x∉us) | refl
-               rewrite termsLemma rt x∉ts = refl
-subNotFreeFunc (subα ⇒ subβ) (x∉α ⇒ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
-...                                 | refl | refl = refl
-subNotFreeFunc (subα ∧ subβ) (x∉α ∧ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
-...                                 | refl | refl = refl
-subNotFreeFunc (subα ∨ subβ) (x∉α ∨ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
-...                                 | refl | refl = refl
-subNotFreeFunc (Λ∣ x α) _ = refl
-subNotFreeFunc (V∣ x α) _ = refl
-subNotFreeFunc (Λ x≢x _ r) (Λ∣ x α) = ⊥-elim (x≢x refl)
-subNotFreeFunc (Λ x≢y _ r) (Λ y x∉α) rewrite subNotFreeFunc r x∉α = refl
-subNotFreeFunc (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
-subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
-
-
-subFuncTerms : ∀{n x t} {us vs ws : Vec Term n}
-               → [ us ][ x / t ]≡ vs → [ us ][ x / t ]≡ ws → vs ≡ ws
-subFuncTerms [] [] = refl
-subFuncTerms (s ∷ ss) (r ∷ rs) with subFuncTerms ss rs
-subFuncTerms (varterm≡     ∷ ss) (varterm≡     ∷ rs) | refl = refl
-subFuncTerms (varterm≡     ∷ ss) (varterm≢ x≢x ∷ rs) | refl = ⊥-elim (x≢x refl)
-subFuncTerms (varterm≢ x≢x ∷ ss) (varterm≡     ∷ rs) | refl = ⊥-elim (x≢x refl)
-subFuncTerms (varterm≢ x≢y ∷ ss) (varterm≢ _   ∷ rs) | refl = refl
-subFuncTerms (functerm st  ∷ ss) (functerm rt  ∷ rs) | refl
-             rewrite subFuncTerms st rt = refl
-
-subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
-subFunc (ident α x)   r             = subIdentFunc r
-subFunc (notfree x∉α) r             = subNotFreeFunc r x∉α
-subFunc r             (ident α x)   rewrite subIdentFunc r       = refl
-subFunc r             (notfree x∉α) rewrite subNotFreeFunc r x∉α = refl
-subFunc (atom p s)    (atom .p r)   with subFuncTerms s r
-...                                 | refl = refl
-subFunc (s₁ ⇒ s₂)     (r₁ ⇒ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
-...                                 | refl | refl = refl
-subFunc (s₁ ∧ s₂)     (r₁ ∧ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
-...                                 | refl | refl = refl
-subFunc (s₁ ∨ s₂)     (r₁ ∨ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
-...                                 | refl | refl = refl
-subFunc (Λ∣ x α)      (Λ∣ .x .α)    = refl
-subFunc (Λ∣ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
-subFunc (V∣ x α)      (V∣ .x .α)    = refl
-subFunc (V∣ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
-subFunc (Λ x≢x _ s)   (Λ∣ x α)      = ⊥-elim (x≢x refl)
-subFunc (Λ _ _ s)     (Λ _ _ r)     rewrite subFunc s r = refl
-subFunc (V x≢x _ s)   (V∣ x α)      = ⊥-elim (x≢x refl)
-subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
 
 \end{code}
 
