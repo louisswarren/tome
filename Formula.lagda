@@ -1089,27 +1089,13 @@ data _≈_ : Formula → Formula → Set where
   _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
   _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
   Λ    : ∀{α α′} → ∀ x → α ≈ α′ → Λ x α ≈ Λ x α′
-  Λ/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → Λ x α ≈ Λ y β
+  Λ/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′ → Λ x α ≈ Λ y β′
   V    : ∀{α α′} → ∀ x → α ≈ α′ → V x α ≈ V x α′
-  V/   : ∀{α β x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → V x α ≈ V y β
+  V/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′ → V x α ≈ V y β′
 
 \end{code}
 
 It is important that this relation is symmetric
 \begin{code}
-
-≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
-≈sym                  (atom r ts)  = atom r ts
-≈sym                  (apα ⇒ apβ)  = ≈sym apα ⇒ ≈sym apβ
-≈sym                  (apα ∧ apβ)  = ≈sym apα ∧ ≈sym apβ
-≈sym                  (apα ∨ apβ)  = ≈sym apα ∨ ≈sym apβ
-≈sym                  (Λ x ap)     = Λ x (≈sym ap)
-≈sym {Λ x α} {Λ y α′} (Λ/ y∉α sub) with varEq x y
-... | yes refl rewrite subIdentFunc sub = Λ/ y∉α (ident α′ x)
-... | no x≢y = Λ/ (subNotFree (varterm x≢y) sub) (subInverse y∉α sub)
-≈sym                  (V x ap)     = V x (≈sym ap)
-≈sym {V x α} {V y α′} (V/ y∉α sub) with varEq x y
-... | yes refl rewrite subIdentFunc sub = V/ y∉α (ident α′ x)
-... | no x≢y = V/ (subNotFree (varterm x≢y) sub) (subInverse y∉α sub)
 
 \end{code}

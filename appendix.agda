@@ -166,16 +166,69 @@ supFree (V x α) | ⌈α⌉ , αpf = ⌈α⌉ , λ n ⌈α⌉<n → V x (αpf n 
 ≈refl {Λ x α} = Λ x ≈refl
 ≈refl {V x α} = V x ≈refl
 
+≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
+≈notfree : ∀{x α α′} → α ≈ α′ → x NotFreeIn α → x NotFreeIn α′
+
+≈sub : ∀{α α′ β β′ x t} → α ≈ α′ → α [ x / t ]≡ β → α′ [ x / t ]≡ β′ → β ≈ β′
+≈sub = ?
+
+
+≈notfree = ?
+
+≈trans : ∀{α β γ} → α ≈ β → β ≈ γ → α ≈ γ
+≈trans (atom r ts) (atom .r .ts) = atom r ts
+≈trans (α≈β ⇒ α≈β₁) (β≈γ ⇒ β≈γ₁) = ≈trans α≈β β≈γ ⇒ ≈trans α≈β₁ β≈γ₁
+≈trans (α≈β ∧ α≈β₁) (β≈γ ∧ β≈γ₁) = ≈trans α≈β β≈γ ∧ ≈trans α≈β₁ β≈γ₁
+≈trans (α≈β ∨ α≈β₁) (β≈γ ∨ β≈γ₁) = ≈trans α≈β β≈γ ∨ ≈trans α≈β₁ β≈γ₁
+≈trans (Λ x α≈β) (Λ .x β≈γ) = Λ x (≈trans α≈β β≈γ)
+≈trans (Λ x α≈α′) (Λ/ y∉α′ α′[x/y]≡β β≈β′) = Λ/ (≈notfree (≈sym α≈α′) y∉α′) {!   !} {!   !}
+  where
+    γ : Formula
+    γ : fst (α 
+≈trans (Λ/ x x₁ α≈β) (Λ x₂ β≈γ) = Λ/ x x₁ (≈trans α≈β β≈γ)
+≈trans (Λ/ x x₁ α≈β) (Λ/ x₂ x₃ β≈γ) = {!   !}
+≈trans (V x α≈β) (V .x β≈γ) = V x (≈trans α≈β β≈γ)
+≈trans (V x α≈β) (V/ x₁ x₂ β≈γ) = {!   !}
+≈trans (V/ x x₁ α≈β) (V x₂ β≈γ) = V/ x x₁ (≈trans α≈β β≈γ)
+≈trans (V/ x x₁ α≈β) (V/ x₂ x₃ β≈γ) = {!   !}
+
+≈sym                  (atom r ts)  = atom r ts
+≈sym                  (apα ⇒ apβ)  = ≈sym apα ⇒ ≈sym apβ
+≈sym                  (apα ∧ apβ)  = ≈sym apα ∧ ≈sym apβ
+≈sym                  (apα ∨ apβ)  = ≈sym apα ∨ ≈sym apβ
+≈sym                  (Λ x ap)     = Λ x (≈sym ap)
+≈sym {Λ x α} {Λ y α′} (Λ/ y∉α sub β≈β′) with varEq x y
+... | yes refl rewrite subIdentFunc sub = Λ x (≈sym β≈β′)
+... | no x≢y = ≈trans (Λ y (≈sym β≈β′)) (Λ/ (subNotFree (varterm x≢y) sub) (subInverse y∉α sub) ≈refl)
+≈sym                  (V x ap)     = V x (≈sym ap)
+≈sym {V x α} {V y α′} (V/ y∉α sub β≈β′) with varEq x y
+... | yes refl rewrite subIdentFunc sub = V x (≈sym β≈β′)
+... | no x≢y = ≈trans (V y (≈sym β≈β′)) (V/ (subNotFree (varterm x≢y) sub) (subInverse y∉α sub) ≈refl)
+
+--≈notfree (atom r ts) (atom x) = atom x
+--≈notfree (ap ⇒ ap₁) (x∉α ⇒ x∉α₁) = ≈notfree ap x∉α ⇒ ≈notfree ap₁ x∉α₁
+--≈notfree (ap ∧ ap₁) (x∉α ∧ x∉α₁) = ≈notfree ap x∉α ∧ ≈notfree ap₁ x∉α₁
+--≈notfree (ap ∨ ap₁) (x∉α ∨ x∉α₁) = ≈notfree ap x∉α ∨ ≈notfree ap₁ x∉α₁
+--≈notfree (Λ x ap) (Λ∣ .x α) = Λ∣ x _
+--≈notfree (Λ x ap) (Λ .x x∉α) = Λ x (≈notfree ap x∉α)
+--≈notfree (Λ/ y∉α α[x/y]≡β) (Λ∣ x α) = {!   !}
+--≈notfree (Λ/ x x₁) (Λ y x∉α) = {!   !}
+--≈notfree (V x ap) (V∣ .x α) = V∣ x _
+--≈notfree (V x ap) (V .x x∉α) = V x (≈notfree ap x∉α)
+--≈notfree (V/ x x₁) (V∣ x₂ α) = {!   !}
+--≈notfree (V/ x x₁) (V y x∉α) = {!   !}
+--
+--
 --≈trans : ∀{α β γ} → α ≈ β → β ≈ γ → α ≈ γ
 --≈trans (atom r ts) (atom .r .ts) = atom r ts
 --≈trans (α₁≈β₁ ⇒ α₂≈β₂) (β₁≈γ₁ ⇒ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ⇒ ≈trans α₂≈β₂ β₂≈γ₂
 --≈trans (α₁≈β₁ ∧ α₂≈β₂) (β₁≈γ₁ ∧ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ∧ ≈trans α₂≈β₂ β₂≈γ₂
 --≈trans (α₁≈β₁ ∨ α₂≈β₂) (β₁≈γ₁ ∨ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ∨ ≈trans α₂≈β₂ β₂≈γ₂
 --≈trans (Λ x α≈β) (Λ .x β≈γ) = Λ x (≈trans α≈β β≈γ)
---≈trans (Λ x x₁) (Λ/ x₂ x₃) = {!   !}
+--≈trans (Λ x α≈α′) (Λ/ y∉α′ α′[x/y]≡β) = Λ/ (≈notfree (≈sym α≈α′) y∉α′) {!   !}
 --≈trans (Λ/ x x₁) (Λ x₂ x₃) = {!   !}
 --≈trans (Λ/ x x₁) (Λ/ x₂ x₃) = {!   !}
---≈trans (V x α≈β) (V .x β≈γ) = {!   !}
+--≈trans (V x α≈β) (V .x β≈γ) = V x (≈trans α≈β β≈γ)
 --≈trans (V x x₁) (V/ x₂ x₃) = {!   !}
 --≈trans (V/ x x₁) (V x₂ x₃) = {!   !}
 --≈trans (V/ x x₁) (V/ x₂ x₃) = {!   !}
