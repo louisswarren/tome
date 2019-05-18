@@ -669,9 +669,6 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   V       : ∀{α y} → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
 \end{code}
-It will later be shown that, using the above definitions, there is a $\beta$
-satisfying $\alpha [x/t]\equiv \beta$ if and only if $t$ is free for $x$ in
-$\alpha$. \todo{Include this proof}
 
 The definitions above for variable substitution lead directly to a procedure
 for computing substitutions. Given $\alpha$, $x$, $t$, and a proof that $t$ is
@@ -738,6 +735,41 @@ V y α [ x / V y∉t tffα ]     with varEq x y
 
 \end{code}
 
+We have proved that if $t$ is free for $x$ in $α$ then $α[x/t]$ exists. The
+converse is also true, meaning that \inline{_FreeFor_In_} precisely captures
+the notion of a substitution being possible.
+\begin{code}
+
+subFreeFor : ∀{α x t β} → α [ x / t ]≡ β → t FreeFor x In α
+-- Proof omitted.
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+subFreeFor (ident (atom r ts) x) = atom r ts
+subFreeFor (ident (α ⇒ β) x) = subFreeFor (ident α x) ⇒ subFreeFor (ident β x)
+subFreeFor (ident (α ∧ β) x) = subFreeFor (ident α x) ∧ subFreeFor (ident β x)
+subFreeFor (ident (α ∨ β) x) = subFreeFor (ident α x) ∨ subFreeFor (ident β x)
+subFreeFor (ident (Λ y α) x) with varEq y x
+...                          | yes refl = Λ∣ α
+...                          | no  y≢x  = Λ (varterm y≢x) (subFreeFor (ident α x))
+subFreeFor (ident (V y α) x) with varEq y x
+...                          | yes refl = V∣ α
+...                          | no  y≢x  = V (varterm y≢x) (subFreeFor (ident α x))
+subFreeFor (notfree x) = notfree x
+subFreeFor (atom r subts) = atom r _
+subFreeFor (subα ⇒ subβ) = subFreeFor subα ⇒ subFreeFor subβ
+subFreeFor (subα ∧ subβ) = subFreeFor subα ∧ subFreeFor subβ
+subFreeFor (subα ∨ subβ) = subFreeFor subα ∨ subFreeFor subβ
+subFreeFor (Λ∣ x α) = Λ∣ α
+subFreeFor (V∣ x α) = V∣ α
+subFreeFor (Λ x≢y y∉t sub) = Λ y∉t (subFreeFor sub)
+subFreeFor (V x≢y y∉t sub) = V y∉t (subFreeFor sub)
+
+\end{code}
+}
+
 If a variable has been substituted by a term not involving that variable, then
 the variable is not free in the resulting term.
 \begin{code}
@@ -765,8 +797,7 @@ subNotFree x∉t (V x≢y y∉t p)   = V _ (subNotFree x∉t p)
 
 \end{code}
 
-The result of $\alpha [ x / t ]$ should be a formula $\beta$ satisfying $\alpha
-[ x / t ]\equiv \beta$. Such a $\beta$ is computable.
+
 \begin{code}
 
 subInverse : ∀{ω α x β}
