@@ -341,7 +341,7 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
 \end{prooftree}
 \begin{code}
 rename {Γ} {V x α} {V y β} (V/ y∉α sub) d with varEq x y
-... | yes refl rewrite coident sub = d
+... | yes refl rewrite subIdentFunc sub = d
 ... | no x≢y   = close
                   (assembled-context d)
                   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
