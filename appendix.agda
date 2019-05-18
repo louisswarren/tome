@@ -88,15 +88,15 @@ t freeFor x In α with x notFreeIn α
                                                    ¬tff : _
                                                    ¬tff (notfree xnf) = xf xnf
                                                    ¬tff (Λ∣ .α) = x≢y refl
-                                                   ¬tff (Λ .α .y _ tffα) = ¬tffα tffα
+                                                   ¬tff (Λ _ tffα) = ¬tffα tffα
     ...                             | yes tffα with y notFreeInTerm t
-    ...                                        | yes ynft = yes (Λ α y ynft tffα)
+    ...                                        | yes ynft = yes (Λ ynft tffα)
     ...                                        | no ¬ynft = no ¬tff
                                                             where
                                                               ¬tff : _
                                                               ¬tff (notfree xnf) = xf xnf
                                                               ¬tff (Λ∣ .α) = x≢y refl
-                                                              ¬tff (Λ .α .y ynft _) = ¬ynft ynft
+                                                              ¬tff (Λ ynft _) = ¬ynft ynft
     lemma (V y α)     xf with varEq x y
     ...                  | yes refl = yes (V∣ α)
     ...                  | no  x≢y  with t freeFor x In α
@@ -105,15 +105,15 @@ t freeFor x In α with x notFreeIn α
                                                    ¬tff : _
                                                    ¬tff (notfree xnf) = xf xnf
                                                    ¬tff (V∣ .α) = x≢y refl
-                                                   ¬tff (V .α .y _ tffα) = ¬tffα tffα
+                                                   ¬tff (V _ tffα) = ¬tffα tffα
     ...                             | yes tffα with y notFreeInTerm t
-    ...                                        | yes ynft = yes (V α y ynft tffα)
+    ...                                        | yes ynft = yes (V ynft tffα)
     ...                                        | no ¬ynft = no ¬tff
                                                             where
                                                               ¬tff : _
                                                               ¬tff (notfree xnf) = xf xnf
                                                               ¬tff (V∣ .α) = x≢y refl
-                                                              ¬tff (V .α .y ynft _) = ¬ynft ynft
+                                                              ¬tff (V ynft _) = ¬ynft ynft
 
 
 -- No guarantee that this notFree is tight - in fact for the V and Λ cases it is

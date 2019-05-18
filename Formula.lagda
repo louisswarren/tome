@@ -665,8 +665,8 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   _∨_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∨ β
   Λ∣      : ∀ α → t FreeFor x In Λ x α
   V∣      : ∀ α → t FreeFor x In V x α
-  Λ       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
-  V       : ∀ α y → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
+  Λ       : ∀{α y} → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
+  V       : ∀{α y} → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
 \end{code}
 It will later be shown that, using the above definitions, there is a $\beta$
@@ -706,35 +706,35 @@ $\alpha$`.
 \begin{code}
 
 _[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
-α [ x / notfree ¬x∉α ]          = α , notfree ¬x∉α
+α [ x / notfree ¬x∉α ]       = α , notfree ¬x∉α
 \end{code}
 For atomic formulae, apply the above lemma.
 \begin{code}
-_[_/_] {t} (atom r ts) x tff    with [ ts ][ x / t ]
-...                             | ts′ , tspf = atom r ts′ , atom r tspf
+_[_/_] {t} (atom r ts) x tff with [ ts ][ x / t ]
+...                          | ts′ , tspf = atom r ts′ , atom r tspf
 \end{code}
 For the propositional connectives, the substitution is obtained recursively.
 \begin{code}
-(α ⇒ β) [ x / tffα ⇒ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
-(α ∧ β) [ x / tffα ∧ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
-(α ∨ β) [ x / tffα ∨ tffβ ]     with α [ x / tffα ] | β [ x / tffβ ]
-...                             | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
+(α ⇒ β) [ x / tffα ⇒ tffβ ]  with α [ x / tffα ] | β [ x / tffβ ]
+...                          | α′ , αpf | β′ , βpf = α′ ⇒ β′ , αpf ⇒ βpf
+(α ∧ β) [ x / tffα ∧ tffβ ]  with α [ x / tffα ] | β [ x / tffβ ]
+...                          | α′ , αpf | β′ , βpf = α′ ∧ β′ , αpf ∧ βpf
+(α ∨ β) [ x / tffα ∨ tffβ ]  with α [ x / tffα ] | β [ x / tffβ ]
+...                          | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
 \end{code}
 For generalisation, check if $x$ is the quantifier, and if so do nothing.
 Otherwise, recurse.
 \begin{code}
-Λ y α [ .y / Λ∣ .α ]            = Λ y α , Λ∣ y α
-Λ y α [ x / Λ .α .y y∉t tffα ] with varEq x y
-...                             | yes refl = Λ y α , Λ∣ y α
-...                             | no  x≢y  with α [ x / tffα ]
-...                                        | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
-V y α [ .y / V∣ .α ]            = V y α , V∣ y α
-V y α [ x / V .α .y y∉t tffα ] with varEq x y
-...                             | yes refl = V y α , V∣ y α
-...                             | no  x≢y  with α [ x / tffα ]
-...                                        | α′ , αpf = V y α′ , V x≢y y∉t αpf
+Λ y α [ .y / Λ∣ .α ]         = Λ y α , Λ∣ y α
+Λ y α [ x / Λ y∉t tffα ]     with varEq x y
+...                          | yes refl = Λ y α , Λ∣ y α
+...                          | no  x≢y  with α [ x / tffα ]
+...                                     | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
+V y α [ .y / V∣ .α ]         = V y α , V∣ y α
+V y α [ x / V y∉t tffα ]     with varEq x y
+...                          | yes refl = V y α , V∣ y α
+...                          | no  x≢y  with α [ x / tffα ]
+...                                     | α′ , αpf = V y α′ , V x≢y y∉t αpf
 
 \end{code}
 
@@ -846,8 +846,8 @@ freshFreeFor (atom _)      y = atom _ _
 freshFreeFor (xfrα ⇒ xfrβ) y = freshFreeFor xfrα y ⇒ freshFreeFor xfrβ y
 freshFreeFor (xfrα ∧ xfrβ) y = freshFreeFor xfrα y ∧ freshFreeFor xfrβ y
 freshFreeFor (xfrα ∨ xfrβ) y = freshFreeFor xfrα y ∨ freshFreeFor xfrβ y
-freshFreeFor (Λ x≢y xfrα)  y = Λ _ _ (varterm x≢y) (freshFreeFor xfrα y)
-freshFreeFor (V x≢y xfrα)  y = V _ _ (varterm x≢y) (freshFreeFor xfrα y)
+freshFreeFor (Λ x≢y xfrα)  y = Λ (varterm x≢y) (freshFreeFor xfrα y)
+freshFreeFor (V x≢y xfrα)  y = V (varterm x≢y) (freshFreeFor xfrα y)
 
 \end{code}
 }
