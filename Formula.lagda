@@ -1090,8 +1090,10 @@ data _≈_ : Formula → Formula → Set where
   _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
   Λ    : ∀{α α′} → ∀ x → α ≈ α′ → Λ x α ≈ Λ x α′
   Λ/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′ → Λ x α ≈ Λ y β′
+  Λ/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′ → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
   V    : ∀{α α′} → ∀ x → α ≈ α′ → V x α ≈ V x α′
   V/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′ → V x α ≈ V y β′
+  V/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′ → α′ [ x / varterm y ]≡ β′ → V x α ≈ V y β′
 
 \end{code}
 
