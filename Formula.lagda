@@ -1100,4 +1100,33 @@ data _≈_ : Formula → Formula → Set where
 It is important that this relation is symmetric
 \begin{code}
 
+≈refl : ∀{α} → α ≈ α
+≈refl {atom r ts} = atom r ts
+≈refl {α ⇒ β} = ≈refl ⇒ ≈refl
+≈refl {α ∧ β} = ≈refl ∧ ≈refl
+≈refl {α ∨ β} = ≈refl ∨ ≈refl
+≈refl {Λ x α} = Λ x ≈refl
+≈refl {V x α} = V x ≈refl
+
+
+≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
+≈sym (atom r ts) = atom r ts
+≈sym (α≈α′ ⇒ β≈β′) = ≈sym α≈α′ ⇒ ≈sym β≈β′
+≈sym (α≈α′ ∧ β≈β′) = ≈sym α≈α′ ∧ ≈sym β≈β′
+≈sym (α≈α′ ∨ β≈β′) = ≈sym α≈α′ ∨ ≈sym β≈β′
+≈sym (Λ x α≈α′) = Λ x (≈sym α≈α′)
+≈sym {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) with varEq x y
+...    | yes refl rewrite subIdentFunc α[x/y]≡β = Λ x (≈sym β≈β′)
+...    | no x≢y = Λ/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β) (subInverse y∉α α[x/y]≡β)
+≈sym {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) with varEq x y
+...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ x (≈sym α≈α′)
+...    | no  x≢y  = Λ/ (subNotFree (varterm x≢y) α′[x/y]≡β′) (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
+≈sym (V x α≈α′) = V x (≈sym α≈α′)
+≈sym {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) with varEq x y
+...    | yes refl rewrite subIdentFunc α[x/y]≡β = V x (≈sym β≈β′)
+...    | no x≢y = V/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β) (subInverse y∉α α[x/y]≡β)
+≈sym {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) with varEq x y
+...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = V x (≈sym α≈α′)
+...    | no  x≢y  = V/ (subNotFree (varterm x≢y) α′[x/y]≡β′) (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
+
 \end{code}
