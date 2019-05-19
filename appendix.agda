@@ -178,7 +178,27 @@ unfree α x with x notFreeIn α
     α[x/y]≡β : α [ x / varterm y ]≡ β
     α[x/y]≡β = snd βsub
 
---≈notfree : ∀{x α α′} → α ≈ α′ → x NotFreeIn α → x NotFreeIn α′
+≈notfree : ∀{α α′ x} → α ≈ α′ → x NotFreeIn α → x NotFreeIn α′
+≈notfree (atom r ts) (atom x∉ts) = atom x∉ts
+≈notfree (α≈α′ ⇒ β≈β′) (x∉α ⇒ x∉β) = ≈notfree α≈α′ x∉α ⇒ ≈notfree β≈β′ x∉β
+≈notfree (α≈α′ ∧ β≈β′) (x∉α ∧ x∉β) = ≈notfree α≈α′ x∉α ∧ ≈notfree β≈β′ x∉β
+≈notfree (α≈α′ ∨ β≈β′) (x∉α ∨ x∉β) = ≈notfree α≈α′ x∉α ∨ ≈notfree β≈β′ x∉β
+≈notfree (Λ .x α≈α′) (Λ∣ x α) = Λ∣ x _
+≈notfree {Λ x α} {Λ y β} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ∣ x α) with varEq x y
+...    | yes refl = Λ∣ x β
+...    | no  x≢y  = Λ y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
+≈notfree {Λ x α} {Λ y β} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) (Λ∣ x α) with varEq x y
+...    | yes refl = Λ∣ x β
+...    | no  x≢y  = Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′)
+≈notfree (V .x α≈α′) (V∣ x α) = V∣ x _
+≈notfree {V x α} {V y β} (V/ y∉α α[x/y]≡β β≈β′) (V∣ x α) with varEq x y
+...    | yes refl = V∣ x β
+...    | no  x≢y  = V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
+≈notfree {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) (V∣ x α) with varEq x y
+...    | yes refl = V∣ x β
+...    | no  x≢y  = V y (subNotFree (varterm x≢y) α′[x/y]≡β′)
+
+
 --≈sub : ∀{α α′ β β′ x t} → α ≈ α′ → α [ x / t ]≡ β → α′ [ x / t ]≡ β′ → β ≈ β′
 
 ≈trans : ∀{α α′ α′′} → α ≈ α′ → α′ ≈ α′′ → α ≈ α′′
