@@ -89,7 +89,7 @@ t freeFor x In α with x notFreeIn α
                                                    ¬tff (notfree xnf) = xf xnf
                                                    ¬tff (Λ∣ .α) = x≢y refl
                                                    ¬tff (Λ _ tffα) = ¬tffα tffα
-    ...                             | yes tffα with y notFreeInTerm t
+    ...                             | yes tffα with y notInTerm t
     ...                                        | yes ynft = yes (Λ ynft tffα)
     ...                                        | no ¬ynft = no ¬tff
                                                             where
@@ -106,7 +106,7 @@ t freeFor x In α with x notFreeIn α
                                                    ¬tff (notfree xnf) = xf xnf
                                                    ¬tff (V∣ .α) = x≢y refl
                                                    ¬tff (V _ tffα) = ¬tffα tffα
-    ...                             | yes tffα with y notFreeInTerm t
+    ...                             | yes tffα with y notInTerm t
     ...                                        | yes ynft = yes (V ynft tffα)
     ...                                        | no ¬ynft = no ¬tff
                                                             where
@@ -169,7 +169,7 @@ unfree α x with x notFreeIn α
     y = fst yfr
     y∉α : y NotFreeIn α
     y∉α = freshNotFree (snd yfr)
-    x∉y : x NotFreeInTerm (varterm y)
+    x∉y : x NotInTerm (varterm y)
     x∉y = varterm λ { refl → ¬x∉α (freshNotFree (snd yfr)) }
     βsub : Σ Formula (α [ x / varterm y ]≡_)
     βsub = α [ x / freshFreeFor (snd yfr) x ]

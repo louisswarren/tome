@@ -272,19 +272,19 @@ require proof that a variable is not free. For a given term $t$, $x$ is not
 free in $t$ if $t$ is a variable other than $x$. Otherwise if the term is a
 function on arguments $ts$, then $x$ is not free if it is not free anywhere in
 $ts$, which can be checked by applying \inline{All} to this definition.
-Separating the declaration and definition of \inline{_NotFreeInTerm_} allows it
-to be defined mutually with the case for a vector of terms.
+Separating the declaration and definition of \inline{_NotInTerm_} allows it to
+be defined mutually with the case for a vector of terms.
 \begin{code}
 
-data _NotFreeInTerm_ (x : Variable) : Term → Set
+data _NotInTerm_ (x : Variable) : Term → Set
 
-_NotFreeInTerms_ : ∀{n} → Variable → Vec Term n → Set
-x NotFreeInTerms ts = All (x NotFreeInTerm_) ts
+_NotInTerms_ : ∀{n} → Variable → Vec Term n → Set
+x NotInTerms ts = All (x NotInTerm_) ts
 
-data _NotFreeInTerm_ x where
-  varterm  : ∀{y} → x ≢ y → x NotFreeInTerm (varterm y)
+data _NotInTerm_ x where
+  varterm  : ∀{y} → x ≢ y → x NotInTerm (varterm y)
   functerm : ∀{f} {us : Vec Term (funcarity f)}
-               → x NotFreeInTerms us → x NotFreeInTerm (functerm f us)
+               → x NotInTerms us → x NotInTerm (functerm f us)
 
 \end{code}
 
@@ -299,7 +299,7 @@ the terms that the relation is operating on.
 
 data _NotFreeIn_ : Variable → Formula → Set where
   atom : ∀{x r} {ts : Vec Term (relarity r)}
-                  → x NotFreeInTerms ts → x NotFreeIn (atom r ts)
+                  → x NotInTerms ts → x NotFreeIn (atom r ts)
   _⇒_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ⇒ β)
   _∧_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ∧ β)
   _∨_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ∨ β)
@@ -314,22 +314,22 @@ Variable freedom within a vector of terms is decidable, simply by searching
 through the vector for occurences.
 \begin{code}
 
-_notFreeInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotFreeInTerms ts)
-x notFreeInTerms [] = yes []
+_notInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotInTerms ts)
+x notInTerms [] = yes []
 \end{code}
 To check against a variable term, use the decidable equality of variables.
 \begin{code}
-x notFreeInTerms (varterm y ∷ ts) with varEq x y
+x notInTerms (varterm y ∷ ts) with varEq x y
 ...    | yes refl = no λ { (varterm x≢x ∷ _) → x≢x refl }
-...    | no  x≢y  with x notFreeInTerms ts
+...    | no  x≢y  with x notInTerms ts
 ...               | yes x∉ts = yes (varterm x≢y ∷ x∉ts)
 ...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
 \end{code}
 To check against a function term, recurse over the arguments.
 \begin{code}
-x notFreeInTerms (functerm f us ∷ ts) with x notFreeInTerms us
+x notInTerms (functerm f us ∷ ts) with x notInTerms us
 ...    | no ¬x∉us = no λ { (functerm x∉us ∷ _) → ¬x∉us x∉us }
-...    | yes x∉us with x notFreeInTerms ts
+...    | yes x∉us with x notInTerms ts
 ...               | yes x∉ts = yes (functerm x∉us ∷ x∉ts)
 ...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
 
@@ -342,26 +342,26 @@ necessary to continue recursing through the vector, so it is better
 computationally not to do so.
 
 The same logic can be used for a single term, calling the above function to
-check function arguments. The proposition \inline{_NotFreeInTerms_} is defined
-using \inline{All} and \inline{_NotFreeInTerm_}, so it is tempting to try to
-first prove that the single term case is decidable, and then generalise to
-vectors using the lemma that \inline{All} is decidable for decidable
-predicates. However, this would not be structurally recursive, and so Agda
-would not see this as terminating. Above, the case \mintinline{agda}{x
-notFreeInTerms t ∷ ts} depends on the result of \inline{x notFreeInterms ts},
-which is in fact primitively recursive. However, if it instead depended on the
-result of \inline{all (x notFreeInTerm_) ts}, Agda cannot determine that
-\inline{x notFreeInTerm_} will be applied only to arguments structurally
-smaller than \inline{t ∷ ts}.
+check function arguments. The proposition \inline{_NotInTerms_} is defined
+using \inline{All} and \inline{_NotInTerm_}, so it is tempting to try to first
+prove that the single term case is decidable, and then generalise to vectors
+using the lemma that \inline{All} is decidable for decidable predicates.
+However, this would not be structurally recursive, and so Agda would not see
+this as terminating. Above, the case \mintinline{agda}{x notInTerms t ∷ ts}
+depends on the result of \inline{x notFreeInterms ts}, which is in fact
+primitively recursive. However, if it instead depended on the result of
+\inline{all (x notInTerm_) ts}, Agda cannot determine that \inline{x
+notInTerm_} will be applied only to arguments structurally smaller than
+\inline{t ∷ ts}.
 \begin{code}
 
-_notFreeInTerm_ : (x : Variable) → (t : Term) → Dec (x NotFreeInTerm t)
-x notFreeInTerm varterm y     with varEq x y
-...                           | yes refl = no λ { (varterm x≢x) → x≢x refl }
-...                           | no x≢y  = yes (varterm x≢y)
-x notFreeInTerm functerm f ts with x notFreeInTerms ts
-...                           | yes x∉ts = yes (functerm x∉ts)
-...                           | no ¬x∉ts = no λ { (functerm x∉ts) → ¬x∉ts x∉ts }
+_notInTerm_ : (x : Variable) → (t : Term) → Dec (x NotInTerm t)
+x notInTerm varterm y     with varEq x y
+...                       | yes refl = no λ { (varterm x≢x) → x≢x refl }
+...                       | no x≢y  = yes (varterm x≢y)
+x notInTerm functerm f ts with x notInTerms ts
+...                       | yes x∉ts = yes (functerm x∉ts)
+...                       | no ¬x∉ts = no λ { (functerm x∉ts) → ¬x∉ts x∉ts }
 
 \end{code}
 
@@ -371,7 +371,7 @@ variable is the quantifying variable for the quantifiers.
 \begin{code}
 
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
-x notFreeIn atom r ts with x notFreeInTerms ts
+x notFreeIn atom r ts with x notInTerms ts
 ...                   | yes x∉ts = yes (atom x∉ts)
 ...                   | no ¬x∉ts = no λ { (atom x∉ts) → ¬x∉ts x∉ts }
 x notFreeIn (α ⇒ β)   with x notFreeIn α | x notFreeIn β
@@ -474,9 +474,9 @@ If $x$ is not the quantification variable and $t$ is free for $x$ in in the
 formula ($x$ is not free in term $t$), then the substitution simply occurs
 inside the quantification.
 \begin{code}
-  Λ       : ∀{α β x y t} → x ≢ y → y NotFreeInTerm t
+  Λ       : ∀{α β x y t} → x ≢ y → y NotInTerm t
               → α [ x / t ]≡ β → (Λ y α) [ x / t ]≡ (Λ y β)
-  V       : ∀{α β x y t} → x ≢ y → y NotFreeInTerm t
+  V       : ∀{α β x y t} → x ≢ y → y NotInTerm t
               → α [ x / t ]≡ β → (V y α) [ x / t ]≡ (V y β)
 
 \end{code}
@@ -538,7 +538,7 @@ subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
     vecEq→Eq : {us vs : Vec Term (relarity p)} → us ≡ vs → atom p us ≡ atom p vs
     vecEq→Eq refl = refl
     termsLemma : ∀{n x t} {us vs : Vec Term n}
-                  → [ us ][ x / t ]≡ vs → x NotFreeInTerms us → us ≡ vs
+                  → [ us ][ x / t ]≡ vs → x NotInTerms us → us ≡ vs
     termsLemma [] x∉us = refl
     termsLemma (r ∷ rs) (x∉u ∷ x∉us) with termsLemma rs x∉us
     termsLemma (varterm≡     ∷ rs) (varterm x≢x   ∷ x∉us) | refl = ⊥-elim (x≢x refl)
@@ -665,8 +665,8 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   _∨_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∨ β
   Λ∣      : ∀ α → t FreeFor x In Λ x α
   V∣      : ∀ α → t FreeFor x In V x α
-  Λ       : ∀{α y} → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
-  V       : ∀{α y} → y NotFreeInTerm t → t FreeFor x In α → t FreeFor x In V y α
+  Λ       : ∀{α y} → y NotInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
+  V       : ∀{α y} → y NotInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
 \end{code}
 
@@ -774,13 +774,13 @@ If a variable has been substituted by a term not involving that variable, then
 the variable is not free in the resulting term.
 \begin{code}
 
-subNotFree : ∀{α x t β} → x NotFreeInTerm t → α [ x / t ]≡ β → x NotFreeIn β
+subNotFree : ∀{α x t β} → x NotInTerm t → α [ x / t ]≡ β → x NotFreeIn β
 subNotFree (varterm x≢x) (ident α x) = ⊥-elim (x≢x refl)
 subNotFree x∉t (notfree x∉α)   = x∉α
 subNotFree x∉t (atom r p)       = atom (termsLemma x∉t p)
   where
-    termsLemma : ∀{n x t} {us vs : Vec Term n} → x NotFreeInTerm t
-                      → [ us ][ x / t ]≡ vs → x NotFreeInTerms vs
+    termsLemma : ∀{n x t} {us vs : Vec Term n} → x NotInTerm t
+                      → [ us ][ x / t ]≡ vs → x NotInTerms vs
     termsLemma x∉t []                  = []
     termsLemma x∉t (varterm≡ ∷ ps)     = x∉t ∷ termsLemma x∉t ps
     termsLemma x∉t (varterm≢ neq ∷ ps) = varterm neq ∷ termsLemma x∉t ps
@@ -806,7 +806,7 @@ subInverse _           (ident α x)    = ident α x
 subInverse ω∉α         (notfree x∉α)  = notfree ω∉α
 subInverse (atom x∉ts) (atom r subts) = atom r (termsLemma x∉ts subts)
   where
-    termsLemma : ∀{n x ω} {us vs : Vec Term n} → ω NotFreeInTerms us
+    termsLemma : ∀{n x ω} {us vs : Vec Term n} → ω NotInTerms us
                  → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
     termsLemma ω∉us [] = []
     termsLemma (_ ∷ ω∉us) (varterm≡ ∷ subus) = varterm≡ ∷ termsLemma ω∉us subus
@@ -835,7 +835,7 @@ A variable is \emph{fresh} if appears nowhere (free or bound) in a formula.
 \begin{code}
 
 data _FreshIn_ (x : Variable) : Formula → Set where
-  atom : ∀{r ts} → x NotFreeInTerms ts  → x FreshIn (atom r ts)
+  atom : ∀{r ts} → x NotInTerms ts  → x FreshIn (atom r ts)
   _⇒_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
   _∧_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∧ β
   _∨_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∨ β
@@ -914,12 +914,12 @@ x$. The sigma type then can be used to define existential propositions.
 
 We first compute the greatest variable occuring in a vector of terms, and then
 specialise to a single term, for termination reasons similar to that of
-\inline{_notFreeInTerms_}. For terms, there is no distinction between being
-fresh and being not-free.
+\inline{_notInTerms_}. For terms, there is no distinction between being fresh
+and being not-free.
 \begin{code}
 
 supFreeTerms : ∀{k} → (ts : Vec Term k)
-               → Σ ℕ (λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → var n NotFreeInTerms ts)
+               → Σ ℕ (λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → var n NotInTerms ts)
 supFreeTerms [] = zero , λ _ _ → []
 \end{code}
 If the first term is a variable, check if its index is greater than the
@@ -934,7 +934,7 @@ supFreeTerms (varterm (var m) ∷ ts) with supFreeTerms ts
     orderneq {zero} {.0} () refl
     orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
     notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n
-                    → All (var n NotFreeInTerm_) (varterm (var m) ∷ ts)
+                    → All (var n NotInTerm_) (varterm (var m) ∷ ts)
     notFreeIs⌈ts⌉ n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n))
                              ∷ tspf n ⌈ts⌉<n
 \end{code}
@@ -945,8 +945,7 @@ Otherwise, use this variable.
     orderneq : ∀{n m} → n < m → var m ≢ var n
     orderneq {zero} {.0} () refl
     orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
-    notFreeIsm : ∀ n → m < n
-                 → All (var n NotFreeInTerm_) (varterm (var m) ∷ ts)
+    notFreeIsm : ∀ n → m < n → All (var n NotInTerm_) (varterm (var m) ∷ ts)
     notFreeIsm n m<n = varterm (orderneq m<n)
                        ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
 \end{code}
@@ -958,8 +957,7 @@ supFreeTerms (functerm f us     ∷ ts) with supFreeTerms us | supFreeTerms ts
 ... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with ≤total ⌈us⌉ ⌈ts⌉
 ...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
   where
-    notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n
-                    → All (var n NotFreeInTerm_) (functerm f us ∷ ts)
+    notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
     notFreeIs⌈ts⌉ n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n))
                              ∷ tspf n ⌈ts⌉<n
 \end{code}
@@ -967,8 +965,7 @@ Otherwise, use the variable from the function's arguments.
 \begin{code}
 ...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , notFreeIs⌈us⌉
   where
-    notFreeIs⌈us⌉ : ∀ n → ⌈us⌉ < n
-                    → All (var n NotFreeInTerm_) (functerm f us ∷ ts)
+    notFreeIs⌈us⌉ : ∀ n → ⌈us⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
     notFreeIs⌈us⌉ n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n)
                              ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
 
