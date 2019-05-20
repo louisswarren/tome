@@ -178,50 +178,81 @@ unfree α x with x notFreeIn α
     α[x/y]≡β : α [ x / varterm y ]≡ β
     α[x/y]≡β = snd βsub
 
-≈notfree : ∀{α α′ x} → α ≈ α′ → x NotFreeIn α → x NotFreeIn α′
-≈notfree (atom r ts) (atom x∉ts) = atom x∉ts
-≈notfree (α≈α′ ⇒ β≈β′) (x∉α ⇒ x∉β) = ≈notfree α≈α′ x∉α ⇒ ≈notfree β≈β′ x∉β
-≈notfree (α≈α′ ∧ β≈β′) (x∉α ∧ x∉β) = ≈notfree α≈α′ x∉α ∧ ≈notfree β≈β′ x∉β
-≈notfree (α≈α′ ∨ β≈β′) (x∉α ∨ x∉β) = ≈notfree α≈α′ x∉α ∨ ≈notfree β≈β′ x∉β
-≈notfree (Λ .x α≈α′) (Λ∣ x α) = Λ∣ x _
-≈notfree {Λ x α} {Λ y β} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ∣ x α) with varEq x y
-...    | yes refl = Λ∣ x β
+-- todo: capitalisation
+notfreeSub : ∀{α β x t z} → z NotFreeIn α → z NotInTerm t → α [ x / t ]≡ β → z NotFreeIn β
+notfreeSub z∉α z∉t sub = ?
+
+
+--todo: is it better to split this differently?
+≈notfree : ∀{α α′ z} → α ≈ α′ → z NotFreeIn α → z NotFreeIn α′
+≈notfree (atom r ts) (atom z∉ts) = atom z∉ts
+≈notfree (α≈α′ ⇒ β≈β′) (z∉α ⇒ z∉β) = ≈notfree α≈α′ z∉α ⇒ ≈notfree β≈β′ z∉β
+≈notfree (α≈α′ ∧ β≈β′) (z∉α ∧ z∉β) = ≈notfree α≈α′ z∉α ∧ ≈notfree β≈β′ z∉β
+≈notfree (α≈α′ ∨ β≈β′) (z∉α ∨ z∉β) = ≈notfree α≈α′ z∉α ∨ ≈notfree β≈β′ z∉β
+≈notfree (Λ x α≈α′) (Λ∣ .x α) = Λ∣ x _
+≈notfree (V x α≈α′) (V∣ .x α) = V∣ x _
+≈notfree {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ∣ .x α) with varEq x y
+...    | yes refl = Λ∣ x β′
 ...    | no  x≢y  = Λ y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
-≈notfree {Λ x α} {Λ y β} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) (Λ∣ x α) with varEq x y
-...    | yes refl = Λ∣ x β
-...    | no  x≢y  = Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′)
-≈notfree (V .x α≈α′) (V∣ x α) = V∣ x _
-≈notfree {V x α} {V y β} (V/ y∉α α[x/y]≡β β≈β′) (V∣ x α) with varEq x y
-...    | yes refl = V∣ x β
+≈notfree {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) (V∣ .x α) with varEq x y
+...    | yes refl = V∣ x β′
 ...    | no  x≢y  = V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
-≈notfree {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) (V∣ x α) with varEq x y
-...    | yes refl = V∣ x β
+≈notfree {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) (Λ∣ x α) with varEq x y
+...    | yes refl = Λ∣ x β′
+...    | no  x≢y  = Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′)
+≈notfree {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) (V∣ x α) with varEq x y
+...    | yes refl = V∣ x β′
 ...    | no  x≢y  = V y (subNotFree (varterm x≢y) α′[x/y]≡β′)
+≈notfree (Λ y α≈α′) (Λ .y z∉α) = Λ y (≈notfree α≈α′ z∉α)
+≈notfree (V y α≈α′) (V .y z∉α) = V y (≈notfree α≈α′ z∉α)
+≈notfree {Λ x α} {Λ y β′} {z} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ .x z∉α) with varEq z y
+...    | yes refl = Λ∣ z β′
+...    | no  z≢y  = Λ y (≈notfree β≈β′ (notfreeSub z∉α (varterm z≢y) α[x/y]≡β))
+≈notfree {V x α} {V y β′} {z} (V/ y∉α α[x/y]≡β β≈β′) (V .x z∉α) with varEq z y
+...    | yes refl = V∣ z β′
+...    | no  z≢y  = V y (≈notfree β≈β′ (notfreeSub z∉α (varterm z≢y) α[x/y]≡β))
+≈notfree {Λ x α} {Λ y β′} {z} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β) (Λ .x z∉α) with varEq z y
+...    | yes refl = Λ∣ z β′
+...    | no  z≢y  = Λ y (notfreeSub (≈notfree α≈α′ z∉α) (varterm z≢y) α′[x/y]≡β)
+≈notfree {V x α} {V y β′} {z} (V/′ α≈α′ y∉α′ α′[x/y]≡β) (V .x z∉α) with varEq z y
+...    | yes refl = V∣ z β′
+...    | no  z≢y  = V y (notfreeSub (≈notfree α≈α′ z∉α) (varterm z≢y) α′[x/y]≡β)
+
+
+
+
+
+
+
+
+
+
+
 
 
 --≈sub : ∀{α α′ β β′ x t} → α ≈ α′ → α [ x / t ]≡ β → α′ [ x / t ]≡ β′ → β ≈ β′
 
-≈trans : ∀{α α′ α′′} → α ≈ α′ → α′ ≈ α′′ → α ≈ α′′
-≈trans (atom r ts) (atom .r .ts) = atom r ts
-≈trans (α₁≈β₁ ⇒ α₂≈β₂) (β₁≈γ₁ ⇒ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ⇒ ≈trans α₂≈β₂ β₂≈γ₂
-≈trans (α₁≈β₁ ∧ α₂≈β₂) (β₁≈γ₁ ∧ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ∧ ≈trans α₂≈β₂ β₂≈γ₂
-≈trans (α₁≈β₁ ∨ α₂≈β₂) (β₁≈γ₁ ∨ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ∨ ≈trans α₂≈β₂ β₂≈γ₂
-≈trans (Λ x α≈α′) (Λ .x α′≈α′′) = Λ x (≈trans α≈α′ α′≈α′′)
-≈trans (Λ x α≈α′) (Λ/ y∉α′ α′[x/y]≡β β≈β′) = {!   !}
-≈trans (Λ x α≈α′) (Λ/′ ap2 x₁ x₂) = {!   !}
-≈trans (Λ/ x x₁ ap1) (Λ x₂ ap2) = {!   !}
-≈trans (Λ/ x x₁ ap1) (Λ/ x₂ x₃ ap2) = {!   !}
-≈trans (Λ/ x x₁ ap1) (Λ/′ ap2 x₂ x₃) = {!   !}
-≈trans (Λ/′ ap1 x x₁) (Λ x₂ ap2) = {!   !}
-≈trans (Λ/′ ap1 x x₁) (Λ/ x₂ x₃ ap2) = {!   !}
-≈trans (Λ/′ ap1 x x₁) (Λ/′ ap2 x₂ x₃) = {!   !}
-≈trans (V x ap1) (V .x ap2) = {!   !}
-≈trans (V x ap1) (V/ x₁ x₂ ap2) = {!   !}
-≈trans (V x ap1) (V/′ ap2 x₁ x₂) = {!   !}
-≈trans (V/ x x₁ ap1) (V x₂ ap2) = {!   !}
-≈trans (V/ x x₁ ap1) (V/ x₂ x₃ ap2) = {!   !}
-≈trans (V/ x x₁ ap1) (V/′ ap2 x₂ x₃) = {!   !}
-≈trans (V/′ ap1 x x₁) (V x₂ ap2) = {!   !}
-≈trans (V/′ ap1 x x₁) (V/ x₂ x₃ ap2) = {!   !}
-≈trans (V/′ ap1 x x₁) (V/′ ap2 x₂ x₃) = {!   !}
+--≈trans : ∀{α α′ α′′} → α ≈ α′ → α′ ≈ α′′ → α ≈ α′′
+--≈trans (atom r ts) (atom .r .ts) = atom r ts
+--≈trans (α₁≈β₁ ⇒ α₂≈β₂) (β₁≈γ₁ ⇒ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ⇒ ≈trans α₂≈β₂ β₂≈γ₂
+--≈trans (α₁≈β₁ ∧ α₂≈β₂) (β₁≈γ₁ ∧ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ∧ ≈trans α₂≈β₂ β₂≈γ₂
+--≈trans (α₁≈β₁ ∨ α₂≈β₂) (β₁≈γ₁ ∨ β₂≈γ₂) = ≈trans α₁≈β₁ β₁≈γ₁ ∨ ≈trans α₂≈β₂ β₂≈γ₂
+--≈trans (Λ x α≈α′) (Λ .x α′≈α′′) = Λ x (≈trans α≈α′ α′≈α′′)
+--≈trans (Λ x α≈α′) (Λ/ y∉α′ α′[x/y]≡β β≈β′) = {!   !}
+--≈trans (Λ x α≈α′) (Λ/′ ap2 x₁ x₂) = {!   !}
+--≈trans (Λ/ x x₁ ap1) (Λ x₂ ap2) = {!   !}
+--≈trans (Λ/ x x₁ ap1) (Λ/ x₂ x₃ ap2) = {!   !}
+--≈trans (Λ/ x x₁ ap1) (Λ/′ ap2 x₂ x₃) = {!   !}
+--≈trans (Λ/′ ap1 x x₁) (Λ x₂ ap2) = {!   !}
+--≈trans (Λ/′ ap1 x x₁) (Λ/ x₂ x₃ ap2) = {!   !}
+--≈trans (Λ/′ ap1 x x₁) (Λ/′ ap2 x₂ x₃) = {!   !}
+--≈trans (V x ap1) (V .x ap2) = {!   !}
+--≈trans (V x ap1) (V/ x₁ x₂ ap2) = {!   !}
+--≈trans (V x ap1) (V/′ ap2 x₁ x₂) = {!   !}
+--≈trans (V/ x x₁ ap1) (V x₂ ap2) = {!   !}
+--≈trans (V/ x x₁ ap1) (V/ x₂ x₃ ap2) = {!   !}
+--≈trans (V/ x x₁ ap1) (V/′ ap2 x₂ x₃) = {!   !}
+--≈trans (V/′ ap1 x x₁) (V x₂ ap2) = {!   !}
+--≈trans (V/′ ap1 x x₁) (V/ x₂ x₃ ap2) = {!   !}
+--≈trans (V/′ ap1 x x₁) (V/′ ap2 x₂ x₃) = {!   !}
 
