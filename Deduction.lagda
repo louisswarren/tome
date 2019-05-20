@@ -292,16 +292,28 @@ also not free in $\forall x \alpha$.
     \BinaryInfC{$\forall y \alpha[x/y]$}
 \end{prooftree}
 \begin{code}
-rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub) d =
-  close
-   (assembled-context d)
-   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
-   (arrowelim
-    (arrowintro (Λ x α)
-     (univintro y (all⟨ Λ x y∉α ⟩)
-      (univelim (varterm y) sub
-       (assume (Λ x α)))))
-    d)
+rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub ap) d = ?
+--  close
+--   (assembled-context d)
+--   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+--   (arrowelim
+--    (arrowintro (Λ x α)
+--     (univintro y (all⟨ Λ x y∉α ⟩)
+--      (univelim (varterm y) sub
+--       (assume (Λ x α)))))
+--    d)
+\end{code}
+\begin{code}
+rename {Γ} {Λ x α} {Λ y β} (Λ/′ ap y∉α sub) d = ?
+--  close
+--   (assembled-context d)
+--   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+--   (arrowelim
+--    (arrowintro (Λ x α)
+--     (univintro y (all⟨ Λ x y∉α ⟩)
+--      (univelim (varterm y) sub
+--       (assume (Λ x α)))))
+--    d)
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
@@ -340,15 +352,27 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
     \BinaryInfC{$\exists y \alpha[x/y]$}
 \end{prooftree}
 \begin{code}
-rename {Γ} {V x α} {V y β} (V/ y∉α sub) d with varEq x y
-... | yes refl rewrite subIdentFunc sub = d
-... | no x≢y   = close
-                  (assembled-context d)
-                  (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-                  (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
-                              all∪ (all- all⟨- [ refl ] ⟩))
-                   d
-                   (existintro (varterm x) y (subInverse y∉α sub)
-                    (assume α)))
+rename {Γ} {V x α} {V y β} (V/ y∉α sub ap) d = ? --with varEq x y
+--... | yes refl rewrite subIdentFunc sub = d
+--... | no x≢y   = close
+--                  (assembled-context d)
+--                  (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
+--                  (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
+--                              all∪ (all- all⟨- [ refl ] ⟩))
+--                   d
+--                   (existintro (varterm x) y (subInverse y∉α sub)
+--                    (assume α)))
+\end{code}
+\begin{code}
+rename {Γ} {V x α} {V y β} (V/′ ap y∉α sub) d = ? --with varEq x y
+--... | yes refl rewrite subIdentFunc sub = d
+--... | no x≢y   = close
+--                  (assembled-context d)
+--                  (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
+--                  (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
+--                              all∪ (all- all⟨- [ refl ] ⟩))
+--                   d
+--                   (existintro (varterm x) y (subInverse y∉α sub)
+--                    (assume α)))
 
 \end{code}
