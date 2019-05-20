@@ -180,7 +180,25 @@ unfree α x with x notFreeIn α
 
 -- todo: capitalisation
 notfreeSub : ∀{α β x t z} → z NotFreeIn α → z NotInTerm t → α [ x / t ]≡ β → z NotFreeIn β
-notfreeSub z∉α z∉t sub = ?
+notfreeSub z∉α z∉t (ident α x) = z∉α
+notfreeSub z∉α z∉t (notfree x∉α) = z∉α
+notfreeSub (atom z∉us) z∉t (atom r sub) = atom (termsLemma z∉us z∉t sub)
+  where
+    termsLemma : ∀{n x t z} {us vs : Vec Term n} → z NotInTerms us
+                 → z NotInTerm t → [ us ][ x / t ]≡ vs → z NotInTerms vs
+    termsLemma z∉us z∉t [] = z∉us
+    termsLemma (z∉u ∷ z∉us) z∉t (varterm≡ ∷ sub) = z∉t ∷ termsLemma z∉us z∉t sub
+    termsLemma (z∉u ∷ z∉us) z∉t (varterm≢ x≢y ∷ sub) = z∉u ∷ termsLemma z∉us z∉t sub
+    termsLemma (functerm z∉ts ∷ z∉us) z∉t (functerm subts ∷ sub) = functerm (termsLemma z∉ts z∉t subts) ∷ termsLemma z∉us z∉t sub
+notfreeSub (z∉α ⇒ z∉β) z∉t (subα ⇒ subβ) = notfreeSub z∉α z∉t subα ⇒ notfreeSub z∉β z∉t subβ
+notfreeSub (z∉α ∧ z∉β) z∉t (subα ∧ subβ) = notfreeSub z∉α z∉t subα ∧ notfreeSub z∉β z∉t subβ
+notfreeSub (z∉α ∨ z∉β) z∉t (subα ∨ subβ) = notfreeSub z∉α z∉t subα ∨ notfreeSub z∉β z∉t subβ
+notfreeSub z∉α z∉t (Λ∣ x α) = z∉α
+notfreeSub z∉α z∉t (V∣ x α) = z∉α
+notfreeSub (Λ∣ x α) z∉t (Λ x≢y y∉t sub) = Λ∣ x _
+notfreeSub (V∣ x α) z∉t (V x≢y y∉t sub) = V∣ x _
+notfreeSub (Λ y z∉α) z∉t (Λ x≢y y∉t sub) = Λ y (notfreeSub z∉α z∉t sub)
+notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t sub)
 
 
 --todo: is it better to split this differently?
