@@ -178,6 +178,7 @@ unfree α x with x notFreeIn α
     α[x/y]≡β : α [ x / varterm y ]≡ β
     α[x/y]≡β = snd βsub
 
+
 -- todo: capitalisation
 notfreeSub : ∀{α β x t z} → z NotFreeIn α → z NotInTerm t → α [ x / t ]≡ β → z NotFreeIn β
 notfreeSub z∉α z∉t (ident α x) = z∉α
@@ -201,6 +202,9 @@ notfreeSub (Λ y z∉α) z∉t (Λ x≢y y∉t sub) = Λ y (notfreeSub z∉α z�
 notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t sub)
 
 
+notfreeSub′ : ∀{α β x y} → y NotFreeIn β → α [ x / varterm y ]≡ β → x NotFreeIn α
+notfreeSub′ = ?
+
 --todo: is it better to split this differently?
 ≈notfree : ∀{α α′ z} → α ≈ α′ → z NotFreeIn α → z NotFreeIn α′
 ≈notfree (atom r ts) (atom z∉ts) = atom z∉ts
@@ -215,12 +219,6 @@ notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t
 ≈notfree {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) (V∣ .x α) with varEq x y
 ...    | yes refl = V∣ x β′
 ...    | no  x≢y  = V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
-≈notfree {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) (Λ∣ x α) with varEq x y
-...    | yes refl = Λ∣ x β′
-...    | no  x≢y  = Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′)
-≈notfree {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) (V∣ x α) with varEq x y
-...    | yes refl = V∣ x β′
-...    | no  x≢y  = V y (subNotFree (varterm x≢y) α′[x/y]≡β′)
 ≈notfree (Λ y α≈α′) (Λ .y z∉α) = Λ y (≈notfree α≈α′ z∉α)
 ≈notfree (V y α≈α′) (V .y z∉α) = V y (≈notfree α≈α′ z∉α)
 ≈notfree {Λ x α} {Λ y β′} {z} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ .x z∉α) with varEq z y
@@ -229,15 +227,42 @@ notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t
 ≈notfree {V x α} {V y β′} {z} (V/ y∉α α[x/y]≡β β≈β′) (V .x z∉α) with varEq z y
 ...    | yes refl = V∣ z β′
 ...    | no  z≢y  = V y (≈notfree β≈β′ (notfreeSub z∉α (varterm z≢y) α[x/y]≡β))
-≈notfree {Λ x α} {Λ y β′} {z} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β) (Λ .x z∉α) with varEq z y
-...    | yes refl = Λ∣ z β′
-...    | no  z≢y  = Λ y (notfreeSub (≈notfree α≈α′ z∉α) (varterm z≢y) α′[x/y]≡β)
-≈notfree {V x α} {V y β′} {z} (V/′ α≈α′ y∉α′ α′[x/y]≡β) (V .x z∉α) with varEq z y
-...    | yes refl = V∣ z β′
-...    | no  z≢y  = V y (notfreeSub (≈notfree α≈α′ z∉α) (varterm z≢y) α′[x/y]≡β)
 
 
 
+
+
+lemma : ∀{α α′ β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′
+        → β′ [ y / varterm x ]≡ α′ → α ≈ α′
+lemma {α} y∉α (ident _ _) β≈β′ r rewrite subIdentFunc r = β≈β′
+lemma {α} y∉α s β≈β′ (ident _ _) rewrite subIdentFunc s = β≈β′
+lemma {α} y∉α (notfree x∉α) β≈β′ r with subNotFreeFunc r (≈notfree β≈β′ y∉α)
+...                                | refl = β≈β′
+lemma {α} y∉α s β≈β′ (notfree y∉β′) with subNotFreeFunc s (notfreeSub′ (≈notfree {!   !} y∉β′) s)
+...                                 | refl = β≈β′
+lemma {.(atom _ _)} y∉α (atom _ x) (atom _ ts) (atom _ x₁) = {!   !}
+lemma {.(_ ⇒ _)} (y∉α ⇒ y∉α₁) (s ⇒ s₁) (β≈β′ ⇒ β≈β′₁) (r ⇒ r₁) = lemma y∉α s β≈β′ r ⇒ lemma y∉α₁ s₁ β≈β′₁ r₁
+lemma {α} y∉α s (β≈β′ ∧ β≈β′₁) r = {!   !}
+lemma {α} y∉α s (β≈β′ ∨ β≈β′₁) r = {!   !}
+lemma {α} y∉α s (Λ x β≈β′) r = {!   !}
+lemma {α} y∉α s (Λ/ x x₁ β≈β′) r = {!   !}
+lemma {α} y∉α s (V x β≈β′) r = {!   !}
+lemma {α} y∉α s (V/ x x₁ β≈β′) r = {!   !}
+
+
+≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
+≈sym (atom r ts) = atom r ts
+≈sym (α≈α′ ⇒ β≈β′) = ≈sym α≈α′ ⇒ ≈sym β≈β′
+≈sym (α≈α′ ∧ β≈β′) = ≈sym α≈α′ ∧ ≈sym β≈β′
+≈sym (α≈α′ ∨ β≈β′) = ≈sym α≈α′ ∨ ≈sym β≈β′
+≈sym (Λ x α≈α′) = Λ x (≈sym α≈α′)
+≈sym {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) with varEq x y
+...    | yes refl rewrite subIdentFunc α[x/y]≡β = Λ x (≈sym β≈β′)
+...    | no x≢y = ?
+≈sym (V x α≈α′) = V x (≈sym α≈α′)
+≈sym {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) with varEq x y
+...    | yes refl rewrite subIdentFunc α[x/y]≡β = V x (≈sym β≈β′)
+...    | no x≢y = ?
 
 
 
