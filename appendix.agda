@@ -232,8 +232,27 @@ notfreeSub′′ = ?
 ...    | no  z≢y  = V y (≈notfree β≈β′ (notfreeSub z∉α (varterm z≢y) α[x/y]≡β))
 
 
+freeforSub : ∀{α β t x s y} → t FreeFor x In β → x ≢ y → α [ y / s ]≡ β → t FreeFor x In α
+freeforSub (notfree x∉β) x≢y sub = notfree (notfreeSub′′ x∉β x≢y sub)
+freeforSub ffβ x≢y (ident α x) = ffβ
+freeforSub ffβ x≢y (notfree x∉α) = ffβ
+freeforSub (atom r us) x≢y (atom .r x) = atom r _
+freeforSub (ffβ ⇒ ffβ₁) x≢y (sub ⇒ sub₁) = freeforSub ffβ x≢y sub ⇒ freeforSub ffβ₁ x≢y sub₁
+freeforSub (ffβ ∧ ffβ₁) x≢y (sub ∧ sub₁) = freeforSub ffβ x≢y sub ∧ freeforSub ffβ₁ x≢y sub₁
+freeforSub (ffβ ∨ ffβ₁) x≢y (sub ∨ sub₁) = freeforSub ffβ x≢y sub ∨ freeforSub ffβ₁ x≢y sub₁
+freeforSub (Λ∣ α) x≢y (Λ∣ x .α) = Λ∣ α
+freeforSub (Λ∣ α) x≢y (Λ x x₁ sub) = Λ∣ _
+freeforSub (V∣ α) x≢y (V∣ x .α) = V∣ α
+freeforSub (V∣ α) x≢y (V x x₁ sub) = V∣ _
+freeforSub (Λ x ffβ) x≢y (Λ∣ x₁ α) = Λ x ffβ
+freeforSub (Λ x ffβ) x≢y (Λ x₁ x₂ sub) = Λ x (freeforSub ffβ x≢y sub)
+freeforSub (V x ffβ) x≢y (V∣ x₁ α) = V x ffβ
+freeforSub (V x ffβ) x≢y (V x₁ x₂ sub) = V x (freeforSub ffβ x≢y sub)
 
-
+subInverseWrap : ∀{ω α x v t β γ δ} → ω ≢ v → ω NotInTerm t → x ≢ v
+                 → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ
+                 → γ [ ω / varterm x ]≡ δ → α [ v / t ]≡ δ
+subInverseWrap = ?
 
 lemma : ∀{α α′ β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′
         → β′ [ y / varterm x ]≡ α′ → α ≈ α′
@@ -262,8 +281,8 @@ lemma {.(Λ x₄ α)} (Λ∣ x₄ α) (Λ x₂ (varterm x₃) s) (Λ/ x x₁ β�
 lemma {.(Λ x₄ α)} (Λ∣ x₄ α) (Λ x₂ (varterm x₃) s) (Λ/ x x₁ β≈β′) (Λ x₅ x₆ r) = ⊥-elim (x₃ refl)
 lemma {.(Λ y _)} (Λ y y∉α) (Λ x₂ x₃ s) (Λ/ x x₁ β≈β′) (Λ∣ x₄ α) with subNotFreeFunc s (notfreeSub′ x s)
 lemma {.(Λ y _)} (Λ y y∉α) (Λ x₂ x₃ s) (Λ/ x x₁ β≈β′) (Λ∣ x₄ α) | refl = Λ/ y∉α x₁ β≈β′
-lemma {Λ x α} {Λ .y α′} {Λ .x β} {Λ y γ′} {v} {w} (Λ .x w∉α) (Λ v≢x (varterm x≢w) s) (Λ/ {β = γ} y∉β β[x/y]≡γ γ≈γ′) (Λ w≢y (varterm y≢v) r) = Λ/ (notfreeSub′′ y∉β y≢v s) (snd (α [ x / {!   !} ])) {!   !}
---Λ/ (notfreeSub′′ x x₅ s) {!   !} {!   !}
+lemma {Λ x α} {Λ .y α′} {Λ .x β} {Λ y γ′} {v} {w} (Λ .x w∉α) (Λ v≢x (varterm x≢w) s) (Λ/ {β = γ} y∉β β[x/y]≡γ γ≈γ′) (Λ w≢y (varterm y≢v) r) with subFunc ? ?
+... | refl = Λ/ (notfreeSub′′ y∉β y≢v s) (snd (α [ x / freeforSub (subFreeFor β[x/y]≡γ) (λ { refl → v≢x refl }) s ])) {! subUnique ? ?  !}
 lemma {α} y∉α s (V x β≈β′) r = {!   !}
 lemma {α} y∉α s (V/ x x₁ β≈β′) r = {!   !}
 
