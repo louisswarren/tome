@@ -205,6 +205,9 @@ notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t
 notfreeSub′ : ∀{α β x y} → y NotFreeIn β → α [ x / varterm y ]≡ β → x NotFreeIn α
 notfreeSub′ = ?
 
+notfreeSub′′ : ∀{α β x t z} → z NotFreeIn β → z ≢ x → α [ x / t ]≡ β → z NotFreeIn α
+notfreeSub′′ = ?
+
 --todo: is it better to split this differently?
 ≈notfree : ∀{α α′ z} → α ≈ α′ → z NotFreeIn α → z NotFreeIn α′
 ≈notfree (atom r ts) (atom z∉ts) = atom z∉ts
@@ -242,10 +245,25 @@ lemma {α} y∉α s β≈β′ (notfree y∉β′) with subNotFreeFunc s (notfre
 ...                                 | refl = β≈β′
 lemma {.(atom _ _)} y∉α (atom _ x) (atom _ ts) (atom _ x₁) = {!   !}
 lemma {.(_ ⇒ _)} (y∉α ⇒ y∉α₁) (s ⇒ s₁) (β≈β′ ⇒ β≈β′₁) (r ⇒ r₁) = lemma y∉α s β≈β′ r ⇒ lemma y∉α₁ s₁ β≈β′₁ r₁
-lemma {α} y∉α s (β≈β′ ∧ β≈β′₁) r = {!   !}
-lemma {α} y∉α s (β≈β′ ∨ β≈β′₁) r = {!   !}
-lemma {α} y∉α s (Λ x β≈β′) r = {!   !}
-lemma {α} y∉α s (Λ/ x x₁ β≈β′) r = {!   !}
+lemma {.(_ ∧ _)} (y∉α ∧ y∉α₁) (s ∧ s₁) (β≈β′ ∧ β≈β′₁) (r ∧ r₁) = lemma y∉α s β≈β′ r ∧ lemma y∉α₁ s₁ β≈β′₁ r₁
+lemma {.(_ ∨ _)} (y∉α ∨ y∉α₁) (s ∨ s₁) (β≈β′ ∨ β≈β′₁) (r ∨ r₁) = lemma y∉α s β≈β′ r ∨ lemma y∉α₁ s₁ β≈β′₁ r₁
+lemma {.(Λ x α)} (Λ∣ .x .α) (Λ∣ .x α) (Λ x β≈β′) (Λ∣ .x α₁) = Λ x β≈β′
+lemma {.(Λ x α)} (Λ∣ .x .α) (Λ∣ .x α) (Λ x β≈β′) (Λ x₁ (varterm x₂) r) = ⊥-elim (x₂ refl)
+lemma {.(Λ _ α)} (Λ _ y∉α) (Λ∣ _ α) (Λ _ β≈β′) (Λ∣ _ α₁) = Λ _ β≈β′
+lemma {.(Λ _ α)} (Λ _ y∉α) (Λ∣ _ α) (Λ _ β≈β′) (Λ x (varterm x₁) r) = ⊥-elim (x₁ refl)
+lemma {.(Λ x _)} y∉α (Λ x₁ (varterm x₂) s) (Λ x β≈β′) (Λ∣ .x α) = ⊥-elim (x₂ refl)
+lemma {.(Λ x α)} (Λ∣ .x α) (Λ x₁ x₂ s) (Λ x β≈β′) (Λ x₃ x₄ r) = ⊥-elim (x₃ refl)
+lemma {.(Λ x _)} (Λ .x y∉α) (Λ x₁ x₂ s) (Λ x β≈β′) (Λ x₃ x₄ r) = Λ _ (lemma y∉α s β≈β′ r)
+lemma {.(Λ x₂ α)} y∉α (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ∣ x₃ α₁) = Λ/ x x₁ β≈β′
+lemma {.(Λ x₂ α)} (Λ∣ .x₂ .α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) rewrite subIdentFunc r = Λ/ x x₁ β≈β′
+lemma {.(Λ x₂ α)} (Λ .x₂ y∉α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) with subNotFreeFunc r (≈notfree β≈β′ (notfreeSub y∉α (varterm x₃) x₁))
+lemma {.(Λ x₂ α)} (Λ .x₂ y∉α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) | refl = Λ/ x x₁ β≈β′
+lemma {.(Λ x₄ α)} (Λ∣ x₄ α) (Λ x₂ (varterm x₃) s) (Λ/ x x₁ β≈β′) (Λ∣ .x₄ α₁) = ⊥-elim (x₃ refl)
+lemma {.(Λ x₄ α)} (Λ∣ x₄ α) (Λ x₂ (varterm x₃) s) (Λ/ x x₁ β≈β′) (Λ x₅ x₆ r) = ⊥-elim (x₃ refl)
+lemma {.(Λ y _)} (Λ y y∉α) (Λ x₂ x₃ s) (Λ/ x x₁ β≈β′) (Λ∣ x₄ α) with subNotFreeFunc s (notfreeSub′ x s)
+lemma {.(Λ y _)} (Λ y y∉α) (Λ x₂ x₃ s) (Λ/ x x₁ β≈β′) (Λ∣ x₄ α) | refl = Λ/ y∉α x₁ β≈β′
+lemma {Λ x α} {Λ .y α′} {Λ .x β} {Λ y γ′} {v} {w} (Λ .x w∉α) (Λ v≢x (varterm x≢w) s) (Λ/ {β = γ} y∉β β[x/y]≡γ γ≈γ′) (Λ w≢y (varterm y≢v) r) = Λ/ (notfreeSub′′ y∉β y≢v s) (snd (α [ x / {!   !} ])) {!   !}
+--Λ/ (notfreeSub′′ x x₅ s) {!   !} {!   !}
 lemma {α} y∉α s (V x β≈β′) r = {!   !}
 lemma {α} y∉α s (V/ x x₁ β≈β′) r = {!   !}
 
