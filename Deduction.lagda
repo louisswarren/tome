@@ -183,7 +183,7 @@ rename {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ) d =
     (rename apβ
      (arrowelim
       d
-      (rename (≈sym apα)
+      (rename (≈sym apα) -- Not structurally recursive
        (assume α′)))))
 \end{code}
 \begin{prooftree}
@@ -292,28 +292,32 @@ also not free in $\forall x \alpha$. \todo{Update}
 %    \BinaryInfC{$\forall y \alpha[x/y]$}
 %\end{prooftree}
 \begin{code}
-rename {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) d = close (assembled-context d) (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂))) (arrowelim (arrowintro (Λ x α) (univintro y all⟨ Λ x y∉α ⟩ (rename β≈β′ (univelim (varterm y) α[x/y]≡β (assume (Λ x α)))))) d)
---  close
---   (assembled-context d)
---   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
---   (arrowelim
---    (arrowintro (Λ x α)
---     (univintro y (all⟨ Λ x y∉α ⟩)
---      (univelim (varterm y) sub
---       (assume (Λ x α)))))
---    d)
+rename {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) d =
+  close
+    (assembled-context d)
+    (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+    (arrowelim
+     (arrowintro (Λ x α)
+      (univintro y all⟨ Λ x y∉α ⟩
+       (rename β≈β′
+        (univelim (varterm y) α[x/y]≡β
+         (assume (Λ x α))))))
+     d)
 \end{code}
 \begin{code}
-rename {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β) d = close (assembled-context d) (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂))) (arrowelim (arrowintro (Λ x α) (univintro y all⟨ ≈notfree (Λ x (≈sym α≈α′)) (Λ x y∉α′) ⟩ (univelim (varterm y) α′[x/y]≡β (univintro x all⟨ Λ∣ x α ⟩ (rename α≈α′ (univelim (varterm x) (ident α x) (assume (Λ x α)))))))) d)
---  close
---   (assembled-context d)
---   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
---   (arrowelim
---    (arrowintro (Λ x α)
---     (univintro y (all⟨ Λ x y∉α ⟩)
---      (univelim (varterm y) sub
---       (assume (Λ x α)))))
---    d)
+rename {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β) d =
+  close
+    (assembled-context d)
+    (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+    (arrowelim
+     (arrowintro (Λ x α)
+      (univintro y all⟨ ≈notfree (Λ x (≈sym α≈α′)) (Λ x y∉α′) ⟩
+       (univelim (varterm y) α′[x/y]≡β
+        (univintro x all⟨ Λ∣ x α ⟩
+         (rename α≈α′ -- Not structurally recursive
+          (univelim (varterm x) (ident α x)
+           (assume (Λ x α))))))))
+     d)
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
@@ -353,29 +357,50 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
 %\end{prooftree}
 \begin{code}
 rename {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) d with varEq x y
-... | no x≢y   = close (assembled-context d) (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆))))) (existelim (all⟨ V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨- [ refl ] ⟩)))) d (existelim (all⟨ V∣ y β′ ⟩ all∪ (all- all⟨- [ refl ] ⟩)) (existintro (varterm x) y (subInverse y∉α α[x/y]≡β) (assume α)) (existintro (varterm y) y (ident β′ y) (rename β≈β′ (assume _)))))
+... | no  x≢y  =
+  close
+   (assembled-context d)
+   (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆)))))
+   (existelim (all⟨ V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩
+               all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨- [ refl ] ⟩))))
+    d
+    (existelim (all⟨ V∣ y β′ ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+     (existintro (varterm x) y (subInverse y∉α α[x/y]≡β)
+      (assume α))
+     (existintro (varterm y) y (ident β′ y)
+      (rename β≈β′ -- Not structurally recursive
+       (assume _)))))
 ... | yes refl with subIdentFunc α[x/y]≡β
-...   | refl = close (assembled-context d) (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V∣ x β′ ⟩ all∪ (all- all⟨ y∉α ⟩)) d (existintro (varterm x) x (ident β′ x) (rename β≈β′ (assume α))))
-
---... | no x≢y   = close
---                  (assembled-context d)
---                  (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
---                  (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
---                              all∪ (all- all⟨- [ refl ] ⟩))
---                   d
---                   (existintro (varterm x) y (subInverse y∉α sub)
---                    (assume α)))
+...            | refl =
+  close
+   (assembled-context d)
+   (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
+   (existelim (all⟨ V∣ x β′ ⟩ all∪ (all- all⟨ y∉α ⟩))
+    d
+    (existintro (varterm x) x (ident β′ x)
+     (rename β≈β′
+      (assume α))))
 \end{code}
 \begin{code}
 rename {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β) d with varEq x y
-... | yes refl rewrite subIdentFunc α′[x/y]≡β = close (assembled-context d) (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩)) d (existintro (varterm x) x (ident β x) (rename α≈α′ (assume α))))
-... | no x≢y   = close (assembled-context d) (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V y (subNotFree (varterm x≢y) α′[x/y]≡β) ⟩ all∪ (all- all⟨- [ refl ] ⟩)) d (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β) (rename α≈α′ (assume α))))
---                  (assembled-context d)
---                  (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
---                  (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
---                              all∪ (all- all⟨- [ refl ] ⟩))
---                   d
---                   (existintro (varterm x) y (subInverse y∉α sub)
---                    (assume α)))
+... | yes refl rewrite subIdentFunc α′[x/y]≡β =
+  close
+   (assembled-context d)
+   (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
+   (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+    d
+    (existintro (varterm x) x (ident β x)
+     (rename α≈α′ -- Not structurally recursive
+      (assume α))))
+... | no x≢y   =
+  close
+   (assembled-context d)
+   (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
+   (existelim (all⟨ V y (subNotFree (varterm x≢y) α′[x/y]≡β) ⟩
+               all∪ (all- all⟨- [ refl ] ⟩))
+    d
+    (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β)
+     (rename α≈α′
+      (assume α))))
 
 \end{code}

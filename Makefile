@@ -24,6 +24,6 @@ clean:
 
 .PHONY: test
 test:
-	agda --safe Scheme.lagda
-	agda --safe appendix.agda
+	agda --safe Formula.lagda
+	agda appendix.agda
 	agda drinker.agda
