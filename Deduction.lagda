@@ -148,7 +148,6 @@ assembled-context (existelim _ d₁ d₂)  = from assembled-context d₁ ∪ (fr
 \end{code}
 }
 
-
 \begin{code}
 rename      : ∀{Γ α α′}
               → α ≈ α′
@@ -159,6 +158,7 @@ rename      : ∀{Γ α α′}
 The atomic case is trivial, since an atomic formula is equivalent only to
 itself.
 \begin{code}
+{-# NON_TERMINATING #-}
 rename {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts) d = d
 \end{code}
 \begin{prooftree}
@@ -276,23 +276,23 @@ rename {Γ} {Λ x α} {Λ .x α′} (Λ y ap) d =
     d)
 \end{code}
 Renaming $x$ to $y$ requires that $y$ is not free in $\alpha$, and so it is
-also not free in $\forall x \alpha$.
-\begin{prooftree}
-  \AxiomC{[$\forall x \alpha$]}
-  \RightLabel{$\forall^-$}
-  \UnaryInfC{$\alpha[x/y]$}
-  \RightLabel{$\forall^+$}
-  \UnaryInfC{$\forall y \alpha[x/y]$}
-  \RightLabel{$\rightarrow^+$}
-  \UnaryInfC{$\forall x \alpha \rightarrow \forall y \alpha[x/y]$}
-      \AxiomC{$\Gamma$}
-      \UnaryInfC{$\vdots$}
-      \UnaryInfC{$\forall x \alpha$}
-    \RightLabel{$\rightarrow^-$}
-    \BinaryInfC{$\forall y \alpha[x/y]$}
-\end{prooftree}
+also not free in $\forall x \alpha$. \todo{Update}
+%\begin{prooftree}
+%  \AxiomC{[$\forall x \alpha$]}
+%  \RightLabel{$\forall^-$}
+%  \UnaryInfC{$\alpha[x/y]$}
+%  \RightLabel{$\forall^+$}
+%  \UnaryInfC{$\forall y \alpha[x/y]$}
+%  \RightLabel{$\rightarrow^+$}
+%  \UnaryInfC{$\forall x \alpha \rightarrow \forall y \alpha[x/y]$}
+%      \AxiomC{$\Gamma$}
+%      \UnaryInfC{$\vdots$}
+%      \UnaryInfC{$\forall x \alpha$}
+%    \RightLabel{$\rightarrow^-$}
+%    \BinaryInfC{$\forall y \alpha[x/y]$}
+%\end{prooftree}
 \begin{code}
-rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub ap) d = ?
+rename {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) d = close (assembled-context d) (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂))) (arrowelim (arrowintro (Λ x α) (univintro y all⟨ Λ x y∉α ⟩ (rename β≈β′ (univelim (varterm y) α[x/y]≡β (assume (Λ x α)))))) d)
 --  close
 --   (assembled-context d)
 --   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
@@ -304,7 +304,7 @@ rename {Γ} {Λ x α} {Λ y β} (Λ/ y∉α sub ap) d = ?
 --    d)
 \end{code}
 \begin{code}
-rename {Γ} {Λ x α} {Λ y β} (Λ/′ ap y∉α sub) d = ?
+rename {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β) d = close (assembled-context d) (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂))) (arrowelim (arrowintro (Λ x α) (univintro y all⟨ ≈notfree (Λ x (≈sym α≈α′)) (Λ x y∉α′) ⟩ (univelim (varterm y) α′[x/y]≡β (univintro x all⟨ Λ∣ x α ⟩ (rename α≈α′ (univelim (varterm x) (ident α x) (assume (Λ x α)))))))) d)
 --  close
 --   (assembled-context d)
 --   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
@@ -340,20 +340,23 @@ rename {Γ} {V x α} {V .x β} (V y ap) d =
 \end{code}
 This case is trivial if the variable is being replaced with itself. Note that
 $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
-\alpha[x/y]$.
-\begin{prooftree}
-  \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
-  \UnaryInfC{$\exists x \alpha$}
-      \AxiomC{[$\alpha$]}
-      \RightLabel{$\exists^+$}
-      \UnaryInfC{$\exists y \alpha[x/y]$}
-    \RightLabel{$\exists^-$}
-    \BinaryInfC{$\exists y \alpha[x/y]$}
-\end{prooftree}
+\alpha[x/y]$. \todo{Update}
+%\begin{prooftree}
+%  \AxiomC{$\Gamma$}
+%  \UnaryInfC{$\vdots$}
+%  \UnaryInfC{$\exists x \alpha$}
+%      \AxiomC{[$\alpha$]}
+%      \RightLabel{$\exists^+$}
+%      \UnaryInfC{$\exists y \alpha[x/y]$}
+%    \RightLabel{$\exists^-$}
+%    \BinaryInfC{$\exists y \alpha[x/y]$}
+%\end{prooftree}
 \begin{code}
-rename {Γ} {V x α} {V y β} (V/ y∉α sub ap) d = ? --with varEq x y
---... | yes refl rewrite subIdentFunc sub = d
+rename {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) d with varEq x y
+... | no x≢y   = close (assembled-context d) (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆))))) (existelim (all⟨ V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨- [ refl ] ⟩)))) d (existelim (all⟨ V∣ y β′ ⟩ all∪ (all- all⟨- [ refl ] ⟩)) (existintro (varterm x) y (subInverse y∉α α[x/y]≡β) (assume α)) (existintro (varterm y) y (ident β′ y) (rename β≈β′ (assume _)))))
+... | yes refl with subIdentFunc α[x/y]≡β
+...   | refl = close (assembled-context d) (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V∣ x β′ ⟩ all∪ (all- all⟨ y∉α ⟩)) d (existintro (varterm x) x (ident β′ x) (rename β≈β′ (assume α))))
+
 --... | no x≢y   = close
 --                  (assembled-context d)
 --                  (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
@@ -364,9 +367,9 @@ rename {Γ} {V x α} {V y β} (V/ y∉α sub ap) d = ? --with varEq x y
 --                    (assume α)))
 \end{code}
 \begin{code}
-rename {Γ} {V x α} {V y β} (V/′ ap y∉α sub) d = ? --with varEq x y
---... | yes refl rewrite subIdentFunc sub = d
---... | no x≢y   = close
+rename {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β) d with varEq x y
+... | yes refl rewrite subIdentFunc α′[x/y]≡β = close (assembled-context d) (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩)) d (existintro (varterm x) x (ident β x) (rename α≈α′ (assume α))))
+... | no x≢y   = close (assembled-context d) (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃))) (existelim (all⟨ V y (subNotFree (varterm x≢y) α′[x/y]≡β) ⟩ all∪ (all- all⟨- [ refl ] ⟩)) d (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β) (rename α≈α′ (assume α))))
 --                  (assembled-context d)
 --                  (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
 --                  (existelim (all⟨ V y (subNotFree (varterm x≢y) sub) ⟩
