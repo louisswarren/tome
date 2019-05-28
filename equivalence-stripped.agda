@@ -334,3 +334,9 @@ rename : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆)))))
    (existelim (all⟨ V x (≈notfree (≈sym α≈α′) y∉α′) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨ y∉α′ ⟩)))) d (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩)) (existintro (varterm y) x α′[x/y]≡β′ (assume β′)) (existintro (varterm x) x (ident α x) (⟨←⟩ (rename α≈α′) (assume _)))))
+
+rename-rule : ∀{Γ α α′} → α ≈ α′
+              →    Γ ⊢ α
+                  --------
+              →    Γ ⊢ α′
+rename-rule ap = ⟨→⟩ (rename ap)
