@@ -249,45 +249,72 @@ freeforSub (Λ x ffβ) x≢y (Λ x₁ x₂ sub) = Λ x (freeforSub ffβ x≢y su
 freeforSub (V x ffβ) x≢y (V∣ x₁ α) = V x ffβ
 freeforSub (V x ffβ) x≢y (V x₁ x₂ sub) = V x (freeforSub ffβ x≢y sub)
 
-subInverseWrap : ∀{ω α x v t β γ δ} → ω ≢ v → ω NotInTerm t → x ≢ v
-                 → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ
-                 → γ [ ω / varterm x ]≡ δ → α [ v / t ]≡ δ
-subInverseWrap = ?
-
-lemma : ∀{α α′ β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′
-        → β′ [ y / varterm x ]≡ α′ → α ≈ α′
-lemma {α} y∉α (ident _ _) β≈β′ r rewrite subIdentFunc r = β≈β′
-lemma {α} y∉α s β≈β′ (ident _ _) rewrite subIdentFunc s = β≈β′
-lemma {α} y∉α (notfree x∉α) β≈β′ r with subNotFreeFunc r (≈notfree β≈β′ y∉α)
-...                                | refl = β≈β′
-lemma {α} y∉α s β≈β′ (notfree y∉β′) with subNotFreeFunc s (notfreeSub′ (≈notfree {!   !} y∉β′) s)
-...                                 | refl = β≈β′
-lemma {.(atom _ _)} y∉α (atom _ x) (atom _ ts) (atom _ x₁) = {!   !}
-lemma {.(_ ⇒ _)} (y∉α ⇒ y∉α₁) (s ⇒ s₁) (β≈β′ ⇒ β≈β′₁) (r ⇒ r₁) = lemma y∉α s β≈β′ r ⇒ lemma y∉α₁ s₁ β≈β′₁ r₁
-lemma {.(_ ∧ _)} (y∉α ∧ y∉α₁) (s ∧ s₁) (β≈β′ ∧ β≈β′₁) (r ∧ r₁) = lemma y∉α s β≈β′ r ∧ lemma y∉α₁ s₁ β≈β′₁ r₁
-lemma {.(_ ∨ _)} (y∉α ∨ y∉α₁) (s ∨ s₁) (β≈β′ ∨ β≈β′₁) (r ∨ r₁) = lemma y∉α s β≈β′ r ∨ lemma y∉α₁ s₁ β≈β′₁ r₁
-lemma {.(Λ x α)} (Λ∣ .x .α) (Λ∣ .x α) (Λ x β≈β′) (Λ∣ .x α₁) = Λ x β≈β′
-lemma {.(Λ x α)} (Λ∣ .x .α) (Λ∣ .x α) (Λ x β≈β′) (Λ x₁ (varterm x₂) r) = ⊥-elim (x₂ refl)
-lemma {.(Λ _ α)} (Λ _ y∉α) (Λ∣ _ α) (Λ _ β≈β′) (Λ∣ _ α₁) = Λ _ β≈β′
-lemma {.(Λ _ α)} (Λ _ y∉α) (Λ∣ _ α) (Λ _ β≈β′) (Λ x (varterm x₁) r) = ⊥-elim (x₁ refl)
-lemma {.(Λ x _)} y∉α (Λ x₁ (varterm x₂) s) (Λ x β≈β′) (Λ∣ .x α) = ⊥-elim (x₂ refl)
-lemma {.(Λ x α)} (Λ∣ .x α) (Λ x₁ x₂ s) (Λ x β≈β′) (Λ x₃ x₄ r) = ⊥-elim (x₃ refl)
-lemma {.(Λ x _)} (Λ .x y∉α) (Λ x₁ x₂ s) (Λ x β≈β′) (Λ x₃ x₄ r) = Λ _ (lemma y∉α s β≈β′ r)
-lemma {.(Λ x₂ α)} y∉α (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ∣ x₃ α₁) = Λ/ x x₁ β≈β′
-lemma {.(Λ x₂ α)} (Λ∣ .x₂ .α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) rewrite subIdentFunc r = Λ/ x x₁ β≈β′
-lemma {.(Λ x₂ α)} (Λ .x₂ y∉α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) with subNotFreeFunc r (≈notfree β≈β′ (notfreeSub y∉α (varterm x₃) x₁))
-lemma {.(Λ x₂ α)} (Λ .x₂ y∉α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) | refl = Λ/ x x₁ β≈β′
-lemma {.(Λ x₄ α)} (Λ∣ x₄ α) (Λ x₂ (varterm x₃) s) (Λ/ x x₁ β≈β′) (Λ∣ .x₄ α₁) = ⊥-elim (x₃ refl)
-lemma {.(Λ x₄ α)} (Λ∣ x₄ α) (Λ x₂ (varterm x₃) s) (Λ/ x x₁ β≈β′) (Λ x₅ x₆ r) = ⊥-elim (x₃ refl)
-lemma {.(Λ y _)} (Λ y y∉α) (Λ x₂ x₃ s) (Λ/ x x₁ β≈β′) (Λ∣ x₄ α) with subNotFreeFunc s (notfreeSub′ x s)
-lemma {.(Λ y _)} (Λ y y∉α) (Λ x₂ x₃ s) (Λ/ x x₁ β≈β′) (Λ∣ x₄ α) | refl = Λ/ y∉α x₁ β≈β′
-lemma {Λ x α} {Λ .y α′} {Λ .x β} {Λ y γ′} {v} {w} (Λ .x w∉α) (Λ v≢x (varterm x≢w) s) (Λ/ {β = γ} y∉β β[x/y]≡γ γ≈γ′) (Λ w≢y (varterm y≢v) r) with subFunc ? ?
-... | refl = Λ/ (notfreeSub′′ y∉β y≢v s) (snd (α [ x / freeforSub (subFreeFor β[x/y]≡γ) (λ { refl → v≢x refl }) s ])) {! subUnique ? ?  !}
-lemma {α} y∉α s (V x β≈β′) r = {!   !}
-lemma {α} y∉α s (V/ x x₁ β≈β′) r = {!   !}
-
+--subInverseWrap : ∀{ω α x v t β γ δ} → ω ≢ v → ω NotInTerm t → x ≢ v
+--                 → α [ x / varterm ω ]≡ β → β [ v / t ]≡ γ
+--                 → γ [ ω / varterm x ]≡ δ → α [ v / t ]≡ δ
+--subInverseWrap = ?
+--
+--lemma : ∀{α α′ β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′
+--        → β′ [ y / varterm x ]≡ α′ → α ≈ α′
+--lemma {α} y∉α (ident _ _) β≈β′ r rewrite subIdentFunc r = β≈β′
+--lemma {α} y∉α s β≈β′ (ident _ _) rewrite subIdentFunc s = β≈β′
+--lemma {α} y∉α (notfree x∉α) β≈β′ r with subNotFreeFunc r (≈notfree β≈β′ y∉α)
+--...                                | refl = β≈β′
+--lemma {α} y∉α s β≈β′ (notfree y∉β′) with subNotFreeFunc s (notfreeSub′ (≈notfree {!   !} y∉β′) s)
+--...                                 | refl = β≈β′
+--lemma {.(atom _ _)} y∉α (atom _ x) (atom _ ts) (atom _ x₁) = {!   !}
+--lemma {.(_ ⇒ _)} (y∉α ⇒ y∉α₁) (s ⇒ s₁) (β≈β′ ⇒ β≈β′₁) (r ⇒ r₁) = lemma y∉α s β≈β′ r ⇒ lemma y∉α₁ s₁ β≈β′₁ r₁
+--lemma {.(_ ∧ _)} (y∉α ∧ y∉α₁) (s ∧ s₁) (β≈β′ ∧ β≈β′₁) (r ∧ r₁) = lemma y∉α s β≈β′ r ∧ lemma y∉α₁ s₁ β≈β′₁ r₁
+--lemma {.(_ ∨ _)} (y∉α ∨ y∉α₁) (s ∨ s₁) (β≈β′ ∨ β≈β′₁) (r ∨ r₁) = lemma y∉α s β≈β′ r ∨ lemma y∉α₁ s₁ β≈β′₁ r₁
+--lemma {.(Λ x α)} (Λ∣ .x .α) (Λ∣ .x α) (Λ x β≈β′) (Λ∣ .x α₁) = Λ x β≈β′
+--lemma {.(Λ x α)} (Λ∣ .x .α) (Λ∣ .x α) (Λ x β≈β′) (Λ x₁ (varterm x₂) r) = ⊥-elim (x₂ refl)
+--lemma {.(Λ _ α)} (Λ _ y∉α) (Λ∣ _ α) (Λ _ β≈β′) (Λ∣ _ α₁) = Λ _ β≈β′
+--lemma {.(Λ _ α)} (Λ _ y∉α) (Λ∣ _ α) (Λ _ β≈β′) (Λ x (varterm x₁) r) = ⊥-elim (x₁ refl)
+--lemma {.(Λ x _)} y∉α (Λ x₁ (varterm x₂) s) (Λ x β≈β′) (Λ∣ .x α) = ⊥-elim (x₂ refl)
+--lemma {.(Λ x α)} (Λ∣ .x α) (Λ x₁ x₂ s) (Λ x β≈β′) (Λ x₃ x₄ r) = ⊥-elim (x₃ refl)
+--lemma {.(Λ x _)} (Λ .x y∉α) (Λ x₁ x₂ s) (Λ x β≈β′) (Λ x₃ x₄ r) = Λ _ (lemma y∉α s β≈β′ r)
+--lemma {.(Λ x₂ α)} y∉α (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ∣ x₃ α₁) = Λ/ x x₁ β≈β′
+--lemma {.(Λ x₂ α)} (Λ∣ .x₂ .α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) rewrite subIdentFunc r = Λ/ x x₁ β≈β′
+--lemma {.(Λ x₂ α)} (Λ .x₂ y∉α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) with subNotFreeFunc r (≈notfree β≈β′ (notfreeSub y∉α (varterm x₃) x₁))
+--lemma {.(Λ x₂ α)} (Λ .x₂ y∉α) (Λ∣ x₂ α) (Λ/ x x₁ β≈β′) (Λ x₃ x₄ r) | refl = Λ/ x x₁ β≈β′
+--lemma {.(Λ x₄ α)} (Λ∣ x₄ α) (Λ x₂ (varterm x₃) s) (Λ/ x x₁ β≈β′) (Λ∣ .x₄ α₁) = ⊥-elim (x₃ refl)
+--lemma {.(Λ x₄ α)} (Λ∣ x₄ α) (Λ x₂ (varterm x₃) s) (Λ/ x x₁ β≈β′) (Λ x₅ x₆ r) = ⊥-elim (x₃ refl)
+--lemma {.(Λ y _)} (Λ y y∉α) (Λ x₂ x₃ s) (Λ/ x x₁ β≈β′) (Λ∣ x₄ α) with subNotFreeFunc s (notfreeSub′ x s)
+--lemma {.(Λ y _)} (Λ y y∉α) (Λ x₂ x₃ s) (Λ/ x x₁ β≈β′) (Λ∣ x₄ α) | refl = Λ/ y∉α x₁ β≈β′
+--lemma {Λ x α} {Λ .y α′} {Λ .x β} {Λ y γ′} {v} {w} (Λ .x w∉α) (Λ v≢x (varterm x≢w) s) (Λ/ {β = γ} y∉β β[x/y]≡γ γ≈γ′) (Λ w≢y (varterm y≢v) r) with subFunc ? ?
+--... | refl = Λ/ (notfreeSub′′ y∉β y≢v s) (snd (α [ x / freeforSub (subFreeFor β[x/y]≡γ) (λ { refl → v≢x refl }) s ])) {! subUnique ? ?  !}
+--lemma {α} y∉α s (V x β≈β′) r = {!   !}
+--lemma {α} y∉α s (V/ x x₁ β≈β′) r = {!   !}
 
 ≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
+
+≈sub : ∀{α α′ β β′ x t} → α ≈ α′ → α [ x / t ]≡ β → α′ [ x / t ]≡ β′ → β ≈ β′
+≈sub α≈α′ (ident α x) sub′ rewrite subIdentFunc sub′ = α≈α′
+≈sub α≈α′ (notfree x) sub′ with subNotFreeFunc sub′ (≈notfree α≈α′ x)
+... | refl = α≈α′
+≈sub α≈α′ sub (ident α x) rewrite subIdentFunc sub = α≈α′
+≈sub α≈α′ sub (notfree x) with subNotFreeFunc sub (≈notfree (≈sym α≈α′) x)
+... | refl = α≈α′
+≈sub (atom r ts) (atom .r x) (atom .r x₁) = {!   !}
+≈sub (α≈α′ ⇒ α≈α′₁) (sub ⇒ sub₁) (sub′ ⇒ sub′₁) = ≈sub α≈α′ sub sub′ ⇒ ≈sub α≈α′₁ sub₁ sub′₁
+≈sub (α≈α′ ∧ α≈α′₁) (sub ∧ sub₁) (sub′ ∧ sub′₁) = ≈sub α≈α′ sub sub′ ∧ ≈sub α≈α′₁ sub₁ sub′₁
+≈sub (α≈α′ ∨ α≈α′₁) (sub ∨ sub₁) (sub′ ∨ sub′₁) = ≈sub α≈α′ sub sub′ ∨ ≈sub α≈α′₁ sub₁ sub′₁
+≈sub (Λ x α≈α′) (Λ∣ .x α) (Λ∣ .x α₁) = Λ x α≈α′
+≈sub (Λ x α≈α′) (Λ∣ .x α) (Λ x₁ x₂ sub′) = ⊥-elim (x₁ refl)
+≈sub (Λ x α≈α′) (Λ x₁ x₂ sub) (Λ∣ .x α) = ⊥-elim (x₁ refl)
+≈sub (Λ x α≈α′) (Λ x₁ x₂ sub) (Λ x₃ x₄ sub′) = Λ x (≈sub α≈α′ sub sub′)
+≈sub (Λ/ x x₁ α≈α′) (Λ∣ x₂ α) (Λ∣ .x₂ α₁) = Λ/ x x₁ α≈α′
+≈sub (Λ/ x x₁ α≈α′) (Λ∣ x₂ α) (Λ x₃ x₄ sub′) with subNotFreeFunc sub′ (≈notfree α≈α′ (subNotFree (varterm x₃) x₁))
+≈sub (Λ/ x x₁ α≈α′) (Λ∣ x₂ α) (Λ x₃ x₄ sub′) | refl = Λ/ x x₁ α≈α′
+≈sub (Λ/ x x₁ α≈α′) (Λ x₂ x₃ sub) (Λ∣ x₄ α) = Λ/ (subNotFree {!   !} sub) {!   !} {!   !}
+≈sub (Λ/ x x₁ α≈α′) (Λ x₂ x₃ sub) (Λ x₄ x₅ sub′) = {!   !}
+≈sub (V x α≈α′) sub sub′ = {! sub sub′  !}
+≈sub (V/ x x₁ α≈α′) sub sub′ = {! sub sub′  !}
+
+
+Λ/′ : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′ → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
+Λ/′ α≈α′ y∉α′ sub = ?
+
 ≈sym (atom r ts) = atom r ts
 ≈sym (α≈α′ ⇒ β≈β′) = ≈sym α≈α′ ⇒ ≈sym β≈β′
 ≈sym (α≈α′ ∧ β≈β′) = ≈sym α≈α′ ∧ ≈sym β≈β′
