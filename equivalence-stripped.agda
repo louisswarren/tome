@@ -324,54 +324,13 @@ rename : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
     (existintro (varterm x) x (ident α x)
      (⟨←⟩ (rename ap)
       (assume β))))
-⟨←⟩ (rename {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) d with varEq x y
-... | no  x≢y  =
+⟨←⟩ (rename {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) d =
   close
    (assembled-context d)
-   ?
-   ?
-   --(λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆)))))
-   --(existelim (all⟨ V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩
-   --            all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨- [ refl ] ⟩))))
-   -- d
-   -- (existelim (all⟨ V∣ y β′ ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-   --  (existintro (varterm x) y (subInverse y∉α α[x/y]≡β)
-   --   (assume α))
-   --  (existintro (varterm y) y (ident β′ y)
-   --   (⟨←⟩ (rename β≈β′) -- Not structurally recursive
-   --    (assume _)))))
-... | yes refl with subIdentFunc α[x/y]≡β
-...            | refl =
+   (λ x₁ x₂ x₃ → x₂ x₃ λ x₄ → x₄ λ x₅ → x₅)
+   (existelim (all⟨ V x y∉α ⟩ all∪ (all- all⟨- [ refl ] ⟩)) d (existintro (varterm y) x α[x/y]≡β (⟨←⟩ (rename β≈β′) (assume β′))))
+⟨←⟩ (rename {Γ} {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) d =
   close
    (assembled-context d)
-   ?
-   ?
-   --(λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   --(existelim (all⟨ V∣ x β′ ⟩ all∪ (all- all⟨ y∉α ⟩))
-   -- d
-   -- (existintro (varterm x) x (ident β′ x)
-   --  (⟨←⟩ (rename β≈β′)
-   --   (assume α))))
-⟨←⟩ (rename {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β)) d with varEq x y
-... | yes refl rewrite subIdentFunc α′[x/y]≡β =
-  close
-   (assembled-context d)
-   (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-    d
-    (existintro (varterm x) x (ident α x)
-     (⟨←⟩ (rename α≈α′) -- Not structurally recursive
-      (assume β))))
-... | no x≢y   =
-  close
-   (assembled-context d)
-   ?
-   ?
-   --(λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   --(existelim (all⟨ V y (subNotFree (varterm x≢y) α′[x/y]≡β) ⟩
-   --            all∪ (all- all⟨- [ refl ] ⟩))
-   -- d
-   -- (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β)
-   --  (⟨←⟩ (rename α≈α′)
-   --   (assume α))))
-
+   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆)))))
+   (existelim (all⟨ V x (≈notfree (≈sym α≈α′) y∉α′) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨ y∉α′ ⟩)))) d (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩)) (existintro (varterm y) x α′[x/y]≡β′ (assume β′)) (existintro (varterm x) x (ident α x) (⟨←⟩ (rename α≈α′) (assume _)))))
