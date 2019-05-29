@@ -231,6 +231,28 @@ notfreeSub′′ = ?
 ...    | yes refl = V∣ z β′
 ...    | no  z≢y  = V y (≈notfree β≈β′ (notfreeSub z∉α (varterm z≢y) α[x/y]≡β))
 
+≈notfreesym : ∀{α α′ z} → α ≈ α′ → z NotFreeIn α′ → z NotFreeIn α
+≈notfreesym (atom r ts) (atom z∉ts) = atom z∉ts
+≈notfreesym (α≈α′ ⇒ β≈β′) (z∉α ⇒ z∉β) = ≈notfreesym α≈α′ z∉α ⇒ ≈notfreesym β≈β′ z∉β
+≈notfreesym (α≈α′ ∧ β≈β′) (z∉α ∧ z∉β) = ≈notfreesym α≈α′ z∉α ∧ ≈notfreesym β≈β′ z∉β
+≈notfreesym (α≈α′ ∨ β≈β′) (z∉α ∨ z∉β) = ≈notfreesym α≈α′ z∉α ∨ ≈notfreesym β≈β′ z∉β
+≈notfreesym (Λ x α≈α′) (Λ∣ .x α) = Λ∣ x _
+≈notfreesym (V x α≈α′) (V∣ .x α) = V∣ x _
+≈notfreesym {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ∣ .y β′) with varEq x y
+...    | yes refl = Λ∣ y α
+...    | no  x≢y  = Λ x y∉α --Λ y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
+≈notfreesym {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) (V∣ .y β′) with varEq x y
+...    | yes refl = V∣ y α
+...    | no  x≢y  = V x y∉α --V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
+≈notfreesym (Λ y α≈α′) (Λ .y z∉α) = Λ y (≈notfreesym α≈α′ z∉α)
+≈notfreesym (V y α≈α′) (V .y z∉α) = V y (≈notfreesym α≈α′ z∉α)
+≈notfreesym {Λ x α} {Λ y β′} {z} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ .y z∉α) with varEq z y
+...    | yes refl = Λ x y∉α
+...    | no  z≢y  = Λ x {!   !} --Λ y (≈notfree β≈β′ (notfreeSub z∉α (varterm z≢y) α[x/y]≡β))
+≈notfreesym {V x α} {V y β′} {z} (V/ y∉α α[x/y]≡β β≈β′) (V .y z∉α) with varEq z y
+...    | yes refl = V x y∉α
+...    | no  z≢y  = ? --V y (≈notfree β≈β′ (notfreeSub z∉α (varterm z≢y) α[x/y]≡β))
+
 
 freeforSub : ∀{α β t x s y} → t FreeFor x In β → x ≢ y → α [ y / s ]≡ β → t FreeFor x In α
 freeforSub (notfree x∉β) x≢y sub = notfree (notfreeSub′′ x∉β x≢y sub)
@@ -288,12 +310,12 @@ freeforSub (V x ffβ) x≢y (V x₁ x₂ sub) = V x (freeforSub ffβ x≢y sub)
 
 ≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
 
-≈sub : ∀{α α′ β β′ x t} → α ≈ α′ → α [ x / t ]≡ β → α′ [ x / t ]≡ β′ → β ≈ β′
+≈sub : ∀{α α′ β β′ x y} → α ≈ α′ → α [ x / varterm y ]≡ β → α′ [ x / varterm y ]≡ β′ → β ≈ β′
 ≈sub α≈α′ (ident α x) sub′ rewrite subIdentFunc sub′ = α≈α′
 ≈sub α≈α′ (notfree x) sub′ with subNotFreeFunc sub′ (≈notfree α≈α′ x)
 ... | refl = α≈α′
 ≈sub α≈α′ sub (ident α x) rewrite subIdentFunc sub = α≈α′
-≈sub α≈α′ sub (notfree x) with subNotFreeFunc sub (≈notfree (≈sym α≈α′) x)
+≈sub α≈α′ sub (notfree x) with subNotFreeFunc sub (≈notfreesym α≈α′ x)
 ... | refl = α≈α′
 ≈sub (atom r ts) (atom .r x) (atom .r x₁) = {!   !}
 ≈sub (α≈α′ ⇒ α≈α′₁) (sub ⇒ sub₁) (sub′ ⇒ sub′₁) = ≈sub α≈α′ sub sub′ ⇒ ≈sub α≈α′₁ sub₁ sub′₁
@@ -306,14 +328,25 @@ freeforSub (V x ffβ) x≢y (V x₁ x₂ sub) = V x (freeforSub ffβ x≢y sub)
 ≈sub (Λ/ x x₁ α≈α′) (Λ∣ x₂ α) (Λ∣ .x₂ α₁) = Λ/ x x₁ α≈α′
 ≈sub (Λ/ x x₁ α≈α′) (Λ∣ x₂ α) (Λ x₃ x₄ sub′) with subNotFreeFunc sub′ (≈notfree α≈α′ (subNotFree (varterm x₃) x₁))
 ≈sub (Λ/ x x₁ α≈α′) (Λ∣ x₂ α) (Λ x₃ x₄ sub′) | refl = Λ/ x x₁ α≈α′
-≈sub (Λ/ x x₁ α≈α′) (Λ x₂ x₃ sub) (Λ∣ x₄ α) = Λ/ (subNotFree {!   !} sub) {!   !} {!   !}
-≈sub (Λ/ x x₁ α≈α′) (Λ x₂ x₃ sub) (Λ x₄ x₅ sub′) = {!   !}
+≈sub {y = y} (Λ/ x∉α₁ x₁ α≈α′) (Λ x₂ x₃ sub) (Λ∣ x α) with subNotFreeFunc sub x∉α₁ | varEq x y
+... | refl | yes refl = Λ/ x∉α₁ x₁ α≈α′
+... | refl | no  x≢y  = Λ/ (subNotFree (varterm x≢y) sub) x₁ α≈α′
+≈sub {x = x} {y = y} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ x₂ x₃ sub) (Λ x₄ x₅ sub′) = Λ/ (notfreeSub y∉α x₅ sub) (snd (_ [ _ / {!   !} ])) (≈sub β≈β′ (snd (_ [ _ / {!   !} ])) {!   !})
 ≈sub (V x α≈α′) sub sub′ = {! sub sub′  !}
 ≈sub (V/ x x₁ α≈α′) sub sub′ = {! sub sub′  !}
 
 
 Λ/′ : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′ → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
-Λ/′ α≈α′ y∉α′ sub = ?
+Λ/′ α≈α′ y∉α′ (ident α x) = Λ x α≈α′
+Λ/′ α≈α′ y∉α′ (notfree x) = Λ/ (≈notfreesym α≈α′ y∉α′) (notfree (≈notfreesym α≈α′ x)) α≈α′
+Λ/′ (atom .r ts) y∉α′ (atom r x) = Λ/ y∉α′ (atom r x) (atom r _)
+Λ/′ (α≈α′ ⇒ α≈α′₁) (y∉α′ ⇒ y∉α′₁) (sub ⇒ sub₁) = Λ/ (≈notfreesym α≈α′ y∉α′ ⇒ ≈notfreesym α≈α′₁ y∉α′₁) ({! sub  !} ⇒ {!   !}) {!   !}
+Λ/′ α≈α′ y∉α′ (sub ∧ sub₁) = {!   !}
+Λ/′ α≈α′ y∉α′ (sub ∨ sub₁) = {!   !}
+Λ/′ α≈α′ y∉α′ (Λ∣ x α) = {!   !}
+Λ/′ α≈α′ y∉α′ (V∣ x α) = {!   !}
+Λ/′ α≈α′ y∉α′ (Λ x x₁ sub) = {!   !}
+Λ/′ α≈α′ y∉α′ (V x x₁ sub) = {!   !}
 
 ≈sym (atom r ts) = atom r ts
 ≈sym (α≈α′ ⇒ β≈β′) = ≈sym α≈α′ ⇒ ≈sym β≈β′
@@ -322,7 +355,7 @@ freeforSub (V x ffβ) x≢y (V x₁ x₂ sub) = V x (freeforSub ffβ x≢y sub)
 ≈sym (Λ x α≈α′) = Λ x (≈sym α≈α′)
 ≈sym {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α[x/y]≡β = Λ x (≈sym β≈β′)
-...    | no x≢y = ?
+...    | no x≢y = Λ/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β) (subInverse y∉α α[x/y]≡β)
 ≈sym (V x α≈α′) = V x (≈sym α≈α′)
 ≈sym {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α[x/y]≡β = V x (≈sym β≈β′)
