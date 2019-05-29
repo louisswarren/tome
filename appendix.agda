@@ -225,3 +225,21 @@ unfree α x with x notFreeIn α
 --≈trans (V x ap₁) ap₂ = {!   !}
 --≈trans (V/ x x₁ ap₁) ap₂ = {!   !}
 --≈trans (V/′ ap₁ x x₁) ap₂ = {!   !}
+
+
+--⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) d =
+--  close
+--   (assembled-context d)
+--   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+--   (arrowelim
+--    (arrowintro (Λ y β′)
+--     (univintro x all⟨ x∉∀yβ′ ⟩ -- Only difference
+--      (⟨←⟩ (renameIff α≈α′)
+--       (univelim (varterm x) (subInverse y∉α′ α′[x/y]≡β′)
+--        (assume (Λ y β′))))))
+--    d)
+--   where
+--    x∉∀yβ′ : x NotFreeIn Λ y β′
+--    x∉∀yβ′ with varEq x y
+--    ...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ∣ x β′
+--    ...    | no  x≢y  = Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′)
