@@ -21,11 +21,15 @@ data _≈_ : Formula → Formula → Set where
   _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
   _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
   Λ    : ∀{α α′} → ∀ x → α ≈ α′ → Λ x α ≈ Λ x α′
-  Λ/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′ → Λ x α ≈ Λ y β′
-  Λ/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′ → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
   V    : ∀{α α′} → ∀ x → α ≈ α′ → V x α ≈ V x α′
-  V/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β → β ≈ β′ → V x α ≈ V y β′
-  V/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′ → α′ [ x / varterm y ]≡ β′ → V x α ≈ V y β′
+  Λ/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β
+                       → β ≈ β′ → Λ x α ≈ Λ y β′
+  V/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β
+                       → β ≈ β′ → V x α ≈ V y β′
+  Λ/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′
+                        → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
+  V/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′
+                        → α′ [ x / varterm y ]≡ β′ → V x α ≈ V y β′
 
 
 ≈refl : ∀{α} → α ≈ α
@@ -43,16 +47,16 @@ data _≈_ : Formula → Formula → Set where
 ≈sym (α≈α′ ∧ β≈β′) = ≈sym α≈α′ ∧ ≈sym β≈β′
 ≈sym (α≈α′ ∨ β≈β′) = ≈sym α≈α′ ∨ ≈sym β≈β′
 ≈sym (Λ x α≈α′) = Λ x (≈sym α≈α′)
+≈sym (V x α≈α′) = V x (≈sym α≈α′)
 ≈sym {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α[x/y]≡β = Λ x (≈sym β≈β′)
 ...    | no x≢y = Λ/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β) (subInverse y∉α α[x/y]≡β)
-≈sym {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) with varEq x y
-...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ x (≈sym α≈α′)
-...    | no  x≢y  = Λ/ (subNotFree (varterm x≢y) α′[x/y]≡β′) (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
-≈sym (V x α≈α′) = V x (≈sym α≈α′)
 ≈sym {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α[x/y]≡β = V x (≈sym β≈β′)
 ...    | no x≢y = V/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β) (subInverse y∉α α[x/y]≡β)
+≈sym {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) with varEq x y
+...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ x (≈sym α≈α′)
+...    | no  x≢y  = Λ/ (subNotFree (varterm x≢y) α′[x/y]≡β′) (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
 ≈sym {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = V x (≈sym α≈α′)
 ...    | no  x≢y  = V/ (subNotFree (varterm x≢y) α′[x/y]≡β′) (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
@@ -118,86 +122,188 @@ notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t
 
 
 
-rename : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
-⟨→⟩ (rename {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
-⟨→⟩ (rename {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ)) d =
+renameIff : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
+⟨→⟩ (renameIff {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
+⟨←⟩ (renameIff {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
+⟨→⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
    (arrowintro α′
-    (⟨→⟩ (rename apβ)
+    (⟨→⟩ (renameIff apβ)
      (arrowelim
       d
-      (⟨←⟩ (rename apα) -- Not structurally recursive
+      (⟨←⟩ (renameIff apα) -- Not structurally recursive
        (assume α′)))))
-⟨→⟩ (rename {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ)) d =
+⟨←⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ)) d =
+  close
+   (assembled-context d)
+   (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
+   (arrowintro α
+    (⟨←⟩ (renameIff apβ)
+     (arrowelim
+      d
+      (⟨→⟩ (renameIff apα) -- Not structurally recursive
+       (assume α)))))
+⟨→⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
    (conjelim
     d
     (conjintro
-     (⟨→⟩ (rename apα)
+     (⟨→⟩ (renameIff apα)
       (assume α))
-     (⟨→⟩ (rename apβ)
+     (⟨→⟩ (renameIff apβ)
       (assume β))))
-⟨→⟩ (rename {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ)) d =
+⟨←⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ)) d =
+  close
+   (assembled-context d)
+   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
+   (conjelim
+    d
+    (conjintro
+     (⟨←⟩ (renameIff apα)
+      (assume α′))
+     (⟨←⟩ (renameIff apβ)
+      (assume β′))))
+⟨→⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
    (disjelim
     d
     (disjintro₁ β′
-     (⟨→⟩ (rename apα)
+     (⟨→⟩ (renameIff apα)
       (assume α)))
     (disjintro₂ α′
-     (⟨→⟩ (rename apβ)
+     (⟨→⟩ (renameIff apβ)
       (assume β))))
-⟨→⟩ (rename {Γ} {Λ x α} {Λ .x α′} (Λ y ap)) d =
+⟨←⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ)) d =
+  close
+   (assembled-context d)
+   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
+   (disjelim
+    d
+    (disjintro₁ β
+     (⟨←⟩ (renameIff apα)
+      (assume α′)))
+    (disjintro₂ α
+     (⟨←⟩ (renameIff apβ)
+      (assume β′))))
+⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y ap)) d =
   close
    (assembled-context d)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α)
      (univintro x (all⟨ Λ∣ x α ⟩)
-      (⟨→⟩ (rename ap)
+      (⟨→⟩ (renameIff ap)
        (univelim (varterm x) (ident α x)
         (assume (Λ x α))))))
     d)
-⟨→⟩ (rename {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) d =
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y ap)) d =
+  close
+   (assembled-context d)
+   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ x α′)
+     (univintro x (all⟨ Λ∣ x α′ ⟩)
+      (⟨←⟩ (renameIff ap)
+       (univelim (varterm x) (ident α′ x)
+        (assume (Λ x α′))))))
+    d)
+⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) d =
   close
     (assembled-context d)
     (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
     (arrowelim
      (arrowintro (Λ x α)
       (univintro y all⟨ Λ x y∉α ⟩
-       (⟨→⟩ (rename β≈β′)
+       (⟨→⟩ (renameIff β≈β′)
         (univelim (varterm y) α[x/y]≡β
          (assume (Λ x α))))))
      d)
-⟨→⟩ (rename {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) d =
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) d with varEq x y
+... | yes refl rewrite subIdentFunc α[x/y]≡β =
   close
-    (assembled-context d)
-    (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
-    (arrowelim
-     (arrowintro (Λ x α)
-      (univintro y all⟨ ≈notfree (Λ x (≈sym α≈α′)) (Λ x y∉α′) ⟩
-       (univelim (varterm y) α′[x/y]≡β′
-        (univintro x all⟨ Λ∣ x α ⟩
-         (⟨→⟩ (rename α≈α′) -- Not structurally recursive
-          (univelim (varterm x) (ident α x)
-           (assume (Λ x α))))))))
-     d)
-⟨→⟩ (rename {Γ} {V x α} {V .x β} (V y ap)) d =
+   (assembled-context d)
+   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ x β′)
+     (univintro x all⟨ Λ∣ x β′ ⟩
+      (⟨←⟩ (renameIff β≈β′)
+       (univelim (varterm x) (ident β′ x)
+        (assume (Λ x β′))))))
+    d)
+... | no  x≢y  =
+  close
+   (assembled-context d)
+   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ y β′)
+     (univintro x all⟨ Λ y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩
+      (univelim (varterm x) (subInverse y∉α α[x/y]≡β)
+       (univintro y all⟨ Λ∣ y β′ ⟩
+        (⟨←⟩ (renameIff β≈β′)
+         (univelim (varterm y) (ident β′ y)
+          (assume (Λ y β′))))))))
+    d)
+⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) d =
+  close
+   (assembled-context d)
+   (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ x α)
+     (univintro y all⟨ ≈notfree (Λ x (≈sym α≈α′)) (Λ x y∉α′) ⟩
+      (univelim (varterm y) α′[x/y]≡β′
+       (univintro x all⟨ Λ∣ x α ⟩
+        (⟨→⟩ (renameIff α≈α′) -- Not structurally recursive
+         (univelim (varterm x) (ident α x)
+          (assume (Λ x α))))))))
+    d)
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) d with varEq x y
+... | yes refl rewrite subIdentFunc α′[x/y]≡β′ =
+  close
+   (assembled-context d)
+   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ x β′)
+     (univintro x all⟨ Λ∣ x β′ ⟩ -- Only difference
+      (⟨←⟩ (renameIff α≈α′)
+       (univelim (varterm x) (ident β′ x)
+        (assume (Λ x β′))))))
+    d)
+... | no  x≢y  =
+  close
+   (assembled-context d)
+   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ y β′)
+     (univintro x all⟨ Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′) ⟩ -- Only difference
+      (⟨←⟩ (renameIff α≈α′)
+       (univelim (varterm x) (subInverse y∉α′ α′[x/y]≡β′)
+        (assume (Λ y β′))))))
+    d)
+⟨→⟩ (renameIff {Γ} {V x α} {V .x β} (V y ap)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
    (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩))
     d
     (existintro (varterm x) x (ident β x)
-     (⟨→⟩ (rename ap)
+     (⟨→⟩ (renameIff ap)
       (assume α))))
-⟨→⟩ (rename {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) d with varEq x y
+⟨←⟩ (renameIff {Γ} {V x α} {V .x β} (V y ap)) d =
+  close
+   (assembled-context d)
+   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
+   (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+    d
+    (existintro (varterm x) x (ident α x)
+     (⟨←⟩ (renameIff ap)
+      (assume β))))
+⟨→⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) d with varEq x y
 ... | no  x≢y  =
   close
    (assembled-context d)
@@ -209,7 +315,7 @@ rename : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
      (existintro (varterm x) y (subInverse y∉α α[x/y]≡β)
       (assume α))
      (existintro (varterm y) y (ident β′ y)
-      (⟨→⟩ (rename β≈β′) -- Not structurally recursive
+      (⟨→⟩ (renameIff β≈β′) -- Not structurally recursive
        (assume _)))))
 ... | yes refl with subIdentFunc α[x/y]≡β
 ...            | refl =
@@ -219,124 +325,54 @@ rename : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
    (existelim (all⟨ V∣ x β′ ⟩ all∪ (all- all⟨ y∉α ⟩))
     d
     (existintro (varterm x) x (ident β′ x)
-     (⟨→⟩ (rename β≈β′)
+     (⟨→⟩ (renameIff β≈β′)
       (assume α))))
-⟨→⟩ (rename {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) d with varEq x y
+⟨←⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) d =
+  close
+   (assembled-context d)
+   (λ x₁ x₂ x₃ → x₂ x₃ λ x₄ → x₄ λ x₅ → x₅)
+   (existelim (all⟨ V x y∉α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+    d
+    (existintro (varterm y) x α[x/y]≡β
+     (⟨←⟩ (renameIff β≈β′)
+      (assume β′))))
+⟨→⟩ (renameIff {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) d with varEq x y
 ... | yes refl rewrite subIdentFunc α′[x/y]≡β′ =
   close
    (assembled-context d)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+   (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩)) -- Differs here
     d
-    (existintro (varterm x) x (ident β x)
-     (⟨→⟩ (rename α≈α′) -- Not structurally recursive
+    (existintro (varterm x) x (ident β x) -- And here
+     (⟨→⟩ (renameIff α≈α′) -- Not structurally recursive
       (assume α))))
 ... | no x≢y   =
   close
    (assembled-context d)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
    (existelim (all⟨ V y (subNotFree (varterm x≢y) α′[x/y]≡β′) ⟩
-               all∪ (all- all⟨- [ refl ] ⟩))
+               all∪ (all- all⟨- [ refl ] ⟩)) -- Differs here
     d
-    (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β′)
-     (⟨→⟩ (rename α≈α′)
+    (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β′) -- And here
+     (⟨→⟩ (renameIff α≈α′)
       (assume α))))
-
-⟨←⟩ (rename {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
-⟨←⟩ (rename {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ)) d =
-  close
-   (assembled-context d)
-   (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
-   (arrowintro α
-    (⟨←⟩ (rename apβ)
-     (arrowelim
-      d
-      (⟨→⟩ (rename apα) -- Not structurally recursive
-       (assume α)))))
-⟨←⟩ (rename {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ)) d =
-  close
-   (assembled-context d)
-   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
-   (conjelim
-    d
-    (conjintro
-     (⟨←⟩ (rename apα)
-      (assume α′))
-     (⟨←⟩ (rename apβ)
-      (assume β′))))
-⟨←⟩ (rename {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ)) d =
-  close
-   (assembled-context d)
-   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
-   (disjelim
-    d
-    (disjintro₁ β
-     (⟨←⟩ (rename apα)
-      (assume α′)))
-    (disjintro₂ α
-     (⟨←⟩ (rename apβ)
-      (assume β′))))
-⟨←⟩ (rename {Γ} {Λ x α} {Λ .x α′} (Λ y ap)) d =
-  close
-   (assembled-context d)
-   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
-   (arrowelim
-    (arrowintro (Λ x α′)
-     (univintro x (all⟨ Λ∣ x α′ ⟩)
-      (⟨←⟩ (rename ap)
-       (univelim (varterm x) (ident α′ x)
-        (assume (Λ x α′))))))
-    d)
-⟨←⟩ (rename {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) d with varEq x y
-... | yes refl rewrite subIdentFunc α[x/y]≡β =
-  close
-   (assembled-context d)
-   (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
-   (arrowelim (arrowintro (Λ x β′) (univintro x all⟨ Λ∣ x β′ ⟩ (⟨←⟩ (rename β≈β′) (univelim (varterm x) (ident β′ x) (assume (Λ x β′)))))) d)
-... | no  x≢y  =
-  close
-    (assembled-context d)
-    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
-    (arrowelim
-     (arrowintro (Λ y β′)
-      (univintro x all⟨ Λ y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩ (univelim (varterm x) (subInverse y∉α α[x/y]≡β) (univintro y all⟨ Λ∣ y β′ ⟩ (⟨←⟩ (rename β≈β′) (univelim (varterm y) (ident β′ y) (assume (Λ y β′))))))))
-     d)
-⟨←⟩ (rename {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) d with varEq x y
-... | yes refl rewrite subIdentFunc α′[x/y]≡β′ =
-  close
-    (assembled-context d)
-    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
-    (arrowelim (arrowintro (Λ x β′) (univintro x all⟨ Λ∣ x β′ ⟩ (⟨←⟩ (rename α≈α′) (univelim (varterm x) (ident β′ x) (assume (Λ x β′)))))) d)
-... | no  x≢y  =
-  close
-    (assembled-context d)
-    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
-    (arrowelim
-     (arrowintro (Λ y β′)
-      (univintro x all⟨ Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′) ⟩ (⟨←⟩ (rename α≈α′) (univelim (varterm x) (subInverse y∉α′ α′[x/y]≡β′) (assume (Λ y β′))))))
-     d)
-⟨←⟩ (rename {Γ} {V x α} {V .x β} (V y ap)) d =
-  close
-   (assembled-context d)
-   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-    d
-    (existintro (varterm x) x (ident α x)
-     (⟨←⟩ (rename ap)
-      (assume β))))
-⟨←⟩ (rename {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) d =
-  close
-   (assembled-context d)
-   (λ x₁ x₂ x₃ → x₂ x₃ λ x₄ → x₄ λ x₅ → x₅)
-   (existelim (all⟨ V x y∉α ⟩ all∪ (all- all⟨- [ refl ] ⟩)) d (existintro (varterm y) x α[x/y]≡β (⟨←⟩ (rename β≈β′) (assume β′))))
-⟨←⟩ (rename {Γ} {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) d =
+⟨←⟩ (renameIff {Γ} {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆)))))
-   (existelim (all⟨ V x (≈notfree (≈sym α≈α′) y∉α′) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨ y∉α′ ⟩)))) d (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩)) (existintro (varterm y) x α′[x/y]≡β′ (assume β′)) (existintro (varterm x) x (ident α x) (⟨←⟩ (rename α≈α′) (assume _)))))
+   (existelim (all⟨ V x (≈notfree (≈sym α≈α′) y∉α′) ⟩
+               all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨ y∉α′ ⟩))))
+    d
+    (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+     (existintro (varterm y) x α′[x/y]≡β′
+      (assume β′))
+     (existintro (varterm x) x (ident α x)
+      (⟨←⟩ (renameIff α≈α′)
+       (assume _)))))
 
-rename-rule : ∀{Γ α α′} → α ≈ α′
+
+rename : ∀{Γ α α′} → α ≈ α′
               →    Γ ⊢ α
                   --------
               →    Γ ⊢ α′
-rename-rule ap = ⟨→⟩ (rename ap)
+rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
