@@ -148,4 +148,3 @@ assembled-context (existelim _ d₁ d₂)  = from assembled-context d₁ ∪ (fr
 \end{code}
 }
 
-\end{code}

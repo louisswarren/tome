@@ -1,5 +1,7 @@
 \begin{code}
 
+open import Agda.Primitive using (_⊔_)
+
 open import Decidable
 open import Deduction
 open import Ensemble
@@ -128,11 +130,22 @@ notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t
 \end{code}
 }
 
-Variable freedom is preserved by formula equivalence
+Variable freedom is preserved by formula equivalence. This is proved using the
+lemma above, noting that if $z$ is bound  in $\alpha$, then it is either also
+bound in $\alpha'$ or else has been renamed and so does not appear, and if $z$
+does not appear in $\alpha$ then it either also does not appear in $\alpha'$ or
+some bound variable has been renamed to it, so it is bound.
+\begin{code}
+
+≈notfree : ∀{α α′ z} → α ≈ α′ → z NotFreeIn α → z NotFreeIn α′
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
 \begin{code}
 
 --todo: is it better to split this differently?
-≈notfree : ∀{α α′ z} → α ≈ α′ → z NotFreeIn α → z NotFreeIn α′
+--todo: rename variables
 ≈notfree (atom r ts) (atom z∉ts) = atom z∉ts
 ≈notfree (α≈α′ ⇒ β≈β′) (z∉α ⇒ z∉β) = ≈notfree α≈α′ z∉α ⇒ ≈notfree β≈β′ z∉β
 ≈notfree (α≈α′ ∧ β≈β′) (z∉α ∧ z∉β) = ≈notfree α≈α′ z∉α ∧ ≈notfree β≈β′ z∉β
@@ -167,12 +180,10 @@ Variable freedom is preserved by formula equivalence
 ...    | no  z≢y  = V y (notfreeSub (≈notfree α≈α′ z∉α) (varterm z≢y) α′[x/y]≡β)
 
 \end{code}
-
-
+}
 
 \begin{code}
--- should allow different levels
-record _↔_ {a} (A : Set a) (B : Set a) : Set a where
+record _↔_ {a b} (A : Set a) (B : Set b) : Set (a ⊔ b) where
   field
     ⟨→⟩ : A → B
     ⟨←⟩ : B → A
