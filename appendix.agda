@@ -178,34 +178,36 @@ unfree α x with x notFreeIn α
     α[x/y]≡β : α [ x / varterm y ]≡ β
     α[x/y]≡β = snd βsub
 
-≈sub : ∀{α α′ β β′ x t} → α ≈ α′ → α [ x / t ]≡ β → α′ [ x / t ]≡ β′ → β ≈ β′
-≈sub ap (ident α x) sub₂ rewrite subIdentFunc sub₂ = ap
-≈sub ap (notfree x∉α) sub₂ with subNotFreeFunc sub₂ (≈notfree ap x∉α)
-... | refl = ap
-≈sub ap sub₁ (ident α x) rewrite subIdentFunc sub₁ = ap
-≈sub ap sub₁ (notfree x∉α′) with subNotFreeFunc sub₁ (≈notfree (≈sym ap) x∉α′)
-... | refl = ap
-≈sub (atom r ts) (atom .r x) (atom .r x₁) = {!   !}
-≈sub (ap ⇒ ap₁) (sub₁ ⇒ sub₂) (sub₃ ⇒ sub₄) = ≈sub ap sub₁ sub₃ ⇒ ≈sub ap₁ sub₂ sub₄
-≈sub (ap ∧ ap₁) (sub₁ ∧ sub₂) (sub₃ ∧ sub₄) = ≈sub ap sub₁ sub₃ ∧ ≈sub ap₁ sub₂ sub₄
-≈sub (ap ∨ ap₁) (sub₁ ∨ sub₂) (sub₃ ∨ sub₄) = ≈sub ap sub₁ sub₃ ∨ ≈sub ap₁ sub₂ sub₄
-≈sub (Λ x ap) (Λ∣ .x α) (Λ∣ .x α₁) = Λ x ap
-≈sub (Λ x ap) (Λ∣ .x α) (Λ x₁ x₂ sub₂) = ⊥-elim (x₁ refl)
-≈sub (Λ x ap) (Λ x₁ x₂ sub₁) (Λ∣ .x α) = ⊥-elim (x₁ refl)
-≈sub (Λ x ap) (Λ x₁ x₂ sub₁) (Λ x₃ x₄ sub₂) = Λ x (≈sub ap sub₁ sub₂)
-≈sub (Λ/ x x₁ ap) (Λ∣ x₂ α) (Λ∣ .x₂ α₁) = Λ/ x x₁ ap
-≈sub (Λ/ x x₁ ap) (Λ∣ x₂ α) (Λ x₃ x₄ sub₂) with subNotFreeFunc sub₂ (≈notfree ap (subNotFree (varterm x₃) x₁))
-...                                        | refl = Λ/ x x₁ ap
-≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ y≢x x₃ sub₁) (Λ∣ x₄ α) with subNotFreeFunc sub₁ y∉α
-≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ y≢x x₃ sub₁) (Λ∣ x₄ α) | refl = Λ/ y∉α α[x/y]≡β ap
-≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ x₂ x₃ sub₁) (Λ x₄ x₅ sub₂) = Λ/ {!   !} {!   !} (≈sub ap {!   !} sub₂)
-≈sub (Λ/′ ap x x₁) (Λ∣ x₂ α) (Λ∣ .x₂ α₁) = Λ/′ ap x x₁
-≈sub (Λ/′ ap x x₁) (Λ∣ x₂ α) (Λ x₃ x₄ sub₂) = {!   !}
-≈sub (Λ/′ ap x x₁) (Λ x₂ x₃ sub₁) (Λ∣ x₄ α) = Λ/′ (≈sub ap sub₁ (notfree x)) x x₁
-≈sub (Λ/′ ap x x₁) (Λ x₂ x₃ sub₁) (Λ x₄ x₅ sub₂) = {!   !}
-≈sub (V x ap) sub₁ sub₂ = {! sub₁ sub₂  !}
-≈sub (V/ x x₁ ap) sub₁ sub₂ = {!  sub₁ sub₂ !}
-≈sub (V/′ ap x x₁) sub₁ sub₂ = {! sub₁ sub₂  !}
+open import equivalence
+
+--≈sub : ∀{α α′ β β′ x t} → α ≈ α′ → α [ x / t ]≡ β → α′ [ x / t ]≡ β′ → β ≈ β′
+--≈sub ap (ident α x) sub₂ rewrite subIdentFunc sub₂ = ap
+--≈sub ap (notfree x∉α) sub₂ with subNotFreeFunc sub₂ (≈notfree ap x∉α)
+--... | refl = ap
+--≈sub ap sub₁ (ident α x) rewrite subIdentFunc sub₁ = ap
+--≈sub ap sub₁ (notfree x∉α′) with subNotFreeFunc sub₁ (≈notfree (≈sym ap) x∉α′)
+--... | refl = ap
+--≈sub (atom r ts) (atom .r x) (atom .r x₁) = {!   !}
+--≈sub (ap ⇒ ap₁) (sub₁ ⇒ sub₂) (sub₃ ⇒ sub₄) = ≈sub ap sub₁ sub₃ ⇒ ≈sub ap₁ sub₂ sub₄
+--≈sub (ap ∧ ap₁) (sub₁ ∧ sub₂) (sub₃ ∧ sub₄) = ≈sub ap sub₁ sub₃ ∧ ≈sub ap₁ sub₂ sub₄
+--≈sub (ap ∨ ap₁) (sub₁ ∨ sub₂) (sub₃ ∨ sub₄) = ≈sub ap sub₁ sub₃ ∨ ≈sub ap₁ sub₂ sub₄
+--≈sub (Λ x ap) (Λ∣ .x α) (Λ∣ .x α₁) = Λ x ap
+--≈sub (Λ x ap) (Λ∣ .x α) (Λ x₁ x₂ sub₂) = ⊥-elim (x₁ refl)
+--≈sub (Λ x ap) (Λ x₁ x₂ sub₁) (Λ∣ .x α) = ⊥-elim (x₁ refl)
+--≈sub (Λ x ap) (Λ x₁ x₂ sub₁) (Λ x₃ x₄ sub₂) = Λ x (≈sub ap sub₁ sub₂)
+--≈sub (Λ/ x x₁ ap) (Λ∣ x₂ α) (Λ∣ .x₂ α₁) = Λ/ x x₁ ap
+--≈sub (Λ/ x x₁ ap) (Λ∣ x₂ α) (Λ x₃ x₄ sub₂) with subNotFreeFunc sub₂ (≈notfree ap (subNotFree (varterm x₃) x₁))
+--...                                        | refl = Λ/ x x₁ ap
+--≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ y≢x x₃ sub₁) (Λ∣ x₄ α) with subNotFreeFunc sub₁ y∉α
+--≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ y≢x x₃ sub₁) (Λ∣ x₄ α) | refl = Λ/ y∉α α[x/y]≡β ap
+--≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ x₂ x₃ sub₁) (Λ x₄ x₅ sub₂) = Λ/ {!   !} {!   !} (≈sub ap {!   !} sub₂)
+--≈sub (Λ/′ ap x x₁) (Λ∣ x₂ α) (Λ∣ .x₂ α₁) = Λ/′ ap x x₁
+--≈sub (Λ/′ ap x x₁) (Λ∣ x₂ α) (Λ x₃ x₄ sub₂) = {!   !}
+--≈sub (Λ/′ ap x x₁) (Λ x₂ x₃ sub₁) (Λ∣ x₄ α) = Λ/′ (≈sub ap sub₁ (notfree x)) x x₁
+--≈sub (Λ/′ ap x x₁) (Λ x₂ x₃ sub₁) (Λ x₄ x₅ sub₂) = {!   !}
+--≈sub (V x ap) sub₁ sub₂ = {! sub₁ sub₂  !}
+--≈sub (V/ x x₁ ap) sub₁ sub₂ = {!  sub₁ sub₂ !}
+--≈sub (V/′ ap x x₁) sub₁ sub₂ = {! sub₁ sub₂  !}
 
 
 
