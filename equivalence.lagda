@@ -18,16 +18,28 @@ so that the meaning of the formula does not change.
 
 infix 50 _≈_
 data _≈_ : Formula → Formula → Set where
+\end{code}
+First, the trivial cases for equivalence, coming from equivalence of components.
+\begin{code}
   atom : ∀ r ts → atom r ts ≈ atom r ts
   _⇒_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ⇒ β ≈ α′ ⇒ β′
   _∧_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∧ β ≈ α′ ∧ β′
   _∨_  : ∀{α β α′ β′} → α ≈ α′ → β ≈ β′ → α ∨ β ≈ α′ ∨ β′
   Λ    : ∀{α α′} → ∀ x → α ≈ α′ → Λ x α ≈ Λ x α′
   V    : ∀{α α′} → ∀ x → α ≈ α′ → V x α ≈ V x α′
+\end{code}
+Now, the case for renaming the quantifying variable of a generalisation. The
+resulting component must also be replaceable with an equivalent component, as
+other bound variable renaming may occur inside.
+\begin{code}
   Λ/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β
                        → β ≈ β′ → Λ x α ≈ Λ y β′
   V/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β
                        → β ≈ β′ → V x α ≈ V y β′
+\end{code}
+For equivalence to be symmetric, the following dual form of bound variable
+renaming must be derivable. \todo{Explain that the derivability is unknown?}
+\begin{code}
   Λ/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′
                         → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
   V/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′
@@ -35,55 +47,89 @@ data _≈_ : Formula → Formula → Set where
 
 \end{code}
 
-It is important that this relation is symmetric
+This relation is symmetric.
 \begin{code}
 
 ≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
+\end{code}
+For the trivial definitions, the proof is similarly trivial.
+\begin{code}
 ≈sym (atom r ts) = atom r ts
 ≈sym (α≈α′ ⇒ β≈β′) = ≈sym α≈α′ ⇒ ≈sym β≈β′
 ≈sym (α≈α′ ∧ β≈β′) = ≈sym α≈α′ ∧ ≈sym β≈β′
 ≈sym (α≈α′ ∨ β≈β′) = ≈sym α≈α′ ∨ ≈sym β≈β′
 ≈sym (Λ x α≈α′) = Λ x (≈sym α≈α′)
 ≈sym (V x α≈α′) = V x (≈sym α≈α′)
+\end{code}
+In the case of bound variable renaming, the dual constructor is used. If the
+bound variable is being renamed with itself, then the previous trivial proof is
+given instead.
+\begin{code}
 ≈sym {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α[x/y]≡β = Λ x (≈sym β≈β′)
-...    | no x≢y = Λ/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β) (subInverse y∉α α[x/y]≡β)
+...    | no  x≢y  = Λ/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β)
+                        (subInverse y∉α α[x/y]≡β)
 ≈sym {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α[x/y]≡β = V x (≈sym β≈β′)
-...    | no x≢y = V/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β) (subInverse y∉α α[x/y]≡β)
+...    | no x≢y = V/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β)
+                      (subInverse y∉α α[x/y]≡β)
 ≈sym {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ x (≈sym α≈α′)
-...    | no  x≢y  = Λ/ (subNotFree (varterm x≢y) α′[x/y]≡β′) (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
+...    | no  x≢y  = Λ/ (subNotFree (varterm x≢y) α′[x/y]≡β′)
+                       (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
 ≈sym {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = V x (≈sym α≈α′)
-...    | no  x≢y  = V/ (subNotFree (varterm x≢y) α′[x/y]≡β′) (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
+...    | no  x≢y  = V/ (subNotFree (varterm x≢y) α′[x/y]≡β′)
+                       (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
 
 \end{code}
 
+\todo{Is it notfree or notFree?}
+\todo{Should this be in Formula?}
+
+If a variable is not free in $\alpha$, then it should not be free in
+$\alpha[x/t]$, assuming that the variable does not appear in $t$. The proof
+simply comes from the definition of variable substitution and freedom for
+terms.
 \begin{code}
 
--- todo: capitalisation
-notfreeSub : ∀{α β x t z} → z NotFreeIn α → z NotInTerm t → α [ x / t ]≡ β → z NotFreeIn β
-notfreeSub z∉α z∉t (ident α x) = z∉α
+notfreeSub : ∀{α β x t z} → z NotFreeIn α → z NotInTerm t
+             → α [ x / t ]≡ β → z NotFreeIn β
+-- Proof omitted.
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+notfreeSub z∉α z∉t (ident α x)   = z∉α
 notfreeSub z∉α z∉t (notfree x∉α) = z∉α
-notfreeSub (atom z∉us) z∉t (atom r sub) = atom (termsLemma z∉us z∉t sub)
+notfreeSub (atom z∉us) z∉t (atom r sub) = atom (lemma z∉us z∉t sub)
   where
-    termsLemma : ∀{n x t z} {us vs : Vec Term n} → z NotInTerms us
+    lemma : ∀{n x t z} {us vs : Vec Term n} → z NotInTerms us
                  → z NotInTerm t → [ us ][ x / t ]≡ vs → z NotInTerms vs
-    termsLemma z∉us z∉t [] = z∉us
-    termsLemma (z∉u ∷ z∉us) z∉t (varterm≡ ∷ sub) = z∉t ∷ termsLemma z∉us z∉t sub
-    termsLemma (z∉u ∷ z∉us) z∉t (varterm≢ x≢y ∷ sub) = z∉u ∷ termsLemma z∉us z∉t sub
-    termsLemma (functerm z∉ts ∷ z∉us) z∉t (functerm subts ∷ sub) = functerm (termsLemma z∉ts z∉t subts) ∷ termsLemma z∉us z∉t sub
-notfreeSub (z∉α ⇒ z∉β) z∉t (subα ⇒ subβ) = notfreeSub z∉α z∉t subα ⇒ notfreeSub z∉β z∉t subβ
-notfreeSub (z∉α ∧ z∉β) z∉t (subα ∧ subβ) = notfreeSub z∉α z∉t subα ∧ notfreeSub z∉β z∉t subβ
-notfreeSub (z∉α ∨ z∉β) z∉t (subα ∨ subβ) = notfreeSub z∉α z∉t subα ∨ notfreeSub z∉β z∉t subβ
-notfreeSub z∉α z∉t (Λ∣ x α) = z∉α
-notfreeSub z∉α z∉t (V∣ x α) = z∉α
-notfreeSub (Λ∣ x α) z∉t (Λ x≢y y∉t sub) = Λ∣ x _
-notfreeSub (V∣ x α) z∉t (V x≢y y∉t sub) = V∣ x _
+    lemma []           z∉t []                   = []
+    lemma (z∉u ∷ z∉us) z∉t (varterm≡     ∷ sub) = z∉t ∷ lemma z∉us z∉t sub
+    lemma (z∉u ∷ z∉us) z∉t (varterm≢ x≢y ∷ sub) = z∉u ∷ lemma z∉us z∉t sub
+    lemma (functerm z∉ts ∷ z∉us) z∉t (functerm subts ∷ sub)
+          = functerm (lemma z∉ts z∉t subts) ∷ lemma z∉us z∉t sub
+notfreeSub (z∉α ⇒ z∉β) z∉t (subα ⇒ subβ) = notfreeSub z∉α z∉t subα
+                                           ⇒ notfreeSub z∉β z∉t subβ
+notfreeSub (z∉α ∧ z∉β) z∉t (subα ∧ subβ) = notfreeSub z∉α z∉t subα
+                                           ∧ notfreeSub z∉β z∉t subβ
+notfreeSub (z∉α ∨ z∉β) z∉t (subα ∨ subβ) = notfreeSub z∉α z∉t subα
+                                           ∨ notfreeSub z∉β z∉t subβ
+notfreeSub z∉α       z∉t (Λ∣ x α)        = z∉α
+notfreeSub z∉α       z∉t (V∣ x α)        = z∉α
+notfreeSub (Λ∣ x α)  z∉t (Λ x≢y y∉t sub) = Λ∣ x _
+notfreeSub (V∣ x α)  z∉t (V x≢y y∉t sub) = V∣ x _
 notfreeSub (Λ y z∉α) z∉t (Λ x≢y y∉t sub) = Λ y (notfreeSub z∉α z∉t sub)
 notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t sub)
 
+\end{code}
+}
+
+Variable freedom is preserved by formula equivalence
+\begin{code}
 
 --todo: is it better to split this differently?
 ≈notfree : ∀{α α′ z} → α ≈ α′ → z NotFreeIn α → z NotFreeIn α′
@@ -120,8 +166,10 @@ notfreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notfreeSub z∉α z∉t
 ...    | yes refl = V∣ z β′
 ...    | no  z≢y  = V y (notfreeSub (≈notfree α≈α′ z∉α) (varterm z≢y) α′[x/y]≡β)
 
-
 \end{code}
+
+
+
 \begin{code}
 -- should allow different levels
 record _↔_ {a} (A : Set a) (B : Set a) : Set a where
