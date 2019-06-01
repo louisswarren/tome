@@ -1,3 +1,11 @@
+Usual \todo{specify?} treatments of formulae assume equivalence of formulae up
+to renaming of bound variables. This has not been included in the definition of
+formulae or of natural deduction. To do so would introduce an extra
+complication to the deduction rules, as every step in a natural deduction proof
+would have to include a proof that the conclusion is equivalent to the desired
+one. However, it is possible to prove that this is unnecessary; given the sytem
+above, if $\Gamma \vdash \alpha$ and $\alpha$ is equivalent to $\alpha'$ up to
+the renaming of bound variables, then $\Gamma \vdash \alpha'$.
 \begin{code}
 
 open import Agda.Primitive using (_⊔_)
@@ -13,9 +21,9 @@ open import Vec
 
 \subsection{Formula equivalence}
 
-Formulae are equivalent if they are equal up to renaming bound variables. Here,
-renaming means substituting a variable for another variable which is not free,
-so that the meaning of the formula does not change.
+Formulae are \emph{equivalent} if they are equal up to renaming bound
+variables. Here, renaming means substituting a variable for another variable
+which is not free, so that the meaning of the formula does not change.
 \begin{code}
 
 infix 50 _≈_
@@ -40,7 +48,7 @@ other bound variable renaming may occur inside.
                        → β ≈ β′ → V x α ≈ V y β′
 \end{code}
 For equivalence to be symmetric, the following dual form of bound variable
-renaming must be derivable. \todo{Explain that the derivability is unknown?}
+renaming must be derivable.
 \begin{code}
   Λ/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′
                         → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
@@ -48,8 +56,13 @@ renaming must be derivable. \todo{Explain that the derivability is unknown?}
                         → α′ [ x / varterm y ]≡ β′ → V x α ≈ V y β′
 
 \end{code}
+It may be that the latter two rules are derivable. However, if this is so,
+proving this would require several lemata which will be otherwise unnecessary.
+As the goal here is to prove that equivalent formulae are equivalently
+derivable, having extra constructors for equivalence will not weaken this
+result.
 
-This relation is symmetric.
+Formula equivalence is symmetric.
 \begin{code}
 
 ≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
@@ -182,22 +195,52 @@ some bound variable has been renamed to it, so it is bound.
 \end{code}
 }
 
+\subsection{Deriving the rename rule}
+
+We want to derive the rule \inline{α ≈ α′ → Γ ⊢ α → Γ ⊢ α′}. Note that it is
+the same $\Gamma$ in both deductions, so changing variable names within the
+deduction of $\Gamma \vdash \alpha$ will not suffice. Instead, the deduction
+tree is extended to obtain the new conclusion.
+
+Proving this rule has a termination issue for the case that $\alpha$ is an
+implication, which will be explained below. However, it is possible to prove
+the stronger rule \inline{α ≈ α′ → Γ ⊢ α ↔ Γ ⊢ α′}.
 \begin{code}
+
 record _↔_ {a b} (A : Set a) (B : Set b) : Set (a ⊔ b) where
   field
     ⟨→⟩ : A → B
     ⟨←⟩ : B → A
 open _↔_
 
-
 renameIff : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
+
 \end{code}
+Clearly, the rename rule can be derived from \inline{renameIff}.
+\begin{code}
+
+rename      : ∀{Γ α α′}
+              → α ≈ α′
+              →                                Γ ⊢ α
+                                              --------
+              →                                Γ ⊢ α′
+rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
+\end{code}
+We prove \inline{renameIff}.
+
 The atomic case is trivial, since an atomic formula is equivalent only to
 itself.
 \begin{code}
 ⟨→⟩ (renameIff {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
 ⟨←⟩ (renameIff {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
 \end{code}
+The remaining rules will extend the given proof tree for $\Gamma \vdash \alpha$
+to obtain $\alpha'$.
+\begin{code}
+
+⟨→⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) d =
+\end{code}
+The proof tree for the implication case is extended as follows.
 \begin{prooftree}
   \AxiomC{$\Gamma$}
   \UnaryInfC{$\vdots$}
@@ -211,26 +254,35 @@ itself.
     \RightLabel{$\rightarrow^-$}
     \UnaryInfC{$\alpha' \rightarrow \beta'$}
 \end{prooftree}
+The induction step involves invoking the rename rule on $\alpha' \approx
+\alpha$ and the assumption of $\alpha'$. We have $\alpha \approx \alpha'$, and
+\inline{≈sym} shows that formula equivalence is symmetric. However, calling
+\inline{rename} on \inline{≈sym α≈α′} would not be structurally recursive. This
+happens because Agda cannot determine that \inline{≈sym α≈α′} is structurally
+smaller than \inline{α≈α′ ⇒ β≈β′}. This is the reason for proving
+\inline{renameIff} instead of proving \inline{rename} directly; we have access
+to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
+\inline{renameIff}.
 \begin{code}
-⟨→⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
    (arrowintro α′
-    (⟨→⟩ (renameIff apβ)
+    (⟨→⟩ (renameIff β≈β′)
      (arrowelim
       d
-      (⟨←⟩ (renameIff apα) -- Would not be structurally recursive
+      -- `rename (≈sym α≈α′) (assume α′)` would not be structurally recursive
+      (⟨←⟩ (renameIff α≈α′)
        (assume α′)))))
-⟨←⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (apα ⇒ apβ)) d =
+⟨←⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
    (arrowintro α
-    (⟨←⟩ (renameIff apβ)
+    (⟨←⟩ (renameIff β≈β′)
      (arrowelim
       d
-      (⟨→⟩ (renameIff apα) -- Would not be structurally recursive
+      (⟨→⟩ (renameIff α≈α′) -- Would not be structurally recursive
        (assume α)))))
 \end{code}
 \begin{prooftree}
@@ -249,27 +301,27 @@ itself.
     \BinaryInfC{$\alpha' \land \beta'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ)) d =
+⟨→⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
    (conjelim
     d
     (conjintro
-     (⟨→⟩ (renameIff apα)
+     (⟨→⟩ (renameIff α≈α′)
       (assume α))
-     (⟨→⟩ (renameIff apβ)
+     (⟨→⟩ (renameIff β≈β′)
       (assume β))))
-⟨←⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (apα ∧ apβ)) d =
+⟨←⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
    (conjelim
     d
     (conjintro
-     (⟨←⟩ (renameIff apα)
+     (⟨←⟩ (renameIff α≈α′)
       (assume α′))
-     (⟨←⟩ (renameIff apβ)
+     (⟨←⟩ (renameIff β≈β′)
       (assume β′))))
 \end{code}
 \begin{prooftree}
@@ -290,29 +342,29 @@ itself.
     \TrinaryInfC{$\alpha' \lor \beta'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ)) d =
+⟨→⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
    (disjelim
     d
     (disjintro₁ β′
-     (⟨→⟩ (renameIff apα)
+     (⟨→⟩ (renameIff α≈α′)
       (assume α)))
     (disjintro₂ α′
-     (⟨→⟩ (renameIff apβ)
+     (⟨→⟩ (renameIff β≈β′)
       (assume β))))
-⟨←⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (apα ∨ apβ)) d =
+⟨←⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) d =
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
    (disjelim
     d
     (disjintro₁ β
-     (⟨←⟩ (renameIff apα)
+     (⟨←⟩ (renameIff α≈α′)
       (assume α′)))
     (disjintro₂ α
-     (⟨←⟩ (renameIff apβ)
+     (⟨←⟩ (renameIff β≈β′)
       (assume β′))))
 \end{code}
 We cannot assume that $x$ is not free in $\Gamma$.
@@ -333,25 +385,25 @@ We cannot assume that $x$ is not free in $\Gamma$.
     \BinaryInfC{$\forall x \alpha'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y ap)) d =
+⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) d =
   close
    (assembled-context d)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α)
      (univintro x (all⟨ Λ∣ x α ⟩)
-      (⟨→⟩ (renameIff ap)
+      (⟨→⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident α x)
         (assume (Λ x α))))))
     d)
-⟨←⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y ap)) d =
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) d =
   close
    (assembled-context d)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α′)
      (univintro x (all⟨ Λ∣ x α′ ⟩)
-      (⟨←⟩ (renameIff ap)
+      (⟨←⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident α′ x)
         (assume (Λ x α′))))))
     d)
@@ -462,6 +514,7 @@ also not free in $\forall x \alpha$. \todo{Update}
 \end{prooftree}
 \begin{code}
 ⟨→⟩ (renameIff {Γ} {V x α} {V .x β} (V y ap)) d =
+  -- todo ap
   close
    (assembled-context d)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
@@ -562,11 +615,4 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
      (existintro (varterm x) x (ident α x)
       (⟨←⟩ (renameIff α≈α′)
        (assume _)))))
-
-rename      : ∀{Γ α α′}
-              → α ≈ α′
-              →                                Γ ⊢ α
-                                              --------
-              →                                Γ ⊢ α′
-rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
 \end{code}
