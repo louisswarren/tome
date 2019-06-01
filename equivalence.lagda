@@ -236,11 +236,13 @@ itself.
 \end{code}
 The remaining rules will extend the given proof tree for $\Gamma \vdash \alpha$
 to obtain $\alpha'$.
+
+The proof tree for the implication case is extended as follows.
 \begin{code}
 
 ⟨→⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) Γ⊢α⇒β =
+
 \end{code}
-The proof tree for the implication case is extended as follows.
 \begin{prooftree}
   \AxiomC{$\Gamma$}
   \UnaryInfC{$\vdots$}
@@ -264,6 +266,7 @@ smaller than \inline{α≈α′ ⇒ β≈β′}. This is the reason for proving
 to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
 \inline{renameIff}.
 \begin{code}
+
   close
    (assembled-context Γ⊢α⇒β)
    (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
@@ -274,7 +277,20 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
       -- `rename (≈sym α≈α′) (assume α′)` would not be structurally recursive
       (⟨←⟩ (renameIff α≈α′)
        (assume α′)))))
+
+\end{code}
+The other direction has the same proof, with $\alpha$ swapped with $\alpha'$,
+$\beta$ swapped with $\beta'$, and the opposite directions of
+\inline{renameIff} used.
+\todo{Show proof tree?}
+\begin{code}
+
 ⟨←⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) Γ⊢α′⇒β′ =
+-- Proof omitted
+
+\end{code}
+\AgdaHide{
+\begin{code}
   close
    (assembled-context Γ⊢α′⇒β′)
    (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
@@ -282,8 +298,14 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
     (⟨←⟩ (renameIff β≈β′)
      (arrowelim
       Γ⊢α′⇒β′
-      (⟨→⟩ (renameIff α≈α′) -- Would not be structurally recursive
+      (⟨→⟩ (renameIff α≈α′)
        (assume α)))))
+\end{code}
+}
+
+The proof tree for the conjunction case is extended as follows.
+\begin{code}
+⟨→⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) Γ⊢α∧β =
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
@@ -301,7 +323,7 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
     \BinaryInfC{$\alpha' \land \beta'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) Γ⊢α∧β =
+
   close
    (assembled-context Γ⊢α∧β)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
@@ -312,7 +334,18 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
       (assume α))
      (⟨→⟩ (renameIff β≈β′)
       (assume β))))
+
+\end{code}
+Again, the other direction is obtained by reversing the use of equivalences.
+\begin{code}
+
 ⟨←⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) Γ⊢α′∧β′ =
+-- Proof omitted.
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
   close
    (assembled-context Γ⊢α′∧β′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
@@ -323,6 +356,15 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
       (assume α′))
      (⟨←⟩ (renameIff β≈β′)
       (assume β′))))
+
+\end{code}
+}
+
+The proof tree for the disjunction case is extended as follows.
+\begin{code}
+
+⟨→⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) Γ⊢α∨β =
+
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
@@ -342,7 +384,7 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
     \TrinaryInfC{$\alpha' \lor \beta'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) Γ⊢α∨β =
+
   close
    (assembled-context Γ⊢α∨β)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
@@ -354,7 +396,18 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
     (disjintro₂ α′
      (⟨→⟩ (renameIff β≈β′)
       (assume β))))
+
+\end{code}
+Again, the other direction is obtained by reversing the use of equivalences.
+\begin{code}
+
 ⟨←⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) Γ⊢α′∨β′ =
+-- Proof omitted.
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
   close
    (assembled-context Γ⊢α′∨β′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
@@ -366,8 +419,20 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
     (disjintro₂ α
      (⟨←⟩ (renameIff β≈β′)
       (assume β′))))
+
 \end{code}
-We cannot assume that $x$ is not free in $\Gamma$.
+}
+
+The first case for universal generalisation is where the bound variable is not
+renamed.
+\begin{code}
+
+⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) Γ⊢∀xα =
+
+\end{code}
+Since $x$ may be free $\Gamma$, we use arrow introduction and elimination so
+that $\Gamma$ is not assumed when the universal generalisation re-introduced.
+
 \begin{prooftree}
   \AxiomC{[$\forall x \alpha$]}
   \RightLabel{$\forall^-$}
@@ -385,7 +450,7 @@ We cannot assume that $x$ is not free in $\Gamma$.
     \BinaryInfC{$\forall x \alpha'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) Γ⊢∀xα =
+
   close
    (assembled-context Γ⊢∀xα)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
@@ -396,7 +461,18 @@ We cannot assume that $x$ is not free in $\Gamma$.
        (univelim (varterm x) (ident α x)
         (assume (Λ x α))))))
     Γ⊢∀xα)
+
+\end{code}
+Again, the other direction is obtained by reversing the use of equivalences.
+\begin{code}
+
 ⟨←⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) Γ⊢∀xα′ =
+-- Proof omitted.
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
   close
    (assembled-context Γ⊢∀xα′)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
@@ -408,35 +484,73 @@ We cannot assume that $x$ is not free in $\Gamma$.
         (assume (Λ x α′))))))
     Γ⊢∀xα′)
 \end{code}
-Renaming $x$ to $y$ requires that $y$ is not free in $\alpha$, and so it is
-also not free in $\forall x \alpha$. \todo{Update}
-%\begin{prooftree}
-%  \AxiomC{[$\forall x \alpha$]}
-%  \RightLabel{$\forall^-$}
-%  \UnaryInfC{$\alpha[x/y]$}
-%  \RightLabel{$\forall^+$}
-%  \UnaryInfC{$\forall y \alpha[x/y]$}
-%  \RightLabel{$\rightarrow^+$}
-%  \UnaryInfC{$\forall x \alpha \rightarrow \forall y \alpha[x/y]$}
-%      \AxiomC{$\Gamma$}
-%      \UnaryInfC{$\vdots$}
-%      \UnaryInfC{$\forall x \alpha$}
-%    \RightLabel{$\rightarrow^-$}
-%    \BinaryInfC{$\forall y \alpha[x/y]$}
-%\end{prooftree}
+}
+
+The second case renames the bound variable, then follows another equivalence.
+\todo{wording}
 \begin{code}
+
 ⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) Γ⊢∀xα =
+
+\end{code}
+Since $x$ is being renamed to $y$, we know $y$ is not free in $\alpha$, and so
+it is also not free in $\forall x \alpha$. Define $\beta \coloneq \alpha[x/y]$
+\begin{prooftree}
+  \AxiomC{[$\forall x \alpha$]}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\beta$}
+  \RightLabel{induction}
+  \UnaryInfC{$\beta'$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall y \beta$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\forall x \alpha \rightarrow \forall y \beta'$}
+      \AxiomC{$\Gamma$}
+      \UnaryInfC{$\vdots$}
+      \UnaryInfC{$\forall x \alpha$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\forall y \beta'$}
+\end{prooftree}
+\begin{code}
+
   close
-    (assembled-context Γ⊢∀xα)
-    (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
-    (arrowelim
-     (arrowintro (Λ x α)
-      (univintro y all⟨ Λ x y∉α ⟩
-       (⟨→⟩ (renameIff β≈β′)
-        (univelim (varterm y) α[x/y]≡β
-         (assume (Λ x α))))))
-     Γ⊢∀xα)
-⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) Γ⊢∀yβ′ with varEq x y
+   (assembled-context Γ⊢∀xα)
+   (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
+   (arrowelim
+    (arrowintro (Λ x α)
+     (univintro y all⟨ Λ x y∉α ⟩
+      (⟨→⟩ (renameIff β≈β′)
+       (univelim (varterm y) α[x/y]≡β
+        (assume (Λ x α))))))
+    Γ⊢∀xα)
+
+\end{code}
+The other direction varies depending on if $x$ is equal to $y$.
+\begin{code}
+
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) Γ⊢∀yβ′
+    with varEq x y
+
+\end{code}
+In the degenerate case where $x = y$, we have $\alpha = \beta$.
+\begin{prooftree}
+  \AxiomC{[$\forall x \beta'$]}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\beta'$}
+  \RightLabel{induction}
+  \UnaryInfC{$\alpha$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall x \alpha$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\forall x \beta' \rightarrow \forall x \alpha$}
+      \AxiomC{$\Gamma$}
+      \UnaryInfC{$\vdots$}
+      \UnaryInfC{$\forall x \beta'$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\forall x \alpha$}
+\end{prooftree}
+\begin{code}
+
 ... | yes refl rewrite subIdentFunc α[x/y]≡β =
   close
    (assembled-context Γ⊢∀yβ′)
@@ -448,6 +562,33 @@ also not free in $\forall x \alpha$. \todo{Update}
        (univelim (varterm x) (ident β′ x)
         (assume (Λ x β′))))))
     Γ⊢∀yβ′)
+
+\end{code}
+Otherwise, $\beta[y/x] = \alpha$, and $x$ is not free in $\forall y \beta'$
+because $x$ is not free in $\beta$, since $\beta$ is obtained by substituting
+$x$ with $y$ in $\alpha$.
+\begin{prooftree}
+  \AxiomC{[$\forall y \beta'$]}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\beta'$}
+  \RightLabel{induction}
+  \UnaryInfC{$\beta$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall y \beta$}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\alpha$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall x \alpha$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\forall x \beta' \rightarrow \forall x \alpha$}
+      \AxiomC{$\Gamma$}
+      \UnaryInfC{$\vdots$}
+      \UnaryInfC{$\forall y \beta'$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\forall x \alpha$}
+\end{prooftree}
+\begin{code}
+
 ... | no  x≢y  =
   close
    (assembled-context Γ⊢∀yβ′)
@@ -461,7 +602,11 @@ also not free in $\forall x \alpha$. \todo{Update}
          (univelim (varterm y) (ident β′ y)
           (assume (Λ y β′))))))))
     Γ⊢∀yβ′)
+
 \end{code}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{code}
 ⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∀xα =
   close
