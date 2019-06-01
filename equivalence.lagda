@@ -238,7 +238,7 @@ The remaining rules will extend the given proof tree for $\Gamma \vdash \alpha$
 to obtain $\alpha'$.
 \begin{code}
 
-⟨→⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) d =
+⟨→⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) Γ⊢α⇒β =
 \end{code}
 The proof tree for the implication case is extended as follows.
 \begin{prooftree}
@@ -265,23 +265,23 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
 \inline{renameIff}.
 \begin{code}
   close
-   (assembled-context d)
+   (assembled-context Γ⊢α⇒β)
    (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
    (arrowintro α′
     (⟨→⟩ (renameIff β≈β′)
      (arrowelim
-      d
+      Γ⊢α⇒β
       -- `rename (≈sym α≈α′) (assume α′)` would not be structurally recursive
       (⟨←⟩ (renameIff α≈α′)
        (assume α′)))))
-⟨←⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) d =
+⟨←⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) Γ⊢α′⇒β′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢α′⇒β′)
    (λ x z z₁ → z (λ z₂ z₃ → z₃ z₁ z₂))
    (arrowintro α
     (⟨←⟩ (renameIff β≈β′)
      (arrowelim
-      d
+      Γ⊢α′⇒β′
       (⟨→⟩ (renameIff α≈α′) -- Would not be structurally recursive
        (assume α)))))
 \end{code}
@@ -301,23 +301,23 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
     \BinaryInfC{$\alpha' \land \beta'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) d =
+⟨→⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) Γ⊢α∧β =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢α∧β)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
    (conjelim
-    d
+    Γ⊢α∧β
     (conjintro
      (⟨→⟩ (renameIff α≈α′)
       (assume α))
      (⟨→⟩ (renameIff β≈β′)
       (assume β))))
-⟨←⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) d =
+⟨←⟩ (renameIff {Γ} {α ∧ β} {α′ ∧ β′} (α≈α′ ∧ β≈β′)) Γ⊢α′∧β′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢α′∧β′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ z₃))))
    (conjelim
-    d
+    Γ⊢α′∧β′
     (conjintro
      (⟨←⟩ (renameIff α≈α′)
       (assume α′))
@@ -342,24 +342,24 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
     \TrinaryInfC{$\alpha' \lor \beta'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) d =
+⟨→⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) Γ⊢α∨β =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢α∨β)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
    (disjelim
-    d
+    Γ⊢α∨β
     (disjintro₁ β′
      (⟨→⟩ (renameIff α≈α′)
       (assume α)))
     (disjintro₂ α′
      (⟨→⟩ (renameIff β≈β′)
       (assume β))))
-⟨←⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) d =
+⟨←⟩ (renameIff {Γ} {α ∨ β} {α′ ∨ β′} (α≈α′ ∨ β≈β′)) Γ⊢α′∨β′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢α′∨β′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
    (disjelim
-    d
+    Γ⊢α′∨β′
     (disjintro₁ β
      (⟨←⟩ (renameIff α≈α′)
       (assume α′)))
@@ -385,9 +385,9 @@ We cannot assume that $x$ is not free in $\Gamma$.
     \BinaryInfC{$\forall x \alpha'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) d =
+⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) Γ⊢∀xα =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∀xα)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α)
@@ -395,10 +395,10 @@ We cannot assume that $x$ is not free in $\Gamma$.
       (⟨→⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident α x)
         (assume (Λ x α))))))
-    d)
-⟨←⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) d =
+    Γ⊢∀xα)
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) Γ⊢∀xα′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∀xα′)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α′)
@@ -406,7 +406,7 @@ We cannot assume that $x$ is not free in $\Gamma$.
       (⟨←⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident α′ x)
         (assume (Λ x α′))))))
-    d)
+    Γ⊢∀xα′)
 \end{code}
 Renaming $x$ to $y$ requires that $y$ is not free in $\alpha$, and so it is
 also not free in $\forall x \alpha$. \todo{Update}
@@ -425,9 +425,9 @@ also not free in $\forall x \alpha$. \todo{Update}
 %    \BinaryInfC{$\forall y \alpha[x/y]$}
 %\end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) d =
+⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) Γ⊢∀xα =
   close
-    (assembled-context d)
+    (assembled-context Γ⊢∀xα)
     (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
     (arrowelim
      (arrowintro (Λ x α)
@@ -435,11 +435,11 @@ also not free in $\forall x \alpha$. \todo{Update}
        (⟨→⟩ (renameIff β≈β′)
         (univelim (varterm y) α[x/y]≡β
          (assume (Λ x α))))))
-     d)
-⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) d with varEq x y
+     Γ⊢∀xα)
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) Γ⊢∀yβ′ with varEq x y
 ... | yes refl rewrite subIdentFunc α[x/y]≡β =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∀yβ′)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x β′)
@@ -447,10 +447,10 @@ also not free in $\forall x \alpha$. \todo{Update}
       (⟨←⟩ (renameIff β≈β′)
        (univelim (varterm x) (ident β′ x)
         (assume (Λ x β′))))))
-    d)
+    Γ⊢∀yβ′)
 ... | no  x≢y  =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∀yβ′)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ y β′)
@@ -460,12 +460,12 @@ also not free in $\forall x \alpha$. \todo{Update}
         (⟨←⟩ (renameIff β≈β′)
          (univelim (varterm y) (ident β′ y)
           (assume (Λ y β′))))))))
-    d)
+    Γ⊢∀yβ′)
 \end{code}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) d =
+⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∀xα =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∀xα)
    (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α)
@@ -475,11 +475,11 @@ also not free in $\forall x \alpha$. \todo{Update}
         (⟨→⟩ (renameIff α≈α′) -- Not structurally recursive
          (univelim (varterm x) (ident α x)
           (assume (Λ x α))))))))
-    d)
-⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) d with varEq x y
+    Γ⊢∀xα)
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∀yβ′ with varEq x y
 ... | yes refl rewrite subIdentFunc α′[x/y]≡β′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∀yβ′)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x β′)
@@ -487,10 +487,10 @@ also not free in $\forall x \alpha$. \todo{Update}
       (⟨←⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident β′ x)
         (assume (Λ x β′))))))
-    d)
+    Γ⊢∀yβ′)
 ... | no  x≢y  =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∀yβ′)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ y β′)
@@ -498,7 +498,7 @@ also not free in $\forall x \alpha$. \todo{Update}
       (⟨←⟩ (renameIff α≈α′)
        (univelim (varterm x) (subInverse y∉α′ α′[x/y]≡β′)
         (assume (Λ y β′))))))
-    d)
+    Γ⊢∀yβ′)
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
@@ -513,25 +513,24 @@ also not free in $\forall x \alpha$. \todo{Update}
     \BinaryInfC{$\exists x \alpha'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {V x α} {V .x β} (V y ap)) d =
-  -- todo ap
+⟨→⟩ (renameIff {Γ} {V x α} {V .x α′} (V y α≈α′)) Γ⊢∃xα =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∃xα)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-    d
-    (existintro (varterm x) x (ident β x)
-     (⟨→⟩ (renameIff ap)
+   (existelim (all⟨ V∣ x α′ ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+    Γ⊢∃xα
+    (existintro (varterm x) x (ident α′ x)
+     (⟨→⟩ (renameIff α≈α′)
       (assume α))))
-⟨←⟩ (renameIff {Γ} {V x α} {V .x β} (V y ap)) d =
+⟨←⟩ (renameIff {Γ} {V x α} {V .x α′} (V y α≈α′)) Γ⊢∃xα′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∃xα′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
    (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-    d
+    Γ⊢∃xα′
     (existintro (varterm x) x (ident α x)
-     (⟨←⟩ (renameIff ap)
-      (assume β))))
+     (⟨←⟩ (renameIff α≈α′)
+      (assume α′))))
 \end{code}
 This case is trivial if the variable is being replaced with itself. Note that
 $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
@@ -547,14 +546,14 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
 %    \BinaryInfC{$\exists y \alpha[x/y]$}
 %\end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) d with varEq x y
+⟨→⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) Γ⊢∃xα with varEq x y
 ... | no  x≢y  =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∃xα)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆)))))
    (existelim (all⟨ V y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩
                all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨- [ refl ] ⟩))))
-    d
+    Γ⊢∃xα
     (existelim (all⟨ V∣ y β′ ⟩ all∪ (all- all⟨- [ refl ] ⟩))
      (existintro (varterm x) y (subInverse y∉α α[x/y]≡β)
       (assume α))
@@ -564,51 +563,51 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
 ... | yes refl with subIdentFunc α[x/y]≡β
 ...            | refl =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∃xα)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
    (existelim (all⟨ V∣ x β′ ⟩ all∪ (all- all⟨ y∉α ⟩))
-    d
+    Γ⊢∃xα
     (existintro (varterm x) x (ident β′ x)
      (⟨→⟩ (renameIff β≈β′)
       (assume α))))
-⟨←⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) d =
+⟨←⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) Γ⊢∃yβ′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∃yβ′)
    (λ x₁ x₂ x₃ → x₂ x₃ λ x₄ → x₄ λ x₅ → x₅)
    (existelim (all⟨ V x y∉α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-    d
+    Γ⊢∃yβ′
     (existintro (varterm y) x α[x/y]≡β
      (⟨←⟩ (renameIff β≈β′)
       (assume β′))))
 \end{code}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) d with varEq x y
+⟨→⟩ (renameIff {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∃xα with varEq x y
 ... | yes refl rewrite subIdentFunc α′[x/y]≡β′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∃xα)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
    (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩)) -- Differs here
-    d
+    Γ⊢∃xα
     (existintro (varterm x) x (ident β x) -- And here
      (⟨→⟩ (renameIff α≈α′) -- Not structurally recursive
       (assume α))))
 ... | no x≢y   =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∃xα)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
    (existelim (all⟨ V y (subNotFree (varterm x≢y) α′[x/y]≡β′) ⟩
                all∪ (all- all⟨- [ refl ] ⟩)) -- Differs here
-    d
+    Γ⊢∃xα
     (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β′) -- And here
      (⟨→⟩ (renameIff α≈α′)
       (assume α))))
-⟨←⟩ (renameIff {Γ} {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) d =
+⟨←⟩ (renameIff {Γ} {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∃yβ′ =
   close
-   (assembled-context d)
+   (assembled-context Γ⊢∃yβ′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆)))))
    (existelim (all⟨ V x (≈notfree (≈sym α≈α′) y∉α′) ⟩
                all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨ y∉α′ ⟩))))
-    d
+    Γ⊢∃yβ′
     (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
      (existintro (varterm y) x α′[x/y]≡β′
       (assume β′))
