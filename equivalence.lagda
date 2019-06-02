@@ -227,6 +227,8 @@ rename      : ∀{Γ α α′}
 rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
 \end{code}
 We prove \inline{renameIff}.
+\todo{Should I show the reverse trees where the proof is omitted?}
+\todo{Should I just omit all of the proofs?}
 
 The atomic case is trivial, since an atomic formula is equivalent only to
 itself.
@@ -486,7 +488,8 @@ Again, the other direction is obtained by reversing the use of equivalences.
 \end{code}
 }
 
-The second case renames the bound variable, then follows another equivalence.
+The second case for universal generalisation renames the bound variable, then
+follows another equivalence.
 \todo{wording}
 \begin{code}
 
@@ -494,7 +497,7 @@ The second case renames the bound variable, then follows another equivalence.
 
 \end{code}
 Since $x$ is being renamed to $y$, we know $y$ is not free in $\alpha$, and so
-it is also not free in $\forall x \alpha$. Define $\beta \coloneq \alpha[x/y]$
+it is also not free in $\forall x \alpha$. We have $\beta \coloneq \alpha[x/y]$.
 \begin{prooftree}
   \AxiomC{[$\forall x \alpha$]}
   \RightLabel{$\forall^-$}
@@ -532,7 +535,7 @@ The other direction varies depending on if $x$ is equal to $y$.
     with varEq x y
 
 \end{code}
-In the degenerate case where $x = y$, we have $\alpha = \beta$.
+In the degenerate case where $x = y$, we have $\beta = \alpha$.
 \begin{prooftree}
   \AxiomC{[$\forall x \beta'$]}
   \RightLabel{$\forall^-$}
@@ -605,10 +608,33 @@ $x$ with $y$ in $\alpha$.
 
 \end{code}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+The third case is the dual of the second.
 \begin{code}
+
 ⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∀xα =
+
+\end{code}
+Note that $\beta' \coloneq \alpha'[x/y]$.
+\begin{prooftree}
+  \AxiomC{[$\forall x \alpha$]}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\alpha$}
+  \RightLabel{induction}
+  \UnaryInfC{$\alpha'$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall x \alpha'$}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\beta'$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall y \beta'$}
+      \AxiomC{$\Gamma$}
+      \UnaryInfC{$\vdots$}
+      \UnaryInfC{$\forall x \alpha$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\forall y \beta'$}
+\end{prooftree}
+\begin{code}
+
   close
    (assembled-context Γ⊢∀xα)
    (λ x₁ z → z (λ z₁ → z₁ (λ z₂ → z₂)))
@@ -617,11 +643,36 @@ $x$ with $y$ in $\alpha$.
      (univintro y all⟨ ≈notfree (Λ x (≈sym α≈α′)) (Λ x y∉α′) ⟩
       (univelim (varterm y) α′[x/y]≡β′
        (univintro x all⟨ Λ∣ x α ⟩
-        (⟨→⟩ (renameIff α≈α′) -- Not structurally recursive
+        (⟨→⟩ (renameIff α≈α′)
          (univelim (varterm x) (ident α x)
           (assume (Λ x α))))))))
     Γ⊢∀xα)
-⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∀yβ′ with varEq x y
+
+\end{code}
+The other direction varies depending on if $x$ is equal to $y$.
+\begin{code}
+
+⟨←⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∀yβ′
+    with varEq x y
+
+\end{code}
+In the degenerate case where $x = y$, we have $\alpha' = \beta'$.
+\begin{prooftree}
+  \AxiomC{[$\forall x \beta'$]}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\beta'$}
+  \RightLabel{induction}
+  \UnaryInfC{$\alpha$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall x \alpha$}
+      \AxiomC{$\Gamma$}
+      \UnaryInfC{$\vdots$}
+      \UnaryInfC{$\forall x \beta'$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\forall x \alpha$}
+\end{prooftree}
+\begin{code}
+
 ... | yes refl rewrite subIdentFunc α′[x/y]≡β′ =
   close
    (assembled-context Γ⊢∀yβ′)
@@ -633,17 +684,46 @@ $x$ with $y$ in $\alpha$.
        (univelim (varterm x) (ident β′ x)
         (assume (Λ x β′))))))
     Γ⊢∀yβ′)
+
+\end{code}
+Otherwise, $\beta'[y/x] = \alpha'$, and $x$ is not free in $\forall y \beta'$
+since $\beta'$ has been obtained by substituting $x$ with $y$ in $\alpha'$.
+\begin{prooftree}
+  \AxiomC{[$\forall y \beta'$]}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\alpha'$}
+  \RightLabel{induction}
+  \UnaryInfC{$\alpha$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall x \alpha$}
+      \AxiomC{$\Gamma$}
+      \UnaryInfC{$\vdots$}
+      \UnaryInfC{$\forall y \beta'$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\forall x \alpha$}
+\end{prooftree}
+\begin{code}
+
 ... | no  x≢y  =
   close
    (assembled-context Γ⊢∀yβ′)
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ y β′)
-     (univintro x all⟨ Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′) ⟩ -- Only difference
+     (univintro x all⟨ Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′) ⟩
       (⟨←⟩ (renameIff α≈α′)
        (univelim (varterm x) (subInverse y∉α′ α′[x/y]≡β′)
         (assume (Λ y β′))))))
     Γ⊢∀yβ′)
+
+\end{code}
+
+Finally, we examine the existential generalisation cases. The first case is
+where the bound variable is not renamed.
+\begin{code}
+
+⟨→⟩ (renameIff {Γ} {V x α} {V .x α′} (V y α≈α′)) Γ⊢∃xα =
+
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
@@ -658,7 +738,7 @@ $x$ with $y$ in $\alpha$.
     \BinaryInfC{$\exists x \alpha'$}
 \end{prooftree}
 \begin{code}
-⟨→⟩ (renameIff {Γ} {V x α} {V .x α′} (V y α≈α′)) Γ⊢∃xα =
+
   close
    (assembled-context Γ⊢∃xα)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
@@ -667,7 +747,18 @@ $x$ with $y$ in $\alpha$.
     (existintro (varterm x) x (ident α′ x)
      (⟨→⟩ (renameIff α≈α′)
       (assume α))))
+
+\end{code}
+The reverse direction is the same, with equivalences reversed.
+\begin{code}
+
 ⟨←⟩ (renameIff {Γ} {V x α} {V .x α′} (V y α≈α′)) Γ⊢∃xα′ =
+-- Proof omitted.
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
   close
    (assembled-context Γ⊢∃xα′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
@@ -676,22 +767,39 @@ $x$ with $y$ in $\alpha$.
     (existintro (varterm x) x (ident α x)
      (⟨←⟩ (renameIff α≈α′)
       (assume α′))))
+
 \end{code}
-This case is trivial if the variable is being replaced with itself. Note that
-$x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
-\alpha[x/y]$. \todo{Update}
-%\begin{prooftree}
-%  \AxiomC{$\Gamma$}
-%  \UnaryInfC{$\vdots$}
-%  \UnaryInfC{$\exists x \alpha$}
-%      \AxiomC{[$\alpha$]}
-%      \RightLabel{$\exists^+$}
-%      \UnaryInfC{$\exists y \alpha[x/y]$}
-%    \RightLabel{$\exists^-$}
-%    \BinaryInfC{$\exists y \alpha[x/y]$}
-%\end{prooftree}
+}
+
+The second case for existential generalisation renames the bound variable, then
+follows another equivalence. The proof depends on whether $x$ is equal to $y$.
 \begin{code}
-⟨→⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) Γ⊢∃xα with varEq x y
+
+⟨→⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) Γ⊢∃xα
+    with varEq x y
+
+\end{code}
+Since $\beta = \alpha[x/y]$, we have $\alpha = \beta[y/x]$. If $x \neq y$, then
+$x$ cannot be free in $\beta$, and so it is also not free in $\exists y \beta$.
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\exists x \alpha$}
+    \AxiomC{[$\alpha$]}
+    \RightLabel{$\exists^+$}
+    \UnaryInfC{$\exists y \beta$}
+        \AxiomC{[$\beta$]}
+        \RightLabel{induction}
+        \UnaryInfC{$\beta'$}
+        \RightLabel{$\exists^+$}
+        \UnaryInfC{$\exists y \beta'$}
+      \RightLabel{$\exists^-$}
+      \BinaryInfC{$\exists y \beta'$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists y \beta'$}
+\end{prooftree}
+\begin{code}
+
 ... | no  x≢y  =
   close
    (assembled-context Γ⊢∃xα)
@@ -705,6 +813,23 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
      (existintro (varterm y) y (ident β′ y)
       (⟨→⟩ (renameIff β≈β′) -- Not structurally recursive
        (assume _)))))
+
+\end{code}
+In the degenerate case, we have $\beta = \alpha$.
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\exists x \alpha$}
+      \AxiomC{[$\alpha$]}
+      \RightLabel{induction}
+      \UnaryInfC{$\beta'$}
+      \RightLabel{$\exists^+$}
+      \UnaryInfC{$\exists x \beta'$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists x \beta'$}
+\end{prooftree}
+\begin{code}
+
 ... | yes refl with subIdentFunc α[x/y]≡β
 ...            | refl =
   close
@@ -715,7 +840,28 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
     (existintro (varterm x) x (ident β′ x)
      (⟨→⟩ (renameIff β≈β′)
       (assume α))))
+
+\end{code}
+Now, consider the other direction.
+\begin{code}
+
 ⟨←⟩ (renameIff {Γ} {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′)) Γ⊢∃yβ′ =
+
+\end{code}
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\exists y \beta'$}
+      \AxiomC{[$\beta'$]}
+      \RightLabel{induction}
+      \UnaryInfC{$\beta$}
+      \RightLabel{$\exists^+$}
+      \UnaryInfC{$\exists x \alpha$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists x \alpha$}
+\end{prooftree}
+\begin{code}
+
   close
    (assembled-context Γ⊢∃yβ′)
    (λ x₁ x₂ x₃ → x₂ x₃ λ x₄ → x₄ λ x₅ → x₅)
@@ -724,9 +870,31 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
     (existintro (varterm y) x α[x/y]≡β
      (⟨←⟩ (renameIff β≈β′)
       (assume β′))))
+
 \end{code}
+
+The third case is the dual of the second.
 \begin{code}
-⟨→⟩ (renameIff {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∃xα with varEq x y
+
+⟨→⟩ (renameIff {Γ} {V x α} {V y β} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∃xα
+    with varEq x y
+
+\end{code}
+If $x = y$, then $\alpha' = \beta'$.
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\exists x \alpha$}
+      \AxiomC{[$\alpha$]}
+      \RightLabel{induction}
+      \UnaryInfC{$\beta'$}
+      \RightLabel{$\exists^+$}
+      \UnaryInfC{$\exists x \beta'$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists x \beta'$}
+\end{prooftree}
+\begin{code}
+
 ... | yes refl rewrite subIdentFunc α′[x/y]≡β′ =
   close
    (assembled-context Γ⊢∃xα)
@@ -734,8 +902,27 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
    (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩)) -- Differs here
     Γ⊢∃xα
     (existintro (varterm x) x (ident β x) -- And here
-     (⟨→⟩ (renameIff α≈α′) -- Not structurally recursive
+     (⟨→⟩ (renameIff α≈α′)
       (assume α))))
+
+\end{code}
+Otherwise, because $\alpha'[x/y] = \beta'$, we have $\alpha' = \beta'[y/x]$,
+and $x$ is not free in $\beta'$, and so is not free in $\exists y \beta'$.
+\todo{Remark that the dual suits $\exists$, the  other suits $\forall$?}
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\exists x \alpha$}
+      \AxiomC{[$\alpha$]}
+      \RightLabel{induction}
+      \UnaryInfC{$\alpha'$}
+      \RightLabel{$\exists^+$}
+      \UnaryInfC{$\exists y \beta'$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists y \beta'$}
+\end{prooftree}
+\begin{code}
+
 ... | no x≢y   =
   close
    (assembled-context Γ⊢∃xα)
@@ -746,7 +933,33 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
     (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β′) -- And here
      (⟨→⟩ (renameIff α≈α′)
       (assume α))))
+
+\end{code}
+Consider the other direction.
+\begin{code}
+
 ⟨←⟩ (renameIff {Γ} {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∃yβ′ =
+
+\end{code}
+\begin{prooftree}
+  \AxiomC{$\Gamma$}
+  \UnaryInfC{$\vdots$}
+  \UnaryInfC{$\exists y \beta'$}
+    \AxiomC{[$\beta'$]}
+    \RightLabel{$\exists^+$}
+    \UnaryInfC{$\exists x \alpha'$}
+        \AxiomC{[$\alpha'$]}
+        \RightLabel{induction}
+        \UnaryInfC{$\alpha$}
+        \RightLabel{$\exists^+$}
+        \UnaryInfC{$\exists x \alpha$}
+      \RightLabel{$\exists^-$}
+      \BinaryInfC{$\exists x \alpha$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists x \alpha$}
+\end{prooftree}
+\begin{code}
+
   close
    (assembled-context Γ⊢∃yβ′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆)))))
@@ -759,4 +972,5 @@ $x$ cannot be free in $\alpha[x/y]$, and so it is also not free in $\exists y
      (existintro (varterm x) x (ident α x)
       (⟨←⟩ (renameIff α≈α′)
        (assume _)))))
+
 \end{code}
