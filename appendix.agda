@@ -1,9 +1,15 @@
 open import Agda.Builtin.Sigma
 
 open import Decidable
+open import Deduction
+open import Ensemble
+open import Equivalence
 open import Formula
+open import List
 open import Nat
+open import Scheme
 open import Vec
+
 
 -- Prove that ident is a derived rule. Note that this proof does not make use
 -- of Formula.ident
@@ -178,7 +184,6 @@ unfree α x with x notFreeIn α
     α[x/y]≡β : α [ x / varterm y ]≡ β
     α[x/y]≡β = snd βsub
 
-open import equivalence
 
 --≈sub : ∀{α α′ β β′ x t} → α ≈ α′ → α [ x / t ]≡ β → α′ [ x / t ]≡ β′ → β ≈ β′
 --≈sub ap (ident α x) sub₂ rewrite subIdentFunc sub₂ = ap

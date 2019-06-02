@@ -8,6 +8,8 @@ above, if $\Gamma \vdash \alpha$ and $\alpha$ is equivalent to $\alpha'$ up to
 the renaming of bound variables, then $\Gamma \vdash \alpha'$.
 \begin{code}
 
+module Equivalence where
+
 open import Agda.Primitive using (_⊔_)
 
 open import Decidable
@@ -974,3 +976,6 @@ Consider the other direction.
        (assume _)))))
 
 \end{code}
+
+We can conclude that examining formulae only on an intensional level does not
+restrict the deductive power of the system.
