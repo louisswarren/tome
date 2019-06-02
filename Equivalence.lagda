@@ -153,7 +153,7 @@ some bound variable has been renamed to it, so it is bound.
 \begin{code}
 
 ≈notfree : ∀{α α′ z} → α ≈ α′ → z NotFreeIn α → z NotFreeIn α′
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -290,7 +290,7 @@ $\beta$ swapped with $\beta'$, and the opposite directions of
 \begin{code}
 
 ⟨←⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) Γ⊢α′⇒β′ =
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{

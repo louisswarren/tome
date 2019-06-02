@@ -26,7 +26,7 @@ data All {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   _∷_ : ∀{x n} {xs : Vec A n} → P x → All P xs → All P (x ∷ xs)
 
 all : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (All P xs)
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -48,7 +48,7 @@ data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   _∷_ : ∀{n}   {xs : Vec A n} → ∀ x → Any P xs → Any P (x ∷ xs)
 
 any : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{

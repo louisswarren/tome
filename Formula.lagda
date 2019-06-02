@@ -97,7 +97,7 @@ file.
 \begin{code}
 
 varEq : Decidable≡ Variable
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -112,7 +112,7 @@ varEq (var n) (var m) with natEq n m
 \begin{code}
 
 relEq : Decidable≡ Relation
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -129,7 +129,7 @@ relEq (rel n j) (rel m k) with natEq n m
 \begin{code}
 
 funcEq : Decidable≡ Function
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -146,7 +146,7 @@ funcEq (func n j) (func m k) with natEq n m
 \begin{code}
 
 vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -164,7 +164,7 @@ vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
 \begin{code}
 
 termEq : Decidable≡ Term
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -196,7 +196,7 @@ termEq
 \begin{code}
 
 formulaEq : Decidable≡ Formula
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -491,7 +491,7 @@ structures are very similar to the next two proofs.
 \begin{code}
 
 subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -849,7 +849,7 @@ every term is free for that variable. The proofs are trivial, and are omitted.
 \begin{code}
 
 freshNotFree : ∀{α x} → x FreshIn α → x NotFreeIn α
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
@@ -867,7 +867,7 @@ freshNotFree (V _ xfrα)    = V _ (freshNotFree xfrα)
 \begin{code}
 
 freshFreeFor : ∀{α x} → x FreshIn α → ∀ y → (varterm x) FreeFor y In α
--- Proof omitted
+-- Proof omitted.
 
 \end{code}
 \AgdaHide{
