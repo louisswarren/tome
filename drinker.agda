@@ -100,6 +100,52 @@ IP = binaryscheme ip
 
 
 
+⊥c-rule : Set₁
+⊥c-rule = ∀{Γ} → ∀ α
+         →      Γ ⊢ ⊥
+           --------------- ⊥c
+         →  Γ - (¬ α) ⊢ α
+
+⊥i-rule : Set₁
+⊥i-rule = ∀{Γ} → ∀ α
+         →      Γ ⊢ ⊥
+               ------- ⊥i
+         →      Γ ⊢ α
+
+dne→⊥c-rule : ⊢₁ dne → ⊥c-rule
+dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
+                          (assembled-context (arrowintro (¬ α) Γ⊢⊥))
+                          (λ x₁ z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z₄) (λ z₄ → z₄ z₃)))
+                          (arrowelim
+                           (cite "DNE" (⊢dne α))
+                           (arrowintro (¬ α) Γ⊢⊥))
+
+⊥c-rule→dne : ⊥c-rule → ⊢₁ dne
+⊥c-rule→dne ⊢⊥c-rule α = close
+                          from∅
+                          (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₃ z₅))))
+                          (arrowintro (¬¬ α)
+                           (⊢⊥c-rule α
+                            (arrowelim
+                             (assume (¬¬ α))
+                             (assume (¬ α)))))
+
+efq→⊥i-rule : ⊢₁ efq → ⊥i-rule
+efq→⊥i-rule ⊢efq α Γ⊢⊥ = close
+                          (assembled-context Γ⊢⊥)
+                          (λ x₁ z₁ → z₁ (λ z₂ → z₂))
+                          (arrowelim
+                           (cite "EFQ" (⊢efq α))
+                           Γ⊢⊥)
+
+⊥i-rule→dne : ⊥i-rule → ⊢₁ efq
+⊥i-rule→dne ⊢⊥i-rule α = close
+                          from∅
+                          (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃)))
+                          (arrowintro ⊥
+                           (⊢⊥i-rule α
+                            (assume ⊥)))
+
 
 
 
@@ -295,8 +341,8 @@ wgmp→dnsu ⊢wgmp α = close
 WGMP⊃DNSU : WGMP ∷ [] ⊃ DNSU
 WGMP⊃DNSU ⊢lhs (α ∷ []) = wgmp→dnsu (descheme₁ (⊢lhs WGMP [ refl ])) α
 
-dp→dp′ : ⊢₁ dp → ∀ α ωvar → (ff : (varterm ωvar) FreeFor xvar In α) → ⊢ V ωvar (Λ xvar (fst (α [ xvar / ff ]) ⇒ α))
-dp→dp′ ⊢dp α ωvar ωffx = close {!   !} {!   !} (existelim {!   !} (cite "DP" (⊢dp α)) (existintro {!   !} {!   !} {!   !} {!   !}))
+--dp→dp′ : ⊢₁ dp → ∀ α ωvar → (ff : (varterm ωvar) FreeFor xvar In α) → ⊢ V ωvar (Λ xvar (fst (α [ xvar / ff ]) ⇒ α))
+--dp→dp′ ⊢dp α ωvar ωffx = close {!   !} {!   !} (existelim {!   !} (cite "DP" (⊢dp α)) (existintro {!   !} {!   !} {!   !} {!   !}))
 
 --------------------------------------------------------------------------------
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
