@@ -128,14 +128,26 @@ DNE⊃LEM ⊢lhs (α Vec.∷ []) = dne→lem (descheme₁ (⊢lhs DNE [ refl ]))
 dne→efq : ⊢₁ dne → ⊢₁ efq
 dne→efq ⊢dne α = close from∅
                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ _ → z₃)))))
-                  (arrowintro ⊥ (arrowelim (cite "DNE" (⊢dne α)) (arrowintro (¬ α) (assume ⊥))))
+                  (arrowintro ⊥
+                   (arrowelim
+                    (cite "DNE" (⊢dne α))
+                    (arrowintro (¬ α)
+                     (assume ⊥))))
 DNE⊃EFQ : DNE ∷ [] ⊃ EFQ
 DNE⊃EFQ ⊢lhs (α ∷ []) = dne→efq (descheme₁ (⊢lhs DNE [ refl ])) α
 
 lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
 lem,efq→dne ⊢lem ⊢efq α = close from∅
                            (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ →  z₄ (λ z₅ → z₅)  (λ z₅ →     z₅ (λ z₆ → z₆ (λ z₇ → z₇))     (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ z₃ z₇)))))))
-                           (arrowintro (¬¬ α) (disjelim (cite "LEM" (⊢lem α)) (assume α) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬¬ α)) (assume (¬ α))))))
+                           (arrowintro (¬¬ α)
+                            (disjelim
+                             (cite "LEM" (⊢lem α))
+                             (assume α)
+                             (arrowelim
+                              (cite "EFQ" (⊢efq α))
+                              (arrowelim
+                               (assume (¬¬ α))
+                               (assume (¬ α))))))
 LEM,EFQ⊃DNE : LEM ∷ EFQ ∷ [] ⊃ DNE
 LEM,EFQ⊃DNE ⊢lhs (α ∷ []) = lem,efq→dne (descheme₁ (⊢lhs LEM [ refl ])) (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ]))) α
 
