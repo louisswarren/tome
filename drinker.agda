@@ -16,7 +16,7 @@ open import Texify
 open import sugar
 
 
-LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DPN HEN DNSU DNSE UD IP CD : Scheme
+LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DNSU DNSE UD IP CD : Scheme
 
 
 lpo : Formula → Formula → Formula
@@ -64,16 +64,12 @@ WGMP  = unaryscheme wgmp
 
 
 
-dp he dpn hen : Formula → Formula
+dp he : Formula → Formula
 dp  Φx = ∃x(Φx ⇒ ∀x Φx)
 he  Φx = ∃x(∃x Φx ⇒ Φx)
-dpn Φx = dp (¬ Φx)
-hen Φx = he (¬ Φx)
 
 DP  = unaryscheme dp
 HE  = unaryscheme he
-DPN = unaryscheme dpn
-HEN = unaryscheme hen
 
 
 
@@ -299,6 +295,8 @@ wgmp→dnsu ⊢wgmp α = close
 WGMP⊃DNSU : WGMP ∷ [] ⊃ DNSU
 WGMP⊃DNSU ⊢lhs (α ∷ []) = wgmp→dnsu (descheme₁ (⊢lhs WGMP [ refl ])) α
 
+dp→dp′ : ⊢₁ dp → ∀ α ωvar → (ff : (varterm ωvar) FreeFor xvar In α) → ⊢ V ωvar (Λ xvar (fst (α [ xvar / ff ]) ⇒ α))
+dp→dp′ ⊢dp α ωvar ωffx = close {!   !} {!   !} (existelim {!   !} (cite "DP" (⊢dp α)) (existintro {!   !} {!   !} {!   !} {!   !}))
 
 --------------------------------------------------------------------------------
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
