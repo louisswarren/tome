@@ -260,7 +260,47 @@ glpo→lem ⊢glpo α | no ¬xnfα = close
 GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
 GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) α
 
+dnsu→wgmp : ⊢₁ dnsu → ⊢₁ wgmp
+dnsu→wgmp ⊢dnsu α = close
+                     from∅
+                     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ → z₇ (λ z₈ → z₈) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ z₅ z₉))) z₃))))
+                     (arrowintro (¬∀x α)
+                      (arrowintro (¬∃x¬ α)
+                       (arrowelim
+                        (arrowelim
+                         (cite "DNS\\forall" (⊢dnsu α))
+                         (univintro xvar (all- (all⟨ V∣ xvar (¬ α) ⇒ atom [] ⟩ all∪ all⟨- [ refl ] ⟩))
+                          (arrowintro (¬ α)
+                           (arrowelim
+                            (assume (¬∃x¬ α))
+                            (existintro x xvar (ident (¬ α) xvar)
+                             (assume (¬ α)))))))
+                        (assume (¬∀x α)))))
+DNSU⊃WGMP : DNSU ∷ [] ⊃ WGMP
+DNSU⊃WGMP ⊢lhs (α ∷ []) = dnsu→wgmp (descheme₁ (⊢lhs DNSU [ refl ])) α
 
+wgmp→dnsu : ⊢₁ wgmp → ⊢₁ dnsu
+wgmp→dnsu ⊢wgmp α = close
+                     from∅
+                     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ → z₇ (λ z₈ → z₈) z₅) (λ z₇ → z₇ (λ z₈ z₉ → z₉ z₈ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ z₃ z₁₁))))))))
+                     (arrowintro (∀x¬¬ α)
+                      (arrowintro (¬∀x α)
+                       (arrowelim
+                        (arrowelim
+                         (cite "WGMP" (⊢wgmp α))
+                         (assume (¬∀x α)))
+                        (arrowintro (∃x¬ α)
+                         (existelim (all⟨ atom [] ⟩ all∪  (all- (all⟨ Λ∣ xvar (¬¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
+                          (assume (∃x¬ α))
+                          (arrowelim
+                           (univelim x (ident (¬¬ α) xvar)
+                            (assume (∀x¬¬ α)))
+                           (assume (¬ α))))))))
+WGMP⊃DNSU : WGMP ∷ [] ⊃ DNSU
+WGMP⊃DNSU ⊢lhs (α ∷ []) = wgmp→dnsu (descheme₁ (⊢lhs WGMP [ refl ])) α
+
+
+--------------------------------------------------------------------------------
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
 dp→gmp ⊢dp α = close
                 from∅
