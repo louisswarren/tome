@@ -700,6 +700,7 @@ The term $t$ is fixed by supplying such a proof, so for convenience of
 notation, the proof is supplied in place of the term. In the following code we
 will use names like \inline{x∉α} to denote proofs of `$x$ is not free in
 $\alpha$`.
+\todo{Do I want to use $\Sigma$ here?}
 \begin{code}
 
 _[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
