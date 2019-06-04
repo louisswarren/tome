@@ -566,6 +566,7 @@ he→dnse ⊢he α = close
 HE⊃DNSE : HE ∷ [] ⊃ DNSE
 HE⊃DNSE ⊢lhs (α ∷ []) = he→dnse (descheme₁ (⊢lhs HE [ refl ])) α
 
+
 glpo→dnse : ⊢₁ glpo → ⊢₁ dnse
 glpo→dnse ⊢glpo α = close
                    from∅
@@ -593,6 +594,28 @@ glpo→dnse ⊢glpo α = close
                          (assume α)))))))
 GLPO⊃DNSE : GLPO ∷ [] ⊃ DNSE
 GLPO⊃DNSE ⊢lhs (α ∷ []) = glpo→dnse (descheme₁ (⊢lhs GLPO [ refl ])) α
+
+
+gmp→dnse : ⊢₁ gmp → ⊢₁ dnse
+gmp→dnse ⊢gmp α = close
+                   from∅
+                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ z₃ (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ z₉ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₆ z₁₂)))))))))
+                   (arrowintro (¬¬∃x α)
+                    (arrowelim
+                     (cite "GMP" (⊢gmp (¬ α)))
+                     (arrowintro (∀x¬ α)
+                      (arrowelim
+                       (assume (¬¬∃x α))
+                       (arrowintro (∃x α)
+                        (existelim (all⟨ atom [] ⟩ all∪ (all- (all⟨ Λ∣ xvar (¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
+                         (assume (∃x α))
+                         (arrowelim
+                          (univelim x (ident (¬ α) xvar)
+                           (assume (∀x¬ α)))
+                          (assume α))))))))
+GMP⊃DNSE : GMP ∷ [] ⊃ DNSE
+GMP⊃DNSE ⊢lhs (α ∷ []) = gmp→dnse (descheme₁ (⊢lhs GMP [ refl ])) α
+
 
 --1lc→2lc : ⊢₁ 1lc → ⊢₁ 2lc
 --1lc→2lc ⊢1lc α = close
@@ -626,4 +649,5 @@ dp→lpo ⊢dp α β = close
 DP⊃LPO : DP ∷ [] ⊃ LPO
 DP⊃LPO ⊢lhs (α ∷ β ∷ []) = dp→lpo (descheme₁ (⊢lhs DP [ refl ])) α β
 
+E
 
