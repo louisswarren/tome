@@ -15,6 +15,13 @@ open import Texify
 
 open import sugar
 
+constFreeFor : ∀ α x n → functerm (func n zero) [] FreeFor x In α
+constFreeFor (atom r ts) x n = atom r ts
+constFreeFor (α ⇒ α₁) x n = constFreeFor α x n ⇒ constFreeFor α₁ x n
+constFreeFor (α ∧ α₁) x n = constFreeFor α x n ∧ constFreeFor α₁ x n
+constFreeFor (α ∨ α₁) x n = constFreeFor α x n ∨ constFreeFor α₁ x n
+constFreeFor (Λ x₁ α) x n = Λ (functerm []) (constFreeFor α x n)
+constFreeFor (V x₁ α) x n = V (functerm []) (constFreeFor α x n)
 
 LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DNSU DNSE UD IP CD : Scheme
 
@@ -97,13 +104,18 @@ ip Φx Ψ = (∃x Ψ ⇒ ∃x Φx) ⇒ ∃x(∃x Ψ ⇒ Φx)
 UD = binaryscheme ud
 IP = binaryscheme ip
 
-d0 d1 dx : Formula
+d0 ¬d1 d∀ : Formula
 d0 = D t0
-d1 = ¬ (D t1)
-dx = ∀x (D x ∨ ¬ (D x))
+¬d1 = ¬ (D t1)
+d∀ = ∀x (D x ∨ ¬ (D x))
+
+D0 ¬D1 D∀ : Scheme
+D0 = nullaryscheme d0
+¬D1 = nullaryscheme ¬d1
+D∀ = nullaryscheme d∀
 
 TT : List Scheme
-TT = nullaryscheme d0 ∷ (nullaryscheme d1 ∷ (nullaryscheme dx ∷ []))
+TT = D0 ∷ ¬D1 ∷ D∀ ∷ []
 
 
 
