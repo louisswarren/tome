@@ -347,31 +347,28 @@ WGMP⊃DNSU ⊢lhs (α ∷ []) = wgmp→dnsu (descheme₁ (⊢lhs WGMP [ refl ])
 dne→dp : ⊢₁ dne → ⊢₁ dp
 dne→dp ⊢dne α = close
                  from∅
-                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆ (λ z₇ z₈ → z₈ z₄ (λ z₉ → z₉ (λ _ → z₇)))) (λ z₆ → z₆ (λ z₇ → z₇) (λ z₇ → z₇ (λ z₈ z₉ → z₉ z₄ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ (λ z₁₃ → z₁₃) (λ z₁₃ → z₁₃ (λ _ z₁₄ → z₁₄ z₈ z₁₁)))))))))))
+                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄ (λ z₆ → z₆ (λ _ z₇ → z₇ (λ z₈ → z₈) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ z₄ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ (λ z₁₄ → z₁₄) (λ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₉ z₁₂))))))))))))
                  (arrowelim
                   (cite "DNE" (⊢dne (dp α)))
                   (arrowintro (¬ (dp α))
                    (arrowelim
-                    (arrowintro (∀x α)
-                     (arrowelim
-                      (assume (¬ (dp α)))
-                      (existintro x xvar (ident (α ⇒ ∀x α) xvar)
-                       (arrowintro α
-                        (assume (∀x α))))))
-                    (univintro xvar (all∅ all∪ (all- (all⟨ V∣ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩ all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷ [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
-                     (arrowelim
-                      (cite "DNE" (⊢dne α))
-                      (arrowintro (¬ α)
+                    (assume (¬ (dp α)))
+                    (existintro x xvar (ident (α ⇒ ∀x α) xvar)
+                     (arrowintro α
+                      (univintro xvar (all∅ all∪ (all- (all⟨ V∣ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩ all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷ [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
                        (arrowelim
-                        (assume (¬ (dp α)))
-                        (existintro x xvar (ident (α ⇒ ∀x α) xvar)
-                        (arrowintro α
+                        (cite "DNE" (⊢dne α))
+                        (arrowintro (¬ α)
                          (arrowelim
-                          (cite "DNE" (⊢dne (∀x α)))
-                          (arrowintro (¬∀x α)
+                          (assume (¬ (dp α)))
+                          (existintro x xvar (ident (α ⇒ ∀x α) xvar)
+                          (arrowintro α
                            (arrowelim
-                            (assume (¬ α))
-                            (assume α)))))))))))))
+                            (cite "DNE" (⊢dne (∀x α)))
+                            (arrowintro (¬∀x α)
+                             (arrowelim
+                              (assume (¬ α))
+                              (assume α)))))))))))))))
 DNE⊃DP : DNE ∷ [] ⊃ DP
 DNE⊃DP ⊢lhs (α ∷ []) = dne→dp (descheme₁ (⊢lhs DNE [ refl ])) α
 

@@ -202,5 +202,50 @@
 \UnaryInfC{$\left(P{x} \Tand \Tneg{\Tforall_{x} P{x}}\right) \Tor \Tneg{\left(P{x} \Tand \Tneg{\Tforall_{x} P{x}}\right)}$}
 \end{prooftree}
 
+\clearpage
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{DNE}
+\UnaryInfC{$\Tneg{\Tneg{\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)}} \Tarrow \Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)$}
+	\AxiomC{[$\Tneg{\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)}$]}
+		\AxiomC{}
+		\RightLabel{DNE}
+		\UnaryInfC{$\Tneg{\Tneg{P{x}}} \Tarrow P{x}$}
+			\AxiomC{[$\Tneg{\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)}$]}
+				\AxiomC{}
+				\RightLabel{DNE}
+				\UnaryInfC{$\Tneg{\Tneg{\Tforall_{x} P{x}}} \Tarrow \Tforall_{x} P{x}$}
+					\AxiomC{[$\Tneg{P{x}}$]}
+						\AxiomC{[$P{x}$]}
+					\RightLabel{\Tarrowelim}
+					\BinaryInfC{$\bot$}
+					\RightLabel{\Tarrowintro}
+					\UnaryInfC{$\Tneg{\Tneg{\Tforall_{x} P{x}}}$}
+				\RightLabel{\Tarrowelim}
+				\BinaryInfC{$\Tforall_{x} P{x}$}
+				\RightLabel{\Tarrowintro}
+				\UnaryInfC{$P{x} \Tarrow \Tforall_{x} P{x}$}
+				\RightLabel{\Texistintro}
+				\UnaryInfC{$\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)$}
+			\RightLabel{\Tarrowelim}
+			\BinaryInfC{$\bot$}
+			\RightLabel{\Tarrowintro}
+			\UnaryInfC{$\Tneg{\Tneg{P{x}}}$}
+		\RightLabel{\Tarrowelim}
+		\BinaryInfC{$P{x}$}
+		\RightLabel{\Tunivintro}
+		\UnaryInfC{$\Tforall_{x} P{x}$}
+		\RightLabel{\Tarrowintro}
+		\UnaryInfC{$P{x} \Tarrow \Tforall_{x} P{x}$}
+		\RightLabel{\Texistintro}
+		\UnaryInfC{$\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)$}
+	\RightLabel{\Tarrowelim}
+	\BinaryInfC{$\bot$}
+	\RightLabel{\Tarrowintro}
+	\UnaryInfC{$\Tneg{\Tneg{\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)}}$}
+\RightLabel{\Tarrowelim}
+\BinaryInfC{$\Texists_{x} \left(P{x} \Tarrow \Tforall_{x} P{x}\right)$}
+\end{prooftree}
+
 
 \end{document}
