@@ -441,6 +441,60 @@ dgp→wlem ⊢dgp α = close
 DGP⊃WLEM : DGP ∷ [] ⊃ WLEM
 DGP⊃WLEM ⊢lhs (α ∷ []) = dgp→wlem (descheme₂ (⊢lhs DGP [ refl ])) α
 
+glpoa→lem : ⊢₁ glpoa → ⊢₁ lem
+glpoa→lem ⊢glpoa α with xvar notFreeIn α
+glpoa→lem ⊢glpoa α | yes xnfα = close
+                                 from∅
+                                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
+                                 (disjelim
+                                  (cite "GLPO'" (⊢glpoa α))
+                                  (disjintro₁ (¬ α)
+                                   (univelim x (ident α xvar)
+                                    (assume (∀x α))))
+                                  (disjintro₂ α
+                                   (existelim (all⟨ xnfα ⇒ atom [] ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                                    (assume (∃x¬ α))
+                                    (assume (¬ α)))))
+glpoa→lem ⊢glpoa α | no ¬xnfα = close
+                                 from∅
+                                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
+                                 (univelim x αω∨¬αω[ω/x]≡α∨¬α
+                                  (univintro ω (all∅ all∪ (all- all⟨- [ refl ] ⟩) all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨- [ refl ] ⟩))))
+                                   (disjelim
+                                    (cite "GLPO'" (⊢glpoa αω))
+                                    (disjintro₁ (¬ αω)
+                                     (univelim x (ident αω xvar)
+                                      (assume (∀x αω))))
+                                    (disjintro₂ αω
+                                     (existelim (all⟨ xnfαω ⇒ atom [] ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                                      (assume (∃x¬ αω))
+                                      (assume (¬ αω)))))))
+                     where
+                      ω : Variable
+                      ω = fst (fresh α)
+                      ωFresh : ω FreshIn α
+                      ωFresh = snd (fresh α)
+                      ωnf : ω NotFreeIn α
+                      ωnf = freshNotFree ωFresh
+                      ωff : (varterm ω) FreeFor xvar In α
+                      ωff = freshFreeFor ωFresh xvar
+                      αω : Formula
+                      αω = fst (α [ xvar / ωff ])
+                      αωpf : α [ xvar / varterm ω ]≡ αω
+                      αωpf = snd (α [ xvar / ωff ])
+                      ≡ωnf : ∀ x → x ≡ ω → x NotFreeIn α
+                      ≡ωnf x refl = ωnf
+                      xnfαω : xvar NotFreeIn αω
+                      xnfαω with varEq xvar ω
+                      xnfαω | yes x≡ω = ⊥-elim (¬xnfα (≡ωnf xvar x≡ω))
+                      xnfαω | no  x≢ω = subNotFree (varterm x≢ω) αωpf
+                      αω[ω/x]≡α : αω [ ω / x ]≡ α
+                      αω[ω/x]≡α = subInverse ωnf αωpf
+                      αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
+                      αω∨¬αω[ω/x]≡α∨¬α = αω[ω/x]≡α ∨ (αω[ω/x]≡α ⇒ notfree (atom []))
+GLPOA⊃LEM : GLPOA ∷ [] ⊃ LEM
+GLPOA⊃LEM ⊢lhs (α ∷ []) = glpoa→lem (descheme₁ (⊢lhs GLPOA [ refl ])) α
+
 --1lc→2lc : ⊢₁ 1lc → ⊢₁ 2lc
 --1lc→2lc ⊢1lc α = close
 --                   from∅
