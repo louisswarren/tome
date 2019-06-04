@@ -644,6 +644,56 @@ GMP⊃DNSE ⊢lhs (α ∷ []) = gmp→dnse (descheme₁ (⊢lhs GMP [ refl ])) �
 --1uc⊃2uc : 1uc ∷ [] ⊃ 2uc
 --1uc⊃2uc ⊢lhs (α ∷ []) = 1lc→2lc (descheme₁ (⊢lhs 1uc [ refl ])) α
 
+dp,efq,tt→dgp : ⊢₁ dp → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
+dp,efq,tt→dgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β =
+    close
+     from∅
+     ?
+     (existelim ({!   !} all∪ {!   !})
+      (cite "DP" (⊢dp φ))
+      (disjelim
+       (univelim x (ident (D (varterm xvar) ∨ ¬ (D (varterm xvar))) xvar)
+        (cite "TT" ⊢d∀))
+       (disjintro₁ (β ⇒ α)
+        (arrowintro α
+         (conjelim
+          (univelim t1 (snd (φ [ xvar /  constFreeFor φ xvar 1 ]))
+           (arrowelim
+            (assume (φ ⇒ ∀x φ))
+            (conjintro
+             (arrowintro (D x)
+              (assume α))
+             (arrowintro (¬ (D x))
+              (arrowelim
+               (cite "EFQ" (⊢efq β))
+               (arrowelim
+                (assume (¬ (D x)))
+                (assume (D x))))))))
+          (arrowelim
+           (assume (¬d1 ⇒ β))
+           (cite "TT" ⊢¬d1)))))
+       (disjintro₂ (α ⇒ β)
+        (arrowintro β
+         (conjelim
+          (univelim t0 (snd (φ [ xvar / constFreeFor φ xvar 0 ])) (arrowelim (assume (φ ⇒ ∀x φ)) (conjintro (arrowintro (D x) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬ (D x))) (assume (D x))))) (arrowintro (¬ (D x)) (assume β)))))
+          (arrowelim
+           (assume (d0 ⇒ α))
+           (cite "TT" ⊢d0)))))))
+  where
+    φ : Formula
+    φ = (D x ⇒ α) ∧ (¬ (D x) ⇒ β)
+
+
+DP,EFQ,TT⊃DGP : DP ∷ EFQ ∷ TT ⊃ DGP
+DP,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
+    dp,efq,tt→dgp
+     (descheme₁ (⊢lhs DP [ refl ]))
+     (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ])))
+     (descheme₀ (⊢lhs D0 (_ ∷ (_ ∷ [ refl ]))))
+     (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
+     (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ (_ ∷ [ refl ]))))))
+     α
+     β
 --------------------------------------------------------------------------------
 
 
