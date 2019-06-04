@@ -53,16 +53,25 @@ x = varterm xvar
 y = varterm yvar
 z = varterm zvar
 
-pattern Arel = rel (suc zero)                         zero
-pattern Brel = rel (suc (suc zero))                   zero
-pattern Crel = rel (suc (suc (suc zero)))             zero
-pattern Prel = rel (suc (suc (suc (suc zero))))       (suc zero)
-pattern Qrel = rel (suc (suc (suc (suc (suc zero))))) (suc zero)
+pattern t0 = functerm (func 0 0) []
+pattern t1 = functerm (func 1 0) []
+pattern t2 = functerm (func 2 0) []
+pattern t3 = functerm (func 3 0) []
+pattern t4 = functerm (func 4 0) []
+pattern t5 = functerm (func 5 0) []
+
+pattern Arel = rel (suc zero)                               zero
+pattern Brel = rel (suc (suc zero))                         zero
+pattern Crel = rel (suc (suc (suc zero)))                   zero
+pattern Drel = rel (suc (suc (suc (suc zero))))             (suc zero)
+pattern Prel = rel (suc (suc (suc (suc (suc zero)))))       (suc zero)
+pattern Qrel = rel (suc (suc (suc (suc (suc (suc zero)))))) (suc zero)
 
 pattern A = atom Arel []
 pattern B = atom Brel []
 pattern C = atom Crel []
 
+pattern D t = atom Drel (t ∷ [])
 pattern P t = atom Prel (t ∷ [])
 pattern Q t = atom Qrel (t ∷ [])
 

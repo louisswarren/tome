@@ -97,6 +97,13 @@ ip Φx Ψ = (∃x Ψ ⇒ ∃x Φx) ⇒ ∃x(∃x Ψ ⇒ Φx)
 UD = binaryscheme ud
 IP = binaryscheme ip
 
+d0 d1 dx : Formula
+d0 = D t0
+d1 = ¬ (D t1)
+dx = ∀x (D x ∨ ¬ (D x))
+
+TT : List Scheme
+TT = nullaryscheme d0 ∷ (nullaryscheme d1 ∷ (nullaryscheme dx ∷ []))
 
 
 
@@ -649,5 +656,5 @@ dp→lpo ⊢dp α β = close
 DP⊃LPO : DP ∷ [] ⊃ LPO
 DP⊃LPO ⊢lhs (α ∷ β ∷ []) = dp→lpo (descheme₁ (⊢lhs DP [ refl ])) α β
 
-E
+
 

@@ -18,7 +18,7 @@ open import sugar
 _>>_ = primStringAppend
 infixr 1 _>>_
 
--- Stdlib show is broken on my computer
+-- Instead of using stdlib
 strnum : ℕ → String
 strnum zero = "0"
 strnum (suc n) = "s(" >> strnum n >> ")"
@@ -28,8 +28,9 @@ strrel (rel 0 k) = "\\bot"
 strrel (rel 1 k) = "A"
 strrel (rel 2 k) = "B"
 strrel (rel 3 k) = "C"
-strrel (rel 4 k) = "P"
-strrel (rel 5 k) = "Q"
+strrel (rel 4 k) = "D"
+strrel (rel 5 k) = "P"
+strrel (rel 6 k) = "Q"
 strrel (rel (suc (suc (suc (suc (suc (suc n)))))) k) = "R_" >> strnum n
 
 strvar : Variable → String
@@ -38,6 +39,7 @@ strvar yvar = "y"
 strvar zvar = "z"
 strvar (var n) = "v_" >> strnum n
 
+-- The constants are the natural numbers
 strfunc : Function → String
 strfunc (func n k) = "f_" >> strnum n
 
@@ -61,6 +63,12 @@ texterm : Term → String
 textermvec : ∀{n} → Vec Term n → String
 
 texterm (varterm x) = wrap (strvar x)
+texterm t0 = wrap "0"
+texterm t1 = wrap "1"
+texterm t2 = wrap "2"
+texterm t3 = wrap "3"
+texterm t4 = wrap "4"
+texterm t5 = wrap "5"
 texterm (functerm (func n f) ts) with n
 ...                              | zero  = wrap (strfunc (func n f))
 ...                              | suc _ = wrap (strfunc (func n f)
