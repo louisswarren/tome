@@ -180,7 +180,7 @@ DNE⊃EFQ ⊢lhs (α ∷ []) = dne→efq (descheme₁ (⊢lhs DNE [ refl ])) α
 
 lem,efq→dne : ⊢₁ lem → ⊢₁ efq → ⊢₁ dne
 lem,efq→dne ⊢lem ⊢efq α = close from∅
-                           (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ →  z₄ (λ z₅ → z₅)  (λ z₅ →     z₅ (λ z₆ → z₆ (λ z₇ → z₇))     (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ z₃ z₇)))))))
+                           (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ → z₆ (λ z₇ → z₇)) (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ z₃ z₇)))))))
                            (arrowintro (¬¬ α)
                             (disjelim
                              (cite "LEM" (⊢lem α))
@@ -372,7 +372,82 @@ dne→dp ⊢dne α = close
 DNE⊃DP : DNE ∷ [] ⊃ DP
 DNE⊃DP ⊢lhs (α ∷ []) = dne→dp (descheme₁ (⊢lhs DNE [ refl ])) α
 
-s = texreduce DNE⊃DP (P x ∷ [])
+dne→he : ⊢₁ dne → ⊢₁ he
+dne→he ⊢dne α = close
+                 from∅
+                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄ (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ (λ _ z₁₀ → z₁₀ z₇ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₄ (λ z₁₄ → z₁₄ (λ _ → z₁₂))))))))))))
+                 (arrowelim
+                  (cite "DNE" (⊢dne (he α)))
+                  (arrowintro (¬ (he α))
+                   (arrowelim
+                    (assume (¬ (he α)))
+                    (existintro x xvar (ident (∃x α ⇒ α) xvar)
+                     (arrowintro (∃x α)
+                      (arrowelim
+                       (cite "DNE" (⊢dne α))
+                       (arrowintro (¬ α)
+                        (existelim (all⟨ atom [] ⟩ all∪ (all- (all⟨ V∣ xvar (∃x α ⇒ α) ⇒ atom [] ⟩ all∪ (all- all⟨- ∃x α ∷ [ refl ] ⟩))))
+                         (assume (∃x α))
+                         (arrowelim
+                          (assume (¬ (he α)))
+                          (existintro x xvar (ident (∃x α ⇒ α) xvar)
+                           (arrowintro (∃x α)
+                            (assume α))))))))))))
+DNE⊃HE : DNE ∷ [] ⊃ HE
+DNE⊃HE ⊢lhs (α ∷ []) = dne→he (descheme₁ (⊢lhs DNE [ refl ])) α
+
+
+lem→wlem : ⊢₁ lem → ⊢₁ wlem
+lem→wlem ⊢lem α = ⊢lem (¬ α)
+LEM⊃WLEM : LEM ∷ [] ⊃ WLEM
+LEM⊃WLEM ⊢lhs (α ∷ []) = lem→wlem (descheme₁ (⊢lhs LEM [ refl ])) α
+
+
+gmp→wgmp : ⊢₁ gmp → ⊢₁ wgmp
+gmp→wgmp ⊢gmp α = close
+                   from∅
+                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈) z₃)))))
+                   (arrowintro (¬∀x α)
+                    (arrowintro (¬∃x¬ α)
+                     (arrowelim
+                      (assume (¬∃x¬ α))
+                      (arrowelim
+                       (cite "GMP" (⊢gmp α))
+                       (assume (¬∀x α))))))
+GMP⊃WGMP : GMP ∷ [] ⊃ WGMP
+GMP⊃WGMP ⊢lhs (α ∷ []) = gmp→wgmp (descheme₁ (⊢lhs GMP [ refl ])) α
+
+
+dgp→wlem : ⊢₂ dgp → ⊢₁ wlem
+dgp→wlem ⊢dgp α = close
+                   from∅
+                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉ z₅ z₇) z₇))) (λ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ z₈ → z₈ z₇ (λ z₉ → z₉ z₅ z₇)))))))
+                   (disjelim
+                    (cite "DGP" (⊢dgp α (¬ α)))
+                    (disjintro₁ (¬¬ α)
+                     (arrowintro α
+                      (arrowelim
+                       (arrowelim
+                        (assume (α ⇒ ¬ α))
+                        (assume α))
+                       (assume α))))
+                    (disjintro₂ (¬ α)
+                     (arrowintro (¬ α)
+                      (arrowelim
+                       (assume (¬ α))
+                       (arrowelim
+                        (assume (¬ α ⇒ α))
+                        (assume (¬ α)))))))
+DGP⊃WLEM : DGP ∷ [] ⊃ WLEM
+DGP⊃WLEM ⊢lhs (α ∷ []) = dgp→wlem (descheme₂ (⊢lhs DGP [ refl ])) α
+
+--1lc→2lc : ⊢₁ 1lc → ⊢₁ 2lc
+--1lc→2lc ⊢1lc α = close
+--                   from∅
+--                   ?
+--                   ?
+--1uc⊃2uc : 1uc ∷ [] ⊃ 2uc
+--1uc⊃2uc ⊢lhs (α ∷ []) = 1lc→2lc (descheme₁ (⊢lhs 1uc [ refl ])) α
 
 --------------------------------------------------------------------------------
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
