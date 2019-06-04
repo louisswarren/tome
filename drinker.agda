@@ -344,6 +344,39 @@ WGMP⊃DNSU ⊢lhs (α ∷ []) = wgmp→dnsu (descheme₁ (⊢lhs WGMP [ refl ])
 --dp→dp′ : ⊢₁ dp → ∀ α ωvar → (ff : (varterm ωvar) FreeFor xvar In α) → ⊢ V ωvar (Λ xvar (fst (α [ xvar / ff ]) ⇒ α))
 --dp→dp′ ⊢dp α ωvar ωffx = close {!   !} {!   !} (existelim {!   !} (cite "DP" (⊢dp α)) (existintro {!   !} {!   !} {!   !} {!   !}))
 
+dne→dp : ⊢₁ dne → ⊢₁ dp
+dne→dp ⊢dne α = close
+                 from∅
+                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆ (λ z₇ z₈ → z₈ z₄ (λ z₉ → z₉ (λ _ → z₇)))) (λ z₆ → z₆ (λ z₇ → z₇) (λ z₇ → z₇ (λ z₈ z₉ → z₉ z₄ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ (λ z₁₃ → z₁₃) (λ z₁₃ → z₁₃ (λ _ z₁₄ → z₁₄ z₈ z₁₁)))))))))))
+                 (arrowelim
+                  (cite "DNE" (⊢dne (dp α)))
+                  (arrowintro (¬ (dp α))
+                   (arrowelim
+                    (arrowintro (∀x α)
+                     (arrowelim
+                      (assume (¬ (dp α)))
+                      (existintro x xvar (ident (α ⇒ ∀x α) xvar)
+                       (arrowintro α
+                        (assume (∀x α))))))
+                    (univintro xvar (all∅ all∪ (all- (all⟨ V∣ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩ all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷ [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
+                     (arrowelim
+                      (cite "DNE" (⊢dne α))
+                      (arrowintro (¬ α)
+                       (arrowelim
+                        (assume (¬ (dp α)))
+                        (existintro x xvar (ident (α ⇒ ∀x α) xvar)
+                        (arrowintro α
+                         (arrowelim
+                          (cite "DNE" (⊢dne (∀x α)))
+                          (arrowintro (¬∀x α)
+                           (arrowelim
+                            (assume (¬ α))
+                            (assume α)))))))))))))
+DNE⊃DP : DNE ∷ [] ⊃ DP
+DNE⊃DP ⊢lhs (α ∷ []) = dne→dp (descheme₁ (⊢lhs DNE [ refl ])) α
+
+s = texreduce DNE⊃DP (P x ∷ [])
+
 --------------------------------------------------------------------------------
 dp→gmp : ⊢₁ dp → ⊢₁ gmp
 dp→gmp ⊢dp α = close
