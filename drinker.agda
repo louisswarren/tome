@@ -49,16 +49,19 @@ wlem Φ = ¬ Φ ∨ ¬¬ Φ
 LEM  = unaryscheme lem
 WLEM = unaryscheme wlem
 
-∃lem ∃wlem : Formula → Formula
-∃lem  Φ = ∃x (lem Φ)
-∃wlem Φ = ∃x (wlem Φ)
-
 
 dgp : Formula → Formula → Formula
 dgp Φ Ψ  = (Φ ⇒ Ψ) ∨ (Ψ ⇒ Φ)
 
 DGP = binaryscheme dgp
 
+
+∃lem ∃wlem : Formula → Formula
+∃lem  Φ = ∃x (lem Φ)
+∃wlem Φ = ∃x (wlem Φ)
+
+∃dgp : Formula → Formula → Formula
+∃dgp  Φ ψ = ∃x (dgp Φ ψ)
 
 
 glpo glpoa gmp wgmp : Formula → Formula
@@ -281,9 +284,9 @@ LEM⊃GLPO ⊢lhs (α ∷ []) = lem→glpo (descheme₁ (⊢lhs LEM [ refl ])) �
 ... | no ¬x∉α = close
                  from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
-                 (univelim x α∨¬α[x/ω]≡αω∨¬αω
+                 (univelim x lemαω[ω/x]≡lemα
                   (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
-                   (existelim (all⟨ x∉αω∨¬αω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                   (existelim (all⟨ x∉lemαω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
                     (⊢∃lem αω)
                     (assume (lem αω)))))
       where
@@ -299,14 +302,14 @@ LEM⊃GLPO ⊢lhs (α ∷ []) = lem→glpo (descheme₁ (⊢lhs LEM [ refl ])) �
         αω = fst (α [ xvar / freshFreeFor ωfresh xvar ])
         α[x/ω]≡αω : α [ xvar / _ ]≡ αω
         α[x/ω]≡αω = snd (α [ xvar / freshFreeFor ωfresh xvar ])
-        α∨¬α[x/ω]≡αω∨¬αω : (αω ∨ ¬ αω) [ ωvar / _ ]≡ (α ∨ ¬ α)
-        α∨¬α[x/ω]≡αω∨¬αω = subInverse
-                            (ω∉α ∨ (ω∉α ⇒ atom []))
-                            (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
+        lemαω[ω/x]≡lemα : (lem αω) [ ωvar / _ ]≡ (lem α)
+        lemαω[ω/x]≡lemα = subInverse
+                           (ω∉α ∨ (ω∉α ⇒ atom []))
+                           (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
         x∉αω : xvar NotFreeIn αω
         x∉αω = subNotFree (varterm λ x≡ω → ¬x∉α (≡ω∉α xvar x≡ω)) α[x/ω]≡αω
-        x∉αω∨¬αω : xvar NotFreeIn (αω ∨ ¬ αω)
-        x∉αω∨¬αω = x∉αω ∨ (x∉αω ⇒ atom [])
+        x∉lemαω : xvar NotFreeIn (lem αω)
+        x∉lemαω = x∉αω ∨ (x∉αω ⇒ atom [])
 
 ∃wlem→wlem : ⊢₁ ∃wlem → ⊢₁ wlem
 ∃wlem→wlem ⊢∃wlem α with xvar notFreeIn α
@@ -319,9 +322,9 @@ LEM⊃GLPO ⊢lhs (α ∷ []) = lem→glpo (descheme₁ (⊢lhs LEM [ refl ])) �
 ... | no ¬x∉α = close
                  from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
-                 (univelim x ¬α∨¬¬α[x/ω]≡¬αω∨¬¬αω
+                 (univelim x wlemαω[ω/x]≡wlemα
                   (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
-                   (existelim (all⟨ x∉¬αω∨¬¬αω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                   (existelim (all⟨ x∉wlemαω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
                     (⊢∃wlem αω)
                     (assume (wlem αω)))))
       where
@@ -337,14 +340,114 @@ LEM⊃GLPO ⊢lhs (α ∷ []) = lem→glpo (descheme₁ (⊢lhs LEM [ refl ])) �
         αω = fst (α [ xvar / freshFreeFor ωfresh xvar ])
         α[x/ω]≡αω : α [ xvar / _ ]≡ αω
         α[x/ω]≡αω = snd (α [ xvar / freshFreeFor ωfresh xvar ])
-        ¬α∨¬¬α[x/ω]≡¬αω∨¬¬αω : (¬ αω ∨ ¬¬ αω) [ ωvar / _ ]≡ (¬ α ∨ ¬¬ α)
-        ¬α∨¬¬α[x/ω]≡¬αω∨¬¬αω = subInverse
-                            ((ω∉α ⇒ atom []) ∨ ((ω∉α ⇒ atom []) ⇒ atom []))
-                            ((α[x/ω]≡αω ⇒ notfree (atom [])) ∨ ((α[x/ω]≡αω ⇒ notfree (atom [])) ⇒ notfree (atom [])))
+        wlemαω[ω/x]≡wlemα : (wlem αω) [ ωvar / _ ]≡ (wlem α)
+        wlemαω[ω/x]≡wlemα = subInverse
+                             ((ω∉α ⇒ atom []) ∨ ((ω∉α ⇒ atom []) ⇒ atom []))
+                             ((α[x/ω]≡αω ⇒ notfree (atom []))
+                              ∨ ((α[x/ω]≡αω ⇒ notfree (atom []))
+                                 ⇒ notfree (atom [])))
         x∉αω : xvar NotFreeIn αω
         x∉αω = subNotFree (varterm λ x≡ω → ¬x∉α (≡ω∉α xvar x≡ω)) α[x/ω]≡αω
-        x∉¬αω∨¬¬αω : xvar NotFreeIn (¬ αω ∨ ¬¬ αω)
-        x∉¬αω∨¬¬αω = (x∉αω ⇒ atom []) ∨ ((x∉αω ⇒ atom []) ⇒ atom [])
+        x∉wlemαω : xvar NotFreeIn (wlem αω)
+        x∉wlemαω = (x∉αω ⇒ atom []) ∨ ((x∉αω ⇒ atom []) ⇒ atom [])
+
+∃dgp→dgp : ⊢₂ ∃dgp → ⊢₂ dgp
+∃dgp→dgp ⊢∃dgp α β with xvar notFreeIn α | xvar notFreeIn β
+... | yes x∉α | yes x∉β = close
+                           from∅
+                           (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
+                           (existelim (all⟨ (x∉α ⇒ x∉β) ∨ (x∉β ⇒ x∉α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                            (⊢∃dgp α β)
+                            (assume (dgp α β)))
+... | _       | no ¬x∉β = close
+                           from∅
+                           (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
+                           (univelim x dgpαωβω[ω/x]≡dgpαβ
+                            (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
+                             (existelim (all⟨ x∉dgpαωβω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                              (⊢∃dgp αω βω)
+                              (assume (dgp αω βω)))))
+                where
+                  ωvar : Variable
+                  ωvar = fst (fresh (α ⇒ β))
+                  ωfreshα : ωvar FreshIn α
+                  ωfreshα with snd (fresh (α ⇒ β))
+                  ... | frα ⇒ frβ = frα
+                  ωfreshβ : ωvar FreshIn β
+                  ωfreshβ with snd (fresh (α ⇒ β))
+                  ... | frα ⇒ frβ = frβ
+                  ω∉α : ωvar NotFreeIn α
+                  ω∉α = freshNotFree ωfreshα
+                  ω∉β : ωvar NotFreeIn β
+                  ω∉β = freshNotFree ωfreshβ
+                  ≡ω∉α : ∀ v → v ≡ ωvar → v NotFreeIn α
+                  ≡ω∉α v refl = ω∉α
+                  ≡ω∉β : ∀ v → v ≡ ωvar → v NotFreeIn β
+                  ≡ω∉β v refl = ω∉β
+                  αω : Formula
+                  αω = fst (α [ xvar / freshFreeFor ωfreshα xvar ])
+                  βω : Formula
+                  βω = fst (β [ xvar / freshFreeFor ωfreshβ xvar ])
+                  α[x/ω]≡αω : α [ xvar / _ ]≡ αω
+                  α[x/ω]≡αω = snd (α [ xvar / freshFreeFor ωfreshα xvar ])
+                  β[x/ω]≡βω : β [ xvar / _ ]≡ βω
+                  β[x/ω]≡βω = snd (β [ xvar / freshFreeFor ωfreshβ xvar ])
+                  dgpαωβω[ω/x]≡dgpαβ : (dgp αω βω) [ ωvar / _ ]≡ (dgp α β)
+                  dgpαωβω[ω/x]≡dgpαβ = subInverse
+                                        ((ω∉α ⇒ ω∉β) ∨ (ω∉β ⇒ ω∉α))
+                                        ((α[x/ω]≡αω ⇒ β[x/ω]≡βω)
+                                         ∨ (β[x/ω]≡βω ⇒ α[x/ω]≡αω))
+                  x∉αω : xvar NotFreeIn αω
+                  x∉αω = subNotFree (varterm λ x≡ω → ¬x∉β (≡ω∉β xvar x≡ω)) α[x/ω]≡αω
+                  x∉βω : xvar NotFreeIn βω
+                  x∉βω = subNotFree (varterm λ x≡ω → ¬x∉β (≡ω∉β xvar x≡ω)) β[x/ω]≡βω
+                  x∉dgpαωβω : xvar NotFreeIn (dgp αω βω)
+                  x∉dgpαωβω = (x∉αω ⇒ x∉βω) ∨ (x∉βω ⇒ x∉αω)
+... | no ¬x∉α | _       = close
+                           from∅
+                           (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
+                           (univelim x dgpαωβω[ω/x]≡dgpαβ
+                            (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
+                             (existelim (all⟨ x∉dgpαωβω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                              (⊢∃dgp αω βω)
+                              (assume (dgp αω βω)))))
+                where
+                  ωvar : Variable
+                  ωvar = fst (fresh (α ⇒ β))
+                  ωfreshα : ωvar FreshIn α
+                  ωfreshα with snd (fresh (α ⇒ β))
+                  ... | frα ⇒ frβ = frα
+                  ωfreshβ : ωvar FreshIn β
+                  ωfreshβ with snd (fresh (α ⇒ β))
+                  ... | frα ⇒ frβ = frβ
+                  ω∉α : ωvar NotFreeIn α
+                  ω∉α = freshNotFree ωfreshα
+                  ω∉β : ωvar NotFreeIn β
+                  ω∉β = freshNotFree ωfreshβ
+                  ≡ω∉α : ∀ v → v ≡ ωvar → v NotFreeIn α
+                  ≡ω∉α v refl = ω∉α
+                  ≡ω∉β : ∀ v → v ≡ ωvar → v NotFreeIn β
+                  ≡ω∉β v refl = ω∉β
+                  αω : Formula
+                  αω = fst (α [ xvar / freshFreeFor ωfreshα xvar ])
+                  βω : Formula
+                  βω = fst (β [ xvar / freshFreeFor ωfreshβ xvar ])
+                  α[x/ω]≡αω : α [ xvar / _ ]≡ αω
+                  α[x/ω]≡αω = snd (α [ xvar / freshFreeFor ωfreshα xvar ])
+                  β[x/ω]≡βω : β [ xvar / _ ]≡ βω
+                  β[x/ω]≡βω = snd (β [ xvar / freshFreeFor ωfreshβ xvar ])
+                  dgpαωβω[ω/x]≡dgpαβ : (dgp αω βω) [ ωvar / _ ]≡ (dgp α β)
+                  dgpαωβω[ω/x]≡dgpαβ = subInverse
+                                        ((ω∉α ⇒ ω∉β) ∨ (ω∉β ⇒ ω∉α))
+                                        ((α[x/ω]≡αω ⇒ β[x/ω]≡βω)
+                                         ∨ (β[x/ω]≡βω ⇒ α[x/ω]≡αω))
+                  x∉αω : xvar NotFreeIn αω
+                  x∉αω = subNotFree (varterm λ x≡ω → ¬x∉α (≡ω∉α xvar x≡ω)) α[x/ω]≡αω
+                  x∉βω : xvar NotFreeIn βω
+                  x∉βω = subNotFree (varterm λ x≡ω → ¬x∉α (≡ω∉α xvar x≡ω)) β[x/ω]≡βω
+                  x∉dgpαωβω : xvar NotFreeIn (dgp αω βω)
+                  x∉dgpαωβω = (x∉αω ⇒ x∉βω) ∨ (x∉βω ⇒ x∉αω)
+
 
 glpo→∃lem : ⊢₁ glpo → ⊢₁ ∃lem
 glpo→∃lem ⊢glpo α = close
