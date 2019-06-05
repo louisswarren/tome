@@ -49,6 +49,9 @@ wlem Φ = ¬ Φ ∨ ¬¬ Φ
 LEM  = unaryscheme lem
 WLEM = unaryscheme wlem
 
+∃lem ∃wlem : Formula → Formula
+∃lem  Φ = ∃x (lem Φ)
+∃wlem Φ = ∃x (wlem Φ)
 
 
 dgp : Formula → Formula → Formula
@@ -267,7 +270,7 @@ LEM⊃GLPO : LEM ∷ [] ⊃ GLPO
 LEM⊃GLPO ⊢lhs (α ∷ []) = lem→glpo (descheme₁ (⊢lhs LEM [ refl ])) α
 
 
-∃lem→lem : (∀ α → ⊢ ∃x (lem α)) → ⊢₁ lem
+∃lem→lem : ⊢₁ ∃lem → ⊢₁ lem
 ∃lem→lem ⊢∃lem α with xvar notFreeIn α
 ... | yes x∉α = close
                  from∅
@@ -305,7 +308,45 @@ LEM⊃GLPO ⊢lhs (α ∷ []) = lem→glpo (descheme₁ (⊢lhs LEM [ refl ])) �
         x∉αω∨¬αω : xvar NotFreeIn (αω ∨ ¬ αω)
         x∉αω∨¬αω = x∉αω ∨ (x∉αω ⇒ atom [])
 
-glpo→∃lem : ⊢₁ glpo → ∀ α → ⊢ ∃x (lem α)
+∃wlem→wlem : ⊢₁ ∃wlem → ⊢₁ wlem
+∃wlem→wlem ⊢∃wlem α with xvar notFreeIn α
+... | yes x∉α = close
+                 from∅
+                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
+                 (existelim (all⟨ (x∉α ⇒ atom []) ∨ ((x∉α ⇒ atom []) ⇒ atom []) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                  (⊢∃wlem α)
+                  (assume (wlem α)))
+... | no ¬x∉α = close
+                 from∅
+                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
+                 (univelim x ¬α∨¬¬α[x/ω]≡¬αω∨¬¬αω
+                  (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
+                   (existelim (all⟨ x∉¬αω∨¬¬αω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                    (⊢∃wlem αω)
+                    (assume (wlem αω)))))
+      where
+        ωvar : Variable
+        ωvar = fst (fresh α)
+        ωfresh : ωvar FreshIn α
+        ωfresh = snd (fresh α)
+        ω∉α : ωvar NotFreeIn α
+        ω∉α = freshNotFree ωfresh
+        ≡ω∉α : ∀ v → v ≡ ωvar → v NotFreeIn α
+        ≡ω∉α v refl = ω∉α
+        αω : Formula
+        αω = fst (α [ xvar / freshFreeFor ωfresh xvar ])
+        α[x/ω]≡αω : α [ xvar / _ ]≡ αω
+        α[x/ω]≡αω = snd (α [ xvar / freshFreeFor ωfresh xvar ])
+        ¬α∨¬¬α[x/ω]≡¬αω∨¬¬αω : (¬ αω ∨ ¬¬ αω) [ ωvar / _ ]≡ (¬ α ∨ ¬¬ α)
+        ¬α∨¬¬α[x/ω]≡¬αω∨¬¬αω = subInverse
+                            ((ω∉α ⇒ atom []) ∨ ((ω∉α ⇒ atom []) ⇒ atom []))
+                            ((α[x/ω]≡αω ⇒ notfree (atom [])) ∨ ((α[x/ω]≡αω ⇒ notfree (atom [])) ⇒ notfree (atom [])))
+        x∉αω : xvar NotFreeIn αω
+        x∉αω = subNotFree (varterm λ x≡ω → ¬x∉α (≡ω∉α xvar x≡ω)) α[x/ω]≡αω
+        x∉¬αω∨¬¬αω : xvar NotFreeIn (¬ αω ∨ ¬¬ αω)
+        x∉¬αω∨¬¬αω = (x∉αω ⇒ atom []) ∨ ((x∉αω ⇒ atom []) ⇒ atom [])
+
+glpo→∃lem : ⊢₁ glpo → ⊢₁ ∃lem
 glpo→∃lem ⊢glpo α = close
                      from∅
                      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
