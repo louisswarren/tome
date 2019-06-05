@@ -506,57 +506,25 @@ dgp→wlem ⊢dgp α = close
 DGP⊃WLEM : DGP ∷ [] ⊃ WLEM
 DGP⊃WLEM ⊢lhs (α ∷ []) = dgp→wlem (descheme₂ (⊢lhs DGP [ refl ])) α
 
+
+glpoa→∃lem : ⊢₁ glpoa → ⊢₁ ∃lem
+glpoa→∃lem ⊢glpoa α = close
+                       from∅
+                       (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
+                       (disjelim
+                        (cite "GLPO'" (⊢glpoa α))
+                        (existintro x xvar (ident (α ∨ ¬ α) xvar)
+                         (disjintro₁ (¬ α)
+                          (univelim x (ident α xvar)
+                           (assume (∀x α)))))
+                        (existelim (all⟨ V∣ xvar (α ∨ ¬ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                         (assume (∃x¬ α))
+                         (existintro x xvar (ident (α ∨ ¬ α) xvar)
+                          (disjintro₂ α
+                           (assume (¬ α))))))
+
 glpoa→lem : ⊢₁ glpoa → ⊢₁ lem
-glpoa→lem ⊢glpoa α with xvar notFreeIn α
-glpoa→lem ⊢glpoa α | yes xnfα = close
-                                 from∅
-                                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
-                                 (disjelim
-                                  (cite "GLPO'" (⊢glpoa α))
-                                  (disjintro₁ (¬ α)
-                                   (univelim x (ident α xvar)
-                                    (assume (∀x α))))
-                                  (disjintro₂ α
-                                   (existelim (all⟨ xnfα ⇒ atom [] ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-                                    (assume (∃x¬ α))
-                                    (assume (¬ α)))))
-glpoa→lem ⊢glpoa α | no ¬xnfα = close
-                                 from∅
-                                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
-                                 (univelim x αω∨¬αω[ω/x]≡α∨¬α
-                                  (univintro ω (all∅ all∪ (all- all⟨- [ refl ] ⟩) all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨- [ refl ] ⟩))))
-                                   (disjelim
-                                    (cite "GLPO'" (⊢glpoa αω))
-                                    (disjintro₁ (¬ αω)
-                                     (univelim x (ident αω xvar)
-                                      (assume (∀x αω))))
-                                    (disjintro₂ αω
-                                     (existelim (all⟨ xnfαω ⇒ atom [] ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-                                      (assume (∃x¬ αω))
-                                      (assume (¬ αω)))))))
-                     where
-                      ω : Variable
-                      ω = fst (fresh α)
-                      ωFresh : ω FreshIn α
-                      ωFresh = snd (fresh α)
-                      ωnf : ω NotFreeIn α
-                      ωnf = freshNotFree ωFresh
-                      ωff : (varterm ω) FreeFor xvar In α
-                      ωff = freshFreeFor ωFresh xvar
-                      αω : Formula
-                      αω = fst (α [ xvar / ωff ])
-                      αωpf : α [ xvar / varterm ω ]≡ αω
-                      αωpf = snd (α [ xvar / ωff ])
-                      ≡ωnf : ∀ x → x ≡ ω → x NotFreeIn α
-                      ≡ωnf x refl = ωnf
-                      xnfαω : xvar NotFreeIn αω
-                      xnfαω with varEq xvar ω
-                      xnfαω | yes x≡ω = ⊥-elim (¬xnfα (≡ωnf xvar x≡ω))
-                      xnfαω | no  x≢ω = subNotFree (varterm x≢ω) αωpf
-                      αω[ω/x]≡α : αω [ ω / x ]≡ α
-                      αω[ω/x]≡α = subInverse ωnf αωpf
-                      αω∨¬αω[ω/x]≡α∨¬α : (αω ∨ ¬ αω)[ ω / x ]≡ (α ∨ ¬ α)
-                      αω∨¬αω[ω/x]≡α∨¬α = αω[ω/x]≡α ∨ (αω[ω/x]≡α ⇒ notfree (atom []))
+glpoa→lem ⊢glpoa α = ∃lem→lem (glpoa→∃lem ⊢glpoa) α
 GLPOA⊃LEM : GLPOA ∷ [] ⊃ LEM
 GLPOA⊃LEM ⊢lhs (α ∷ []) = glpoa→lem (descheme₁ (⊢lhs GLPOA [ refl ])) α
 
@@ -690,56 +658,56 @@ GMP⊃DNSE ⊢lhs (α ∷ []) = gmp→dnse (descheme₁ (⊢lhs GMP [ refl ])) �
 --1uc⊃2uc : 1uc ∷ [] ⊃ 2uc
 --1uc⊃2uc ⊢lhs (α ∷ []) = 1lc→2lc (descheme₁ (⊢lhs 1uc [ refl ])) α
 
-dp,efq,tt→dgp : ⊢₁ dp → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
-dp,efq,tt→dgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β =
-    close
-     from∅
-     ?
-     (existelim ({!   !} all∪ {!   !})
-      (cite "DP" (⊢dp φ))
-      (disjelim
-       (univelim x (ident (D (varterm xvar) ∨ ¬ (D (varterm xvar))) xvar)
-        (cite "TT" ⊢d∀))
-       (disjintro₁ (β ⇒ α)
-        (arrowintro α
-         (conjelim
-          (univelim t1 (snd (φ [ xvar /  constFreeFor φ xvar 1 ]))
-           (arrowelim
-            (assume (φ ⇒ ∀x φ))
-            (conjintro
-             (arrowintro (D x)
-              (assume α))
-             (arrowintro (¬ (D x))
-              (arrowelim
-               (cite "EFQ" (⊢efq β))
-               (arrowelim
-                (assume (¬ (D x)))
-                (assume (D x))))))))
-          (arrowelim
-           (assume (¬d1 ⇒ β))
-           (cite "TT" ⊢¬d1)))))
-       (disjintro₂ (α ⇒ β)
-        (arrowintro β
-         (conjelim
-          (univelim t0 (snd (φ [ xvar / constFreeFor φ xvar 0 ])) (arrowelim (assume (φ ⇒ ∀x φ)) (conjintro (arrowintro (D x) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬ (D x))) (assume (D x))))) (arrowintro (¬ (D x)) (assume β)))))
-          (arrowelim
-           (assume (d0 ⇒ α))
-           (cite "TT" ⊢d0)))))))
-  where
-    φ : Formula
-    φ = (D x ⇒ α) ∧ (¬ (D x) ⇒ β)
-
-
-DP,EFQ,TT⊃DGP : DP ∷ EFQ ∷ TT ⊃ DGP
-DP,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
-    dp,efq,tt→dgp
-     (descheme₁ (⊢lhs DP [ refl ]))
-     (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ])))
-     (descheme₀ (⊢lhs D0 (_ ∷ (_ ∷ [ refl ]))))
-     (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
-     (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ (_ ∷ [ refl ]))))))
-     α
-     β
+--dp,efq,tt→dgp : ⊢₁ dp → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
+--dp,efq,tt→dgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β =
+--    close
+--     from∅
+--     ?
+--     (existelim ({!   !} all∪ {!   !})
+--      (cite "DP" (⊢dp φ))
+--      (disjelim
+--       (univelim x (ident (D (varterm xvar) ∨ ¬ (D (varterm xvar))) xvar)
+--        (cite "TT" ⊢d∀))
+--       (disjintro₁ (β ⇒ α)
+--        (arrowintro α
+--         (conjelim
+--          (univelim t1 (snd (φ [ xvar /  constFreeFor φ xvar 1 ]))
+--           (arrowelim
+--            (assume (φ ⇒ ∀x φ))
+--            (conjintro
+--             (arrowintro (D x)
+--              (assume α))
+--             (arrowintro (¬ (D x))
+--              (arrowelim
+--               (cite "EFQ" (⊢efq β))
+--               (arrowelim
+--                (assume (¬ (D x)))
+--                (assume (D x))))))))
+--          (arrowelim
+--           (assume (¬d1 ⇒ β))
+--           (cite "TT" ⊢¬d1)))))
+--       (disjintro₂ (α ⇒ β)
+--        (arrowintro β
+--         (conjelim
+--          (univelim t0 (snd (φ [ xvar / constFreeFor φ xvar 0 ])) (arrowelim (assume (φ ⇒ ∀x φ)) (conjintro (arrowintro (D x) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬ (D x))) (assume (D x))))) (arrowintro (¬ (D x)) (assume β)))))
+--          (arrowelim
+--           (assume (d0 ⇒ α))
+--           (cite "TT" ⊢d0)))))))
+--  where
+--    φ : Formula
+--    φ = (D x ⇒ α) ∧ (¬ (D x) ⇒ β)
+--
+--
+--DP,EFQ,TT⊃DGP : DP ∷ EFQ ∷ TT ⊃ DGP
+--DP,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
+--    dp,efq,tt→dgp
+--     (descheme₁ (⊢lhs DP [ refl ]))
+--     (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ])))
+--     (descheme₀ (⊢lhs D0 (_ ∷ (_ ∷ [ refl ]))))
+--     (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
+--     (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ (_ ∷ [ refl ]))))))
+--     α
+--     β
 --------------------------------------------------------------------------------
 
 
