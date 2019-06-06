@@ -11,7 +11,7 @@ open import Formula
 open import List
 open import Scheme
 open import Vec
-open import sugar
+open import Sugar
 
 TEXarrowintro = "$\\rightarrow^+$"
 TEXarrowelim = "$\\rightarrow^-$"

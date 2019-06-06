@@ -1,3 +1,5 @@
+module Sugar where
+
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 open import Agda.Builtin.String
 open import Agda.Builtin.List

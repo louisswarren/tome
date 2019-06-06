@@ -6,20 +6,18 @@ open import Agda.Builtin.Sigma
 open import Decidable hiding (⊥ ; ¬_)
 open import Deduction
 open import Ensemble
-open import List
 open import Formula
+open import List
 open import Scheme
-open import Vec
-
+open import Sugar
 open import Texify
-
-open import sugar
+open import Vec
 
 constFreeFor : ∀ α x n → functerm (func n zero) [] FreeFor x In α
 constFreeFor (atom r ts) x n = atom r ts
-constFreeFor (α ⇒ α₁) x n = constFreeFor α x n ⇒ constFreeFor α₁ x n
-constFreeFor (α ∧ α₁) x n = constFreeFor α x n ∧ constFreeFor α₁ x n
-constFreeFor (α ∨ α₁) x n = constFreeFor α x n ∨ constFreeFor α₁ x n
+constFreeFor (α ⇒ β) x n = constFreeFor α x n ⇒ constFreeFor β x n
+constFreeFor (α ∧ β) x n = constFreeFor α x n ∧ constFreeFor β x n
+constFreeFor (α ∨ β) x n = constFreeFor α x n ∨ constFreeFor β x n
 constFreeFor (Λ x₁ α) x n = Λ (functerm []) (constFreeFor α x n)
 constFreeFor (V x₁ α) x n = V (functerm []) (constFreeFor α x n)
 
@@ -143,7 +141,8 @@ dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
                           (λ x₁ z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z₄) (λ z₄ → z₄ z₃)))
                           (arrowelim
                            (cite "DNE" (⊢dne α))
-                           (arrowintro (¬ α) Γ⊢⊥))
+                           (arrowintro (¬ α)
+                            Γ⊢⊥))
 
 ⊥c-rule→dne : ⊥c-rule → ⊢₁ dne
 ⊥c-rule→dne ⊢⊥c-rule α = close
