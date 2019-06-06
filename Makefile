@@ -1,4 +1,4 @@
-MINTED=_minted.Decidable.gen _minted.Nat.gen _minted.List.gen _minted.Vec.gen _minted.Formula.gen _minted.Ensemble.gen _minted.Deduction.gen _minted.Equivalence.gen _minted.Scheme.gen _minted.drinkerexample.gen
+MINTED=_minted.Decidable.gen _minted.Nat.gen _minted.List.gen _minted.Vec.gen _minted.Formula.gen _minted.Ensemble.gen _minted.Deduction.gen _minted.Equivalence.gen _minted.Scheme.gen _minted.drinkerexample.gen _minted.no-ensemble.lagda
 
 MINTCODE='s/\\begin{code}/\\begin{minted}{agda}/; s/\\end{code}/\\end{minted}/'
 
@@ -25,4 +25,5 @@ clean:
 .PHONY: test
 test:
 	agda --safe appendix.agda
+	agda --safe no-ensemble.lagda
 	agda drinker.agda
