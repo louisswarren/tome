@@ -13,6 +13,23 @@ open import Scheme
 open import Vec
 open import sugar
 
+TEXarrowintro = "$\\rightarrow^+$"
+TEXarrowelim = "$\\rightarrow^-$"
+TEXconjintro = "$\\land^+$"
+TEXconjelim = "$\\land^-$"
+TEXdisjintro = "$\\lor^+$"
+TEXdisjelim = "$\\lor^-$"
+TEXunivintro = "$\\forall^+$"
+TEXunivelim = "$\\forall^-$"
+TEXexistintro = "$\\exists^+$"
+TEXexistelim = "$\\exists^-$"
+TEXarrow = " \\rightarrow "
+TEXand = " \\land "
+TEXor = " \\lor "
+TEXforall = "\\forall_"
+TEXexists = "\\exists_"
+TEXnot = "\\lnot"
+TEXbot = "\\bot"
 
 -- String manipulation
 _>>_ = primStringAppend
@@ -92,7 +109,7 @@ parenformula p@(Λ _ _) = texformula p
 parenformula p@(V _ _) = texformula p
 
 texformula a@(atom f ts) with formulaEq a ⊥
-...                            | yes _ = "\\bot"
+...                            | yes _ = TEXbot
 texformula (atom (rel n k) ts) | no _  with k
 ...                                    | zero     = strrel (rel n k)
 ...                                    | suc zero = strrel (rel n k)
@@ -103,12 +120,12 @@ texformula (atom (rel n k) (x ∷ y ∷ []))
 ...                                    | suc (suc _) = strrel (rel n k)  >> lp
                                                        >> textermvec ts >> rp
 texformula (a ⇒ b) with formulaEq b ⊥
-...           | yes _  = "\\Tneg{" >> parenformula a >> "}"
-...           | no _  = parenformula a >> " \\Tarrow " >> parenformula b
-texformula (a ∧ b) = parenformula a >> " \\Tand " >> parenformula b
-texformula (a ∨ b) = parenformula a >> " \\Tor " >> parenformula b
-texformula (Λ x a) = "\\Tforall_{" >> strvar x >> "} " >> parenformula a
-texformula (V x a) = "\\Texists_{" >> strvar x >> "} " >> parenformula a
+...           | yes _  = TEXnot >> wrap (parenformula a)
+...           | no _  = parenformula a >> TEXarrow >> parenformula b
+texformula (a ∧ b) = parenformula a >> TEXand >> parenformula b
+texformula (a ∨ b) = parenformula a >> TEXor >> parenformula b
+texformula (Λ x a) = TEXforall >> wrap(strvar x) >> parenformula a
+texformula (V x a) = TEXexists >> wrap(strvar x) >> parenformula a
 
 texformulae : List Formula → String
 texformulae forms = joinmap ", " texformula forms
@@ -136,13 +153,15 @@ label i s = line i (tag "RightLabel" s)
 inf : ℕ → String → Formula → String
 inf i s x = line i (tag s ("$" >> (texformula x) >> "$"))
 
+dis : ℕ → String → Formula → String
+dis i s x = line i (tag s ("$\\left[" >> (texformula x) >> "\\right]$"))
+
 texifytree : ℕ → Textree → String
 texifytree i (schemeax x s)           = line i ("\\AxiomC{}")
                                         >> label i s
                                         >> inf i "UnaryInfC" x
 texifytree i (openax x)               = inf i "AxiomC" x
-texifytree i (closedax x)             = line i (tag "AxiomC"
-                                                ("[$" >> texformula x >> "$]"))
+texifytree i (closedax x)             = dis i "AxiomC" x
 texifytree i (unaryinf x s T)         = texifytree i T
                                         >> label i s
                                         >> inf i "UnaryInfC" x
@@ -162,28 +181,30 @@ dtot {α} o (cite s d)           = schemeax α s
 dtot {α} o (assume a) with Ensemble.decide∈ a o
 ...                   | yes _   = openax     α
 ...                   | no  _   = closedax   α
-dtot {α} o (arrowintro a d)     = unaryinf   α "\\Tarrowintro" (dtot o d)
-dtot {α} o (arrowelim d₁ d₂)    = binaryinf  α "\\Tarrowelim"  (dtot o d₁)
-                                                                    (dtot o d₂)
-dtot {α} o (conjintro d₁ d₂)    = binaryinf  α "\\Tconjintro"  (dtot o d₁)
-                                                                    (dtot o d₂)
-dtot {α} o (conjelim d₁ d₂)     = binaryinf  α "\\Tconjelim"   (dtot o d₁)
-                                                                    (dtot o d₂)
-dtot {α} o (disjintro₁ b d)     = unaryinf   α "\\Tdisjintro"  (dtot o d)
-dtot {α} o (disjintro₂ a d)     = unaryinf   α "\\Tdisjintro"  (dtot o d)
-dtot {α} o (disjelim d₁ d₂ d₃)  = trinaryinf α "\\Tdisjelim"   (dtot o d₁)
-                                                                    (dtot o d₂)
-                                                                    (dtot o d₃)
-dtot {α} o (univintro x _ d)    = unaryinf   α "\\Tunivintro"  (dtot o d)
-dtot {α} o (univelim r _ d)     = unaryinf   α "\\Tunivelim"   (dtot o d)
-dtot {α} o (existintro r x _ d) = unaryinf   α "\\Texistintro" (dtot o d)
-dtot {α} o (existelim _ d₁ d₂)  = binaryinf  α "\\Texistelim"  (dtot o d₁)
-                                                                    (dtot o d₂)
+dtot {α} o (arrowintro a d)     = unaryinf   α TEXarrowintro (dtot o d)
+dtot {α} o (arrowelim d₁ d₂)    = binaryinf  α TEXarrowelim  (dtot o d₁)
+                                                             (dtot o d₂)
+dtot {α} o (conjintro d₁ d₂)    = binaryinf  α TEXconjintro  (dtot o d₁)
+                                                             (dtot o d₂)
+dtot {α} o (conjelim d₁ d₂)     = binaryinf  α TEXconjelim   (dtot o d₁)
+                                                             (dtot o d₂)
+dtot {α} o (disjintro₁ b d)     = unaryinf   α TEXdisjintro  (dtot o d)
+dtot {α} o (disjintro₂ a d)     = unaryinf   α TEXdisjintro  (dtot o d)
+dtot {α} o (disjelim d₁ d₂ d₃)  = trinaryinf α TEXdisjelim   (dtot o d₁)
+                                                             (dtot o d₂)
+                                                             (dtot o d₃)
+dtot {α} o (univintro x _ d)    = unaryinf   α TEXunivintro  (dtot o d)
+dtot {α} o (univelim r _ d)     = unaryinf   α TEXunivelim   (dtot o d)
+dtot {α} o (existintro r x _ d) = unaryinf   α TEXexistintro (dtot o d)
+dtot {α} o (existelim _ d₁ d₂)  = binaryinf  α TEXexistelim  (dtot o d₁)
+                                                             (dtot o d₂)
 dtot {α} o (close _ _ d)        = dtot o d
 
 
 texdeduction : ∀{Γ α} → Γ ⊢ α → String
-texdeduction d = texifytree 0 (dtot (assembled-context d) d)
+texdeduction d = "\\begin{prooftree}\n"
+                 >> texifytree 0 (dtot (assembled-context d) d)
+                 >> "\\end{prooftree}\n"
 
 
 -- We assume that all schemes are derivable, and will derive their instances
