@@ -20,7 +20,6 @@ A \emph{scheme} is often thought of as a formula containing schematic
 variables, which can be replaced by subformulae to produce a new formula. The
 following notion is more general than this; instead, a Scheme is just
 constructed from a function from formulae to a formula.
-
 \begin{code}
 
 record Scheme : Set where
@@ -30,15 +29,29 @@ record Scheme : Set where
     inst  : Vec Formula arity → Formula
 
 \end{code}
-
 This definition makes no restriction on the structure of the instances of the
 scheme \todo{continuity?}, and is not able to put requirements on variable
 freedom.
 
-Because it is nicer to work with $n$-ary functions than unary functions taking
-$n$-ary vectors, we define the following constructors for creating schemes from
-the former.
+A scheme is derivable if every instance of the scheme is derivable. A list
+$\Omega s$ of schemes is stronger than a scheme $\Phi$ if every instance of
+$\Phi$ is derivable from finitely many instances of schemes in $\Omega$.
+Equivalently, $\Omega s$ is stronger than $\Phi$ if the derivability of $\Omega
+s$ implies the derivability of $\Phi$.
+\begin{code}
 
+Derivable : Scheme → Set₁
+Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
+
+infix 1 _⊃_
+_⊃_ : List Scheme → Scheme → Set₁
+Ω ⊃ Φ = (∀ ω → ω List.∈ Ω → Derivable ω) → Derivable Φ
+
+\end{code}
+
+Because it is nicer to work with $n$-ary functions than unary functions taking
+$n$-ary vectors, we define the following notation for creating schemes from
+functions,
 \begin{code}
 
 nullaryscheme : Formula → Scheme
@@ -51,20 +64,35 @@ binaryscheme : (Formula → Formula → Formula) → Scheme
 binaryscheme f = scheme 2 λ { (α ∷ β ∷ []) → f α β }
 
 \end{code}
-
-Finally, a scheme is derivable if every instance of the scheme is derivable. A
-list $\Omega s$ of schemes is stronger than a scheme $\Phi$ if every instance
-of $\Phi$ is derivable from finitely many instances of schemes in $\Omega$.
-Equivalently, $\Omega s$ is stronger than $\Phi$ if the derivability of $\Omega
-s$ implies the derivability of $\Phi$.
-
+expressing derivability for functions,
 \begin{code}
 
-Derivable : Scheme → Set₁
-Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
+infix 1 ⊢₀_ ⊢₁_ ⊢₂_
 
-infix 1 _⊃_
-_⊃_ : List Scheme → Scheme → Set₁
-Ω ⊃ Φ = (∀ ω → ω List.∈ Ω → Derivable ω) → Derivable Φ
+⊢₀_ : Formula → Set₁
+⊢₀ α = ⊢ α
+
+⊢₁_ : (Formula → Formula) → Set₁
+⊢₁ s = ∀ α → ⊢ s α
+
+⊢₂_ : (Formula → Formula → Formula) → Set₁
+⊢₂ s = ∀ α β → ⊢ s α β
 
 \end{code}
+and turning derivability of schemes into derivability of functions.
+\begin{code}
+
+descheme₀ : {f : Vec Formula 0 → Formula}
+            → (∀ αs → ⊢ f αs) → ⊢ f []
+descheme₀ {f} ⊢S = ⊢S []
+
+descheme₁ : {f : Vec Formula 1 → Formula}
+            → (∀ αs → ⊢ f αs) → ∀ α → ⊢ f (α ∷ [])
+descheme₁ {f} ⊢S α = ⊢S (α ∷ [])
+
+descheme₂ : {f : Vec Formula 2 → Formula}
+            → (∀ αs → ⊢ f αs) → ∀ α β → ⊢ f (α ∷ β ∷ [])
+descheme₂ {f} ⊢S α β = ⊢S (α ∷ (β ∷ []))
+
+\end{code}
+

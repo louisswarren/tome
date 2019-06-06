@@ -16,32 +16,6 @@ pattern ⊥ = atom ⊥rel []
 pattern ¬ α = α ⇒ ⊥
 pattern ¬¬ α = ¬ (¬ α)
 
-
--- Easier definitions for derivability
-infix 1 ⊢₀_ ⊢₁_ ⊢₂_
-
-⊢₀_ : Formula → Set₁
-⊢₀ α = ⊢ α
-
-⊢₁_ : (Formula → Formula) → Set₁
-⊢₁ s = ∀ α → ⊢ s α
-
-⊢₂_ : (Formula → Formula → Formula) → Set₁
-⊢₂ s = ∀ α β → ⊢ s α β
-
-descheme₀ : {f : Vec Formula 0 → Formula}
-            → (∀ αs → ⊢ f αs) → ⊢ f []
-descheme₀ {f} ⊢S = ⊢S []
-
-descheme₁ : {f : Vec Formula 1 → Formula}
-            → (∀ αs → ⊢ f αs) → ∀ α → ⊢ f (α ∷ [])
-descheme₁ {f} ⊢S α = ⊢S (α ∷ [])
-
-descheme₂ : {f : Vec Formula 2 → Formula}
-            → (∀ αs → ⊢ f αs) → ∀ α β → ⊢ f (α ∷ β ∷ [])
-descheme₂ {f} ⊢S α β = ⊢S (α ∷ (β ∷ []))
-
-
 -- Fix a few formula components
 pattern xvar   = var zero
 pattern yvar   = var (suc zero)
