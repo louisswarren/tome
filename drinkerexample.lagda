@@ -4,6 +4,7 @@ We give an example of proving scheme derivability.
 \begin{code}
 
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_-_)
+open import Agda.Builtin.Sigma
 open import Agda.Builtin.String
 
 open import Decidable hiding (⊥ ; ¬_)
@@ -47,6 +48,8 @@ pattern ∀x Φ = Λ xvar Φ
 pattern ∃x Φ = V xvar Φ
 pattern ¬∀x Φ = ¬(∀x Φ)
 pattern ¬∃x Φ = ¬(∃x Φ)
+pattern ∀x¬ Φ = ∀x (¬ Φ)
+pattern ∃x¬ Φ = ∃x (¬ Φ)
 
 \end{code}
 Define a nullary and a unary predicate, which will be used to instantiate the
@@ -320,3 +323,77 @@ he-prooftree = texreduce DNE⊃HE (P x ∷ [])
 \BinaryInfC{$\text{HE}(Px)$}
 \end{prooftree}
 
+As a final example, consider these two formulations of the law of excluded
+middle (we will forgo defining them as schemes for this example).
+\begin{code}
+
+lem ∃lem : Formula → Formula
+lem  Φ = Φ ∨ (¬ Φ)
+∃lem Φ = ∃x (lem Φ)
+
+\end{code}
+While the variable $x$ is fixed, it is expected that these are equivalent with
+respect to derivability. That is, in an extension of minimal logic where one is
+derivable, the other should also be derivable. The former leads to the latter
+trivially.
+
+\begin{code}
+
+∃lem→lem : ⊢₁ ∃lem → ⊢₁ lem
+∃lem→lem ⊢∃lem α with xvar notFreeIn α
+... | yes x∉α = close
+                 from∅
+                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
+                 (existelim (all⟨ x∉α ∨ (x∉α ⇒ atom []) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                  (⊢∃lem α)
+                  (assume (lem α)))
+... | no ¬x∉α = close
+                 from∅
+                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
+                 (univelim x lemαω[ω/x]≡lemα
+                  (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
+                   (existelim (all⟨ x∉lemαω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                    (⊢∃lem αω)
+                    (assume (lem αω)))))
+      where
+        ωvar : Variable
+        ωvar = fst (fresh α)
+        ωfresh : ωvar FreshIn α
+        ωfresh = snd (fresh α)
+        ω∉α : ωvar NotFreeIn α
+        ω∉α = freshNotFree ωfresh
+        ≡ω∉α : ∀ v → v ≡ ωvar → v NotFreeIn α
+        ≡ω∉α v refl = ω∉α
+        αω : Formula
+        αω = fst (α [ xvar / freshFreeFor ωfresh xvar ])
+        α[x/ω]≡αω : α [ xvar / _ ]≡ αω
+        α[x/ω]≡αω = snd (α [ xvar / freshFreeFor ωfresh xvar ])
+        lemαω[ω/x]≡lemα : (lem αω) [ ωvar / _ ]≡ (lem α)
+        lemαω[ω/x]≡lemα = subInverse
+                           (ω∉α ∨ (ω∉α ⇒ atom []))
+                           (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
+        x∉αω : xvar NotFreeIn αω
+        x∉αω = subNotFree (varterm λ x≡ω → ¬x∉α (≡ω∉α xvar x≡ω)) α[x/ω]≡αω
+        x∉lemαω : xvar NotFreeIn (lem αω)
+        x∉lemαω = x∉αω ∨ (x∉αω ⇒ atom [])
+
+glpo : Formula → Formula
+glpo Φx = ∀x (¬ Φx) ∨ ∃x Φx
+
+glpo→∃lem : ⊢₁ glpo → ⊢₁ ∃lem
+glpo→∃lem ⊢glpo α = close
+                     from∅
+                     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
+                     (disjelim
+                       (cite "GLPO" (⊢glpo α))
+                       (existintro (varterm xvar) xvar (ident (α ∨ ¬ α) xvar)
+                       (disjintro₂ α
+                         (univelim x (ident (¬ α) xvar)
+                         (assume (∀x¬ α)))))
+                       (existelim (all⟨ V∣ xvar (α ∨ ¬ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                       (assume (∃x α))
+                       (existintro x xvar (ident (α ∨ ¬ α) xvar)
+                         (disjintro₁ (¬ α)
+                         (assume α)))))
+
+\end{code}
