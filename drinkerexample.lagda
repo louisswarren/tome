@@ -323,63 +323,60 @@ he-prooftree = texreduce DNE⊃HE (P x ∷ [])
 \BinaryInfC{$\text{HE}(Px)$}
 \end{prooftree}
 
-As a final example, consider these two formulations of the law of excluded
-middle (we will forgo defining them as schemes for this example).
+As a final example, consider the law of excluded middle, and a generalised form
+of the limited principle of omniscience \todo{cite LPO}.
 \begin{code}
 
-lem ∃lem : Formula → Formula
+lem glpo : Formula → Formula
 lem  Φ = Φ ∨ (¬ Φ)
-∃lem Φ = ∃x (lem Φ)
+glpo Φ = ∀x (¬ Φ) ∨ ∃x Φ
+
+LEM GLPO : Scheme
+LEM  = unaryscheme lem
+GLPO = unaryscheme glpo
 
 \end{code}
 While the variable $x$ is fixed, it is expected that these are equivalent with
 respect to derivability. That is, in an extension of minimal logic where one is
 derivable, the other should also be derivable. The former leads to the latter
 trivially. The other direction is more complicated, since $\Phi$ could have $x$
-free. We use fresh variables, as defined in the formula section above. Find a
-variable $\omega$ which is fresh in $\exists_x Px$, so that it is fresh in $Px$
-and is not equal to $x$. Now $\exists_x (\text{LEM}({P\omega}) \vdash
-\text{LEM}({Px})$.
+free.
 
+We show first that, when deriving $\text{LEM}(\Phi)$, we may assume, without
+loss of generality, that $x$ is not free in $\Phi$. If LEM is derivable in this
+restricted case, then it is derivable.
+
+Given any formula $\alpha$, there is a fresh variable $\omega$ which appears
+nowhere in $\alpha$ and which differs from $x$. Then $\alpha[x/\omega]$ exists,
+with $x$ not free, and $\alpha[x/\omega][\omega/x] = \alpha$. \todo{Explain more. Px}
 \begin{prooftree}
-\AxiomC{}
-\RightLabel{$\exists$LEM}
-\UnaryInfC{$\exists_{x}\left(P{\omega} \lor \lnot{P{\omega}}\right)$}
-  \AxiomC{$\left[P{\omega} \lor \lnot{P{\omega}}\right]$}
-\RightLabel{$\exists^-$}
-\BinaryInfC{$P{\omega} \lor \lnot{P{\omega}}$}
-\RightLabel{$\forall^+$}
-\UnaryInfC{$\forall_{\omega}\left(P{\omega} \lor \lnot{P{\omega}}\right)$}
-\RightLabel{$\forall^-$}
-\UnaryInfC{$P{x} \lor \lnot{P{x}}$}
+  \AxiomC{}
+  \UnaryInfC{$\alpha[x/\omega] \lor \lnot\alpha[x/\omega]$}
+  \RightLabel{$\forall^+$}
+  \UnaryInfC{$\forall_\omega \left(\alpha[x/\omega] \lor \lnot\alpha[x/\omega]\right)$}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\alpha \lor \lnot\alpha$}
 \end{prooftree}
-
-First, define the above proof tree, deferring to lemata for proofs that
-$\text{LEM}(P\omega)[\omega/x] = \text{LEM}(Px)$ and $x$ is not free in
-$P\omega$.
 \begin{code}
 
-∃lem→lem : ⊢₁ ∃lem → ⊢₁ lem
-∃lem→lem ⊢∃lem α = close
-                    from∅
-                    (λ x₁ z z₁ → z₁ (z (λ z₂ → z₂) (λ z₂ → z₂ (λ z₃ → z₃))))
-                    (univelim x lemαω[ω/x]≡lemα
-                     (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
-                      (existelim (all⟨ x∉αω ∨ (x∉αω ⇒ atom []) ⟩
-                                  all∪ (all- all⟨- [ refl ] ⟩))
-                       (⊢∃lem αω)
-                       (assume (lem αω)))))
+wlog-lem : (∀ α → xvar NotFreeIn α → ⊢ (lem α)) → ⊢₁ lem
+wlog-lem ⊢nflem α = close
+                     from∅
+                     (λ x₁ z₁ z₂ → z₂ z₁)
+                     (univelim x lemαω[ω/x]≡lemα
+                      (univintro ωvar all∅
+                       (⊢nflem αω x∉αω)))
   where
 \end{code}
 Compute the fresh variable, and use its construction to get that it is fresh in
-$Px$ and not equal to $x$.
+$\alpha$ and not equal to $x$.
 \begin{code}
     ω,ωFresh,x≢ω : Σ Variable (λ ω → Σ (ω FreshIn α) (λ _ → xvar ≢ ω))
-    ω,ωFresh,x≢ω with fresh (∃x α)
-    ω,ωFresh,x≢ω | ω , V x≢ω ωfrα = ω , ωfrα , x≢ω
+    ω,ωFresh,x≢ω with fresh (∀x α)
+    ω,ωFresh,x≢ω | ω , Λ x≢ω ωFrα = ω , ωFrα , x≢ω
 \end{code}
 We therefore have a variable $\omega$ which is not free in $Px$, which is free
-for $x$ in $Px$, and which is different from $x$.
+for $x$ in $\alpha$, and which is different from $x$.
 \begin{code}
     ωvar          : Variable
     ω∉α           : ωvar NotFreeIn α
@@ -390,7 +387,7 @@ for $x$ in $Px$, and which is different from $x$.
     ωFreeForxInα  = freshFreeFor (fst (snd ω,ωFresh,x≢ω)) xvar
     x≢ω           = snd (snd ω,ωFresh,x≢ω)
 \end{code}
-Now, compute $P\omega = Px[\omega/x]$.
+Now, compute $\alpha_\omega = \alpha[\omega/x]$.
 \begin{code}
     αω        : Formula
     α[x/ω]≡αω : α [ xvar / _ ]≡ αω
@@ -398,64 +395,48 @@ Now, compute $P\omega = Px[\omega/x]$.
     α[x/ω]≡αω = snd (α [ xvar / ωFreeForxInα ])
 \end{code}
 By the construction of $\omega$, the substitution is reversable, so
-$\text{LEM}(P\omega)[\omega/x] = \text{LEM}(Px)$.
+$\text{LEM}(\alpha_\omega)[\omega/x] = \text{LEM}(\alpha)$.
 \begin{code}
     lemαω[ω/x]≡lemα : (lem αω) [ ωvar / _ ]≡ (lem α)
     lemαω[ω/x]≡lemα = subInverse
-                       (ω∉α ∨ (ω∉α ⇒ atom []))
-                       (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
+                         (ω∉α ∨ (ω∉α ⇒ atom []))
+                         (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
 \end{code}
-Finally, $x$ will not be free after it has been substituted out of $Px$.
+Finally, $x$ will not be free after it has been substituted out of $\alpha$.
 \begin{code}
     x∉αω : xvar NotFreeIn αω
     x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
 
 \end{code}
-Hence both formulations of LEM are equivalent.
 
-The reason to define existential formulation is that it is easier to derive
-from other schemes involving quantifiers. Consider a generalised form of the
-limited principle of omniscience \todo{cite LPO}.
+We can now show that GLPO is stronger than LEM, without worrying about the
+quantifier.
+\todo{Don't call it rlem}
 \begin{code}
 
-glpo : Formula → Formula
-glpo Φx = ∀x (¬ Φx) ∨ ∃x Φx
-
-LEM GLPO : Scheme
-LEM  = unaryscheme lem
-GLPO = unaryscheme glpo
-
-\end{code}
-We can first show that GLPO is stronger than existential LEM, without worrying
-about the quantifier.
-\begin{code}
-
-glpo→∃lem : ⊢₁ glpo → ⊢₁ ∃lem
-glpo→∃lem ⊢glpo α = close
-                     from∅
-                     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄
-                      (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇
-                       (λ z₈ → z₈)))))))
-                     (disjelim
-                       (cite "GLPO" (⊢glpo α))
-                       (existintro (varterm xvar) xvar (ident (α ∨ ¬ α) xvar)
-                       (disjintro₂ α
-                         (univelim x (ident (¬ α) xvar)
-                         (assume (∀x¬ α)))))
-                       (existelim (all⟨ V∣ xvar (α ∨ ¬ α) ⟩
-                                   all∪ (all- all⟨- [ refl ] ⟩))
-                       (assume (∃x α))
-                       (existintro x xvar (ident (α ∨ ¬ α) xvar)
-                         (disjintro₁ (¬ α)
-                         (assume α)))))
+glpo→rlem : ⊢₁ glpo → ∀ α → xvar NotFreeIn α → ⊢ (lem α)
+glpo→rlem ⊢glpo α x∉α = close
+                         from∅
+                         (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄
+                          (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇
+                          (λ z₈ → z₈)))))))
+                         (disjelim
+                          (cite "GLPO" (⊢glpo α))
+                          (disjintro₂ α
+                           (univelim x (ident (¬ α) xvar)
+                            (assume (∀x¬ α))))
+                          (disjintro₁ (¬ α)
+                           (existelim (all⟨ x∉α ⟩ all∪ (all- all⟨ x∉α ⟩))
+                            (assume (∃x α))
+                            (assume α))))
 
 \end{code}
-Now we can obtain LEM directly from GLPO. The proof tree for the existential
-LEM is inserted into the proof from existential LEM to LEM.
+Now we can obtain LEM directly from GLPO. The proof tree for the restricted
+form of LEM is inserted into the proof tree from \inline{wlog-lem}.
 \begin{code}
 
 glpo→lem : ⊢₁ glpo → ⊢₁ lem
-glpo→lem ⊢glpo α = ∃lem→lem (glpo→∃lem ⊢glpo) α
+glpo→lem ⊢glpo = wlog-lem (glpo→rlem ⊢glpo)
 
 GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
 GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) α
@@ -475,26 +456,19 @@ glpo→lem-prooftree = texreduce GLPO⊃LEM (P x ∷ [])
 \AxiomC{}
 \RightLabel{GLPO}
 \UnaryInfC{$\forall_{x}\lnot{P{y}} \lor \exists_{x}P{y}$}
-  \AxiomC{$\left[\forall_{x}\lnot{P{y}}\right]$}
-  \RightLabel{$\forall^-$}
-  \UnaryInfC{$\lnot{P{y}}$}
-  \RightLabel{$\lor^+$}
-  \UnaryInfC{$P{y} \lor \lnot{P{y}}$}
-  \RightLabel{$\exists^+$}
-  \UnaryInfC{$\exists_{x}\left(P{y} \lor \lnot{P{y}}\right)$}
-    \AxiomC{$\left[\exists_{x}P{y}\right]$}
-      \AxiomC{$\left[P{y}\right]$}
-      \RightLabel{$\lor^+$}
-      \UnaryInfC{$P{y} \lor \lnot{P{y}}$}
-      \RightLabel{$\exists^+$}
-      \UnaryInfC{$\exists_{x}\left(P{y} \lor \lnot{P{y}}\right)$}
-    \RightLabel{$\exists^-$}
-    \BinaryInfC{$\exists_{x}\left(P{y} \lor \lnot{P{y}}\right)$}
+	\AxiomC{$\left[\forall_{x}\lnot{P{y}}\right]$}
+	\RightLabel{$\forall^-$}
+	\UnaryInfC{$\lnot{P{y}}$}
+	\RightLabel{$\lor^+$}
+	\UnaryInfC{$P{y} \lor \lnot{P{y}}$}
+		\AxiomC{$\left[\exists_{x}P{y}\right]$}
+			\AxiomC{$\left[P{y}\right]$}
+		\RightLabel{$\exists^-$}
+		\BinaryInfC{$P{y}$}
+		\RightLabel{$\lor^+$}
+		\UnaryInfC{$P{y} \lor \lnot{P{y}}$}
 \RightLabel{$\lor^-$}
-\TrinaryInfC{$\exists_{x}\left(P{y} \lor \lnot{P{y}}\right)$}
-  \AxiomC{$\left[P{y} \lor \lnot{P{y}}\right]$}
-\RightLabel{$\exists^-$}
-\BinaryInfC{$P{y} \lor \lnot{P{y}}$}
+\TrinaryInfC{$P{y} \lor \lnot{P{y}}$}
 \RightLabel{$\forall^+$}
 \UnaryInfC{$\forall_{y}\left(P{y} \lor \lnot{P{y}}\right)$}
 \RightLabel{$\forall^-$}
