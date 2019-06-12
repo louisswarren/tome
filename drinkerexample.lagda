@@ -1,5 +1,7 @@
 We give an example of proving scheme derivability.
 
+\todo{Texify has been added}
+
 \AgdaHide{
 \begin{code}
 
@@ -456,17 +458,17 @@ glpo→lem-prooftree = texreduce GLPO⊃LEM (P x ∷ [])
 \AxiomC{}
 \RightLabel{GLPO}
 \UnaryInfC{$\forall_{x}\lnot{P{y}} \lor \exists_{x}P{y}$}
-	\AxiomC{$\left[\forall_{x}\lnot{P{y}}\right]$}
-	\RightLabel{$\forall^-$}
-	\UnaryInfC{$\lnot{P{y}}$}
-	\RightLabel{$\lor^+$}
-	\UnaryInfC{$P{y} \lor \lnot{P{y}}$}
-		\AxiomC{$\left[\exists_{x}P{y}\right]$}
-			\AxiomC{$\left[P{y}\right]$}
-		\RightLabel{$\exists^-$}
-		\BinaryInfC{$P{y}$}
-		\RightLabel{$\lor^+$}
-		\UnaryInfC{$P{y} \lor \lnot{P{y}}$}
+  \AxiomC{$\left[\forall_{x}\lnot{P{y}}\right]$}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\lnot{P{y}}$}
+  \RightLabel{$\lor^+$}
+  \UnaryInfC{$P{y} \lor \lnot{P{y}}$}
+    \AxiomC{$\left[\exists_{x}P{y}\right]$}
+      \AxiomC{$\left[P{y}\right]$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$P{y}$}
+    \RightLabel{$\lor^+$}
+    \UnaryInfC{$P{y} \lor \lnot{P{y}}$}
 \RightLabel{$\lor^-$}
 \TrinaryInfC{$P{y} \lor \lnot{P{y}}$}
 \RightLabel{$\forall^+$}
