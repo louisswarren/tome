@@ -335,47 +335,88 @@ lem  Φ = Φ ∨ (¬ Φ)
 While the variable $x$ is fixed, it is expected that these are equivalent with
 respect to derivability. That is, in an extension of minimal logic where one is
 derivable, the other should also be derivable. The former leads to the latter
-trivially.
+trivially. The other direction is more complicated, since $\Phi$ could have $x$
+free. We use fresh variables, as defined in the formula section above. Find a
+variable $\omega$ which is fresh in $\exists_x Px$, so that it is fresh in $Px$
+and is not equal to $x$. Now $\exists_x (\text{LEM}({P\omega}) \vdash
+\text{LEM}({Px})$.
 
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{$\exists$LEM}
+\UnaryInfC{$\exists_{x}\left(P{\omega} \lor \lnot{P{\omega}}\right)$}
+  \AxiomC{$\left[P{\omega} \lor \lnot{P{\omega}}\right]$}
+\RightLabel{$\exists^-$}
+\BinaryInfC{$P{\omega} \lor \lnot{P{\omega}}$}
+\RightLabel{$\forall^+$}
+\UnaryInfC{$\forall_{\omega}\left(P{\omega} \lor \lnot{P{\omega}}\right)$}
+\RightLabel{$\forall^-$}
+\UnaryInfC{$P{x} \lor \lnot{P{x}}$}
+\end{prooftree}
+
+First, define the above proof tree, deferring to lemata for proofs that
+$\text{LEM}(P\omega)[\omega/x] = \text{LEM}(Px)$ and $x$ is not free in
+$P\omega$.
 \begin{code}
 
 ∃lem→lem : ⊢₁ ∃lem → ⊢₁ lem
-∃lem→lem ⊢∃lem α with xvar notFreeIn α
-... | yes x∉α = close
-                 from∅
-                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
-                 (existelim (all⟨ x∉α ∨ (x∉α ⇒ atom []) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-                  (⊢∃lem α)
-                  (assume (lem α)))
-... | no ¬x∉α = close
-                 from∅
-                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄))))
-                 (univelim x lemαω[ω/x]≡lemα
-                  (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
-                   (existelim (all⟨ x∉lemαω ⟩ all∪ (all- all⟨- [ refl ] ⟩))
-                    (⊢∃lem αω)
-                    (assume (lem αω)))))
-      where
-        ωvar : Variable
-        ωvar = fst (fresh α)
-        ωfresh : ωvar FreshIn α
-        ωfresh = snd (fresh α)
-        ω∉α : ωvar NotFreeIn α
-        ω∉α = freshNotFree ωfresh
-        ≡ω∉α : ∀ v → v ≡ ωvar → v NotFreeIn α
-        ≡ω∉α v refl = ω∉α
-        αω : Formula
-        αω = fst (α [ xvar / freshFreeFor ωfresh xvar ])
-        α[x/ω]≡αω : α [ xvar / _ ]≡ αω
-        α[x/ω]≡αω = snd (α [ xvar / freshFreeFor ωfresh xvar ])
-        lemαω[ω/x]≡lemα : (lem αω) [ ωvar / _ ]≡ (lem α)
-        lemαω[ω/x]≡lemα = subInverse
-                           (ω∉α ∨ (ω∉α ⇒ atom []))
-                           (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
-        x∉αω : xvar NotFreeIn αω
-        x∉αω = subNotFree (varterm λ x≡ω → ¬x∉α (≡ω∉α xvar x≡ω)) α[x/ω]≡αω
-        x∉lemαω : xvar NotFreeIn (lem αω)
-        x∉lemαω = x∉αω ∨ (x∉αω ⇒ atom [])
+∃lem→lem ⊢∃lem α = close
+                    from∅
+                    (λ x₁ z z₁ → z₁ (z (λ z₂ → z₂) (λ z₂ → z₂ (λ z₃ → z₃))))
+                    (univelim x lemαω[ω/x]≡lemα
+                     (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
+                      (existelim (all⟨ x∉αω ∨ (x∉αω ⇒ atom []) ⟩
+                                  all∪ (all- all⟨- [ refl ] ⟩))
+                       (cite "$\\exists$LEM" (⊢∃lem αω))
+                       (assume (lem αω)))))
+  where
+\end{code}
+Compute the fresh variable, and use its construction to get that it is fresh in
+$Px$ and not equal to $x$.
+\begin{code}
+    ω,ωFresh,x≢ω : Σ Variable (λ ω → Σ (ω FreshIn α) (λ _ → xvar ≢ ω))
+    ω,ωFresh,x≢ω with fresh (∃x α)
+    ω,ωFresh,x≢ω | ω , V x≢ω ωfrα = ω , ωfrα , x≢ω
+\end{code}
+We therefore have a variable $\omega$ which is not free in $Px$, which is free
+for $x$ in $Px$, and which is different from $x$.
+\begin{code}
+    ωvar          : Variable
+    ω∉α           : ωvar NotFreeIn α
+    ωFreeForxInα  : (varterm ωvar) FreeFor xvar In α
+    x≢ω           : xvar ≢ ωvar
+    ωvar          = fst ω,ωFresh,x≢ω
+    ω∉α           = freshNotFree (fst (snd ω,ωFresh,x≢ω))
+    ωFreeForxInα  = freshFreeFor (fst (snd ω,ωFresh,x≢ω)) xvar
+    x≢ω           = snd (snd ω,ωFresh,x≢ω)
+\end{code}
+Now, compute $P\omega = Px[\omega/x]$.
+\begin{code}
+    αω        : Formula
+    α[x/ω]≡αω : α [ xvar / _ ]≡ αω
+    αω        = fst (α [ xvar / ωFreeForxInα ])
+    α[x/ω]≡αω = snd (α [ xvar / ωFreeForxInα ])
+\end{code}
+By the construction of $\omega$, the substitution is reversable, so
+$\text{LEM}(P\omega)[\omega/x] = \text{LEM}(Px)$.
+\begin{code}
+    lemαω[ω/x]≡lemα : (lem αω) [ ωvar / _ ]≡ (lem α)
+    lemαω[ω/x]≡lemα = subInverse
+                       (ω∉α ∨ (ω∉α ⇒ atom []))
+                       (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
+\end{code}
+Finally, $x$ will not be free after it has been substituted out of $Px$.
+\begin{code}
+    x∉αω : xvar NotFreeIn αω
+    x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
+    x∉lemαω : xvar NotFreeIn (lem αω)
+    x∉lemαω = x∉αω ∨ (x∉αω ⇒ atom [])
+
+
+∃LEM⊃LEM : (unaryscheme ∃lem) ∷ [] ⊃ (unaryscheme lem)
+∃LEM⊃LEM ⊢lhs (α ∷ []) = ∃lem→lem (descheme₁ (⊢lhs (unaryscheme ∃lem) [ refl ])) α
+
+r = texreduce ∃LEM⊃LEM (P x ∷ [])
 
 glpo : Formula → Formula
 glpo Φx = ∀x (¬ Φx) ∨ ∃x Φx
