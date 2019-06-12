@@ -463,8 +463,55 @@ glpo→∃lem ⊢glpo α = close
                          (disjintro₁ (¬ α)
                          (assume α)))))
 
+--glpo→lem : ⊢₁ glpo → ⊢₁ lem
+--glpo→lem ⊢glpo α = ∃lem→lem (glpo→∃lem ⊢glpo) α
+
+wlog-lem : (∀ α → xvar NotFreeIn α → ⊢ (lem α)) → ⊢₁ lem
+wlog-lem ⊢nflem α = close
+                     from∅
+                     (λ x₁ z₁ z₂ → z₂ z₁)
+                     (univelim x lemαω[ω/x]≡lemα
+                      (univintro ωvar all∅
+                       (⊢nflem αω x∉αω)))
+  where
+    ω,ωFresh,x≢ω : Σ Variable (λ ω → Σ (ω FreshIn α) (λ _ → xvar ≢ ω))
+    ω,ωFresh,x≢ω with fresh (∀x α)
+    ω,ωFresh,x≢ω | ω , Λ x≢ω ωFrα = ω , ωFrα , x≢ω
+    ωvar          : Variable
+    ω∉α           : ωvar NotFreeIn α
+    ωFreeForxInα  : (varterm ωvar) FreeFor xvar In α
+    x≢ω           : xvar ≢ ωvar
+    ωvar          = fst ω,ωFresh,x≢ω
+    ω∉α           = freshNotFree (fst (snd ω,ωFresh,x≢ω))
+    ωFreeForxInα  = freshFreeFor (fst (snd ω,ωFresh,x≢ω)) xvar
+    x≢ω           = snd (snd ω,ωFresh,x≢ω)
+    αω        : Formula
+    α[x/ω]≡αω : α [ xvar / _ ]≡ αω
+    αω        = fst (α [ xvar / ωFreeForxInα ])
+    α[x/ω]≡αω = snd (α [ xvar / ωFreeForxInα ])
+    lemαω[ω/x]≡lemα : (lem αω) [ ωvar / _ ]≡ (lem α)
+    lemαω[ω/x]≡lemα = subInverse
+                         (ω∉α ∨ (ω∉α ⇒ atom []))
+                         (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
+    x∉αω : xvar NotFreeIn αω
+    x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
+
+glpo→rlem : ⊢₁ glpo → ∀ α → xvar NotFreeIn α → ⊢ (lem α)
+glpo→rlem ⊢glpo α x∉α = close
+                         from∅
+                         (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
+                         (disjelim
+                          (cite "GLPO" (⊢glpo α))
+                          (disjintro₂ α
+                           (univelim x (ident (¬ α) xvar)
+                            (assume (∀x¬ α))))
+                          (disjintro₁ (¬ α)
+                           (existelim (all⟨ x∉α ⟩ all∪ (all- all⟨ x∉α ⟩))
+                            (assume (∃x α))
+                            (assume α))))
+
 glpo→lem : ⊢₁ glpo → ⊢₁ lem
-glpo→lem ⊢glpo α = ∃lem→lem (glpo→∃lem ⊢glpo) α
+glpo→lem ⊢glpo = wlog-lem (glpo→rlem ⊢glpo)
 GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
 GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) α
 
