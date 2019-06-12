@@ -1038,6 +1038,15 @@ DNSE,TT⊃WLEM ⊢lhs (α ∷ []) =
      (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
      α
 
+he,tt→wlem : ⊢₁ he → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
+he,tt→wlem ⊢he ⊢d0 ⊢d1 ⊢d∀ = dnse,tt→wlem (he→dnse ⊢he) ⊢d0 ⊢d1 ⊢d∀
+
+gmp,tt→wlem : ⊢₁ gmp → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
+gmp,tt→wlem ⊢gmp ⊢d0 ⊢d1 ⊢d∀ = dnse,tt→wlem (gmp→dnse ⊢gmp) ⊢d0 ⊢d1 ⊢d∀
+
+dp,tt→wlem : ⊢₁ dp → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
+dp,tt→wlem ⊢dp ⊢d0 ⊢d1 ⊢d∀ = gmp,tt→wlem (dp→gmp ⊢dp) ⊢d0 ⊢d1 ⊢d∀
+
 
 --------------------------------------------------------------------------------
 
