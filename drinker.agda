@@ -927,6 +927,118 @@ HE,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
      α
      β
 
+
+wlog-wlem : (∀ α → xvar NotFreeIn α → ⊢ (wlem α)) → ⊢₁ wlem
+wlog-wlem ⊢nfwlem α = close
+                       from∅
+                       (λ x₁ z₁ z₂ → z₂ z₁)
+                       (univelim x wlemαω[ω/x]≡wlemα
+                        (univintro ωvar all∅
+                         (⊢nfwlem αω x∉αω)))
+  where
+    ω,ωFresh,x≢ω : Σ Variable (λ ω → Σ (ω FreshIn α) (λ _ → xvar ≢ ω))
+    ω,ωFresh,x≢ω with fresh (∀x α)
+    ω,ωFresh,x≢ω | ω , Λ x≢ω ωFrα = ω , ωFrα , x≢ω
+    ωvar          : Variable
+    ω∉α           : ωvar NotFreeIn α
+    ωFreeForxInα  : (varterm ωvar) FreeFor xvar In α
+    x≢ω           : xvar ≢ ωvar
+    ωvar          = fst ω,ωFresh,x≢ω
+    ω∉α           = freshNotFree (fst (snd ω,ωFresh,x≢ω))
+    ωFreeForxInα  = freshFreeFor (fst (snd ω,ωFresh,x≢ω)) xvar
+    x≢ω           = snd (snd ω,ωFresh,x≢ω)
+    αω        : Formula
+    α[x/ω]≡αω : α [ xvar / _ ]≡ αω
+    αω        = fst (α [ xvar / ωFreeForxInα ])
+    α[x/ω]≡αω = snd (α [ xvar / ωFreeForxInα ])
+    wlemαω[ω/x]≡wlemα : (wlem αω) [ ωvar / _ ]≡ (wlem α)
+    wlemαω[ω/x]≡wlemα = subInverse
+                         ((ω∉α ⇒ atom []) ∨ ((ω∉α ⇒ atom []) ⇒ atom []))
+                         ((α[x/ω]≡αω ⇒ notfree (atom []))
+                          ∨ ((α[x/ω]≡αω ⇒ notfree (atom []))
+                             ⇒ notfree (atom [])))
+    x∉αω : xvar NotFreeIn αω
+    x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
+
+dnse,tt→rwlem : ⊢₁ dnse → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ wlem α
+dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
+  close
+   from∅
+   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃ (λ z₄ → z₄) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈ (λ _ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₅ (λ z₁₂ → z₁₂ (λ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ (λ _ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) z₁₄))) (λ z₁₃ → z₁₃ (λ _ → z₁₀)))))) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ (λ _ z₁₁ → z₁₁ z₉ (λ z₁₂ → z₁₂)))))))) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₄ (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ z₁₃ (λ z₁₅ → z₁₅ (λ _ z₁₆ → z₁₆ (λ z₁₇ z₁₈ → z₁₈ (λ z₁₉ → z₁₉ z₁₇ z₈) z₁₀)))))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₄ (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ z₁₃ (λ z₁₅ → z₁₅ (λ z₁₆ z₁₇ → z₁₇ (λ _ z₁₈ → z₁₈ (λ z₁₉ → z₁₉ z₁₆ z₈) z₁₀)))))))))))))
+   (existelim (all⟨ (x∉α ⇒ atom []) ∨ ((x∉α ⇒ atom []) ⇒ atom []) ⟩ all∪ (all- (all∅ all∪ (all- (all- (all⟨- ¬ α ∷ (D x ∷ [ refl ]) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- (all- ((all⟨- [ refl ] ⟩ all∪ all⟨- (D x ⇒ ¬¬ α) ∷ ((¬D x ⇒ ¬ α) ∷  (((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)) ∷   (¬ α ∷ [ refl ]))) ⟩) all∪ all⟨ x∉α ⇒ atom [] ⟩)))))))) all∪ (all- (all- (all⟨- α ∷ (¬D x ∷ [ refl ]) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- (all- ((all⟨- (D x ⇒ ¬¬ α) ∷ [ refl ] ⟩ all∪ all⟨- (D x ⇒ ¬¬ α) ∷ ((¬D x ⇒ ¬ α) ∷  (((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)) ∷   (α ∷ [ refl ]))) ⟩) all∪ all⟨ x∉α ⟩)))))))))))
+    (arrowelim
+     (cite "DNSE" (⊢dnse φ))
+     (arrowintro (¬∃x φ)
+      (arrowelim
+       (assume (¬∃x φ))
+       (existintro t0 xvar φ0sub
+        (conjintro
+         (arrowintro (D t0)
+          (arrowintro (¬ α)
+           (arrowelim
+            (assume (¬∃x φ))
+            (existintro t1 xvar φ1sub
+             (conjintro
+              (arrowintro (D t1)
+               (arrowintro (¬ α)
+                (arrowelim
+                 (cite "TT" ⊢¬d1)
+                 (assume (D t1)))))
+              (arrowintro (¬D t1)
+               (assume (¬ α))))))))
+         (arrowintro (¬D t0)
+          (arrowintro α
+           (arrowelim
+            (assume (¬D t0))
+            (cite "TT" ⊢d0)))))))))
+    (disjelim
+     (univelim x (ident (D x ∨ ¬D x) xvar)
+      (cite "TT" ⊢d∀))
+     (disjintro₂ (¬ α)
+      (arrowintro (¬ α)
+       (arrowelim
+        (assume (¬¬ φ))
+        (arrowintro φ
+         (conjelim
+          (assume φ)
+          (arrowelim
+           (arrowelim
+            (assume (D x ⇒ ¬¬ α))
+            (assume (D x)))
+           (assume (¬ α))))))))
+     (disjintro₁ (¬¬ α)
+      (arrowintro α
+       (arrowelim
+        (assume (¬¬ φ))
+        (arrowintro φ
+         (conjelim
+          (assume φ)
+          (arrowelim
+           (arrowelim
+            (assume (¬D x ⇒ ¬ α))
+            (assume (¬D x)))
+           (assume α)))))))))
+  where
+    φ : Formula
+    φ = (D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)
+    φ0sub : φ [ xvar / t0 ]≡ (D t0 ⇒ ¬¬ α) ∧ (¬D t0 ⇒ ¬ α)
+    φ0sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
+    φ1sub : φ [ xvar / t1 ]≡ (D t1 ⇒ ¬¬ α) ∧ (¬D t1 ⇒ ¬ α)
+    φ1sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
+
+dnse,tt→wlem : ⊢₁ dnse → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
+dnse,tt→wlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ = wlog-wlem (dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀)
+
+DNSE,TT⊃WLEM : DNSE ∷ TT ⊃ WLEM
+DNSE,TT⊃WLEM ⊢lhs (α ∷ []) =
+    dnse,tt→wlem
+     (descheme₁ (⊢lhs DNSE [ refl ]))
+     (descheme₀ (⊢lhs D0 (_ ∷ [ refl ])))
+     (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ [ refl ]))))
+     (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
+     α
+
+
 --------------------------------------------------------------------------------
 
 
