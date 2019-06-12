@@ -108,10 +108,12 @@ ip Φx Ψ = (∃x Ψ ⇒ ∃x Φx) ⇒ ∃x(∃x Ψ ⇒ Φx)
 UD = binaryscheme ud
 IP = binaryscheme ip
 
+pattern ¬D t = ¬(D t)
+
 d0 ¬d1 d∀ : Formula
 d0 = D t0
-¬d1 = ¬ (D t1)
-d∀ = ∀x (D x ∨ ¬ (D x))
+¬d1 = ¬D t1
+d∀ = ∀x (D x ∨ ¬D x)
 
 D0 ¬D1 D∀ : Scheme
 D0 = nullaryscheme d0
@@ -451,7 +453,7 @@ glpo→∃lem ⊢glpo α = close
                      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
                      (disjelim
                        (cite "GLPO" (⊢glpo α))
-                       (existintro (varterm xvar) xvar (ident (α ∨ ¬ α) xvar)
+                       (existintro x xvar (ident (α ∨ ¬ α) xvar)
                        (disjintro₂ α
                          (univelim x (ident (¬ α) xvar)
                          (assume (∀x¬ α)))))
@@ -794,10 +796,10 @@ dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
     close
      from∅
      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ _ → z₁₀)) (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₁₅ z₈))))) (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₁₃ (λ z₁₆ → z₁₆))))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₈ z₁₅))) (λ z₁₄ → z₁₄ (λ _ → z₁₀)))) (λ z₁₂ → z₁₂ (λ _ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ z₁₄ (λ z₁₆ → z₁₆))))))))))))
-     (existelim (all⟨ (x∉α ⇒ x∉β) ∨ (x∉β ⇒ x∉α) ⟩ all∪ (all- (all∅ all∪ (all- (all- ((all⟨- α ∷ (D (varterm xvar) ∷ [ refl ]) ⟩ all∪ (all- all⟨ x∉α ⟩) all∪ (all- (all∅ all∪ all⟨- [ refl ] ⟩ all∪ all⟨- ¬ (D (varterm xvar)) ∷ (α ∷ [ refl ]) ⟩))) all∪ (all- (all- (all⟨- (D (functerm (func 1 zero) []) ⇒ α) ∷ [ refl ] ⟩ all∪ all∅)))))) all∪ (all- (all- ((all⟨- β ∷ (¬ (D (varterm xvar)) ∷ [ refl ]) ⟩ all∪ (all- (all∅ all∪ all⟨- D (varterm xvar) ∷ (β ∷ [ refl ]) ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ x∉β ⟩)) all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all∅)))))))))
+     (existelim (all⟨ (x∉α ⇒ x∉β) ∨ (x∉β ⇒ x∉α) ⟩ all∪ (all- (all∅ all∪ (all- (all- ((all⟨- α ∷ (D x ∷ [ refl ]) ⟩ all∪ (all- all⟨ x∉α ⟩) all∪ (all- (all∅ all∪ all⟨- [ refl ] ⟩ all∪ all⟨- ¬D x ∷ (α ∷ [ refl ]) ⟩))) all∪ (all- (all- (all⟨- (D (functerm (func 1 zero) []) ⇒ α) ∷ [ refl ] ⟩ all∪ all∅)))))) all∪ (all- (all- ((all⟨- β ∷ (¬D x ∷ [ refl ]) ⟩ all∪ (all- (all∅ all∪ all⟨- D x ∷ (β ∷ [ refl ]) ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ x∉β ⟩)) all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all∅)))))))))
       (cite "DP" (⊢dp φ))
       (disjelim
-       (univelim x (ident (D (varterm xvar) ∨ ¬ (D (varterm xvar))) xvar)
+       (univelim x (ident (D x ∨ ¬D x) xvar)
         (cite "TT" ⊢d∀))
        (disjintro₁ (β ⇒ α)
         (arrowintro α
@@ -808,11 +810,11 @@ dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
             (conjintro
              (arrowintro (D x)
               (assume α))
-             (arrowintro (¬ (D x))
+             (arrowintro (¬D x)
               (arrowelim
                (cite "EFQ" (⊢efq β))
                (arrowelim
-                (assume (¬ (D x)))
+                (assume (¬D x))
                 (assume (D x))))))))
           (arrowelim
            (assume (¬d1 ⇒ β))
@@ -821,17 +823,27 @@ dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
         (arrowintro β
          (conjelim
           (univelim t0 φ0sub
-           (arrowelim (assume (φ ⇒ ∀x φ)) (conjintro (arrowintro (D x) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬ (D x))) (assume (D x))))) (arrowintro (¬ (D x)) (assume β)))))
+           (arrowelim
+            (assume (φ ⇒ ∀x φ))
+            (conjintro
+             (arrowintro (D x)
+              (arrowelim
+               (cite "EFQ" (⊢efq α))
+               (arrowelim
+                (assume (¬D x))
+                (assume (D x)))))
+             (arrowintro (¬D x)
+              (assume β)))))
           (arrowelim
            (assume (d0 ⇒ α))
            (cite "TT" ⊢d0)))))))
   where
     φ : Formula
-    φ = (D x ⇒ α) ∧ (¬ (D x) ⇒ β)
-    φ0sub : φ [ xvar / t0 ]≡ ((D t0 ⇒ α) ∧ (¬ (D t0) ⇒ β))
-    φ0sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬ (D varterm≡) ⇒ notfree x∉β)
-    φ1sub : φ [ xvar / t1 ]≡ ((D t1 ⇒ α) ∧ (¬ (D t1) ⇒ β))
-    φ1sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬ (D varterm≡) ⇒ notfree x∉β)
+    φ = (D x ⇒ α) ∧ (¬D x ⇒ β)
+    φ0sub : φ [ xvar / t0 ]≡ ((D t0 ⇒ α) ∧ (¬D t0 ⇒ β))
+    φ0sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬D varterm≡ ⇒ notfree x∉β)
+    φ1sub : φ [ xvar / t1 ]≡ ((D t1 ⇒ α) ∧ (¬D t1 ⇒ β))
+    φ1sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬D varterm≡ ⇒ notfree x∉β)
 
 dp,efq,tt→dgp : ⊢₁ dp → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
 dp,efq,tt→dgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ = wlog-dgp (dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀)
@@ -846,6 +858,75 @@ DP,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
      (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ (_ ∷ [ refl ]))))))
      α
      β
+
+
+he,efq,tt→rdgp : ⊢₁ he → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α β → xvar NotFreeIn α → xvar NotFreeIn β → ⊢ dgp α β
+he,efq,tt→rdgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
+    close
+     from∅
+     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ (λ z₁₈ → z₁₈) z₁₅))) (λ z₁₄ → z₁₄ (λ _ → z₁₀)))) (λ z₁₂ → z₁₂ (λ _ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ z₁₄ z₈)))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ _ → z₁₀)) (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₁₅ (λ z₁₈ → z₁₈)))))) (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₁₃ z₈)))))))))))
+     (existelim (all⟨ (x∉α ⇒ x∉β) ∨ (x∉β ⇒ x∉α) ⟩ all∪ (all- (all∅ all∪ (all- (all- ((all⟨- β ∷ (D x ∷ [ refl ]) ⟩ all∪ (all- (all∅ all∪ all∅ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ x∉β ⟩)) all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all⟨- (D x ⇒ α) ∷ ((¬D x ⇒ β) ∷ (β ∷ [ refl ])) ⟩)))))) all∪ (all- (all- ((all⟨- α ∷ (¬D x ∷ [ refl ]) ⟩ all∪ (all- all⟨ x∉α ⟩) all∪ (all- (all∅ all∪ all⟨- [ refl ] ⟩ all∪ all∅))) all∪ (all- (all- (all⟨- (D x ⇒ α) ∷ [ refl ] ⟩ all∪ all⟨- (D x ⇒ α) ∷ ((¬D x ⇒ β) ∷ (α ∷ [ refl ])) ⟩)))))))))
+      (cite "HE" (⊢he φ))
+      (disjelim
+       (univelim x (ident (D x ∨ ¬ (D x)) xvar)
+        (cite "TT" ⊢d∀))
+       (disjintro₂ (α ⇒ β)
+        (arrowintro β
+         (conjelim
+          (arrowelim
+           (assume (∃x φ ⇒ φ))
+           (existintro t1 xvar φ1sub
+            (conjintro
+             (arrowintro (D t1)
+              (arrowelim
+               (cite "EFQ" (⊢efq α))
+               (arrowelim
+                (cite "TT" ⊢¬d1)
+                (assume (D t1)))))
+             (arrowintro (¬D t1)
+              (assume β)))))
+          (arrowelim
+           (assume (D x ⇒ α))
+           (assume (D x))))))
+       (disjintro₁ (β ⇒ α)
+        (arrowintro α
+         (conjelim
+          (arrowelim
+           (assume (∃x φ ⇒ φ))
+           (existintro t0 xvar φ0sub
+            (conjintro
+             (arrowintro (D t0) (assume α))
+             (arrowintro (¬D t0)
+              (arrowelim
+               (cite "TT" (⊢efq β))
+               (arrowelim
+                (assume (¬D t0))
+                (cite "TT" ⊢d0)))))))
+          (arrowelim
+           (assume (¬D x ⇒ β))
+           (assume (¬D x))))))))
+  where
+    φ : Formula
+    φ = (D x ⇒ α) ∧ (¬ (D x) ⇒ β)
+    φ0sub : φ [ xvar / t0 ]≡ ((D t0 ⇒ α) ∧ (¬ (D t0) ⇒ β))
+    φ0sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬ (D varterm≡) ⇒ notfree x∉β)
+    φ1sub : φ [ xvar / t1 ]≡ ((D t1 ⇒ α) ∧ (¬ (D t1) ⇒ β))
+    φ1sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬ (D varterm≡) ⇒ notfree x∉β)
+
+he,efq,tt→dgp : ⊢₁ he → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
+he,efq,tt→dgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ = wlog-dgp (he,efq,tt→rdgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀)
+
+HE,EFQ,TT⊃DGP : HE ∷ EFQ ∷ TT ⊃ DGP
+HE,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
+    he,efq,tt→dgp
+     (descheme₁ (⊢lhs HE [ refl ]))
+     (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ])))
+     (descheme₀ (⊢lhs D0 (_ ∷ (_ ∷ [ refl ]))))
+     (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
+     (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ (_ ∷ [ refl ]))))))
+     α
+     β
+
 --------------------------------------------------------------------------------
 
 
