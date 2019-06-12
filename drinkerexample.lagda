@@ -367,7 +367,7 @@ $P\omega$.
                      (univintro ωvar (all∅ all∪ (all- all⟨- [ refl ] ⟩))
                       (existelim (all⟨ x∉αω ∨ (x∉αω ⇒ atom []) ⟩
                                   all∪ (all- all⟨- [ refl ] ⟩))
-                       (cite "$\\exists$LEM" (⊢∃lem αω))
+                       (⊢∃lem αω)
                        (assume (lem αω)))))
   where
 \end{code}
@@ -412,29 +412,94 @@ Finally, $x$ will not be free after it has been substituted out of $Px$.
     x∉lemαω : xvar NotFreeIn (lem αω)
     x∉lemαω = x∉αω ∨ (x∉αω ⇒ atom [])
 
+\end{code}
+Hence both formulations of LEM are equivalent.
 
-∃LEM⊃LEM : (unaryscheme ∃lem) ∷ [] ⊃ (unaryscheme lem)
-∃LEM⊃LEM ⊢lhs (α ∷ []) = ∃lem→lem (descheme₁ (⊢lhs (unaryscheme ∃lem) [ refl ])) α
-
-r = texreduce ∃LEM⊃LEM (P x ∷ [])
+The reason to define existential formulation is that it is easier to derive
+from other schemes involving quantifiers. Consider a generalised form of the
+limited principle of omniscience \todo{cite LPO}.
+\begin{code}
 
 glpo : Formula → Formula
 glpo Φx = ∀x (¬ Φx) ∨ ∃x Φx
 
+LEM GLPO : Scheme
+LEM  = unaryscheme lem
+GLPO = unaryscheme glpo
+
+\end{code}
+We can first show that GLPO is stronger than existential LEM, without worrying
+about the quantifier.
+\begin{code}
+
 glpo→∃lem : ⊢₁ glpo → ⊢₁ ∃lem
 glpo→∃lem ⊢glpo α = close
                      from∅
-                     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
+                     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄
+                      (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇
+                       (λ z₈ → z₈)))))))
                      (disjelim
                        (cite "GLPO" (⊢glpo α))
                        (existintro (varterm xvar) xvar (ident (α ∨ ¬ α) xvar)
                        (disjintro₂ α
                          (univelim x (ident (¬ α) xvar)
                          (assume (∀x¬ α)))))
-                       (existelim (all⟨ V∣ xvar (α ∨ ¬ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                       (existelim (all⟨ V∣ xvar (α ∨ ¬ α) ⟩
+                                   all∪ (all- all⟨- [ refl ] ⟩))
                        (assume (∃x α))
                        (existintro x xvar (ident (α ∨ ¬ α) xvar)
                          (disjintro₁ (¬ α)
                          (assume α)))))
 
 \end{code}
+Now we can obtain LEM directly from GLPO. The proof tree for the existential
+LEM is inserted into the proof from existential LEM to LEM.
+\begin{code}
+
+glpo→lem : ⊢₁ glpo → ⊢₁ lem
+glpo→lem ⊢glpo α = ∃lem→lem (glpo→∃lem ⊢glpo) α
+
+GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
+GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) α
+
+\end{code}
+No computation of a fresh variable has occured yet, since the variable depends
+on the instance of LEM we want to derive. Extracting the proof tree for
+$\text{LEM}(Px)$, the \inline{fresh} function computes that $y$ is fresh, and
+so we produce the proof tree below.
+\begin{code}
+
+glpo→lem-prooftree = texreduce GLPO⊃LEM (P x ∷ [])
+
+\end{code}
+
+\begin{prooftree}
+\AxiomC{}
+\RightLabel{GLPO}
+\UnaryInfC{$\forall_{x}\lnot{P{y}} \lor \exists_{x}P{y}$}
+  \AxiomC{$\left[\forall_{x}\lnot{P{y}}\right]$}
+  \RightLabel{$\forall^-$}
+  \UnaryInfC{$\lnot{P{y}}$}
+  \RightLabel{$\lor^+$}
+  \UnaryInfC{$P{y} \lor \lnot{P{y}}$}
+  \RightLabel{$\exists^+$}
+  \UnaryInfC{$\exists_{x}\left(P{y} \lor \lnot{P{y}}\right)$}
+    \AxiomC{$\left[\exists_{x}P{y}\right]$}
+      \AxiomC{$\left[P{y}\right]$}
+      \RightLabel{$\lor^+$}
+      \UnaryInfC{$P{y} \lor \lnot{P{y}}$}
+      \RightLabel{$\exists^+$}
+      \UnaryInfC{$\exists_{x}\left(P{y} \lor \lnot{P{y}}\right)$}
+    \RightLabel{$\exists^-$}
+    \BinaryInfC{$\exists_{x}\left(P{y} \lor \lnot{P{y}}\right)$}
+\RightLabel{$\lor^-$}
+\TrinaryInfC{$\exists_{x}\left(P{y} \lor \lnot{P{y}}\right)$}
+  \AxiomC{$\left[P{y} \lor \lnot{P{y}}\right]$}
+\RightLabel{$\exists^-$}
+\BinaryInfC{$P{y} \lor \lnot{P{y}}$}
+\RightLabel{$\forall^+$}
+\UnaryInfC{$\forall_{y}\left(P{y} \lor \lnot{P{y}}\right)$}
+\RightLabel{$\forall^-$}
+\UnaryInfC{$P{x} \lor \lnot{P{x}}$}
+\end{prooftree}
+
