@@ -409,8 +409,6 @@ Finally, $x$ will not be free after it has been substituted out of $Px$.
 \begin{code}
     x∉αω : xvar NotFreeIn αω
     x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
-    x∉lemαω : xvar NotFreeIn (lem αω)
-    x∉lemαω = x∉αω ∨ (x∉αω ⇒ atom [])
 
 \end{code}
 Hence both formulations of LEM are equivalent.
