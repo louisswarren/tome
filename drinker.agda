@@ -749,64 +749,103 @@ GMP⊃DNSE : GMP ∷ [] ⊃ DNSE
 GMP⊃DNSE ⊢lhs (α ∷ []) = gmp→dnse (descheme₁ (⊢lhs GMP [ refl ])) α
 
 
---1lc→2lc : ⊢₁ 1lc → ⊢₁ 2lc
---1lc→2lc ⊢1lc α = close
---                   from∅
---                   ?
---                   ?
---1uc⊃2uc : 1uc ∷ [] ⊃ 2uc
---1uc⊃2uc ⊢lhs (α ∷ []) = 1lc→2lc (descheme₁ (⊢lhs 1uc [ refl ])) α
+wlog-dgp : (∀ α β → xvar NotFreeIn α → xvar NotFreeIn β → ⊢ (dgp α β)) → ⊢₂ dgp
+wlog-dgp ⊢nfdgp α β = close
+                       from∅
+                       (λ x₁ z₁ z₂ → z₂ z₁)
+                       (univelim x dgpαωβω[ω/x]≡dgpαβ
+                        (univintro ωvar all∅
+                         (⊢nfdgp αω βω x∉αω x∉βω)))
+  where
+    ω,ωFresh,x≢ω : Σ Variable (λ ω → Σ (ω FreshIn α) (λ _ → Σ (ω FreshIn β) (λ _ → xvar ≢ ω)))
+    ω,ωFresh,x≢ω with fresh (∀x (α ⇒ β))
+    ω,ωFresh,x≢ω | ω , Λ x≢ω (ωFrα ⇒ ωFrβ) = ω , ωFrα , ωFrβ , x≢ω
+    ωvar          : Variable
+    ω∉α           : ωvar NotFreeIn α
+    ω∉β           : ωvar NotFreeIn β
+    ωFreeForxInα  : (varterm ωvar) FreeFor xvar In α
+    ωFreeForxInβ  : (varterm ωvar) FreeFor xvar In β
+    x≢ω           : xvar ≢ ωvar
+    ωvar          = fst ω,ωFresh,x≢ω
+    ω∉α           = freshNotFree (fst (snd ω,ωFresh,x≢ω))
+    ω∉β           = freshNotFree (fst (snd (snd ω,ωFresh,x≢ω)))
+    ωFreeForxInα  = freshFreeFor (fst (snd ω,ωFresh,x≢ω)) xvar
+    ωFreeForxInβ  = freshFreeFor (fst (snd (snd ω,ωFresh,x≢ω))) xvar
+    x≢ω           = snd (snd (snd ω,ωFresh,x≢ω))
+    αω        : Formula
+    α[x/ω]≡αω : α [ xvar / _ ]≡ αω
+    αω        = fst (α [ xvar / ωFreeForxInα ])
+    α[x/ω]≡αω = snd (α [ xvar / ωFreeForxInα ])
+    βω        : Formula
+    β[x/ω]≡βω : β [ xvar / _ ]≡ βω
+    βω        = fst (β [ xvar / ωFreeForxInβ ])
+    β[x/ω]≡βω = snd (β [ xvar / ωFreeForxInβ ])
+    dgpαωβω[ω/x]≡dgpαβ : (dgp αω βω) [ ωvar / _ ]≡ (dgp α β)
+    dgpαωβω[ω/x]≡dgpαβ = subInverse
+                          ((ω∉α ⇒ ω∉β) ∨ (ω∉β ⇒ ω∉α))
+                          ((α[x/ω]≡αω ⇒ β[x/ω]≡βω) ∨ (β[x/ω]≡βω ⇒ α[x/ω]≡αω))
+    x∉αω : xvar NotFreeIn αω
+    x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
+    x∉βω : xvar NotFreeIn βω
+    x∉βω = subNotFree (varterm x≢ω) β[x/ω]≡βω
 
---dp,efq,tt→dgp : ⊢₁ dp → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
---dp,efq,tt→dgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β =
---    close
---     from∅
---     ?
---     (existelim ({!   !} all∪ {!   !})
---      (cite "DP" (⊢dp φ))
---      (disjelim
---       (univelim x (ident (D (varterm xvar) ∨ ¬ (D (varterm xvar))) xvar)
---        (cite "TT" ⊢d∀))
---       (disjintro₁ (β ⇒ α)
---        (arrowintro α
---         (conjelim
---          (univelim t1 (snd (φ [ xvar /  constFreeFor φ xvar 1 ]))
---           (arrowelim
---            (assume (φ ⇒ ∀x φ))
---            (conjintro
---             (arrowintro (D x)
---              (assume α))
---             (arrowintro (¬ (D x))
---              (arrowelim
---               (cite "EFQ" (⊢efq β))
---               (arrowelim
---                (assume (¬ (D x)))
---                (assume (D x))))))))
---          (arrowelim
---           (assume (¬d1 ⇒ β))
---           (cite "TT" ⊢¬d1)))))
---       (disjintro₂ (α ⇒ β)
---        (arrowintro β
---         (conjelim
---          (univelim t0 (snd (φ [ xvar / constFreeFor φ xvar 0 ])) (arrowelim (assume (φ ⇒ ∀x φ)) (conjintro (arrowintro (D x) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬ (D x))) (assume (D x))))) (arrowintro (¬ (D x)) (assume β)))))
---          (arrowelim
---           (assume (d0 ⇒ α))
---           (cite "TT" ⊢d0)))))))
---  where
---    φ : Formula
---    φ = (D x ⇒ α) ∧ (¬ (D x) ⇒ β)
---
---
---DP,EFQ,TT⊃DGP : DP ∷ EFQ ∷ TT ⊃ DGP
---DP,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
---    dp,efq,tt→dgp
---     (descheme₁ (⊢lhs DP [ refl ]))
---     (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ])))
---     (descheme₀ (⊢lhs D0 (_ ∷ (_ ∷ [ refl ]))))
---     (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
---     (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ (_ ∷ [ refl ]))))))
---     α
---     β
+dp,efq,tt→rdgp : ⊢₁ dp → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α β → xvar NotFreeIn α → xvar NotFreeIn β → ⊢ dgp α β
+dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
+    close
+     from∅
+     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ _ → z₁₀)) (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₁₅ z₈))))) (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₁₃ (λ z₁₆ → z₁₆))))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₈ z₁₅))) (λ z₁₄ → z₁₄ (λ _ → z₁₀)))) (λ z₁₂ → z₁₂ (λ _ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ z₁₄ (λ z₁₆ → z₁₆))))))))))))
+     (existelim (all⟨ (x∉α ⇒ x∉β) ∨ (x∉β ⇒ x∉α) ⟩ all∪ (all- (all∅ all∪ (all- (all- ((all⟨- α ∷ (D (varterm xvar) ∷ [ refl ]) ⟩ all∪ (all- all⟨ x∉α ⟩) all∪ (all- (all∅ all∪ all⟨- [ refl ] ⟩ all∪ all⟨- ¬ (D (varterm xvar)) ∷ (α ∷ [ refl ]) ⟩))) all∪ (all- (all- (all⟨- (D (functerm (func 1 zero) []) ⇒ α) ∷ [ refl ] ⟩ all∪ all∅)))))) all∪ (all- (all- ((all⟨- β ∷ (¬ (D (varterm xvar)) ∷ [ refl ]) ⟩ all∪ (all- (all∅ all∪ all⟨- D (varterm xvar) ∷ (β ∷ [ refl ]) ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ x∉β ⟩)) all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all∅)))))))))
+      (cite "DP" (⊢dp φ))
+      (disjelim
+       (univelim x (ident (D (varterm xvar) ∨ ¬ (D (varterm xvar))) xvar)
+        (cite "TT" ⊢d∀))
+       (disjintro₁ (β ⇒ α)
+        (arrowintro α
+         (conjelim
+          (univelim t1 φ1sub
+           (arrowelim
+            (assume (φ ⇒ ∀x φ))
+            (conjintro
+             (arrowintro (D x)
+              (assume α))
+             (arrowintro (¬ (D x))
+              (arrowelim
+               (cite "EFQ" (⊢efq β))
+               (arrowelim
+                (assume (¬ (D x)))
+                (assume (D x))))))))
+          (arrowelim
+           (assume (¬d1 ⇒ β))
+           (cite "TT" ⊢¬d1)))))
+       (disjintro₂ (α ⇒ β)
+        (arrowintro β
+         (conjelim
+          (univelim t0 φ0sub
+           (arrowelim (assume (φ ⇒ ∀x φ)) (conjintro (arrowintro (D x) (arrowelim (cite "EFQ" (⊢efq α)) (arrowelim (assume (¬ (D x))) (assume (D x))))) (arrowintro (¬ (D x)) (assume β)))))
+          (arrowelim
+           (assume (d0 ⇒ α))
+           (cite "TT" ⊢d0)))))))
+  where
+    φ : Formula
+    φ = (D x ⇒ α) ∧ (¬ (D x) ⇒ β)
+    φ0sub : φ [ xvar / t0 ]≡ ((D t0 ⇒ α) ∧ (¬ (D t0) ⇒ β))
+    φ0sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬ (D varterm≡) ⇒ notfree x∉β)
+    φ1sub : φ [ xvar / t1 ]≡ ((D t1 ⇒ α) ∧ (¬ (D t1) ⇒ β))
+    φ1sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬ (D varterm≡) ⇒ notfree x∉β)
+
+dp,efq,tt→dgp : ⊢₁ dp → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
+dp,efq,tt→dgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ = wlog-dgp (dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀)
+
+DP,EFQ,TT⊃DGP : DP ∷ EFQ ∷ TT ⊃ DGP
+DP,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
+    dp,efq,tt→dgp
+     (descheme₁ (⊢lhs DP [ refl ]))
+     (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ])))
+     (descheme₀ (⊢lhs D0 (_ ∷ (_ ∷ [ refl ]))))
+     (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
+     (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ (_ ∷ [ refl ]))))))
+     α
+     β
 --------------------------------------------------------------------------------
 
 
