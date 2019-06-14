@@ -1007,6 +1007,45 @@ wlog-wlem ⊢nfwlem α = close
     x∉αω : xvar NotFreeIn αω
     x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
 
+dnse,tt→rwlem-lemma : ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ ¬¬∃x ((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α))
+dnse,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
+  close
+    from∅
+    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆ (λ _ z₇ → z₇ (λ
+     z₈ z₉ → z₉ z₃ (λ z₁₀ → z₁₀ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ (λ _ z₁₄ → z₁₄ (λ
+     z₁₅ → z₁₅) z₁₂))) (λ z₁₁ → z₁₁ (λ _ → z₈)))))) (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ
+     _ z₉ → z₉ z₇ (λ z₁₀ → z₁₀))))))))
+    (arrowintro (¬∃x φ)
+     (arrowelim
+      (assume (¬∃x φ))
+      (existintro t0 xvar φ0sub
+       (conjintro
+        (arrowintro (D t0)
+         (arrowintro (¬ α)
+          (arrowelim
+           (assume (¬∃x φ))
+           (existintro t1 xvar φ1sub
+            (conjintro
+             (arrowintro (D t1)
+              (arrowintro (¬ α)
+               (arrowelim
+                (cite "TT" ⊢¬d1)
+                (assume (D t1)))))
+             (arrowintro (¬D t1)
+              (assume (¬ α))))))))
+        (arrowintro (¬D t0)
+         (arrowintro α
+          (arrowelim
+           (assume (¬D t0))
+           (cite "TT" ⊢d0))))))))
+  where
+    φ : Formula
+    φ = (D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)
+    φ0sub : φ [ xvar / t0 ]≡ (D t0 ⇒ ¬¬ α) ∧ (¬D t0 ⇒ ¬ α)
+    φ0sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
+    φ1sub : φ [ xvar / t1 ]≡ (D t1 ⇒ ¬¬ α) ∧ (¬D t1 ⇒ ¬ α)
+    φ1sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
+
 dnse,tt→rwlem : ⊢₁ dnse → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ wlem α
 dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
   close
