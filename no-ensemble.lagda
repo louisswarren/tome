@@ -1,5 +1,6 @@
 Lists could be used for the context of natural deduction trees, instead of using
 ensembles. The operations for removal and union are still needed.
+\todo{Could add more deduction rules, incorporate removal in rules. Explain why not}
 \AgdaHide{
 \begin{code}
 
