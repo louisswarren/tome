@@ -1,21 +1,33 @@
+\AgdaHide{
 \begin{code}
 
 module Formula where
 
+\end{code}
+}
+\begin{code}
+
 open import Agda.Builtin.Sigma
+
+\end{code}
+\AgdaHide{
+\begin{code}
 
 open import Decidable
 open import Nat
 open import Vec
 
 \end{code}
+}
 
 \subsection{Basic definitions}
 
-We adopt the definitions of \citet{schwichtenberg}. In particular, there are
-countably many variables, and there are countably many function symbols of each
-(natural) airty. Function symbols of different arities with the same index are
-considered different.
+We adopt the definitions of \citet{schwichtenberg}.
+
+There are countably many variables, and there are countably many function
+symbols of each (natural) airty. Constants are functions with arity zero.
+Function symbols of different arities with the same index are considered
+distinct.
 \begin{code}
 
 record Variable : Set where
@@ -37,7 +49,7 @@ open Function renaming (idx to funcidx ; arity to funcarity)
 By defining these as \inline{record} types, we get destructors for accessing
 the indices and arities, which we then extract into the current module for ease
 of use. Note that the indices are natural numbers. While it seems equivalent
-and more useful to index using strings, strings are not supported by Agda's
+and more useful to use string indices, strings are not supported by Agda's
 proof search. Internally, strings are not recursively defined as the natural
 numbers are; instead the string type is a postulated type which is bound to
 string literals.
@@ -65,10 +77,11 @@ open Relation renaming (idx to relidx ; arity to relarity)
 
 \end{code}
 
-We now define atoms (prime formulae), and the logical connectives, using
-$\bigwedge$ and $\bigvee$ in place of $\forall$ and $\exists$, since $\forall$
-is reserved by Agda.
+A formula is either atomic (a prime formula), or formed from one of the logical
+connectives or quantifiers. We use `$\bigwedge$' and `$\bigvee$' in place of
+`$\forall$' and `$\exists$', since `$\forall$' is reserved by Agda.
 \todo{Rename $\Lambda$ and $V$}
+\todo{\inline{⇔} is never used}
 \begin{code}
 
 data Formula : Set where
@@ -82,6 +95,11 @@ data Formula : Set where
 _⇔_ : Formula → Formula → Formula
 Φ ⇔ Ψ = (Φ ⇒ Ψ) ∧ (Ψ ⇒ Φ)
 
+\end{code}
+The logical connectives are right-associative, and have the usual order of
+precedence.
+\begin{code}
+
 infixr 105 _⇒_ _⇔_
 infixr 106 _∨_
 infixr 107 _∧_
@@ -92,8 +110,7 @@ Equality of formulae is decidable. Logically, this follows from the fact that
 formulae are inductively defined. The proof is obtained by case analysis, using
 lemata on the types used to construct formulae. As these proofs are
 unremarkable, and follow the same pattern as the proof for decidable equality
-of natural numbers above, they are omitted from the latex-typeset form of this
-file.
+of natural numbers above, they are omitted.
 \begin{code}
 
 varEq : Decidable≡ Variable
@@ -267,13 +284,15 @@ formulaEq (V x α)     (Λ y γ)     = no λ ()
 
 We define the conditions for a variable to be \emph{not free} in a formula.
 Instead of first defining \emph{free} and then taking \emph{not free} to be the
-negation, we use a positive definition, since later definitions only ever
-require proof that a variable is not free. For a given term $t$, $x$ is not
-free in $t$ if $t$ is a variable other than $x$. Otherwise if the term is a
-function on arguments $ts$, then $x$ is not free if it is not free anywhere in
-$ts$, which can be checked by applying \inline{All} to this definition.
-Separating the declaration and definition of \inline{_NotInTerm_} allows it to
-be defined mutually with the case for a vector of terms.
+negation, we use a positive definition for not free, since later definitions
+only ever require proof that a variable is not free.
+
+For a given term $t$, $x$ is not in $t$ if $t$ is a variable other than $x$.
+Otherwise if the term is a function on arguments $ts$, then $x$ is not in $t$
+if it is not anywhere in $ts$, which can be checked by applying \inline{All} to
+this definition.  Separating the declaration and definition of
+\inline{_NotInTerm_} allows it to be defined mutually with the case for a
+vector of terms.
 \begin{code}
 
 data _NotInTerm_ (x : Variable) : Term → Set
@@ -284,16 +303,16 @@ x NotInTerms ts = All (x NotInTerm_) ts
 data _NotInTerm_ x where
   varterm  : ∀{y} → x ≢ y → x NotInTerm (varterm y)
   functerm : ∀{f} {us : Vec Term (funcarity f)}
-               → x NotInTerms us → x NotInTerm (functerm f us)
+                  → x NotInTerms us → x NotInTerm (functerm f us)
 
 \end{code}
 
-A variable is shown to be not free in a formula with the obvious recursive
-definition. It is not free inside a quantification over a subformula $\alpha$
-either if it is the quantification variable, or else if it is not free in
-$\alpha$.  Separate constructors are given for these. A variable is not free
-inside an atom if it is not free within that atom, meaning it is not free in
-the terms that the relation is operating on.
+A variable is now shown to be not free in a formula with the obvious recursive
+definition. It is not free inside an atom if it is not inside that atom,
+meaning it is not in the terms that the relation is operating on. It is not
+free inside a quantification over a subformula either if it is the
+quantification variable, or else if it is not free in the subformula. Separate
+constructors are given for each case.
 \todo{Notation: \inline{Λ∣}?}
 \begin{code}
 
@@ -310,14 +329,16 @@ data _NotFreeIn_ : Variable → Formula → Set where
 
 \end{code}
 
-Variable freedom within a vector of terms is decidable, simply by searching
-through the vector for occurences.
+We now prove that the above predicate is decidable. First, variable freedom
+within a vector of terms is decidable, simply by searching through the vector
+for occurences.
 \begin{code}
 
 _notInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotInTerms ts)
 x notInTerms [] = yes []
 \end{code}
-To check against a variable term, use the decidable equality of variables.
+To check against a variable term, use the decidable equality of variables, then
+recurse over the rest of the terms.
 \begin{code}
 x notInTerms (varterm y ∷ ts) with varEq x y
 ...    | yes refl = no λ { (varterm x≢x ∷ _) → x≢x refl }
@@ -325,7 +346,8 @@ x notInTerms (varterm y ∷ ts) with varEq x y
 ...               | yes x∉ts = yes (varterm x≢y ∷ x∉ts)
 ...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
 \end{code}
-To check against a function term, recurse over the arguments.
+To check against a function term, recurse over the arguments, then recurse over
+the rest of the terms.
 \begin{code}
 x notInTerms (functerm f us ∷ ts) with x notInTerms us
 ...    | no ¬x∉us = no λ { (functerm x∉us ∷ _) → ¬x∉us x∉us }
@@ -334,12 +356,11 @@ x notInTerms (functerm f us ∷ ts) with x notInTerms us
 ...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
 
 \end{code}
-Note that each case must check if $x$ is free in the remaining terms in the
-vector. A shorter proof would do this check at the same time as doing a case
-split on the first term, as was done for variable substitution in a vector of
-terms above. However, if a term for which $x$ is free is found, it is not
-necessary to continue recursing through the vector, so it is better
-computationally not to do so.
+Each case checks if $x$ is free in the remaining terms in the vector. A shorter
+proof would do this check at the same time as doing a case split on the first
+term. However, if a term for which $x$ is free is found, it is not necessary to
+continue recursing through the vector, so it is better computationally not to
+do so.
 
 The same logic can be used for a single term, calling the above function to
 check function arguments. The proposition \inline{_NotInTerms_} is defined
@@ -348,11 +369,10 @@ prove that the single term case is decidable, and then generalise to vectors
 using the lemma that \inline{All} is decidable for decidable predicates.
 However, this would not be structurally recursive, and so Agda would not see
 this as terminating. Above, the case \mintinline{agda}{x notInTerms t ∷ ts}
-depends on the result of \inline{x notFreeInterms ts}, which is in fact
-primitively recursive. However, if it instead depended on the result of
-\inline{all (x notInTerm_) ts}, Agda cannot determine that \inline{x
-notInTerm_} will be applied only to arguments structurally smaller than
-\inline{t ∷ ts}.
+depends on the result of \inline{x notInTerms ts}, which is in fact primitively
+recursive. However, if it instead depended on the result of \inline{all (x
+notInTerm_) ts}, Agda cannot determine that \inline{x notInTerm_} will be
+applied only to arguments structurally smaller than \inline{t ∷ ts}.
 \begin{code}
 
 _notInTerm_ : (x : Variable) → (t : Term) → Dec (x NotInTerm t)
