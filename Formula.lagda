@@ -331,7 +331,9 @@ data _NotFreeIn_ : Variable → Formula → Set where
 
 We now prove that the above predicate is decidable. First, variable freedom
 within a vector of terms is decidable, simply by searching through the vector
-for occurences.
+for occurences. In the following code we will use names like \inline{x∉t} to
+denote proofs of `$x$ is not in term $t$, \inline{x∉ts} for `$x$ is not in any
+terms in $ts$', and \inline{x∉α} for `$x$ is not free in $\alpha$`.
 \begin{code}
 
 _notInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotInTerms ts)
@@ -694,8 +696,24 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
 The definitions above for variable substitution lead directly to a procedure
 for computing substitutions. Given $\alpha$, $x$, $t$, and a proof that $t$ is
 free for $x$ in $\alpha$, we compute a $\beta$ and a proof that
-$\alpha[x/t] \equiv \beta$. The sigma (dependent sum) type can be used to
-encapsulate both a value and a proof regarding that value.
+$\alpha[x/t] \equiv \beta$.
+
+The built-in sigma (dependent sum) type has been imported. A simplified version
+of its definition is commented below.
+\begin{code}
+
+{-
+  record Σ (A : Set) (B : A → Set) : Set where
+    constructor _,_
+    field
+      fst : A
+      snd : B fst
+-}
+
+\end{code}
+\inline{Σ A B} can be proved by providing an $x$ of type $A$, and a proof of $B
+x$, so that it encapsulates both a value and a proof regarding that value.
+This means sigma type can be used to define existential propositions.
 
 \todo{recurse or recur?}
 First for vectors of terms, recurse through all function arguments, and replace
@@ -706,10 +724,10 @@ either case.
 \begin{code}
 
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) [ us ][ x / t ]≡_
-[ [] ][ x / t ] = [] , []
-[ u ∷ us ][ x / t ] with [ us ][ x / t ]
+[ []                 ][ x / t ] = [] , []
+[ u             ∷ us ][ x / t ] with [ us ][ x / t ]
 [ varterm y     ∷ us ][ x / t ] | vs , vspf with varEq x y
-...    | yes refl = (t         ∷ vs) , (varterm≡     ∷ vspf)
+...    | yes refl = (t ∷ vs) , (varterm≡ ∷ vspf)
 ...    | no  x≢y  = (varterm y ∷ vs) , (varterm≢ x≢y ∷ vspf)
 [ functerm f ws ∷ us ][ x / t ] | vs , vspf with [ ws ][ x / t ]
 ...    | xs , xspf = (functerm f xs ∷ vs) , (functerm xspf ∷ vspf)
@@ -718,9 +736,7 @@ either case.
 
 For formulae, a proof that $t$ is free for $x$ in the formula must be supplied.
 The term $t$ is fixed by supplying such a proof, so for convenience of
-notation, the proof is supplied in place of the term. In the following code we
-will use names like \inline{x∉α} to denote proofs of `$x$ is not free in
-$\alpha$`.
+notation, the proof is supplied in place of the term.
 \todo{Do I want to use $\Sigma$ here?}
 \begin{code}
 
@@ -757,9 +773,12 @@ V y α [ x / V y∉t tffα ]     with varEq x y
 
 \end{code}
 
+There are two useful lemata to prove regarding variable substitution.
+
 We have proved that if $t$ is free for $x$ in $α$ then $α[x/t]$ exists. The
 converse is also true, meaning that \inline{_FreeFor_In_} precisely captures
 the notion of a substitution being possible.
+\todo{Explain and neaten}
 \begin{code}
 
 subFreeFor : ∀{α x t β} → α [ x / t ]≡ β → t FreeFor x In α
@@ -911,28 +930,14 @@ to generate a fresh
 variable for a given formula. Only finitely many variables occur in a given
 term or formula, so there is a greatest (with respect to the natural number
 indexing) variable occuring in each term or formula; all variables greater than
-this are fresh. This means that the least fresh variable will not be found. For
-example, for $P x_0 \lor P x_2$, we find that $x_3, x_4, \dotsc$ are fresh,
-missing $x_1$. However, finding the least fresh variable cannot be done
-recursively. Consider $\alpha = (P x_0 \lor P x_2) \land P x_1$; we find $x_1$
-is fresh to the left of the conjunctive, and $x_0$ is fresh to the right, but
-this does not indicate that $x_2$ will not be fresh in $\alpha$.
-
-The built-in sigma type has been imported. A simplified version of its
-definition is commented below.
-\begin{code}
-
-{-
-  record Σ (A : Set) (B : A → Set) : Set where
-    constructor _,_
-    field
-      fst : A
-      snd : B fst
--}
-
-\end{code}
-\inline{Σ A B} can be proved by providing an $x$ of type $A$, and a proof of $B
-x$. The sigma type then can be used to define existential propositions.
+this are fresh. That is the variable that we will compute. This means that the
+least fresh variable will not be found. For example, for $P x_0 \lor P x_2$, we
+find that $x_3, x_4, \dotsc$ are fresh, missing $x_1$. However, finding the
+least fresh variable cannot be done with a simple recursive procedure. Consider
+$\alpha = (P x_0 \lor P x_2) \land P x_1$; we find $x_1$ is fresh to the left
+of the conjunctive, and $x_0$ is fresh to the right, but this does not indicate
+that $x_2$ will not be
+fresh in $\alpha$.
 
 We first compute the greatest variable occuring in a vector of terms, and then
 specialise to a single term, for termination reasons similar to that of
@@ -940,15 +945,15 @@ specialise to a single term, for termination reasons similar to that of
 and being not-free.
 \begin{code}
 
-supFreeTerms : ∀{k} → (ts : Vec Term k)
+maxVarIn : ∀{k} → (ts : Vec Term k)
                → Σ ℕ (λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → var n NotInTerms ts)
-supFreeTerms [] = zero , λ _ _ → []
+maxVarIn [] = zero , λ _ _ → []
 \end{code}
 If the first term is a variable, check if its index is greater than the
 greatest \todo{supremum} free variable of the rest of the terms. If not, use the
-variable from the rest of the terms.
+variable from the rest of the terms. \todo{Swap cases around}
 \begin{code}
-supFreeTerms (varterm (var m) ∷ ts) with supFreeTerms ts
+maxVarIn (varterm (var m) ∷ ts) with maxVarIn ts
 ... | ⌈ts⌉ , tspf with ≤total m ⌈ts⌉
 ...               | less m≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
   where
@@ -975,7 +980,7 @@ If the first term is a function, then check if the greatest free variable in
 its arguments is greater than the greatest free variable of the rest of the
 terms. If not, use the variable from the rest of the terms.
 \begin{code}
-supFreeTerms (functerm f us     ∷ ts) with supFreeTerms us | supFreeTerms ts
+maxVarIn (functerm f us   ∷ ts) with maxVarIn us | maxVarIn ts
 ... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with ≤total ⌈us⌉ ⌈ts⌉
 ...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
   where
@@ -1002,7 +1007,7 @@ minFresh : ∀ α → Σ Variable λ ⌈α⌉ → ∀ n → varidx ⌈α⌉ ≤ 
 In the atomic case, apply the above lemma to find the largest variable
 occuring, and construct the succeeding variable.
 \begin{code}
-minFresh (atom r ts) with supFreeTerms ts
+minFresh (atom r ts) with maxVarIn ts
 minFresh (atom r ts) | ⌈ts⌉ , tspf = var (suc ⌈ts⌉)
                                      , (λ n ⌈ts⌉≤n → atom (tspf n ⌈ts⌉≤n))
 \end{code}
