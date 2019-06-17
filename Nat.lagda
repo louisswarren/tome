@@ -3,23 +3,33 @@ operations and boolean relations, including a boolean-valued equality. We
 import and augment this with some propositions and predicates. The
 (unicode-renamed) definition of natural numbers is commented below.
 
+\AgdaHide{
 \begin{code}
 
 module Nat where
 
+\end{code}
+}
+\begin{code}
+
 open import Agda.Builtin.Nat renaming (Nat to ℕ) hiding (_<_) public
 
 {-
-  data Nat : Set where
-    zero : Nat
-    suc  : Nat → Nat
+  data ℕ : Set where
+    zero : ℕ
+    suc  : ℕ → ℕ
 -}
+
+\end{code}
+\AgdaHide{
+\begin{code}
 
 open import Decidable
 
 \end{code}
+}
 
-The built-in boolean valued equality \inline{_==_} can be evaluated to check
+The built-in boolean-valued equality \inline{_==_} can be evaluated to check
 that \inline{1 + 1 == 2} is \inline{true}. However, this is not useful as a
 lemma. Instead, we would like to have a binary predicate for natural numbers
 which gives either a proof of equality or a proof of inequality. Such a
@@ -91,11 +101,11 @@ It remains to show that given any $n$ and $m$, we may construct
 ≤total zero    m       = less 0≤n
 ≤total (suc n) zero    = more 0≤n
 ≤total (suc n) (suc m) with ≤total n m
-≤total (suc n) (suc m) | less n≤m = less (sn≤sm n≤m)
-≤total (suc n) (suc m) | more m≤n = more (sn≤sm m≤n)
+...                    | less n≤m = less (sn≤sm n≤m)
+...                    | more m≤n = more (sn≤sm m≤n)
 
 \end{code}
 While it is possible to directly define a function which returns the greater of
 two natural numbers, this method preserves the proposition showing which is
-greater. Defining a relation, and giving a function to construct from all
-arguments is a common technique, and it will be used often.
+greater. Defining a relation, and then giving a function to construct it from
+all possible arguments is a common technique, and it will be used often.

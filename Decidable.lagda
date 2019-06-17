@@ -1,10 +1,12 @@
 We begin with a module which defines decidability.
 
+\AgdaHide{
 \begin{code}
 
 module Decidable where
 
 \end{code}
+}
 
 Agda has a built-in module defining equality. We import this module and
 re-export it here. For illustrative purposes, a simplified version of this
@@ -41,7 +43,7 @@ x ≢ y = ¬(x ≡ y)
 
 EFQ holds in Agda, in the sense that any type can be constructed from the
 bottom type. To show this, we do a case split on the instance of $\bot$. There
-is no constructor for $\bot$, which Agda shows with empty parentheses. Cases
+is no constructor for $\bot$, which is stated using empty parentheses. Cases
 which are not constructable do not need proving.
 \begin{code}
 
