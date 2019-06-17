@@ -3,13 +3,11 @@ open import Agda.Builtin.Sigma
 open import Decidable
 open import Deduction
 open import Ensemble
-open import Equivalence
 open import Formula
 open import List
 open import Nat
 open import Scheme
 open import Vec
-
 
 -- Prove that ident is a derived rule. Note that this proof does not make use
 -- of Formula.ident
