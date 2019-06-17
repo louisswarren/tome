@@ -377,17 +377,17 @@ applied only to arguments structurally smaller than \inline{t ∷ ts}.
 
 _notInTerm_ : (x : Variable) → (t : Term) → Dec (x NotInTerm t)
 x notInTerm varterm y     with varEq x y
-...                       | yes refl = no λ { (varterm x≢x) → x≢x refl }
-...                       | no x≢y  = yes (varterm x≢y)
+...                       | yes refl = no  λ { (varterm x≢x) → x≢x refl }
+...                       | no  x≢y  = yes (varterm x≢y)
 x notInTerm functerm f ts with x notInTerms ts
 ...                       | yes x∉ts = yes (functerm x∉ts)
-...                       | no ¬x∉ts = no λ { (functerm x∉ts) → ¬x∉ts x∉ts }
+...                       | no ¬x∉ts = no  λ { (functerm x∉ts) → ¬x∉ts x∉ts }
 
 \end{code}
 
-Now for formulae, to determine if a variable is not free, we apply the above
-for atoms, check recursively for the logical connectives, and check if the
-variable is the quantifying variable for the quantifiers.
+We can now decide if a variable is free in a formula. For atoms, apply the
+lemma above. Otherwise, check recursively, checking if the variable matches the
+quantifying variable in the case of quantifiers.
 \begin{code}
 
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
@@ -425,8 +425,8 @@ x notFreeIn V  y α    with varEq x y
 \subsection{Substitutions}
 
 We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
-replacing all instances of a variable $x$ with term $t$.  The definitions have
-a similar structure to that of \inline{_NotFreeIn_} above. Note that the more
+replacing all free instances of a variable $x$ with term $t$. The definitions
+have a similar structure to that of \inline{_NotFreeIn_} above. The more
 general case of replacing terms with terms is not needed for natural deduction.
 
 Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
@@ -458,15 +458,15 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
 The \inline{ident} constructor gives the case that replacing $x$ with $x$
 yields the original formula. While this is actually a derived rule, in practice
 it is the case we usually want to use. Providing a constructor allows Agda's
-proof search to solve this case easily.
+proof search to apply this case easily. \todo{Implicit ident?}
 \begin{code}
   ident : ∀ α x → α [ x / varterm x ]≡ α
 \end{code}
-If $x$ is in fact not free in $\alpha$, then replacing it with any term should
-leave $\alpha$ unchanged. This rule is not derivable when $t$ is not free for
-$x$ in $\alpha$. For example, without this constructor it would not be possible
-to prove that $(\forall y A)[x/y]\equiv A$, where $A$ is a propositional
-\todo{nullary predicate} formula.
+If $x$ is not free in $\alpha$, then replacing it with any term should leave
+$\alpha$ unchanged. This rule is not derivable when $t$ is not otherwise able
+to be substituted for $x$ in $\alpha$. For example, without this constructor it
+would not be possible to prove that $(\forall y A)[x/y]\equiv (\forall y A)$,
+where $A$ is a propositional \todo{nullary predicate} formula.
 \begin{code}
   notfree : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
 \end{code}
@@ -490,9 +490,9 @@ variable, then the formula is unchanged.
   Λ∣      : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
   V∣      : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
 \end{code}
-If $x$ is not the quantification variable and $t$ is free for $x$ in in the
-formula ($x$ is not free in term $t$), then the substitution simply occurs
-inside the quantification.
+Finally, if $x$ is not the quantification variable, and the quantification
+variable does not appear in $t$, then the substitution simply occurs inside the
+quantification.
 \begin{code}
   Λ       : ∀{α β x y t} → x ≢ y → y NotInTerm t
               → α [ x / t ]≡ β → (Λ y α) [ x / t ]≡ (Λ y β)
@@ -507,7 +507,7 @@ be shown for the special cases \inline{ident} and \inline{notfree}, by
 recursing through the constructors down to the atomic case, and recursing
 through the term substitutions down to the variable terms. The proofs simply
 have \inline{refl} on the right side of every line, and are omitted. Their
-structures are very similar to the next two proofs.
+structures are very similar to the two proofs that follow afterward.
 \begin{code}
 
 subIdentFunc : ∀{α x β} → α [ x / varterm x ]≡ β → α ≡ β
@@ -618,22 +618,22 @@ subTermsFunc (functerm st  ∷ _) (functerm rt  ∷ _)
 
 \end{code}
 
-Now, show variable substitution is functional.
+Now it can be shown that variable substitution in general is functional.
 \begin{code}
 
 subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
 \end{code}
 If either substitution came from \inline{ident} or \inline{notfree}, invoke one
-of the above lemata. Note that if they occured in the right substitution, the
-lemata prove $\gamma \equiv \beta$, so \inline{rewrite} is used to recover
-$\beta \equiv \gamma$.
+of the above lemata. If they occured in the right substitution, the lemata
+prove $\gamma \equiv \beta$, so \inline{rewrite} is used to recover $\beta
+\equiv \gamma$.
 \begin{code}
 subFunc (ident α x)   r             = subIdentFunc r
 subFunc (notfree x∉α) r             = subNotFreeFunc r x∉α
 subFunc r             (ident α x)   rewrite subIdentFunc r       = refl
 subFunc r             (notfree x∉α) rewrite subNotFreeFunc r x∉α = refl
 \end{code}
-The atomic case comes from the above lemma.
+The atomic case comes from the previous lemma.
 \begin{code}
 subFunc (atom p s)    (atom .p r)   rewrite subTermsFunc s r = refl
 \end{code}
@@ -669,11 +669,12 @@ subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
 
 \end{code}
 
-
-Substitutions do not always exist. For example, there is no way of constructing
-a formula for $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if
-$t$ is \emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$
-would become bound inside $\alpha$. This can be formalised by using (with minor
+We have now shown that substitution is functional, and so would like to
+construct a function that computes substitutions. However, substitutions do not
+always exist. For example, there is no way of constructing a formula for
+$(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if $t$ is
+\emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$ would
+become bound inside $\alpha$. This can be formalised by using (with minor
 modification) the rules of \cite{vandalen}.
 \begin{code}
 
