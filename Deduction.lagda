@@ -4,17 +4,15 @@ module Deduction where
 
 open import Agda.Builtin.String
 
-open import Decidable
 open import Ensemble
 open import Formula
-open import List
 
 private
-  _NotFreeInAll_ : Variable → Pred Formula → Set₁
+  _NotFreeInAll_ : Variable → Ensemble Formula → Set₁
   x NotFreeInAll Γ = Ensemble.All (x NotFreeIn_) Γ
 
 infix 1 _⊢_ ⊢_
-data _⊢_ : Pred Formula → Formula → Set₁ where
+data _⊢_ : Ensemble Formula → Formula → Set₁ where
 
 \end{code}
 The first constructor is used for typesetting later; a deduction can be

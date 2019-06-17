@@ -6,7 +6,6 @@ logic. To examine axiom schemes, we define some metalanguage concepts.
 
 module Scheme where
 
-open import Agda.Builtin.String
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
 
 open import Deduction
