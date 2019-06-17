@@ -1,0 +1,16 @@
+
+The Agda code below has been written in \emph{literate Agda}, which allows Agda
+to be mixed with \LaTeX. The files which have been used to typeset this document
+can also be evaluated and type checked by Agda. Some trivial proofs are omitted
+from the typeset document; these are only hidden for brevity, and are still
+present in the code and used by Agda. The results on which they rely are
+therefore still verified. This should not be mistaken for use of postulates,
+wherein Agda itself is told to assume that a proof exists. Postulates are used
+only in the module for outputting natural deduction proofs as \LaTeX for use
+with the \emph{bussproofs} package. All other code type checks with Agda in safe
+mode.
+
+Each of the following sections corresponds to its own literate Agda file.
+Sections named with a file name ending in `.lagda' are modules. Each section
+imports the modules above it, unless stated otherwise. These module declarations
+and imports have been hidden for brevity.

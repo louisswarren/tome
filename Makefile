@@ -2,10 +2,10 @@ MINTED=_minted.Decidable.gen _minted.Nat.gen _minted.List.gen _minted.Vec.gen _m
 
 MINTCODE='s/\\begin{code}/\\begin{minted}{agda}/; s/\\end{code}/\\end{minted}/'
 
-tome.pdf: tome.tex $(MINTED) agda.sty tome.bbl
+tome.pdf: tome.tex introduction.tex $(MINTED) agda.sty tome.bbl
 	xelatex -shell-escape tome.tex
 
-tome.bbl: tome.tex $(MINTED) agda.sty bib.bib
+tome.bbl: tome.tex introduction.tex $(MINTED) agda.sty bib.bib
 	xelatex -shell-escape tome.tex
 	bibtex tome
 
