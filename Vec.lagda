@@ -1,6 +1,8 @@
 Vectors are similar to lists, but are type indexed by length. For example,
 vectors in $\mathbb{N}^2$ are of different type to vectors in $\mathbb{N}^3$.
 \todo{Program-based explanation of dependent types}
+
+\AgdaHide{
 \begin{code}
 
 module Vec where
@@ -9,6 +11,10 @@ open import Agda.Builtin.Nat renaming (Nat to ℕ)
 
 open import Decidable
 
+\end{code}
+}
+\begin{code}
+
 data Vec (A : Set) : ℕ → Set where
   []  : Vec A zero
   _∷_ : ∀{n} → A → Vec A n → Vec A (suc n)
@@ -16,8 +22,8 @@ data Vec (A : Set) : ℕ → Set where
 \end{code}
 
 We define All, Any, and membership the same was as for lists. The decidability
-proofs below are omitted from the latex-typeset form of this file as they are
-identical to the corresponding proofs for lists. See List.lagda for details.
+proofs below are omitted, as they are identical to the corresponding proofs for
+lists. See List.lagda for details.
 
 \begin{code}
 
@@ -44,7 +50,7 @@ all p (x ∷ xs) with p x
 \begin{code}
 
 data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
-  [_] : ∀{n x} {xs : Vec A n}       → P x      → Any P (x ∷ xs)
+  [_] : ∀{n x} {xs : Vec A n} → P x → Any P (x ∷ xs)
   _∷_ : ∀{n}   {xs : Vec A n} → ∀ x → Any P xs → Any P (x ∷ xs)
 
 any : ∀{A n} {P : Pred A} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
