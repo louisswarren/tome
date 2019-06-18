@@ -1,3 +1,10 @@
+We now define the type of natural deductions, using the deduction rules of of
+\citet{schwichtenberg}. Given $\Gamma$ and $\alpha$, anything that the
+type-checker confirms as being of type $\Gamma \vdash \alpha$ is a valid
+natural deduction proof of $\alpha$ from assumptions $\Gamma$, and so is a
+proof of $\alpha$ from $\Gamma$ over minimal logic.
+
+\AgdaHide{
 \begin{code}
 
 module Deduction where
@@ -7,36 +14,49 @@ open import Agda.Builtin.String
 open import Ensemble
 open import Formula
 
+\end{code}
+}
+
+First, some shorthand.
+\begin{code}
+
 private
   _NotFreeInAll_ : Variable → Ensemble Formula → Set₁
-  x NotFreeInAll Γ = Ensemble.All (x NotFreeIn_) Γ
+  x NotFreeInAll Γ = All (x NotFreeIn_) Γ
+
+
+\end{code}
+Now for the natural deduction rules.
+\begin{code}
 
 infix 1 _⊢_ ⊢_
+
 data _⊢_ : Ensemble Formula → Formula → Set₁ where
 
 \end{code}
-The first constructor is used for typesetting later; a deduction can be
-abbreviated to a label. This will be used for lemmas, and for applying assumed
-axiom schemes.
+The first constructor is not a deduction rule, in that it does not change the
+type of the deduction. It will be used for typesetting later, for abbreviating
+a previously proved deduction from no assumptions. This will be used for
+lemmas, and for applying assumed axiom schemes.
 \begin{code}
 
   cite        : ∀{α} → String → ∅ ⊢ α → ∅ ⊢ α
 
 \end{code}
-The following constructor exists for two reasons:
-\begin{enumerate}
-  \item If $\Gamma \vdash \alpha$ then $\Gamma, \beta \vdash \alpha$
-  \item We want to be able to normalise $\Gamma$, for example from $\{\alpha\}
-    \setminus \alpha$ to $\emptyset$.
-\end{enumerate}
+The following constructor exists primarily to `normalise' $\Gamma$. For
+example, if $\{\alpha\} \setminus \alpha \vdash \beta$ then $\emptyset \vdash
+\beta$. It is also necessary for weakening results, for example from $\Gamma
+\vdash \alpha$ to $\Gamma, \beta \vdash \alpha$. While this is not one of the
+usual deduction rules, it will need to be used only at the beginning of a proof
+to finalise the ensemble of assumptions. \todo{What should it be called?}
 \begin{code}
 
   close       : ∀{Γ Δ α} → Assembled formulaEq Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
 
 \end{code}
-The remaining constructors correspond to the usual natural deduction rules.
-Agda's comment syntax (\inline{--}) allows these rules to be formatted as
-Gentzen-style inferences.
+The remaining constructors correspond precisely to the usual natural deduction
+rules.  Agda's comment syntax (\inline{--}) allows these rules to be formatted
+as Gentzen-style inferences.
 \begin{code}
 
   assume      : (α : Formula)
