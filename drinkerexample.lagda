@@ -1,6 +1,5 @@
-We give an example of proving scheme derivability.
-
-\todo{Texify has been added}
+We give an example of proving scheme derivability. We will also use a module
+for outputting natural deduction trees as \LaTeX.
 
 \AgdaHide{
 \begin{code}
@@ -15,11 +14,17 @@ open import Ensemble
 open import Formula
 open import List
 open import Scheme
-open import Texify
 open import Vec
 
 \end{code}
 }
+
+\begin{code}
+
+open import Texify
+
+\end{code}
+The code for this is entirely computational, and so has been omitted.
 
 First, some syntactic sugar. The \inline{pattern} notation causes Adga to
 recognise the notation in places where their values would be used in pattern
@@ -36,7 +41,7 @@ pattern ¬ α = α ⇒ ⊥
 pattern ¬¬ α = ¬ (¬ α)
 
 \end{code}
-We fix some variables, for defining schemes.
+Fix some variables.
 \begin{code}
 
 pattern xvar   = var zero
@@ -65,27 +70,33 @@ pattern Prel = rel 5 1
 pattern P t  = atom Prel (t ∷ [])
 
 \end{code}
-We define schemes DNE (double negation elimination), EFQ (ex falso quodlibet),
-DP (the drinker paradox), and HE (the dual of the drinker paradox). The latter
-two schemes will be described and examined in more detail in the next chapter.
+The indices used for variables $x$ and $y$ and predicates $A$ and $P$ are
+arbitrary, but correspond to those used internally by the texify module, so
+they will be outputted with the same names.
+
+Define the schemes DNE (double negation elimination), EFQ (ex falso quodlibet),
+DP (the drinker paradox), and H$\epsilon$ (the dual of the drinker paradox).
+The latter two schemes will be described and examined in more detail in the
+next chapter.
 \begin{code}
 
-dne efq dp he : Formula → Formula
+dne efq dp hε : Formula → Formula
 dne Φ  = ¬¬ Φ ⇒ Φ
 efq Φ  = ⊥ ⇒ Φ
 dp  Φx = ∃x(Φx ⇒ ∀x Φx)
-he  Φx = ∃x(∃x Φx ⇒ Φx)
+hε  Φx = ∃x(∃x Φx ⇒ Φx)
 
-DNE EFQ DP HE : Scheme
+DNE EFQ DP Hε : Scheme
 DNE = unaryscheme dne
 EFQ = unaryscheme efq
 DP  = unaryscheme dp
-HE  = unaryscheme he
+Hε  = unaryscheme hε
 
 \end{code}
 
 The natural deduction system used to define \inline{_⊢_} is for minimal logic.
 This can be extended to classical logic with the classical $\bot$ rule.
+\todo{proof trees?}
 \begin{code}
 
 ⊥c-rule : Set₁
@@ -152,50 +163,57 @@ efq→⊥i-rule ⊢efq α Γ⊢⊥ = close
 
 \end{code}
 
-We now show that DP holds clasically, by showing that it is weaker than
-DNE, so that DP is derivable if DNE is derivable.
+DP holds clasically. We show that if DNE is derivable then DP is derivable,
+meaning that DP is weaker than DNE. For illustrative purposes, lines given by
+Agda's proof search are marked with \inline{{- Auto -}} in the next proof.
 \begin{code}
 
 dne→dp : ⊢₁ dne → ⊢₁ dp
 dne→dp ⊢dne α = close
-                 from∅
-                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄
-                  (λ z₆ → z₆ (λ _ z₇ → z₇ (λ z₈ → z₈) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀
-                   z₄ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ (λ z₁₄ → z₁₄) (λ z₁₄ → z₁₄
-                    (λ _ z₁₅ → z₁₅ z₉ z₁₂))))))))))))
+  {- Auto -}     from∅
+  {- Auto -}     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄
+  {- Auto -}      (λ z₆ → z₆ (λ _ z₇ → z₇ (λ z₈ → z₈) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀
+  {- Auto -}       z₄ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ (λ z₁₄ → z₁₄) (λ z₁₄ → z₁₄
+  {- Auto -}        (λ _ z₁₅ → z₁₅ z₉ z₁₂))))))))))))
                  (arrowelim
                   (cite "DNE" (⊢dne (dp α)))
                   (arrowintro (¬ (dp α))
                    (arrowelim
                     (assume (¬ (dp α)))
-                    (existintro x xvar (ident (α ⇒ ∀x α) xvar)
+                    (existintro x xvar
+  {- Auto -}         (ident (α ⇒ ∀x α) xvar)
                      (arrowintro α
                       (univintro xvar
-                       (all∅ all∪ (all- (all⟨ V∣ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩
-                        all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷
-                         [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
+  {- Auto -}           (all∅ all∪ (all- (all⟨ V∣ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩
+  {- Auto -}            all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷
+  {- Auto -}             [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
                        (arrowelim
                         (cite "DNE" (⊢dne α))
                         (arrowintro (¬ α)
                          (arrowelim
                           (assume (¬ (dp α)))
-                          (existintro x xvar (ident (α ⇒ ∀x α) xvar)
-                          (arrowintro α
-                           (arrowelim
-                            (cite "DNE" (⊢dne (∀x α)))
-                            (arrowintro (¬∀x α)
-                             (arrowelim
-                              (assume (¬ α))
-                              (assume α)))))))))))))))
+                          (existintro x xvar
+  {- Auto -}               (ident (α ⇒ ∀x α) xvar)
+                           (arrowintro α
+                            (arrowelim
+                             (cite "DNE" (⊢dne (∀x α)))
+                             (arrowintro (¬∀x α)
+                              (arrowelim
+                               (assume (¬ α))
+                               (assume α)))))))))))))))
+
+\end{code}
+This is a general derivation of an arbitrary instance of DP using instances of
+DNE. We use this proof to construct the scheme relation `$\supset$', for
+outputting as \LaTeX.
+\begin{code}
+
 DNE⊃DP : DNE ∷ [] ⊃ DP
 DNE⊃DP ⊢lhs (α ∷ []) = dne→dp (descheme₁ (⊢lhs DNE [ refl ])) α
-
 dp-prooftree = texreduce DNE⊃DP (P x ∷ [])
 
 \end{code}
-
-This is a general derivation of an arbitrary instance of DP using instances of
-DNE. The final line gets the deduction tree for the instance $\text{DP}({Px})$,
+The final line gets the deduction tree for the instance $\text{DP}({Px})$,
 which is shown below, with instances of DP abbreviated, and split into two, due
 to page constraints.
 
@@ -247,22 +265,23 @@ to page constraints.
   \RightLabel{$\rightarrow^-$}
   \BinaryInfC{$\exists_{x}\left(P{x} \rightarrow \forall_{x}P{x}\right)$}
 \end{prooftree}
+\vspace{\baselineskip}
 
 Similarly, the dual of the drinker paradox also holds in classical logic.
 \begin{code}
 
-dne→he : ⊢₁ dne → ⊢₁ he
-dne→he ⊢dne α = close
+dne→hε : ⊢₁ dne → ⊢₁ hε
+dne→hε ⊢dne α = close
                  from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄
                   (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ (λ _ z₁₀ → z₁₀
                    z₇ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₄ (λ z₁₄ → z₁₄ (λ _ →
                     z₁₂))))))))))))
                  (arrowelim
-                  (cite "DNE" (⊢dne (he α)))
-                  (arrowintro (¬ (he α))
+                  (cite "DNE" (⊢dne (hε α)))
+                  (arrowintro (¬ (hε α))
                    (arrowelim
-                    (assume (¬ (he α)))
+                    (assume (¬ (hε α)))
                     (existintro x xvar (ident (∃x α ⇒ α) xvar)
                      (arrowintro (∃x α)
                       (arrowelim
@@ -273,25 +292,25 @@ dne→he ⊢dne α = close
                           ⇒ atom [] ⟩ all∪ (all- all⟨- ∃x α ∷ [ refl ] ⟩))))
                          (assume (∃x α))
                          (arrowelim
-                          (assume (¬ (he α)))
+                          (assume (¬ (hε α)))
                           (existintro x xvar (ident (∃x α ⇒ α) xvar)
                            (arrowintro (∃x α)
                             (assume α))))))))))))
-DNE⊃HE : DNE ∷ [] ⊃ HE
-DNE⊃HE ⊢lhs (α ∷ []) = dne→he (descheme₁ (⊢lhs DNE [ refl ])) α
 
-he-prooftree = texreduce DNE⊃HE (P x ∷ [])
+DNE⊃Hε : DNE ∷ [] ⊃ Hε
+DNE⊃Hε ⊢lhs (α ∷ []) = dne→hε (descheme₁ (⊢lhs DNE [ refl ])) α
+hε-prooftree = texreduce DNE⊃Hε (P x ∷ [])
 
 \end{code}
 
 \begin{prooftree}
   \AxiomC{$\left[\exists_{x}P{x}\right]$}
-    \AxiomC{$\left[\lnot{\text{HE}(Px)}\right]$}
+    \AxiomC{$\left[\lnot{\text{H$\epsilon$}(Px)}\right]$}
       \AxiomC{$\left[P{x}\right]$}
       \RightLabel{$\rightarrow^+$}
       \UnaryInfC{$\exists_{x}P{x} \rightarrow P{x}$}
       \RightLabel{$\exists^+$}
-      \UnaryInfC{$\text{HE}(Px)$}
+      \UnaryInfC{$\text{H$\epsilon$}(Px)$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\bot$}
   \RightLabel{$\exists^-$}
@@ -302,8 +321,8 @@ he-prooftree = texreduce DNE⊃HE (P x ∷ [])
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{DNE}
-\UnaryInfC{$\lnot{\lnot{\text{HE}(Px)}} \rightarrow \text{HE}(Px)$}
-  \AxiomC{$\left[\lnot{\text{HE}(Px)}\right]$}
+\UnaryInfC{$\lnot{\lnot{\text{H$\epsilon$}(Px)}} \rightarrow \text{H$\epsilon$}(Px)$}
+  \AxiomC{$\left[\lnot{\text{H$\epsilon$}(Px)}\right]$}
     \AxiomC{}
     \RightLabel{DNE}
     \UnaryInfC{$\lnot{\lnot{P{x}}} \rightarrow P{x}$}
@@ -316,14 +335,15 @@ he-prooftree = texreduce DNE⊃HE (P x ∷ [])
     \RightLabel{$\rightarrow^+$}
     \UnaryInfC{$\exists_{x}P{x} \rightarrow P{x}$}
     \RightLabel{$\exists^+$}
-    \UnaryInfC{$\text{HE}(Px)$}
+    \UnaryInfC{$\text{H$\epsilon$}(Px)$}
   \RightLabel{$\rightarrow^-$}
   \BinaryInfC{$\bot$}
   \RightLabel{$\rightarrow^+$}
-  \UnaryInfC{$\lnot{\lnot{\text{HE}(Px)}}$}
+  \UnaryInfC{$\lnot{\lnot{\text{H$\epsilon$}(Px)}}$}
 \RightLabel{$\rightarrow^-$}
-\BinaryInfC{$\text{HE}(Px)$}
+\BinaryInfC{$\text{H$\epsilon$}(Px)$}
 \end{prooftree}
+\vspace{\baselineskip}
 
 As a final example, consider the law of excluded middle, and a generalised form
 of the limited principle of omniscience \todo{cite LPO}.
@@ -338,19 +358,22 @@ LEM  = unaryscheme lem
 GLPO = unaryscheme glpo
 
 \end{code}
-While the variable $x$ is fixed, it is expected that these are equivalent with
-respect to derivability. That is, in an extension of minimal logic where one is
+Recall that equivalent formulae are equivalently derivable, so from GLPO we may
+derive a form with any other quantifying variable. Therefore while the variable
+$x$ is fixed, it can be expected that LEM and GPO are equivalent with respect
+to derivability.  That is, in an extension of minimal logic where one is
 derivable, the other should also be derivable. The former leads to the latter
 trivially. The other direction is more complicated, since $\Phi$ could have $x$
 free.
 
-We show first that, when deriving $\text{LEM}(\Phi)$, we may assume, without
-loss of generality, that $x$ is not free in $\Phi$. If LEM is derivable in this
-restricted case, then it is derivable.
+We show first that when deriving $\text{LEM}(\Phi)$, we may assume without
+loss of generality that $x$ is not free in $\Phi$, by showing that if LEM is
+derivable in this restricted case, then it is derivable in general.
 
 Given any formula $\alpha$, there is a fresh variable $\omega$ which appears
 nowhere in $\alpha$ and which differs from $x$. Then $\alpha[x/\omega]$ exists,
-with $x$ not free, and $\alpha[x/\omega][\omega/x] = \alpha$. \todo{Explain more. Px}
+with $x$ not free, and $\alpha[x/\omega][\omega/x] = \alpha$. Now if LEM holds
+for $\alpha[x/\omega]$ then it holds for $\alpha$, by the following proof tree.
 \begin{prooftree}
   \AxiomC{}
   \UnaryInfC{$\alpha[x/\omega] \lor \lnot\alpha[x/\omega]$}
@@ -359,6 +382,8 @@ with $x$ not free, and $\alpha[x/\omega][\omega/x] = \alpha$. \todo{Explain more
   \RightLabel{$\forall^-$}
   \UnaryInfC{$\alpha \lor \lnot\alpha$}
 \end{prooftree}
+Hence we may derive LEM by deriving it only for formulae for which $x$ is not
+free.  This is formalised in Agda as follows.
 \begin{code}
 
 wlog-lem : (∀ α → xvar NotFreeIn α → ⊢ (lem α)) → ⊢₁ lem
@@ -377,8 +402,8 @@ $\alpha$ and not equal to $x$.
     ω,ωFresh,x≢ω with fresh (∀x α)
     ω,ωFresh,x≢ω | ω , Λ x≢ω ωFrα = ω , ωFrα , x≢ω
 \end{code}
-We therefore have a variable $\omega$ which is not free in $Px$, which is free
-for $x$ in $\alpha$, and which is different from $x$.
+We therefore have a variable $\omega$ which is not free in $\alpha$, which is
+free for $x$ in $\alpha$, and which is different from $x$.
 \begin{code}
     ωvar          : Variable
     ω∉α           : ωvar NotFreeIn α
@@ -401,8 +426,8 @@ $\text{LEM}(\alpha_\omega)[\omega/x] = \text{LEM}(\alpha)$.
 \begin{code}
     lemαω[ω/x]≡lemα : (lem αω) [ ωvar / _ ]≡ (lem α)
     lemαω[ω/x]≡lemα = subInverse
-                         (ω∉α ∨ (ω∉α ⇒ atom []))
-                         (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
+                       (ω∉α ∨ (ω∉α ⇒ atom []))
+                       (α[x/ω]≡αω ∨ (α[x/ω]≡αω ⇒ notfree (atom [])))
 \end{code}
 Finally, $x$ will not be free after it has been substituted out of $\alpha$.
 \begin{code}
@@ -416,29 +441,29 @@ quantifier.
 \todo{Don't call it rlem}
 \begin{code}
 
-glpo→rlem : ⊢₁ glpo → ∀ α → xvar NotFreeIn α → ⊢ (lem α)
-glpo→rlem ⊢glpo α x∉α = close
-                         from∅
-                         (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄
-                          (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇
-                          (λ z₈ → z₈)))))))
-                         (disjelim
-                          (cite "GLPO" (⊢glpo α))
-                          (disjintro₂ α
-                           (univelim x (ident (¬ α) xvar)
-                            (assume (∀x¬ α))))
-                          (disjintro₁ (¬ α)
-                           (existelim (all⟨ x∉α ⟩ all∪ (all- all⟨ x∉α ⟩))
-                            (assume (∃x α))
-                            (assume α))))
+glpo→xnf→lem : ⊢₁ glpo → ∀ α → xvar NotFreeIn α → ⊢ (lem α)
+glpo→xnf→lem ⊢glpo α x∉α = close
+                            from∅
+                            (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ →
+                             z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅
+                              (λ z₇ → z₇ (λ z₈ → z₈)))))))
+                            (disjelim
+                             (cite "GLPO" (⊢glpo α))
+                             (disjintro₂ α
+                              (univelim x (ident (¬ α) xvar)
+                               (assume (∀x¬ α))))
+                             (disjintro₁ (¬ α)
+                              (existelim (all⟨ x∉α ⟩ all∪ (all- all⟨ x∉α ⟩))
+                               (assume (∃x α))
+                               (assume α))))
 
 \end{code}
-Now we can obtain LEM directly from GLPO. The proof tree for the restricted
+Now, LEM can be obtained directly from GLPO. The proof tree for the restricted
 form of LEM is inserted into the proof tree from \inline{wlog-lem}.
 \begin{code}
 
 glpo→lem : ⊢₁ glpo → ⊢₁ lem
-glpo→lem ⊢glpo = wlog-lem (glpo→rlem ⊢glpo)
+glpo→lem ⊢glpo = wlog-lem (glpo→xnf→lem ⊢glpo)
 
 GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
 GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) α
@@ -447,7 +472,7 @@ GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) 
 No computation of a fresh variable has occured yet, since the variable depends
 on the instance of LEM we want to derive. Extracting the proof tree for
 $\text{LEM}(Px)$, the \inline{fresh} function computes that $y$ is fresh, and
-so we produce the proof tree below.
+so the proof tree below is produced.
 \begin{code}
 
 glpo→lem-prooftree = texreduce GLPO⊃LEM (P x ∷ [])
