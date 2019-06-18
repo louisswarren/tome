@@ -458,9 +458,9 @@ The definition for formulae follows.
 data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
 \end{code}
 The \inline{ident} constructor gives the case that replacing $x$ with $x$
-yields the original formula. While this is actually a derived rule, in practice
-it is the case we usually want to use. Providing a constructor allows Agda's
-proof search to apply this case easily. \todo{Implicit ident?}
+yields the original formula. While this can be proved as a derived rule, in
+practice it is the case we usually want to use. Providing a constructor allows
+Agda's proof search to apply this case easily. \todo{Implicit ident?}
 \begin{code}
   ident : ∀ α x → α [ x / varterm x ]≡ α
 \end{code}
