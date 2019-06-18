@@ -59,13 +59,12 @@ functions,
 \begin{code}
 
 nullaryscheme : Formula → Scheme
+unaryscheme   : (Formula → Formula) → Scheme
+binaryscheme  : (Formula → Formula → Formula) → Scheme
+
 nullaryscheme f = scheme 0 λ { [] → f }
-
-unaryscheme : (Formula → Formula) → Scheme
-unaryscheme f = scheme 1 λ { (α ∷ []) → f α }
-
-binaryscheme : (Formula → Formula → Formula) → Scheme
-binaryscheme f = scheme 2 λ { (α ∷ β ∷ []) → f α β }
+unaryscheme   f = scheme 1 λ { (α ∷ []) → f α }
+binaryscheme  f = scheme 2 λ { (α ∷ β ∷ []) → f α β }
 
 \end{code}
 expressing derivability for functions,
@@ -74,12 +73,11 @@ expressing derivability for functions,
 infix 1 ⊢₀_ ⊢₁_ ⊢₂_
 
 ⊢₀_ : Formula → Set₁
-⊢₀ α = ⊢ α
-
 ⊢₁_ : (Formula → Formula) → Set₁
-⊢₁ s = ∀ α → ⊢ s α
-
 ⊢₂_ : (Formula → Formula → Formula) → Set₁
+
+⊢₀ s =         ⊢ s
+⊢₁ s = ∀ α   → ⊢ s α
 ⊢₂ s = ∀ α β → ⊢ s α β
 
 \end{code}
@@ -88,15 +86,14 @@ and turning derivability of schemes into derivability of functions.
 
 descheme₀ : {f : Vec Formula 0 → Formula}
             → (∀ αs → ⊢ f αs) → ⊢ f []
-descheme₀ {f} ⊢S = ⊢S []
-
 descheme₁ : {f : Vec Formula 1 → Formula}
             → (∀ αs → ⊢ f αs) → ∀ α → ⊢ f (α ∷ [])
-descheme₁ {f} ⊢S α = ⊢S (α ∷ [])
-
 descheme₂ : {f : Vec Formula 2 → Formula}
             → (∀ αs → ⊢ f αs) → ∀ α β → ⊢ f (α ∷ β ∷ [])
-descheme₂ {f} ⊢S α β = ⊢S (α ∷ (β ∷ []))
+
+descheme₀ ⊢S     = ⊢S []
+descheme₁ ⊢S α   = ⊢S (α ∷ [])
+descheme₂ ⊢S α β = ⊢S (α ∷ (β ∷ []))
 
 \end{code}
 
