@@ -1,7 +1,8 @@
-The previous sections define the language of natural deduction. This system can
+The previous modules define the language of natural deduction. This system can
 be used to show that certain first-order formulae are derivable in minimal
 logic. To examine axiom schemes, we define some metalanguage concepts.
 
+\AgdaHide{
 \begin{code}
 
 module Scheme where
@@ -14,11 +15,12 @@ open import List
 open import Vec
 
 \end{code}
+}
 
 A \emph{scheme} is often thought of as a formula containing schematic
 variables, which can be replaced by subformulae to produce a new formula. The
-following notion is more general than this; instead, a Scheme is just
-constructed from a function from formulae to a formula.
+following notion is more general than this; instead, a scheme is just
+constructed from a function from (a vector of) formulae to a formula.
 \begin{code}
 
 record Scheme : Set where
@@ -28,9 +30,12 @@ record Scheme : Set where
     inst  : Vec Formula arity → Formula
 
 \end{code}
-This definition makes no restriction on the structure of the instances of the
-scheme \todo{continuity?}, and is not able to put requirements on variable
-freedom.
+Defining this as a type using a vector, instead of simply using functions,
+means that all schemes of all arities are collected under the same type
+(\inline{Scheme}), which makes it possible to define a single function for
+typesetting scheme proofs later. The definition makes no restriction on the
+structure of the instances of the scheme \todo{continuity?}, and is not able to
+put requirements on variable freedom.
 
 A scheme is derivable if every instance of the scheme is derivable. A list
 $\Omega s$ of schemes is stronger than a scheme $\Phi$ if every instance of
