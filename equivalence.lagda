@@ -3,12 +3,15 @@ to renaming of bound variables. This has not been included in the definition of
 formulae or of natural deduction. To do so would introduce an extra
 complication to the deduction rules, as every step in a natural deduction proof
 would have to include a proof that the conclusion is equivalent to the desired
-one. However, it is possible to prove that this is unnecessary; given the sytem
-above, if $\Gamma \vdash \alpha$ and $\alpha$ is equivalent to $\alpha'$ up to
+one. However, it is possible to prove that this is unnecessary; in the system
+given, if $\Gamma \vdash \alpha$ and $\alpha$ is equivalent to $\alpha'$ up to
 the renaming of bound variables, then $\Gamma \vdash \alpha'$.
+
 \begin{code}
 
-open import Agda.Primitive using (_⊔_)
+\end{code}
+\AgdaHide{
+\begin{code}
 
 open import Decidable
 open import Deduction
@@ -18,6 +21,7 @@ open import List
 open import Vec
 
 \end{code}
+}
 
 \subsection{Formula equivalence}
 
@@ -43,17 +47,17 @@ resulting component must also be replaceable with an equivalent component, as
 other bound variable renaming may occur inside.
 \begin{code}
   Λ/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β
-                       → β ≈ β′ → Λ x α ≈ Λ y β′
+                         → β ≈ β′ → Λ x α ≈ Λ y β′
   V/   : ∀{α β β′ x y} → y NotFreeIn α → α [ x / varterm y ]≡ β
-                       → β ≈ β′ → V x α ≈ V y β′
+                         → β ≈ β′ → V x α ≈ V y β′
 \end{code}
 For equivalence to be symmetric, the following dual form of bound variable
 renaming must be derivable.
 \begin{code}
   Λ/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′
-                        → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
+                          → α′ [ x / varterm y ]≡ β′ → Λ x α ≈ Λ y β′
   V/′  : ∀{α α′ β′ x y} → α ≈ α′ → y NotFreeIn α′
-                        → α′ [ x / varterm y ]≡ β′ → V x α ≈ V y β′
+                          → α′ [ x / varterm y ]≡ β′ → V x α ≈ V y β′
 
 \end{code}
 It may be that the latter two rules are derivable. However, if this is so,
@@ -69,12 +73,12 @@ Formula equivalence is symmetric.
 \end{code}
 For the trivial definitions, the proof is similarly trivial.
 \begin{code}
-≈sym (atom r ts) = atom r ts
+≈sym (atom r ts)   = atom r ts
 ≈sym (α≈α′ ⇒ β≈β′) = ≈sym α≈α′ ⇒ ≈sym β≈β′
 ≈sym (α≈α′ ∧ β≈β′) = ≈sym α≈α′ ∧ ≈sym β≈β′
 ≈sym (α≈α′ ∨ β≈β′) = ≈sym α≈α′ ∨ ≈sym β≈β′
-≈sym (Λ x α≈α′) = Λ x (≈sym α≈α′)
-≈sym (V x α≈α′) = V x (≈sym α≈α′)
+≈sym (Λ x α≈α′)    = Λ x (≈sym α≈α′)
+≈sym (V x α≈α′)    = V x (≈sym α≈α′)
 \end{code}
 In the case of bound variable renaming, the dual constructor is used. If the
 bound variable is being renamed with itself, then the previous trivial proof is
@@ -197,21 +201,31 @@ some bound variable has been renamed to it, so it is bound.
 
 \subsection{Deriving the rename rule}
 
-We want to derive the rule \inline{α ≈ α′ → Γ ⊢ α → Γ ⊢ α′}. Note that it is
-the same $\Gamma$ in both deductions, so changing variable names within the
-deduction of $\Gamma \vdash \alpha$ will not suffice. Instead, the deduction
-tree is extended to obtain the new conclusion.
+We want to derive the rule $\alpha \approx \alpha' \rightarrow \Gamma \vdash
+\alpha \rightarrow \Gamma \vdash \alpha'$.  As $\Gamma$ is the same in both
+deductions, changing variable names within the deduction of $\Gamma \vdash
+\alpha$ will not suffice. Instead, the deduction tree is extended to obtain the
+new conclusion.
 
 Proving this rule has a termination issue for the case that $\alpha$ is an
 implication, which will be explained below. However, it is possible to prove
-the stronger rule \inline{α ≈ α′ → Γ ⊢ α ↔ Γ ⊢ α′}.
+the stronger rule $\alpha \approx \alpha' \rightarrow (\Gamma \vdash \alpha
+\leftrightarrow \Gamma \vdash \alpha')$. A simplified notion of
+`$\leftrightarrow$' in Agda can be defined as follows.
 \begin{code}
 
-record _↔_ {a b} (A : Set a) (B : Set b) : Set (a ⊔ b) where
-  field
-    ⟨→⟩ : A → B
-    ⟨←⟩ : B → A
-open _↔_
+private
+  record _↔_ (A : Set₁) (B : Set₁) : Set₁ where
+    field
+      ⟨→⟩ : A → B
+      ⟨←⟩ : B → A
+  open _↔_
+
+\end{code}
+This is simplified in that it requires all types involved to be of type
+\inline{Set₁}, which is enough for our purposes. We can now define the stronger
+rename rule.
+\begin{code}
 
 renameIff : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
 
@@ -226,9 +240,10 @@ rename      : ∀{Γ α α′}
               →                                Γ ⊢ α′
 rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
 \end{code}
-We prove \inline{renameIff}.
+It remains to prove \inline{renameIff}.
 \todo{Should I show the reverse trees where the proof is omitted?}
 \todo{Should I just omit all of the proofs?}
+\todo{Should have not made $\alpha$ and $\alpha'$ implicit}
 
 The atomic case is trivial, since an atomic formula is equivalent only to
 itself.
@@ -236,10 +251,8 @@ itself.
 ⟨→⟩ (renameIff {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
 ⟨←⟩ (renameIff {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
 \end{code}
-The remaining rules will extend the given proof tree for $\Gamma \vdash \alpha$
-to obtain $\alpha'$.
 
-The proof tree for the implication case is extended as follows.
+The proof tree for the implication case is extended as follows. \todo{noline?}
 \begin{code}
 
 ⟨→⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) Γ⊢α⇒β =
@@ -426,7 +439,7 @@ Again, the other direction is obtained by reversing the use of equivalences.
 }
 
 The first case for universal generalisation is where the bound variable is not
-renamed.
+renamed. \todo{$\forall_x$ or $\forall x$}
 \begin{code}
 
 ⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) Γ⊢∀xα =
@@ -497,7 +510,7 @@ follows another equivalence.
 
 \end{code}
 Since $x$ is being renamed to $y$, we know $y$ is not free in $\alpha$, and so
-it is also not free in $\forall x \alpha$. We have $\beta \coloneq \alpha[x/y]$.
+it is also not free in $\forall x \alpha$. Define $\beta \coloneq \alpha[x/y]$.
 \begin{prooftree}
   \AxiomC{[$\forall x \alpha$]}
   \RightLabel{$\forall^-$}
@@ -614,7 +627,7 @@ The third case is the dual of the second.
 ⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∀xα =
 
 \end{code}
-Note that $\beta' \coloneq \alpha'[x/y]$.
+We have $\beta' \coloneq \alpha'[x/y]$.
 \begin{prooftree}
   \AxiomC{[$\forall x \alpha$]}
   \RightLabel{$\forall^-$}
@@ -679,7 +692,7 @@ In the degenerate case where $x = y$, we have $\alpha' = \beta'$.
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x β′)
-     (univintro x all⟨ Λ∣ x β′ ⟩ -- Only difference
+     (univintro x all⟨ Λ∣ x β′ ⟩
       (⟨←⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident β′ x)
         (assume (Λ x β′))))))
@@ -811,7 +824,7 @@ $x$ cannot be free in $\beta$, and so it is also not free in $\exists y \beta$.
      (existintro (varterm x) y (subInverse y∉α α[x/y]≡β)
       (assume α))
      (existintro (varterm y) y (ident β′ y)
-      (⟨→⟩ (renameIff β≈β′) -- Not structurally recursive
+      (⟨→⟩ (renameIff β≈β′)
        (assume _)))))
 
 \end{code}
@@ -899,9 +912,9 @@ If $x = y$, then $\alpha' = \beta'$.
   close
    (assembled-context Γ⊢∃xα)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩)) -- Differs here
+   (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩))
     Γ⊢∃xα
-    (existintro (varterm x) x (ident β x) -- And here
+    (existintro (varterm x) x (ident β x)
      (⟨→⟩ (renameIff α≈α′)
       (assume α))))
 
@@ -928,9 +941,9 @@ and $x$ is not free in $\beta'$, and so is not free in $\exists y \beta'$.
    (assembled-context Γ⊢∃xα)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
    (existelim (all⟨ V y (subNotFree (varterm x≢y) α′[x/y]≡β′) ⟩
-               all∪ (all- all⟨- [ refl ] ⟩)) -- Differs here
+               all∪ (all- all⟨- [ refl ] ⟩))
     Γ⊢∃xα
-    (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β′) -- And here
+    (existintro (varterm x) y (subInverse y∉α′ α′[x/y]≡β′)
      (⟨→⟩ (renameIff α≈α′)
       (assume α))))
 
@@ -977,3 +990,4 @@ Consider the other direction.
 
 We can conclude that examining formulae only on an intensional level does not
 restrict the deductive power of the system.
+\todo{More}
