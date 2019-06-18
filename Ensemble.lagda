@@ -27,8 +27,6 @@ Predicates can be used for this purpose.
 
 module Ensemble where
 
-open import Agda.Builtin.Equality
-
 open import Decidable
 open import List using (List ; [] ; _∷_)
 

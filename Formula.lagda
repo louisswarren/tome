@@ -1014,7 +1014,7 @@ minFresh (atom r ts) | ⌈ts⌉ , tspf = var (suc ⌈ts⌉)
 If all variables greater than or equal to $\lceil\alpha\rceil$ are fresh in
 $\alpha$, greater than or equal to $\lceil\beta\rceil$ are fresh in $\beta$,
 then any variable greater than or equal to $\max\{\lceil\alpha\rceil,
-\lceil\alpha\rceil\}$ will be not free in $\alpha \rightarrow \beta$.
+\lceil\beta\rceil\}$ will be not free in $\alpha \rightarrow \beta$.
 \begin{code}
 minFresh (α ⇒ β) with minFresh α | minFresh β
 ...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
@@ -1027,7 +1027,7 @@ minFresh (α ⇒ β) with minFresh α | minFresh β
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ⇒ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ⇒ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
 \end{code}
-The same reasoning applies to conjunction,
+The same reasoning applies to conjunction
 \begin{code}
 minFresh (α ∧ β) with minFresh α | minFresh β
 ...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
@@ -1053,7 +1053,7 @@ minFresh (α ∨ β) with minFresh α | minFresh β
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∨ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∨ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
 \end{code}
-For a universal generalisation $\forall x \alpha$, take  thre greater of
+For a universal generalisation $\forall x \alpha$, take  the greater of
 $\lceil\alpha\rceil$ and the successor of $x$.
 \begin{code}
 minFresh (Λ x@(var k) α) with minFresh α
