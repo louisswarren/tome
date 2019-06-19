@@ -21,7 +21,7 @@ constFreeFor (α ∨ β) x n = constFreeFor α x n ∨ constFreeFor β x n
 constFreeFor (Λ x₁ α) x n = Λ (functerm []) (constFreeFor α x n)
 constFreeFor (V x₁ α) x n = V (functerm []) (constFreeFor α x n)
 
-LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DNSU DNSE UD IP CD : Scheme
+LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DNSU DNSE IP CD : Scheme
 
 
 lpo : Formula → Formula → Formula
@@ -91,21 +91,17 @@ dnse Φx = ¬¬(∃x Φx) ⇒ ∃x (¬¬ Φx)
 DNSU = unaryscheme "DNS$\\forall$" dnsu
 DNSE = unaryscheme "DNS$\\exists$" dnse
 
-cd : Formula → Formula → Formula
-cd Φx Ψ = ∀x (Φx ∨ ∃x Ψ) ⇒ ∀x Φx ∨ ∃x Ψ
-
-CD = binaryscheme "CD" cd
 
 
 -- These are usually stated with Ψ instead of ∃x Ψ, but this is a simple way of
 -- adding bounded variable requirements as x is certainly not free in ∃x Ψ.
 -- If x is in fact not free in Ψ, then the existential can be eliminated
 -- separately.
-ud ip : Formula → Formula → Formula
-ud Φx Ψ = ∀x (Φx ∨ (∃x Ψ)) ⇒ (∀x Φx ∨ ∃x Ψ)
+cd ip : Formula → Formula → Formula
+cd Φx Ψ = ∀x (Φx ∨ ∃x Ψ) ⇒ ∀x Φx ∨ ∃x Ψ
 ip Φx Ψ = (∃x Ψ ⇒ ∃x Φx) ⇒ ∃x(∃x Ψ ⇒ Φx)
 
-UD = binaryscheme "UD" ud
+CD = binaryscheme "CD" cd
 IP = binaryscheme "IP" ip
 
 pattern ¬D t = ¬(D t)
