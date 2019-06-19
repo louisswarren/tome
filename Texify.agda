@@ -207,13 +207,17 @@ texdeduction d = "\\begin{prooftree}\n"
                  >> "\\end{prooftree}\n"
 
 
--- We assume that all schemes are derivable, and will derive their instances
--- by citing the schemes.
+-- We postulate that every instance of the stronger schemes is derivable. By
+-- using cite, the deductions for these become irrelevant, so a string is still
+-- produced. Postulates are not safe, but here this should not cause problems,
+-- since this can only be used to produce strings.
 
-texreduce : {xs : List Scheme} {y : Scheme} → xs ⊃ y
-            → Vec Formula (Scheme.arity y) → String
-texreduce {xs} r αs = texdeduction (r proveschemes αs)
+-- The scheme y can't be found implicitly because of how strings are defined.
+texreduce : {xs : List Scheme}
+            → (y : Scheme) → Vec Formula (Scheme.arity y) → xs ⊃ y → String
+texreduce {xs} y αs xs⊃y = texdeduction (xs⊃y ⊢xs αs)
   where
-    postulate provescheme : (s : Scheme) → Derivable s
-    proveschemes : (y : Scheme) → y List.∈ xs → Derivable y
-    proveschemes y _ = provescheme y
+    ⊢xs : (x : Scheme) → x List.∈ xs → Derivable x
+    ⊢xs (scheme n name f) _ αs = cite name Ω
+      where
+        postulate Ω : ∅ ⊢ f αs

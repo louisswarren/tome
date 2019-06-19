@@ -27,31 +27,31 @@ LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DNSU DNSE UD IP CD : Scheme
 lpo : Formula → Formula → Formula
 lpo Φx Ψx = ∀x (Φx ∨ Ψx) ⇒ ∀x Φx ∨ ∃x Ψx
 
-LPO = binaryscheme lpo
+LPO = binaryscheme "LPO" lpo
 
 dne : Formula → Formula
 dne Φ = ¬¬ Φ ⇒ Φ
 
-DNE = unaryscheme dne
+DNE = unaryscheme "DNE" dne
 
 efq : Formula → Formula
 efq Φ = ⊥ ⇒ Φ
 
-EFQ = unaryscheme efq
+EFQ = unaryscheme "EFQ" efq
 
 
 lem wlem : Formula → Formula
 lem  Φ = Φ ∨ ¬ Φ
 wlem Φ = ¬ Φ ∨ ¬¬ Φ
 
-LEM  = unaryscheme lem
-WLEM = unaryscheme wlem
+LEM  = unaryscheme "LEM"  lem
+WLEM = unaryscheme "WLEM" wlem
 
 
 dgp : Formula → Formula → Formula
 dgp Φ Ψ  = (Φ ⇒ Ψ) ∨ (Ψ ⇒ Φ)
 
-DGP = binaryscheme dgp
+DGP = binaryscheme "DGP" dgp
 
 
 ∃lem ∃wlem : Formula → Formula
@@ -68,10 +68,10 @@ glpoa Φx = ∀x Φx ∨ ∃x ¬Φx                                       where 
 gmp   Φx = ¬∀x Φx ⇒ ∃x ¬Φx                                      where ¬Φx = ¬ Φx
 wgmp  Φx = ¬∀x Φx ⇒ ¬¬(∃x ¬Φx)                                  where ¬Φx = ¬ Φx
 
-GLPO  = unaryscheme glpo
-GLPOA = unaryscheme glpoa
-GMP   = unaryscheme gmp
-WGMP  = unaryscheme wgmp
+GLPO  = unaryscheme "GLPO"  glpo
+GLPOA = unaryscheme "GLPO'" glpoa
+GMP   = unaryscheme "GMP"   gmp
+WGMP  = unaryscheme "WGMP"  wgmp
 
 
 
@@ -79,8 +79,8 @@ dp he : Formula → Formula
 dp  Φx = ∃x(Φx ⇒ ∀x Φx)
 he  Φx = ∃x(∃x Φx ⇒ Φx)
 
-DP  = unaryscheme dp
-HE  = unaryscheme he
+DP  = unaryscheme "DP" dp
+HE  = unaryscheme "H$\\epsilon$" he
 
 
 
@@ -88,13 +88,13 @@ dnsu dnse : Formula → Formula
 dnsu Φx = ∀x(¬¬ Φx) ⇒ ¬¬(∀x Φx)
 dnse Φx = ¬¬(∃x Φx) ⇒ ∃x (¬¬ Φx)
 
-DNSU = unaryscheme dnsu
-DNSE = unaryscheme dnse
+DNSU = unaryscheme "DNS$\\forall$" dnsu
+DNSE = unaryscheme "DNS$\\exists$" dnse
 
 cd : Formula → Formula → Formula
 cd Φx Ψ = ∀x (Φx ∨ ∃x Ψ) ⇒ ∀x Φx ∨ ∃x Ψ
 
-CD = binaryscheme cd
+CD = binaryscheme "CD" cd
 
 
 -- These are usually stated with Ψ instead of ∃x Ψ, but this is a simple way of
@@ -105,8 +105,8 @@ ud ip : Formula → Formula → Formula
 ud Φx Ψ = ∀x (Φx ∨ (∃x Ψ)) ⇒ (∀x Φx ∨ ∃x Ψ)
 ip Φx Ψ = (∃x Ψ ⇒ ∃x Φx) ⇒ ∃x(∃x Ψ ⇒ Φx)
 
-UD = binaryscheme ud
-IP = binaryscheme ip
+UD = binaryscheme "UD" ud
+IP = binaryscheme "IP" ip
 
 pattern ¬D t = ¬(D t)
 
@@ -116,9 +116,9 @@ d0 = D t0
 d∀ = ∀x (D x ∨ ¬D x)
 
 D0 ¬D1 D∀ : Scheme
-D0 = nullaryscheme d0
-¬D1 = nullaryscheme ¬d1
-D∀ = nullaryscheme d∀
+D0  = nullaryscheme "D$0$"         d0
+¬D1 = nullaryscheme "$\\lnot$D$1$" ¬d1
+D∀  = nullaryscheme "D$\\forall$"  d∀
 
 TT : List Scheme
 TT = D0 ∷ ¬D1 ∷ D∀ ∷ []
@@ -142,7 +142,7 @@ dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
                           (assembled-context (arrowintro (¬ α) Γ⊢⊥))
                           (λ x₁ z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z₄) (λ z₄ → z₄ z₃)))
                           (arrowelim
-                           (cite "DNE" (⊢dne α))
+                           (⊢dne α)
                            (arrowintro (¬ α)
                             Γ⊢⊥))
 
@@ -161,7 +161,7 @@ efq→⊥i-rule ⊢efq α Γ⊢⊥ = close
                           (assembled-context Γ⊢⊥)
                           (λ x₁ z₁ → z₁ (λ z₂ → z₂))
                           (arrowelim
-                           (cite "EFQ" (⊢efq α))
+                           (⊢efq α)
                            Γ⊢⊥)
 
 ⊥i-rule→dne : ⊥i-rule → ⊢₁ efq
@@ -179,7 +179,7 @@ dne→lem : ⊢₁ dne → ⊢₁ lem
 dne→lem ⊢dne α = close from∅
                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃)  (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄ (λ z₆ → z₆ (λ z₇ z₈ → z₈ z₄ z₇))))))
                   (arrowelim
-                   (cite "DNE" (⊢dne (α ∨ ¬ α)))
+                   (⊢dne (α ∨ ¬ α))
                    (arrowintro (¬ (α ∨ ¬ α))
                     (arrowelim
                      (assume (¬ (α ∨ ¬ α)))
@@ -198,7 +198,7 @@ dne→efq ⊢dne α = close from∅
                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ _ → z₃)))))
                   (arrowintro ⊥
                    (arrowelim
-                    (cite "DNE" (⊢dne α))
+                    (⊢dne α)
                     (arrowintro (¬ α)
                      (assume ⊥))))
 DNE⊃EFQ : DNE ∷ [] ⊃ EFQ
@@ -209,10 +209,10 @@ lem,efq→dne ⊢lem ⊢efq α = close from∅
                            (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ → z₆ (λ z₇ → z₇)) (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ z₃ z₇)))))))
                            (arrowintro (¬¬ α)
                             (disjelim
-                             (cite "LEM" (⊢lem α))
+                             (⊢lem α)
                              (assume α)
                              (arrowelim
-                              (cite "EFQ" (⊢efq α))
+                              (⊢efq α)
                               (arrowelim
                                (assume (¬¬ α))
                                (assume (¬ α))))))
@@ -226,7 +226,7 @@ he→ip ⊢he α β = close from∅
                  (arrowintro (∃x β ⇒ ∃x α)
                   (existelim
                    (all⟨ V∣ xvar (∃x β ⇒ α) ⟩ all∪ (all- (all- (all⟨- ∃x β ∷ [ refl ] ⟩ all∪ all⟨ V∣ xvar β ⇒ V∣ xvar α ⟩ all∪ all⟨ V∣ xvar β ⟩))))
-                   (cite "HE" (⊢he α))
+                   (⊢he α)
                    (existintro x xvar
                     (ident (∃x β ⇒ α) xvar)
                     (arrowintro (∃x β)
@@ -245,7 +245,7 @@ ip→he ⊢ip α = close from∅
                (existelim
                 (all⟨ V∣ xvar (∃x α ⇒ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
                 (arrowelim
-                 (cite "IP" (⊢ip α α))
+                 (⊢ip α α)
                  (arrowintro (∃x α)
                   (assume (∃x α))))
                 (existintro x xvar
@@ -259,7 +259,7 @@ lem→glpo : ⊢₁ lem → ⊢₁ glpo
 lem→glpo ⊢lem α = close from∅
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃)  (λ z₃ →  z₃ (λ z₄ → z₄ (λ z₅ → z₅))  (λ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ z₈ → z₈ z₅ z₇))))))
                    (disjelim
-                    (cite "LEM" (⊢lem (∃x α)))
+                    (⊢lem (∃x α))
                     (disjintro₂ (∀x¬ α)
                      (assume (∃x α)))
                     (disjintro₁ (∃x α)
@@ -452,7 +452,7 @@ glpo→∃lem ⊢glpo α = close
                      from∅
                      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
                      (disjelim
-                       (cite "GLPO" (⊢glpo α))
+                       (⊢glpo α)
                        (existintro x xvar (ident (α ∨ ¬ α) xvar)
                        (disjintro₂ α
                          (univelim x (ident (¬ α) xvar)
@@ -501,7 +501,7 @@ glpo→rlem ⊢glpo α x∉α = close
                          from∅
                          (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
                          (disjelim
-                          (cite "GLPO" (⊢glpo α))
+                          (⊢glpo α)
                           (disjintro₂ α
                            (univelim x (ident (¬ α) xvar)
                             (assume (∀x¬ α))))
@@ -523,7 +523,7 @@ dnsu→wgmp ⊢dnsu α = close
                       (arrowintro (¬∃x¬ α)
                        (arrowelim
                         (arrowelim
-                         (cite "DNS\\forall" (⊢dnsu α))
+                         (⊢dnsu α)
                          (univintro xvar (all- (all⟨ V∣ xvar (¬ α) ⇒ atom [] ⟩ all∪ all⟨- [ refl ] ⟩))
                           (arrowintro (¬ α)
                            (arrowelim
@@ -542,7 +542,7 @@ wgmp→dnsu ⊢wgmp α = close
                       (arrowintro (¬∀x α)
                        (arrowelim
                         (arrowelim
-                         (cite "WGMP" (⊢wgmp α))
+                         (⊢wgmp α)
                          (assume (¬∀x α)))
                         (arrowintro (∃x¬ α)
                          (existelim (all⟨ atom [] ⟩ all∪  (all- (all⟨ Λ∣ xvar (¬¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
@@ -555,14 +555,14 @@ WGMP⊃DNSU : WGMP ∷ [] ⊃ DNSU
 WGMP⊃DNSU ⊢lhs (α ∷ []) = wgmp→dnsu (descheme₁ (⊢lhs WGMP [ refl ])) α
 
 --dp→dp′ : ⊢₁ dp → ∀ α ωvar → (ff : (varterm ωvar) FreeFor xvar In α) → ⊢ V ωvar (Λ xvar (fst (α [ xvar / ff ]) ⇒ α))
---dp→dp′ ⊢dp α ωvar ωffx = close {!   !} {!   !} (existelim {!   !} (cite "DP" (⊢dp α)) (existintro {!   !} {!   !} {!   !} {!   !}))
+--dp→dp′ ⊢dp α ωvar ωffx = close {!   !} {!   !} (existelim {!   !} (⊢dp α) (existintro {!   !} {!   !} {!   !} {!   !}))
 
 dne→dp : ⊢₁ dne → ⊢₁ dp
 dne→dp ⊢dne α = close
                  from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄ (λ z₆ → z₆ (λ _ z₇ → z₇ (λ z₈ → z₈) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ z₄ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ (λ z₁₄ → z₁₄) (λ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₉ z₁₂))))))))))))
                  (arrowelim
-                  (cite "DNE" (⊢dne (dp α)))
+                  (⊢dne (dp α))
                   (arrowintro (¬ (dp α))
                    (arrowelim
                     (assume (¬ (dp α)))
@@ -570,14 +570,14 @@ dne→dp ⊢dne α = close
                      (arrowintro α
                       (univintro xvar (all∅ all∪ (all- (all⟨ V∣ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩ all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷ [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
                        (arrowelim
-                        (cite "DNE" (⊢dne α))
+                        (⊢dne α)
                         (arrowintro (¬ α)
                          (arrowelim
                           (assume (¬ (dp α)))
                           (existintro x xvar (ident (α ⇒ ∀x α) xvar)
                           (arrowintro α
                            (arrowelim
-                            (cite "DNE" (⊢dne (∀x α)))
+                            (⊢dne (∀x α))
                             (arrowintro (¬∀x α)
                              (arrowelim
                               (assume (¬ α))
@@ -590,14 +590,14 @@ dne→he ⊢dne α = close
                  from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄ (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ (λ _ z₁₀ → z₁₀ z₇ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₄ (λ z₁₄ → z₁₄ (λ _ → z₁₂))))))))))))
                  (arrowelim
-                  (cite "DNE" (⊢dne (he α)))
+                  (⊢dne (he α))
                   (arrowintro (¬ (he α))
                    (arrowelim
                     (assume (¬ (he α)))
                     (existintro x xvar (ident (∃x α ⇒ α) xvar)
                      (arrowintro (∃x α)
                       (arrowelim
-                       (cite "DNE" (⊢dne α))
+                       (⊢dne α)
                        (arrowintro (¬ α)
                         (existelim (all⟨ atom [] ⟩ all∪ (all- (all⟨ V∣ xvar (∃x α ⇒ α) ⇒ atom [] ⟩ all∪ (all- all⟨- ∃x α ∷ [ refl ] ⟩))))
                          (assume (∃x α))
@@ -625,7 +625,7 @@ gmp→wgmp ⊢gmp α = close
                      (arrowelim
                       (assume (¬∃x¬ α))
                       (arrowelim
-                       (cite "GMP" (⊢gmp α))
+                       (⊢gmp α)
                        (assume (¬∀x α))))))
 GMP⊃WGMP : GMP ∷ [] ⊃ WGMP
 GMP⊃WGMP ⊢lhs (α ∷ []) = gmp→wgmp (descheme₁ (⊢lhs GMP [ refl ])) α
@@ -636,7 +636,7 @@ dgp→wlem ⊢dgp α = close
                    from∅
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉ z₅ z₇) z₇))) (λ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ z₈ → z₈ z₇ (λ z₉ → z₉ z₅ z₇)))))))
                    (disjelim
-                    (cite "DGP" (⊢dgp α (¬ α)))
+                    (⊢dgp α (¬ α))
                     (disjintro₁ (¬¬ α)
                      (arrowintro α
                       (arrowelim
@@ -660,7 +660,7 @@ glpoa→∃lem ⊢glpoa α = close
                        from∅
                        (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
                        (disjelim
-                        (cite "GLPO'" (⊢glpoa α))
+                        (⊢glpoa α)
                         (existintro x xvar (ident (α ∨ ¬ α) xvar)
                          (disjintro₁ (¬ α)
                           (univelim x (ident α xvar)
@@ -682,7 +682,7 @@ glpoa→gmp ⊢glpoa α = close
                       (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ _ z₉ → z₉ z₃ z₇))) (λ z₆ → z₆ (λ z₇ → z₇))))))
                       (arrowintro (¬∀x α)
                        (disjelim
-                        (cite "GLPO'" (⊢glpoa α))
+                        (⊢glpoa α)
                         (existintro x xvar (ident (¬ α) xvar)
                          (arrowintro α
                           (arrowelim
@@ -699,7 +699,7 @@ dp→cd ⊢dp α β = close
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ z₃ (λ z₈ → z₈ (λ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₆ z₁₀)) (λ z₉ → z₉ (λ z₁₀ → z₁₀))))))))
                  (arrowintro (∀x (α ∨ ∃x β))
                   (existelim (all⟨ Λ∣ xvar α ∨ V∣ xvar β ⟩ all∪ (all- (all⟨ Λ∣ xvar (α ∨ ∃x β) ⟩ all∪ (all- (all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ V∣ xvar β ⟩))))
-                   (cite "DP" (⊢dp α))
+                   (⊢dp α)
                    (disjelim
                     (univelim x (ident (α ∨ ∃x β) xvar)
                      (assume (∀x (α ∨ ∃x β))))
@@ -715,7 +715,7 @@ dp→gmp ⊢dp α = close
                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ (λ z₈ z₉ → z₉ z₃ (λ z₁₀ → z₁₀ z₆ z₈)))))))
                 (arrowintro (¬∀x α)
                  (existelim (all⟨ V∣ xvar (¬ α) ⟩ all∪ (all- (all- (all⟨ Λ∣ xvar α ⇒ atom [] ⟩ all∪ all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩))))
-                  (cite "DP" (⊢dp α))
+                  (⊢dp α)
                   (existintro x xvar (ident (¬ α) xvar)
                    (arrowintro α
                     (arrowelim
@@ -733,7 +733,7 @@ he→dnse ⊢he α = close
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ (λ z₈ z₉ → z₉ z₃ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ z₈ (λ z₁₃ → z₁₃ z₆ z₁₁)))))))))
                    (arrowintro (¬¬∃x α)
                     (existelim (all⟨ V∣ xvar (¬¬ α) ⟩ all∪ (all- (all- (all⟨ (V∣ xvar α ⇒ atom []) ⇒ atom [] ⟩ all∪ (all- (all⟨- ∃x α ∷ [ refl ] ⟩ all∪ all⟨- ∃x α ∷ (¬ α ∷ [ refl ]) ⟩ all∪ all⟨ V∣ xvar α ⟩))))))
-                     (cite "H\\epsilon" (⊢he α))
+                     (⊢he α)
                      (existintro x xvar (ident (¬¬ α) xvar)
                       (arrowintro (¬ α)
                        (arrowelim
@@ -754,7 +754,7 @@ glpo→dnse ⊢glpo α = close
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ _ z₉ → z₉ z₃ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ z₁₁ (λ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ z₇ z₁₄))))))) (λ z₆ → z₆ (λ z₇ z₈ → z₈ z₇ (λ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₁₂ z₁₀)))))))))
                    (arrowintro (¬¬∃x α)
                     (disjelim
-                     (cite "GLPO" (⊢glpo α))
+                     (⊢glpo α)
                      (existintro x xvar (ident (¬¬ α) xvar)
                       (arrowintro (¬ α)
                        (arrowelim
@@ -783,7 +783,7 @@ gmp→dnse ⊢gmp α = close
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ z₃ (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ z₉ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₆ z₁₂)))))))))
                    (arrowintro (¬¬∃x α)
                     (arrowelim
-                     (cite "GMP" (⊢gmp (¬ α)))
+                     (⊢gmp (¬ α))
                      (arrowintro (∀x¬ α)
                       (arrowelim
                        (assume (¬¬∃x α))
@@ -844,10 +844,10 @@ dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
      from∅
      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ _ → z₁₀)) (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₁₅ z₈))))) (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₁₃ (λ z₁₆ → z₁₆))))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₈ z₁₅))) (λ z₁₄ → z₁₄ (λ _ → z₁₀)))) (λ z₁₂ → z₁₂ (λ _ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ z₁₄ (λ z₁₆ → z₁₆))))))))))))
      (existelim (all⟨ (x∉α ⇒ x∉β) ∨ (x∉β ⇒ x∉α) ⟩ all∪ (all- (all∅ all∪ (all- (all- ((all⟨- α ∷ (D x ∷ [ refl ]) ⟩ all∪ (all- all⟨ x∉α ⟩) all∪ (all- (all∅ all∪ all⟨- [ refl ] ⟩ all∪ all⟨- ¬D x ∷ (α ∷ [ refl ]) ⟩))) all∪ (all- (all- (all⟨- (D (functerm (func 1 zero) []) ⇒ α) ∷ [ refl ] ⟩ all∪ all∅)))))) all∪ (all- (all- ((all⟨- β ∷ (¬D x ∷ [ refl ]) ⟩ all∪ (all- (all∅ all∪ all⟨- D x ∷ (β ∷ [ refl ]) ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ x∉β ⟩)) all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all∅)))))))))
-      (cite "DP" (⊢dp φ))
+      (⊢dp φ)
       (disjelim
        (univelim x (ident (D x ∨ ¬D x) xvar)
-        (cite "TT" ⊢d∀))
+        ⊢d∀)
        (disjintro₁ (β ⇒ α)
         (arrowintro α
          (conjelim
@@ -859,13 +859,13 @@ dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
               (assume α))
              (arrowintro (¬D x)
               (arrowelim
-               (cite "EFQ" (⊢efq β))
+               (⊢efq β)
                (arrowelim
                 (assume (¬D x))
                 (assume (D x))))))))
           (arrowelim
            (assume (¬d1 ⇒ β))
-           (cite "TT" ⊢¬d1)))))
+           ⊢¬d1))))
        (disjintro₂ (α ⇒ β)
         (arrowintro β
          (conjelim
@@ -875,7 +875,7 @@ dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
             (conjintro
              (arrowintro (D x)
               (arrowelim
-               (cite "EFQ" (⊢efq α))
+               (⊢efq α)
                (arrowelim
                 (assume (¬D x))
                 (assume (D x)))))
@@ -883,7 +883,7 @@ dp,efq,tt→rdgp ⊢dp ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
               (assume β)))))
           (arrowelim
            (assume (d0 ⇒ α))
-           (cite "TT" ⊢d0)))))))
+           ⊢d0))))))
   where
     φ : Formula
     φ = (D x ⇒ α) ∧ (¬D x ⇒ β)
@@ -913,10 +913,10 @@ he,efq,tt→rdgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
      from∅
      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ (λ z₁₈ → z₁₈) z₁₅))) (λ z₁₄ → z₁₄ (λ _ → z₁₀)))) (λ z₁₂ → z₁₂ (λ _ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ z₁₄ z₈)))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ _ → z₁₀)) (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₁₅ (λ z₁₈ → z₁₈)))))) (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₁₃ z₈)))))))))))
      (existelim (all⟨ (x∉α ⇒ x∉β) ∨ (x∉β ⇒ x∉α) ⟩ all∪ (all- (all∅ all∪ (all- (all- ((all⟨- β ∷ (D x ∷ [ refl ]) ⟩ all∪ (all- (all∅ all∪ all∅ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ x∉β ⟩)) all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all⟨- (D x ⇒ α) ∷ ((¬D x ⇒ β) ∷ (β ∷ [ refl ])) ⟩)))))) all∪ (all- (all- ((all⟨- α ∷ (¬D x ∷ [ refl ]) ⟩ all∪ (all- all⟨ x∉α ⟩) all∪ (all- (all∅ all∪ all⟨- [ refl ] ⟩ all∪ all∅))) all∪ (all- (all- (all⟨- (D x ⇒ α) ∷ [ refl ] ⟩ all∪ all⟨- (D x ⇒ α) ∷ ((¬D x ⇒ β) ∷ (α ∷ [ refl ])) ⟩)))))))))
-      (cite "HE" (⊢he φ))
+      (⊢he φ)
       (disjelim
        (univelim x (ident (D x ∨ ¬ (D x)) xvar)
-        (cite "TT" ⊢d∀))
+        ⊢d∀)
        (disjintro₂ (α ⇒ β)
         (arrowintro β
          (conjelim
@@ -926,9 +926,9 @@ he,efq,tt→rdgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
             (conjintro
              (arrowintro (D t1)
               (arrowelim
-               (cite "EFQ" (⊢efq α))
+               (⊢efq α)
                (arrowelim
-                (cite "TT" ⊢¬d1)
+                ⊢¬d1
                 (assume (D t1)))))
              (arrowintro (¬D t1)
               (assume β)))))
@@ -945,10 +945,10 @@ he,efq,tt→rdgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
              (arrowintro (D t0) (assume α))
              (arrowintro (¬D t0)
               (arrowelim
-               (cite "TT" (⊢efq β))
+               (⊢efq β)
                (arrowelim
                 (assume (¬D t0))
-                (cite "TT" ⊢d0)))))))
+                ⊢d0))))))
           (arrowelim
            (assume (¬D x ⇒ β))
            (assume (¬D x))))))))
@@ -1029,7 +1029,7 @@ dnse,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
              (arrowintro (D t1)
               (arrowintro (¬ α)
                (arrowelim
-                (cite "TT" ⊢¬d1)
+                ⊢¬d1
                 (assume (D t1)))))
              (arrowintro (¬D t1)
               (assume (¬ α))))))))
@@ -1037,7 +1037,7 @@ dnse,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
          (arrowintro α
           (arrowelim
            (assume (¬D t0))
-           (cite "TT" ⊢d0))))))))
+           ⊢d0)))))))
   where
     φ : Formula
     φ = (D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)
@@ -1053,7 +1053,7 @@ dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃ (λ z₄ → z₄) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈ (λ _ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₅ (λ z₁₂ → z₁₂ (λ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ (λ _ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) z₁₄))) (λ z₁₃ → z₁₃ (λ _ → z₁₀)))))) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ (λ _ z₁₁ → z₁₁ z₉ (λ z₁₂ → z₁₂)))))))) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₄ (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ z₁₃ (λ z₁₅ → z₁₅ (λ _ z₁₆ → z₁₆ (λ z₁₇ z₁₈ → z₁₈ (λ z₁₉ → z₁₉ z₁₇ z₈) z₁₀)))))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₄ (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ z₁₃ (λ z₁₅ → z₁₅ (λ z₁₆ z₁₇ → z₁₇ (λ _ z₁₈ → z₁₈ (λ z₁₉ → z₁₉ z₁₆ z₈) z₁₀)))))))))))))
    (existelim (all⟨ (x∉α ⇒ atom []) ∨ ((x∉α ⇒ atom []) ⇒ atom []) ⟩ all∪ (all- (all∅ all∪ (all- (all- (all⟨- ¬ α ∷ (D x ∷ [ refl ]) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- (all- ((all⟨- [ refl ] ⟩ all∪ all⟨- (D x ⇒ ¬¬ α) ∷ ((¬D x ⇒ ¬ α) ∷  (((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)) ∷   (¬ α ∷ [ refl ]))) ⟩) all∪ all⟨ x∉α ⇒ atom [] ⟩)))))))) all∪ (all- (all- (all⟨- α ∷ (¬D x ∷ [ refl ]) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- (all- ((all⟨- (D x ⇒ ¬¬ α) ∷ [ refl ] ⟩ all∪ all⟨- (D x ⇒ ¬¬ α) ∷ ((¬D x ⇒ ¬ α) ∷  (((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)) ∷   (α ∷ [ refl ]))) ⟩) all∪ all⟨ x∉α ⟩)))))))))))
     (arrowelim
-     (cite "DNSE" (⊢dnse φ))
+     (⊢dnse φ)
      (arrowintro (¬∃x φ)
       (arrowelim
        (assume (¬∃x φ))
@@ -1068,7 +1068,7 @@ dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
               (arrowintro (D t1)
                (arrowintro (¬ α)
                 (arrowelim
-                 (cite "TT" ⊢¬d1)
+                 ⊢¬d1
                  (assume (D t1)))))
               (arrowintro (¬D t1)
                (assume (¬ α))))))))
@@ -1076,10 +1076,10 @@ dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
           (arrowintro α
            (arrowelim
             (assume (¬D t0))
-            (cite "TT" ⊢d0)))))))))
+            ⊢d0))))))))
     (disjelim
      (univelim x (ident (D x ∨ ¬D x) xvar)
-      (cite "TT" ⊢d∀))
+      ⊢d∀)
      (disjintro₂ (¬ α)
       (arrowintro (¬ α)
        (arrowelim
@@ -1144,7 +1144,7 @@ dp→lpo ⊢dp α β = close
                   (arrowintro (∀x (α ∨ β))
                    (existelim
                     (all⟨ Λ∣ xvar α ∨ V∣ xvar β ⟩ all∪ (all- (all⟨ Λ∣ xvar (α ∨ β) ⟩ all∪ (all- (all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨- [ refl ] ⟩))))
-                    (cite "DP" (⊢dp α))
+                    (⊢dp α)
                     (disjelim
                      (univelim x (ident (α ∨ β) xvar)
                       (assume (∀x (α ∨ β))))

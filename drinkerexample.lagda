@@ -87,10 +87,10 @@ dp  Φx = ∃x(Φx ⇒ ∀x Φx)
 hε  Φx = ∃x(∃x Φx ⇒ Φx)
 
 DNE EFQ DP Hε : Scheme
-DNE = unaryscheme dne
-EFQ = unaryscheme efq
-DP  = unaryscheme dp
-Hε  = unaryscheme hε
+DNE = unaryscheme "DNE"          dne
+EFQ = unaryscheme "EFQ"          efq
+DP  = unaryscheme "DP"           dp
+Hε  = unaryscheme "H$\\epsilon$" hε
 
 \end{code}
 
@@ -126,7 +126,7 @@ dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
                           (assembled-context (arrowintro (¬ α) Γ⊢⊥))
                           (λ x₁ z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z₄) (λ z₄ → z₄ z₃)))
                           (arrowelim
-                           (cite "DNE" (⊢dne α))
+                           (⊢dne α)
                            (arrowintro (¬ α)
                             Γ⊢⊥))
 
@@ -150,7 +150,7 @@ efq→⊥i-rule ⊢efq α Γ⊢⊥ = close
                           (assembled-context Γ⊢⊥)
                           (λ x₁ z₁ → z₁ (λ z₂ → z₂))
                           (arrowelim
-                           (cite "EFQ" (⊢efq α))
+                           (⊢efq α)
                            Γ⊢⊥)
 
 ⊥i-rule→dne : ⊥i-rule → ⊢₁ efq
@@ -176,7 +176,7 @@ dne→dp ⊢dne α = close
   {- Auto -}       z₄ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ (λ z₁₄ → z₁₄) (λ z₁₄ → z₁₄
   {- Auto -}        (λ _ z₁₅ → z₁₅ z₉ z₁₂))))))))))))
                  (arrowelim
-                  (cite "DNE" (⊢dne (dp α)))
+                  (⊢dne (dp α))
                   (arrowintro (¬ (dp α))
                    (arrowelim
                     (assume (¬ (dp α)))
@@ -188,7 +188,7 @@ dne→dp ⊢dne α = close
   {- Auto -}            all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷
   {- Auto -}             [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
                        (arrowelim
-                        (cite "DNE" (⊢dne α))
+                        (⊢dne α)
                         (arrowintro (¬ α)
                          (arrowelim
                           (assume (¬ (dp α)))
@@ -196,7 +196,7 @@ dne→dp ⊢dne α = close
   {- Auto -}               (ident (α ⇒ ∀x α) xvar)
                            (arrowintro α
                             (arrowelim
-                             (cite "DNE" (⊢dne (∀x α)))
+                             (⊢dne (∀x α))
                              (arrowintro (¬∀x α)
                               (arrowelim
                                (assume (¬ α))
@@ -210,7 +210,7 @@ outputting as \LaTeX.
 
 DNE⊃DP : DNE ∷ [] ⊃ DP
 DNE⊃DP ⊢lhs (α ∷ []) = dne→dp (descheme₁ (⊢lhs DNE [ refl ])) α
-dp-prooftree = texreduce DNE⊃DP (P x ∷ [])
+dp-prooftree = texreduce DP (P x ∷ []) DNE⊃DP
 
 \end{code}
 The final line gets the deduction tree for the instance $\text{DP}({Px})$,
@@ -278,14 +278,14 @@ dne→hε ⊢dne α = close
                    z₇ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₄ (λ z₁₄ → z₁₄ (λ _ →
                     z₁₂))))))))))))
                  (arrowelim
-                  (cite "DNE" (⊢dne (hε α)))
+                  (⊢dne (hε α))
                   (arrowintro (¬ (hε α))
                    (arrowelim
                     (assume (¬ (hε α)))
                     (existintro x xvar (ident (∃x α ⇒ α) xvar)
                      (arrowintro (∃x α)
                       (arrowelim
-                       (cite "DNE" (⊢dne α))
+                       (⊢dne α)
                        (arrowintro (¬ α)
                         (existelim
                          (all⟨ atom [] ⟩ all∪ (all- (all⟨ V∣ xvar (∃x α ⇒ α)
@@ -299,7 +299,7 @@ dne→hε ⊢dne α = close
 
 DNE⊃Hε : DNE ∷ [] ⊃ Hε
 DNE⊃Hε ⊢lhs (α ∷ []) = dne→hε (descheme₁ (⊢lhs DNE [ refl ])) α
-hε-prooftree = texreduce DNE⊃Hε (P x ∷ [])
+hε-prooftree = texreduce Hε (P x ∷ []) DNE⊃Hε
 
 \end{code}
 
@@ -354,8 +354,8 @@ lem  Φ = Φ ∨ (¬ Φ)
 glpo Φ = ∀x (¬ Φ) ∨ ∃x Φ
 
 LEM GLPO : Scheme
-LEM  = unaryscheme lem
-GLPO = unaryscheme glpo
+LEM  = unaryscheme "LEM"  lem
+GLPO = unaryscheme "GLPO" glpo
 
 \end{code}
 Recall that equivalent formulae are equivalently derivable, so from GLPO we may
@@ -448,7 +448,7 @@ glpo→xnf→lem ⊢glpo α x∉α = close
                              z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅
                               (λ z₇ → z₇ (λ z₈ → z₈)))))))
                             (disjelim
-                             (cite "GLPO" (⊢glpo α))
+                             (⊢glpo α)
                              (disjintro₂ α
                               (univelim x (ident (¬ α) xvar)
                                (assume (∀x¬ α))))
@@ -475,7 +475,7 @@ $\text{LEM}(Px)$, the \inline{fresh} function computes that $y$ is fresh, and
 so the proof tree below is produced.
 \begin{code}
 
-glpo→lem-prooftree = texreduce GLPO⊃LEM (P x ∷ [])
+glpo→lem-prooftree = texreduce LEM (P x ∷ []) GLPO⊃LEM
 
 \end{code}
 

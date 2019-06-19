@@ -8,6 +8,7 @@ logic. To examine axiom schemes, we define some metalanguage concepts.
 module Scheme where
 
 open import Agda.Builtin.Nat renaming (Nat to ℕ)
+open import Agda.Builtin.String
 
 open import Deduction
 open import Formula
@@ -27,6 +28,7 @@ record Scheme : Set where
   constructor scheme
   field
     arity : ℕ
+    name  : String
     inst  : Vec Formula arity → Formula
 
 \end{code}
@@ -58,13 +60,13 @@ $n$-ary vectors, we define the following notation for creating schemes from
 functions,
 \begin{code}
 
-nullaryscheme : Formula → Scheme
-unaryscheme   : (Formula → Formula) → Scheme
-binaryscheme  : (Formula → Formula → Formula) → Scheme
+nullaryscheme : String → Formula → Scheme
+unaryscheme   : String → (Formula → Formula) → Scheme
+binaryscheme  : String → (Formula → Formula → Formula) → Scheme
 
-nullaryscheme f = scheme 0 λ { [] → f }
-unaryscheme   f = scheme 1 λ { (α ∷ []) → f α }
-binaryscheme  f = scheme 2 λ { (α ∷ β ∷ []) → f α β }
+nullaryscheme s f = scheme 0 s λ { [] → f }
+unaryscheme   s f = scheme 1 s λ { (α ∷ []) → f α }
+binaryscheme  s f = scheme 2 s λ { (α ∷ β ∷ []) → f α β }
 
 \end{code}
 expressing derivability for functions,
