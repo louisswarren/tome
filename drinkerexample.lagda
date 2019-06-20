@@ -96,7 +96,6 @@ Hε  = unaryscheme "H$\\epsilon$" hε
 
 The natural deduction system used to define \inline{_⊢_} is for minimal logic.
 This can be extended to classical logic with the classical $\bot$ rule.
-\todo{proof trees?}
 \begin{code}
 
 ⊥c-rule : Set₁
@@ -122,6 +121,20 @@ The classical bottom rule holds if and only if DNE is derivable.
 \begin{code}
 
 dne→⊥c-rule : ⊢₁ dne → ⊥c-rule
+\end{code}
+\begin{prooftree}
+  \AxiomC{}
+  \RightLabel{DNE}
+  \UnaryInfC{$\lnot\lnot\alpha \rightarrow \alpha$}
+      \AxiomC{$\Gamma$,\, [$\lnot\alpha$]}
+      \noLine\UnaryInfC{$\vdots$}\noLine
+      \UnaryInfC{$\bot$}
+      \RightLabel{$\rightarrow^+$}
+      \UnaryInfC{$\lnot\lnot\alpha$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\alpha$}
+\end{prooftree}
+\begin{code}
 dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
                           (assembled-context (arrowintro (¬ α) Γ⊢⊥))
                           (λ x₁ z₁ z₂
@@ -132,6 +145,18 @@ dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
                             Γ⊢⊥))
 
 ⊥c-rule→dne : ⊥c-rule → ⊢₁ dne
+\end{code}
+\begin{prooftree}
+  \AxiomC{[$\lnot\lnot\alpha$]}
+      \AxiomC{[$\lnot\alpha$]}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\bot$}
+    \RightLabel{$\bot_\text{c}$}
+    \UnaryInfC{$\alpha$}
+    \RightLabel{$\rightarrow^+$}
+    \UnaryInfC{$\lnot\lnot\alpha \rightarrow \alpha$}
+\end{prooftree}
+\begin{code}
 ⊥c-rule→dne ⊢⊥c-rule α = close
                           from∅
                           (λ x₁ z₁ z₂
@@ -148,6 +173,18 @@ The the intuitionistic bottom rule holds if and only if EFQ is derivable.
 \begin{code}
 
 efq→⊥i-rule : ⊢₁ efq → ⊥i-rule
+\end{code}
+\begin{prooftree}
+  \AxiomC{}
+  \RightLabel{EFQ}
+  \UnaryInfC{$\bot \rightarrow \alpha$}
+      \AxiomC{$\Gamma$}
+      \noLine\UnaryInfC{$\vdots$}\noLine
+      \UnaryInfC{$\bot$}
+    \RightLabel{$\rightarrow^-$}
+    \BinaryInfC{$\alpha$}
+\end{prooftree}
+\begin{code}
 efq→⊥i-rule ⊢efq α Γ⊢⊥ = close
                           (assembled-context Γ⊢⊥)
                           (λ x₁ z₁ → z₁ (λ z₂ → z₂))
@@ -156,6 +193,15 @@ efq→⊥i-rule ⊢efq α Γ⊢⊥ = close
                            Γ⊢⊥)
 
 ⊥i-rule→dne : ⊥i-rule → ⊢₁ efq
+\end{code}
+\begin{prooftree}
+  \AxiomC{[$\bot$]}
+  \RightLabel{$\bot_\text{i}$}
+  \UnaryInfC{$\alpha$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\bot \rightarrow \alpha$}
+\end{prooftree}
+\begin{code}
 ⊥i-rule→dne ⊢⊥i-rule α = close
                           from∅
                           (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃)))

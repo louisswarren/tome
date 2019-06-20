@@ -48,7 +48,7 @@ example, if $\{\alpha\} \setminus \alpha \vdash \beta$ then $\emptyset \vdash
 \beta$. It is also necessary for weakening results, for example from $\Gamma
 \vdash \alpha$ to $\Gamma, \beta \vdash \alpha$. While this is not one of the
 usual deduction rules, it will need to be used only at the beginning of a proof
-to finalise the ensemble of assumptions. \todo{What should it be called?}
+to finalise the ensemble of assumptions.
 \begin{code}
 
   close       : ∀{Γ Δ α} → Assembled formulaEq Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
