@@ -78,10 +78,14 @@ open Relation renaming (idx to relidx ; arity to relarity)
 \end{code}
 
 A formula is either atomic (a prime formula), or formed from one of the logical
-connectives or quantifiers. We use `$\bigwedge$' and `$\bigvee$' in place of
-`$\forall$' and `$\exists$', since `$\forall$' is reserved by Agda.
-\todo{Rename $\Lambda$ and $V$}
-\todo{\inline{⇔} is never used}
+connectives or quantifiers. We use `\inline{Λ}' (capital lambda) and
+`\inline{V}' (capital `v') for `$\forall$' and `$\exists$', since `\inline{∀}'
+is reserved by Agda\footnote{
+  While the typical n-ary logical operator symbols `\inline{⋁}' and
+  `\inline{⋀}' are available, they are more easily confused with the symbols
+  `\inline{∧}' and `\inline{∨}' for `and' and `or', and are unavailable in some
+  fonts.}.
+
 \begin{code}
 
 data Formula : Set where
