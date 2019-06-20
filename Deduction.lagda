@@ -152,16 +152,25 @@ assembled-context (cite _ d)           = assembled-context d
 assembled-context (close AΓ _ d)       = AΓ
 assembled-context (assume _)           = from⟨ _ ⟩
 assembled-context (arrowintro _ d)     = from assembled-context d - _
-assembled-context (arrowelim d₁ d₂)    = from assembled-context d₁ ∪ assembled-context d₂
-assembled-context (conjintro d₁ d₂)    = from assembled-context d₁ ∪ assembled-context d₂
-assembled-context (conjelim d₁ d₂)     = from assembled-context d₁ ∪ (from from assembled-context d₂ - _ - _)
+assembled-context (arrowelim d₁ d₂)    = from assembled-context d₁
+                                         ∪ assembled-context d₂
+assembled-context (conjintro d₁ d₂)    = from assembled-context d₁
+                                         ∪ assembled-context d₂
+assembled-context (conjelim d₁ d₂)     = from assembled-context d₁
+                                         ∪ (from
+                                             from assembled-context d₂ - _
+                                             - _)
 assembled-context (disjintro₁ _ d)     = assembled-context d
 assembled-context (disjintro₂ _ d)     = assembled-context d
-assembled-context (disjelim d₁ d₂ d₃)  = from assembled-context d₁ ∪ (from from assembled-context d₂ - _ ∪ (from assembled-context d₃ - _))
+assembled-context (disjelim d₁ d₂ d₃)  = from assembled-context d₁
+                                         ∪ (from
+                                             from assembled-context d₂ - _
+                                            ∪ (from assembled-context d₃ - _))
 assembled-context (univintro _ _ d)    = assembled-context d
 assembled-context (univelim _ _ d)     = assembled-context d
 assembled-context (existintro _ _ _ d) = assembled-context d
-assembled-context (existelim _ d₁ d₂)  = from assembled-context d₁ ∪ (from assembled-context d₂ - _)
+assembled-context (existelim _ d₁ d₂)  = from assembled-context d₁
+                                         ∪ (from assembled-context d₂ - _)
 
 \end{code}
 }

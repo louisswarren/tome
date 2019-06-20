@@ -479,18 +479,21 @@ above.
               → (r : Relation) → {xs ys : Vec Term (relarity r)}
               → [ xs ][ x / t ]≡ ys → (atom r xs) [ x / t ]≡ (atom r ys)
   _⇒_     : ∀{α α′ β β′ x t}
-              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ⇒ β) [ x / t ]≡ (α′ ⇒ β′)
+              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′
+              → (α ⇒ β) [ x / t ]≡ (α′ ⇒ β′)
   _∧_     : ∀{α α′ β β′ x t}
-              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∧ β) [ x / t ]≡ (α′ ∧ β′)
+              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′
+              → (α ∧ β) [ x / t ]≡ (α′ ∧ β′)
   _∨_     : ∀{α α′ β β′ x t}
-              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′ → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
+              → α [ x / t ]≡ α′ → β [ x / t ]≡ β′
+              → (α ∨ β) [ x / t ]≡ (α′ ∨ β′)
 \end{code}
 Variable substitution for a quantified formula has two cases, which are similar
 to their counterparts in \inline{_NotFreeIn_}. If $x$ is the quantification
 variable, then the formula is unchanged.
 \begin{code}
-  Λ∣      : ∀{t} → (x : Variable) → (α : Formula) → (Λ x α) [ x / t ]≡ (Λ x α)
-  V∣      : ∀{t} → (x : Variable) → (α : Formula) → (V x α) [ x / t ]≡ (V x α)
+  Λ∣      : ∀{t} → ∀ x α → (Λ x α) [ x / t ]≡ (Λ x α)
+  V∣      : ∀{t} → ∀ x α → (V x α) [ x / t ]≡ (V x α)
 \end{code}
 Finally, if $x$ is not the quantification variable, and the quantification
 variable does not appear in $t$, then the substitution simply occurs inside the
@@ -523,7 +526,8 @@ subIdentFunc (ident α x) = refl
 subIdentFunc (notfree x) = refl
 subIdentFunc (atom r ts) = vecEq→Eq (termsLemma ts)
   where
-    vecEq→Eq : {us vs : Vec Term (relarity r)} → us ≡ vs → atom r us ≡ atom r vs
+    vecEq→Eq : {us vs : Vec Term (relarity r)}
+               → us ≡ vs → atom r us ≡ atom r vs
     vecEq→Eq refl = refl
     termsLemma : ∀{n x} {us vs : Vec Term n}
                    → [ us ][ x / varterm x ]≡ vs → us ≡ vs
@@ -557,7 +561,8 @@ subNotFreeFunc (ident α x) x∉α = refl
 subNotFreeFunc (notfree x) x∉α = refl
 subNotFreeFunc (atom p r) (atom x∉xs) = vecEq→Eq (termsLemma r x∉xs)
   where
-    vecEq→Eq : {us vs : Vec Term (relarity p)} → us ≡ vs → atom p us ≡ atom p vs
+    vecEq→Eq : {us vs : Vec Term (relarity p)}
+               → us ≡ vs → atom p us ≡ atom p vs
     vecEq→Eq refl = refl
     termsLemma : ∀{n x t} {us vs : Vec Term n}
                   → [ us ][ x / t ]≡ vs → x NotInTerms us → us ≡ vs
@@ -683,9 +688,12 @@ modification) the rules of \cite{vandalen}.
 data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   notfree : ∀{α} → x NotFreeIn α → t FreeFor x In α
   atom    : ∀ r us → t FreeFor x In atom r us
-  _⇒_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ⇒ β
-  _∧_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∧ β
-  _∨_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β → t FreeFor x In α ∨ β
+  _⇒_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β
+                     → t FreeFor x In α ⇒ β
+  _∧_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β
+                     → t FreeFor x In α ∧ β
+  _∨_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β
+                     → t FreeFor x In α ∨ β
   Λ∣      : ∀ α → t FreeFor x In Λ x α
   V∣      : ∀ α → t FreeFor x In V x α
   Λ       : ∀{α y} → y NotInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
@@ -723,7 +731,7 @@ rest of the vector simultaneously, since this substitution is required in
 either case.
 \begin{code}
 
-[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ (Vec Term n) [ us ][ x / t ]≡_
+[_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ _ [ us ][ x / t ]≡_
 [ []                 ][ x / t ] = [] , []
 [ u             ∷ us ][ x / t ] with [ us ][ x / t ]
 [ varterm y     ∷ us ][ x / t ] | vs , vspf with varEq x y
@@ -841,8 +849,8 @@ subNotFree x∉t (V x≢y y∉t p)   = V _ (subNotFree x∉t p)
 
 \begin{code}
 
-subInverse : ∀{ω α x β}
-             → ω NotFreeIn α → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
+subInverse : ∀{ω α x β} → ω NotFreeIn α
+                          → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
 subInverse _           (ident α x)    = ident α x
 subInverse ω∉α         (notfree x∉α)  = notfree ω∉α
 subInverse (atom x∉ts) (atom r subts) = atom r (termsLemma x∉ts subts)
@@ -955,26 +963,24 @@ variable from the rest of the terms. \todo{Swap cases around}
 \begin{code}
 maxVarIn (varterm (var m) ∷ ts) with maxVarIn ts
 ... | ⌈ts⌉ , tspf with ≤total m ⌈ts⌉
-...               | less m≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
+...               | less m≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
   where
     orderneq : ∀{n m} → n < m → var m ≢ var n
     orderneq {zero} {.0} () refl
     orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
-    notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n
-                    → All (var n NotInTerm_) (varterm (var m) ∷ ts)
-    notFreeIs⌈ts⌉ n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n))
-                             ∷ tspf n ⌈ts⌉<n
+    ⌈ts⌉pf : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (varterm (var m) ∷ ts)
+    ⌈ts⌉pf n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n))
+                      ∷ tspf n ⌈ts⌉<n
 \end{code}
 Otherwise, use this variable.
 \begin{code}
-...               | more ⌈ts⌉≤m = m , notFreeIsm
+...               | more ⌈ts⌉≤m = m , mpf
   where
     orderneq : ∀{n m} → n < m → var m ≢ var n
     orderneq {zero} {.0} () refl
     orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
-    notFreeIsm : ∀ n → m < n → All (var n NotInTerm_) (varterm (var m) ∷ ts)
-    notFreeIsm n m<n = varterm (orderneq m<n)
-                       ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
+    mpf : ∀ n → m < n → All (var n NotInTerm_) (varterm (var m) ∷ ts)
+    mpf n m<n = varterm (orderneq m<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
 \end{code}
 If the first term is a function, then check if the greatest free variable in
 its arguments is greater than the greatest free variable of the rest of the
@@ -982,19 +988,19 @@ terms. If not, use the variable from the rest of the terms.
 \begin{code}
 maxVarIn (functerm f us   ∷ ts) with maxVarIn us | maxVarIn ts
 ... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with ≤total ⌈us⌉ ⌈ts⌉
-...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , notFreeIs⌈ts⌉
+...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
   where
-    notFreeIs⌈ts⌉ : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
-    notFreeIs⌈ts⌉ n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n))
-                             ∷ tspf n ⌈ts⌉<n
+    ⌈ts⌉pf : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
+    ⌈ts⌉pf n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n))
+                      ∷ tspf n ⌈ts⌉<n
 \end{code}
 Otherwise, use the variable from the function's arguments.
 \begin{code}
-...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , notFreeIs⌈us⌉
+...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , ⌈us⌉pf
   where
-    notFreeIs⌈us⌉ : ∀ n → ⌈us⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
-    notFreeIs⌈us⌉ n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n)
-                             ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
+    ⌈us⌉pf : ∀ n → ⌈us⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
+    ⌈us⌉pf n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n)
+                      ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
 
 \end{code}
 
@@ -1008,7 +1014,7 @@ In the atomic case, apply the above lemma to find the largest variable
 occuring, and construct the succeeding variable.
 \begin{code}
 minFresh (atom r ts) with maxVarIn ts
-minFresh (atom r ts) | ⌈ts⌉ , tspf = var (suc ⌈ts⌉)
+...                  | ⌈ts⌉ , tspf = var (suc ⌈ts⌉)
                                      , (λ n ⌈ts⌉≤n → atom (tspf n ⌈ts⌉≤n))
 \end{code}
 If all variables greater than or equal to $\lceil\alpha\rceil$ are fresh in
@@ -1017,12 +1023,12 @@ then any variable greater than or equal to $\max\{\lceil\alpha\rceil,
 \lceil\beta\rceil\}$ will be not free in $\alpha \rightarrow \beta$.
 \begin{code}
 minFresh (α ⇒ β) with minFresh α | minFresh β
-...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
-...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
+...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
+...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ⇒ β)
     freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ⇒ βpf n ⌈β⌉≤n
-...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ⇒ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ⇒ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
@@ -1030,12 +1036,12 @@ minFresh (α ⇒ β) with minFresh α | minFresh β
 The same reasoning applies to conjunction
 \begin{code}
 minFresh (α ∧ β) with minFresh α | minFresh β
-...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
-...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
+...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
+...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∧ β)
     freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ∧ βpf n ⌈β⌉≤n
-...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∧ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∧ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
@@ -1043,12 +1049,12 @@ minFresh (α ∧ β) with minFresh α | minFresh β
 and disjunction.
 \begin{code}
 minFresh (α ∨ β) with minFresh α | minFresh β
-...              | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
-...                                      | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
+...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
+...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∨ β)
     freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ∨ βpf n ⌈β⌉≤n
-...                                      | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∨ β)
     freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∨ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
@@ -1081,7 +1087,7 @@ minFresh (V x@(var k) α) with minFresh α
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
     freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn V x α
     freshIs⌈α⌉ n ⌈α⌉≤n = V (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
-...                                    | more ⌈α⌉≤sk = var (suc k) , freshIssk
+...                                  | more ⌈α⌉≤sk = var (suc k) , freshIssk
   where
     skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
     skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl

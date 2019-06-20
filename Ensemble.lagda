@@ -168,7 +168,8 @@ decide∈ {A} {eq} x (from Aαs - α) with eq x α
 ...              | no  x∉αs = no  λ x∈αs-α
                                     → x∈αs-α (λ _ _
                                               → x∈αs-α (λ _ _
-                                                        → x∈αs-α (λ _ → x∉αs)))
+                                                        → x∈αs-α (λ _
+                                                                  → x∉αs)))
 
 \end{code}
 
@@ -184,7 +185,8 @@ required constructors for each case. Once again, this requires pattern matching
 
 Instead, for an assembled ensemble, we give a definition for \inline{All} which
 utilises the structure of the ensemble, and describes what computation must be
-performed to check that a predicate holds on all members. To do so, maintain a list of all elements which have been removed from the ensemble.
+performed to check that a predicate holds on all members. To do so, maintain a
+list of all elements which have been removed from the ensemble.
 \begin{code}
 
 infixr 5 _all∪_
@@ -245,7 +247,8 @@ Since unions are defined using a double negation, to show that the functional
 all for a union means functional all for each of the two ensembles, use a
 contradiction for each.
 \begin{code}
-    φ (from Aαs ∪ Aβs) xs fallαs∪βs = (φ Aαs xs fallαs) all∪ (φ Aβs xs fallβs)
+    φ (from Aαs ∪ Aβs) xs fallαs∪βs = (φ Aαs xs fallαs)
+                                      all∪ (φ Aβs xs fallβs)
       where
         fallαs : _
         fallαs x x∈αs = fallαs∪βs x (λ x∉αs _    → x∉αs x∈αs)

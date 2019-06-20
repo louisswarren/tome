@@ -402,7 +402,8 @@ The proof tree for the disjunction case is extended as follows.
 
   close
    (assembled-context Γ⊢α∨β)
-   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
+   (λ x z z₁
+    → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
    (disjelim
     Γ⊢α∨β
     (disjintro₁ β′
@@ -425,7 +426,8 @@ Again, the other direction is obtained by reversing the use of equivalences.
 
   close
    (assembled-context Γ⊢α′∨β′)
-   (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
+   (λ x z z₁
+    → z z₁ (λ z₂ → z₂ (λ z₃ → z₃ (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ → z₄))))
    (disjelim
     Γ⊢α′∨β′
     (disjintro₁ β
@@ -611,7 +613,8 @@ $x$ with $y$ in $\alpha$.
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ y β′)
-     (univintro x all⟨ Λ y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩
+     (univintro x
+      all⟨ Λ y (≈notfree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩
       (univelim (varterm x) (subInverse y∉α α[x/y]≡β)
        (univintro y all⟨ Λ∣ y β′ ⟩
         (⟨←⟩ (renameIff β≈β′)

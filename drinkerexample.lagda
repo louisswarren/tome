@@ -124,7 +124,8 @@ The classical bottom rule holds if and only if DNE is derivable.
 dne→⊥c-rule : ⊢₁ dne → ⊥c-rule
 dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
                           (assembled-context (arrowintro (¬ α) Γ⊢⊥))
-                          (λ x₁ z₁ z₂ → z₂ (λ z₃ → z₁ (λ z₄ → z₄) (λ z₄ → z₄ z₃)))
+                          (λ x₁ z₁ z₂
+                           → z₂ (λ z₃ → z₁ (λ z₄ → z₄) (λ z₄ → z₄ z₃)))
                           (arrowelim
                            (⊢dne α)
                            (arrowintro (¬ α)
@@ -133,7 +134,8 @@ dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
 ⊥c-rule→dne : ⊥c-rule → ⊢₁ dne
 ⊥c-rule→dne ⊢⊥c-rule α = close
                           from∅
-                          (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₃ z₅))))
+                          (λ x₁ z₁ z₂
+                           → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₃ z₅))))
                           (arrowintro (¬¬ α)
                            (⊢⊥c-rule α
                             (arrowelim
@@ -172,9 +174,9 @@ dne→dp : ⊢₁ dne → ⊢₁ dp
 dne→dp ⊢dne α = close
   {- Auto -}     from∅
   {- Auto -}     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄
-  {- Auto -}      (λ z₆ → z₆ (λ _ z₇ → z₇ (λ z₈ → z₈) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀
-  {- Auto -}       z₄ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ (λ z₁₄ → z₁₄) (λ z₁₄ → z₁₄
-  {- Auto -}        (λ _ z₁₅ → z₁₅ z₉ z₁₂))))))))))))
+  {- Auto -}      (λ z₆ → z₆ (λ _ z₇ → z₇ (λ z₈ → z₈) (λ z₈ → z₈ (λ z₉ z₁₀
+  {- Auto -}       → z₁₀ z₄ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ (λ z₁₄ → z₁₄)
+  {- Auto -}        (λ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₉ z₁₂))))))))))))
                  (arrowelim
                   (⊢dne (dp α))
                   (arrowintro (¬ (dp α))
@@ -274,9 +276,9 @@ dne→hε : ⊢₁ dne → ⊢₁ hε
 dne→hε ⊢dne α = close
                  from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄
-                  (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ (λ _ z₁₀ → z₁₀
-                   z₇ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₄ (λ z₁₄ → z₁₄ (λ _ →
-                    z₁₂))))))))))))
+                  (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ (λ _ z₁₀
+                   → z₁₀ z₇ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₄ (λ z₁₄ → z₁₄
+                    (λ _ → z₁₂))))))))))))
                  (arrowelim
                   (⊢dne (hε α))
                   (arrowintro (¬ (hε α))
@@ -444,9 +446,9 @@ quantifier.
 glpo→xnf→lem : ⊢₁ glpo → ∀ α → xvar NotFreeIn α → ⊢ (lem α)
 glpo→xnf→lem ⊢glpo α x∉α = close
                             from∅
-                            (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ →
-                             z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅
-                              (λ z₇ → z₇ (λ z₈ → z₈)))))))
+                            (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃
+                             (λ z₄ → z₄ (λ z₅ → z₅)) (λ z₄ → z₄ (λ z₅ z₆ → z₆
+                              z₅ (λ z₇ → z₇ (λ z₈ → z₈)))))))
                             (disjelim
                              (⊢glpo α)
                              (disjintro₂ α
