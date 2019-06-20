@@ -223,17 +223,17 @@ to page constraints.
   \AxiomC{$\left[\lnot{\text{DP}({Px})}\right]$}
     \AxiomC{}
     \RightLabel{DNE}
-    \UnaryInfC{$\lnot{\lnot{\forall_{x}P{x}}} \rightarrow \forall_{x}P{x}$}
+    \UnaryInfC{$\lnot{\lnot{\forall{x}P{x}}} \rightarrow \forall{x}P{x}$}
       \AxiomC{$\left[\lnot{P{x}}\right]$}
         \AxiomC{$\left[P{x}\right]$}
       \RightLabel{$\rightarrow^-$}
       \BinaryInfC{$\bot$}
       \RightLabel{$\rightarrow^+$}
-      \UnaryInfC{$\lnot{\lnot{\forall_{x}P{x}}}$}
+      \UnaryInfC{$\lnot{\lnot{\forall{x}P{x}}}$}
     \RightLabel{$\rightarrow^-$}
-    \BinaryInfC{$\forall_{x}P{x}$}
+    \BinaryInfC{$\forall{x}P{x}$}
     \RightLabel{$\rightarrow^+$}
-    \UnaryInfC{$P{x} \rightarrow \forall_{x}P{x}$}
+    \UnaryInfC{$P{x} \rightarrow \forall{x}P{x}$}
     \RightLabel{$\exists^+$}
     \UnaryInfC{$\text{DP}({Px})$}
   \RightLabel{$\rightarrow^-$}
@@ -255,9 +255,9 @@ to page constraints.
       \RightLabel{$\rightarrow^-$}
       \BinaryInfC{$P{x}$}
       \RightLabel{$\forall^+$}
-      \UnaryInfC{$\forall_{x}P{x}$}
+      \UnaryInfC{$\forall{x}P{x}$}
       \RightLabel{$\rightarrow^+$}
-      \UnaryInfC{$P{x} \rightarrow \forall_{x}P{x}$}
+      \UnaryInfC{$P{x} \rightarrow \forall{x}P{x}$}
       \RightLabel{$\exists^+$}
       \UnaryInfC{$\text{DP}({Px})$}
     \RightLabel{$\rightarrow^-$}
@@ -265,7 +265,7 @@ to page constraints.
     \RightLabel{$\rightarrow^+$}
     \UnaryInfC{$\lnot{\lnot{\text{DP}({Px})}}$}
   \RightLabel{$\rightarrow^-$}
-  \BinaryInfC{$\exists_{x}\left(P{x} \rightarrow \forall_{x}P{x}\right)$}
+  \BinaryInfC{$\exists{x}\left(P{x} \rightarrow \forall{x}P{x}\right)$}
 \end{prooftree}
 \vspace{\baselineskip}
 
@@ -306,11 +306,11 @@ hε-prooftree = texreduce Hε (P x ∷ []) DNE⊃Hε
 \end{code}
 
 \begin{prooftree}
-  \AxiomC{$\left[\exists_{x}P{x}\right]$}
+  \AxiomC{$\left[\exists{x}P{x}\right]$}
     \AxiomC{$\left[\lnot{\text{H$\epsilon$}(Px)}\right]$}
       \AxiomC{$\left[P{x}\right]$}
       \RightLabel{$\rightarrow^+$}
-      \UnaryInfC{$\exists_{x}P{x} \rightarrow P{x}$}
+      \UnaryInfC{$\exists{x}P{x} \rightarrow P{x}$}
       \RightLabel{$\exists^+$}
       \UnaryInfC{$\text{H$\epsilon$}(Px)$}
     \RightLabel{$\rightarrow^-$}
@@ -335,7 +335,7 @@ hε-prooftree = texreduce Hε (P x ∷ []) DNE⊃Hε
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$P{x}$}
     \RightLabel{$\rightarrow^+$}
-    \UnaryInfC{$\exists_{x}P{x} \rightarrow P{x}$}
+    \UnaryInfC{$\exists{x}P{x} \rightarrow P{x}$}
     \RightLabel{$\exists^+$}
     \UnaryInfC{$\text{H$\epsilon$}(Px)$}
   \RightLabel{$\rightarrow^-$}
@@ -380,7 +380,7 @@ for $\alpha[x/\omega]$ then it holds for $\alpha$, by the following proof tree.
   \AxiomC{}
   \UnaryInfC{$\alpha[x/\omega] \lor \lnot\alpha[x/\omega]$}
   \RightLabel{$\forall^+$}
-  \UnaryInfC{$\forall_\omega \left(\alpha[x/\omega] \lor \lnot\alpha[x/\omega]\right)$}
+  \UnaryInfC{$\forall\omega \left(\alpha[x/\omega] \lor \lnot\alpha[x/\omega]\right)$}
   \RightLabel{$\forall^-$}
   \UnaryInfC{$\alpha \lor \lnot\alpha$}
 \end{prooftree}
@@ -484,13 +484,13 @@ glpo→lem-prooftree = texreduce LEM (P x ∷ []) GLPO⊃LEM
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{GLPO}
-\UnaryInfC{$\forall_{x}\lnot{P{y}} \lor \exists_{x}P{y}$}
-  \AxiomC{$\left[\forall_{x}\lnot{P{y}}\right]$}
+\UnaryInfC{$\forall{x}\lnot{P{y}} \lor \exists{x}P{y}$}
+  \AxiomC{$\left[\forall{x}\lnot{P{y}}\right]$}
   \RightLabel{$\forall^-$}
   \UnaryInfC{$\lnot{P{y}}$}
   \RightLabel{$\lor^+$}
   \UnaryInfC{$P{y} \lor \lnot{P{y}}$}
-    \AxiomC{$\left[\exists_{x}P{y}\right]$}
+    \AxiomC{$\left[\exists{x}P{y}\right]$}
       \AxiomC{$\left[P{y}\right]$}
     \RightLabel{$\exists^-$}
     \BinaryInfC{$P{y}$}
@@ -499,7 +499,7 @@ glpo→lem-prooftree = texreduce LEM (P x ∷ []) GLPO⊃LEM
 \RightLabel{$\lor^-$}
 \TrinaryInfC{$P{y} \lor \lnot{P{y}}$}
 \RightLabel{$\forall^+$}
-\UnaryInfC{$\forall_{y}\left(P{y} \lor \lnot{P{y}}\right)$}
+\UnaryInfC{$\forall{y}\left(P{y} \lor \lnot{P{y}}\right)$}
 \RightLabel{$\forall^-$}
 \UnaryInfC{$P{x} \lor \lnot{P{x}}$}
 \end{prooftree}

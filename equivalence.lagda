@@ -241,9 +241,6 @@ rename      : ∀{Γ α α′}
 rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
 \end{code}
 It remains to prove \inline{renameIff}.
-\todo{Should I show the reverse trees where the proof is omitted?}
-\todo{Should I just omit all of the proofs?}
-\todo{Should have not made $\alpha$ and $\alpha'$ implicit}
 
 The atomic case is trivial, since an atomic formula is equivalent only to
 itself.
@@ -297,7 +294,6 @@ to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
 The other direction has the same proof, with $\alpha$ swapped with $\alpha'$,
 $\beta$ swapped with $\beta'$, and the opposite directions of
 \inline{renameIff} used.
-\todo{Show proof tree?}
 \begin{code}
 
 ⟨←⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) Γ⊢α′⇒β′ =
@@ -441,7 +437,7 @@ Again, the other direction is obtained by reversing the use of equivalences.
 }
 
 The first case for universal generalisation is where the bound variable is not
-renamed. \todo{$\forall_x$ or $\forall x$}
+renamed.
 \begin{code}
 
 ⟨→⟩ (renameIff {Γ} {Λ x α} {Λ .x α′} (Λ y α≈α′)) Γ⊢∀xα =
