@@ -79,9 +79,12 @@ Decidable P = ∀ x → Dec (P x)
 \end{code}
 
 The same could be defined for binary predicates, but this won't be needed.
-However, the special case of equality being decidable
-\todo{Some call this discrete}
-will be used later.
+However, the special case of the equality predicate being decidable for a given
+type\footnote{
+  This is as much a property of the type as it is a property of the equality
+  predicate for that type. A type with a decidable equality is called discrete
+  \citep{hasegawa2013typed}.k}
+will be used later. \todo{Cite proceedings}
 \begin{code}
 
 Decidable≡ : Set → Set

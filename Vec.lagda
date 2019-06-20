@@ -1,6 +1,5 @@
 Vectors are similar to lists, but are type indexed by length. For example,
 vectors in $\mathbb{N}^2$ are of different type to vectors in $\mathbb{N}^3$.
-\todo{Program-based explanation of dependent types}
 
 \AgdaHide{
 \begin{code}

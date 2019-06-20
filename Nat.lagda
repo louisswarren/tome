@@ -41,7 +41,6 @@ are zero, they can be proven equal simply by \inline{refl}. Where only one
 number is a successor, they can be proven not equal by doing case analysis on
 what their equality would be. As the only constructor for \inline{_≡_} requires
 that the left and right sides are the same, and \inline{zero} cannot be unified
-\todo{unified?}
 with \inline{suc _}, the cases are empty. Finally, if both numbers are
 successors, check if their predecessors are equal. If so, then equality
 follows. Otherwise, assuming the numbers are equal leads to a contradiction.
@@ -68,6 +67,13 @@ _<_ : ℕ → ℕ → Set
 n < m = suc n ≤ m
 
 \end{code}
+\todo{Is this explanation necessary?}
+In the definition of `$leq$', the type is \emph{indexed} by a pair of natural
+numbers, rather than parametrised (given specific names, on the left side of
+the colon). This is an example of a dependent type. The constructors do not
+produce values of the same type. Moreover, there types for which there is no
+constructor. For example, there is no way of constructing \inline{1 ≤ 0}. In
+this manner, dependent types can describe predicates.
 
 The relation \inline{_≤_} is reflexive and transitive.
 \begin{code}
