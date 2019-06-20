@@ -964,7 +964,7 @@ greatest \todo{supremum} free variable of the rest of the terms. If not, use the
 variable from the rest of the terms. \todo{Swap cases around}
 \begin{code}
 maxVarIn (varterm (var m) ∷ ts) with maxVarIn ts
-... | ⌈ts⌉ , tspf with ≤total m ⌈ts⌉
+... | ⌈ts⌉ , tspf with compare m ⌈ts⌉
 ...               | less m≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
   where
     orderneq : ∀{n m} → n < m → var m ≢ var n
@@ -989,7 +989,7 @@ its arguments is greater than the greatest free variable of the rest of the
 terms. If not, use the variable from the rest of the terms.
 \begin{code}
 maxVarIn (functerm f us   ∷ ts) with maxVarIn us | maxVarIn ts
-... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with ≤total ⌈us⌉ ⌈ts⌉
+... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with compare ⌈us⌉ ⌈ts⌉
 ...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
   where
     ⌈ts⌉pf : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
@@ -1025,7 +1025,7 @@ then any variable greater than or equal to $\max\{\lceil\alpha\rceil,
 \lceil\beta\rceil\}$ will be not free in $\alpha \rightarrow \beta$.
 \begin{code}
 minFresh (α ⇒ β) with minFresh α | minFresh β
-...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
+...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with compare (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ⇒ β)
@@ -1038,7 +1038,7 @@ minFresh (α ⇒ β) with minFresh α | minFresh β
 The same reasoning applies to conjunction
 \begin{code}
 minFresh (α ∧ β) with minFresh α | minFresh β
-...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
+...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with compare (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∧ β)
@@ -1051,7 +1051,7 @@ minFresh (α ∧ β) with minFresh α | minFresh β
 and disjunction.
 \begin{code}
 minFresh (α ∨ β) with minFresh α | minFresh β
-...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with ≤total (varidx ⌈α⌉) (varidx ⌈β⌉)
+...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with compare (varidx ⌈α⌉) (varidx ⌈β⌉)
 ...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
   where
     freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∨ β)
@@ -1065,7 +1065,7 @@ For a universal generalisation $\forall x \alpha$, take  the greater of
 $\lceil\alpha\rceil$ and the successor of $x$.
 \begin{code}
 minFresh (Λ x@(var k) α) with minFresh α
-...                      | ⌈α⌉ , αpf with ≤total (suc k) (varidx ⌈α⌉)
+...                      | ⌈α⌉ , αpf with compare (suc k) (varidx ⌈α⌉)
 ...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
     skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
@@ -1082,7 +1082,7 @@ minFresh (Λ x@(var k) α) with minFresh α
 The same applies for existential generalisation.
 \begin{code}
 minFresh (V x@(var k) α) with minFresh α
-...                      | ⌈α⌉ , αpf with ≤total (suc k) (varidx ⌈α⌉)
+...                      | ⌈α⌉ , αpf with compare (suc k) (varidx ⌈α⌉)
 ...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
   where
     skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n

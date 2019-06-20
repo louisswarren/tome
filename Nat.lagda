@@ -89,26 +89,25 @@ The relation \inline{_≤_} is reflexive and transitive.
 \end{code}
 
 Given natural numbers $n$ and $m$, it is possible to compute whether $n \leq m$
-or $m \leq n$. To prove this, we first create a proposition \inline{Order n m}
+or $m \leq n$. To prove this, we first create a proposition \inline{Compare n m}
 which is constructed by a proof of either of these.
 \begin{code}
 
-data Order (n m : ℕ) : Set where
-  less : n ≤ m → Order n m
-  more : m ≤ n → Order n m
+data Compare (n m : ℕ) : Set where
+  less : n ≤ m → Compare n m
+  more : m ≤ n → Compare n m
 
 \end{code}
 It remains to show that given any $n$ and $m$, we may construct
-\inline{Order n m}, and so \inline{_≤_} is a total order.
-\todo{connex? Haven't shown antisymmetric}
+\inline{Compare n m}.
 \begin{code}
 
-≤total : ∀ n m → Order n m
-≤total zero    m       = less 0≤n
-≤total (suc n) zero    = more 0≤n
-≤total (suc n) (suc m) with ≤total n m
-...                    | less n≤m = less (sn≤sm n≤m)
-...                    | more m≤n = more (sn≤sm m≤n)
+compare : ∀ n m → Compare n m
+compare zero    m       = less 0≤n
+compare (suc n) zero    = more 0≤n
+compare (suc n) (suc m) with compare n m
+...                     | less n≤m = less (sn≤sm n≤m)
+...                     | more m≤n = more (sn≤sm m≤n)
 
 \end{code}
 While it is possible to directly define a function which returns the greater of
