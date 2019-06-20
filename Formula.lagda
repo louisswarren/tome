@@ -750,7 +750,6 @@ either case.
 For formulae, a proof that $t$ is free for $x$ in the formula must be supplied.
 The term $t$ is fixed by supplying such a proof, so for convenience of
 notation, the proof is supplied in place of the term.
-\todo{Do I want to use $\Sigma$ here?}
 \begin{code}
 
 _[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
@@ -960,11 +959,20 @@ maxVarIn : ∀{k} → (ts : Vec Term k)
 maxVarIn [] = zero , λ _ _ → []
 \end{code}
 If the first term is a variable, check if its index is greater than the
-greatest \todo{supremum} free variable of the rest of the terms. If not, use the
-variable from the rest of the terms. \todo{Swap cases around}
+greatest variable of the rest of the terms.
 \begin{code}
 maxVarIn (varterm (var m) ∷ ts) with maxVarIn ts
 ... | ⌈ts⌉ , tspf with compare m ⌈ts⌉
+...               | more ⌈ts⌉≤m = m , mpf
+  where
+    orderneq : ∀{n m} → n < m → var m ≢ var n
+    orderneq {zero} {.0} () refl
+    orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
+    mpf : ∀ n → m < n → All (var n NotInTerm_) (varterm (var m) ∷ ts)
+    mpf n m<n = varterm (orderneq m<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
+\end{code}
+Otherwise, use the greatest variable in the rest of the terms.
+\begin{code}
 ...               | less m≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
   where
     orderneq : ∀{n m} → n < m → var m ≢ var n
@@ -974,35 +982,24 @@ maxVarIn (varterm (var m) ∷ ts) with maxVarIn ts
     ⌈ts⌉pf n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n))
                       ∷ tspf n ⌈ts⌉<n
 \end{code}
-Otherwise, use this variable.
-\begin{code}
-...               | more ⌈ts⌉≤m = m , mpf
-  where
-    orderneq : ∀{n m} → n < m → var m ≢ var n
-    orderneq {zero} {.0} () refl
-    orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
-    mpf : ∀ n → m < n → All (var n NotInTerm_) (varterm (var m) ∷ ts)
-    mpf n m<n = varterm (orderneq m<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
-\end{code}
-If the first term is a function, then check if the greatest free variable in
-its arguments is greater than the greatest free variable of the rest of the
-terms. If not, use the variable from the rest of the terms.
+If the first term is a function, then check if the greatest variable in its
+arguments is greater than the greatest variable of the rest of the terms.
 \begin{code}
 maxVarIn (functerm f us   ∷ ts) with maxVarIn us | maxVarIn ts
 ... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with compare ⌈us⌉ ⌈ts⌉
-...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
-  where
-    ⌈ts⌉pf : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
-    ⌈ts⌉pf n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n))
-                      ∷ tspf n ⌈ts⌉<n
-\end{code}
-Otherwise, use the variable from the function's arguments.
-\begin{code}
 ...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , ⌈us⌉pf
   where
     ⌈us⌉pf : ∀ n → ⌈us⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
     ⌈us⌉pf n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n)
                       ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
+\end{code}
+If not, use the greatest variable in the rest of the terms.
+\begin{code}
+...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
+  where
+    ⌈ts⌉pf : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
+    ⌈ts⌉pf n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n))
+                      ∷ tspf n ⌈ts⌉<n
 
 \end{code}
 
