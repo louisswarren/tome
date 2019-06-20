@@ -464,7 +464,7 @@ data _[_/_]≡_ : Formula → Variable → Term → Formula → Set where
 The \inline{ident} constructor gives the case that replacing $x$ with $x$
 yields the original formula. While this can be proved as a derived rule, in
 practice it is the case we usually want to use. Providing a constructor allows
-Agda's proof search to apply this case easily. \todo{Implicit ident?}
+Agda's proof search to apply this case easily.
 \begin{code}
   ident : ∀ α x → α [ x / varterm x ]≡ α
 \end{code}
@@ -472,7 +472,7 @@ If $x$ is not free in $\alpha$, then replacing it with any term should leave
 $\alpha$ unchanged. This rule is not derivable when $t$ is not otherwise able
 to be substituted for $x$ in $\alpha$. For example, without this constructor it
 would not be possible to prove that $(\forall y A)[x/y]\equiv (\forall y A)$,
-where $A$ is a propositional \todo{nullary predicate} formula.
+where $A$ is a propositional formula.
 \begin{code}
   notfree : ∀{α x t} → x NotFreeIn α → α [ x / t ]≡ α
 \end{code}
@@ -622,7 +622,9 @@ each case, so the proof is \inline{refl}.
 subTermsFunc (varterm≢ x≢y ∷ _) (varterm≢ _   ∷ _) | refl = refl
 \end{code}
 Finally, in the case of a function, recurse over the vector of arguments.
-\todo{explain rewrite}
+The \inline{rewrite} construction uses a proof of equality to unify terms. It
+is an abbreviation for doing \inline{with}-abstraction on a proof of
+\inline{refl}.
 \begin{code}
 subTermsFunc (functerm st  ∷ _) (functerm rt  ∷ _)
              | refl rewrite subTermsFunc st rt = refl
@@ -727,7 +729,6 @@ of its definition is commented below.
 x$, so that it encapsulates both a value and a proof regarding that value.
 This means sigma type can be used to define existential propositions.
 
-\todo{recurse or recur?}
 First for vectors of terms, recurse through all function arguments, and replace
 any variables equal to $x$ with $t$. In the code below, we do a case split on
 the first term, and use a \inline{with} block to get the substitution for the
@@ -936,20 +937,17 @@ freshFreeFor (V x≢y xfrα)  y = V (varterm x≢y) (freshFreeFor xfrα y)
 \end{code}
 }
 
-For the purposes of variable substitution, we need a way
-\todo{why?}
-to generate a fresh
-variable for a given formula. Only finitely many variables occur in a given
-term or formula, so there is a greatest (with respect to the natural number
-indexing) variable occuring in each term or formula; all variables greater than
-this are fresh. That is the variable that we will compute. This means that the
-least fresh variable will not be found. For example, for $P x_0 \lor P x_2$, we
-find that $x_3, x_4, \dotsc$ are fresh, missing $x_1$. However, finding the
-least fresh variable cannot be done with a simple recursive procedure. Consider
-$\alpha = (P x_0 \lor P x_2) \land P x_1$; we find $x_1$ is fresh to the left
-of the conjunctive, and $x_0$ is fresh to the right, but this does not indicate
-that $x_2$ will not be
-fresh in $\alpha$.
+For the purposes of variable substitution, we will later need a way to generate
+a fresh variable for a given formula. Only finitely many variables occur in a
+given term or formula, so there is a greatest (with respect to the natural
+number indexing) variable occuring in each term or formula; all variables
+greater than this are fresh. That is the variable that we will compute. This
+means that the least fresh variable will not be found. For example, for $P x_0
+\lor P x_2$, we find that $x_3, x_4, \dotsc$ are fresh, missing $x_1$. However,
+finding the least fresh variable cannot be done with a simple recursive
+procedure. Consider $\alpha = (P x_0 \lor P x_2) \land P x_1$; we find $x_1$ is
+fresh to the left of the conjunctive, and $x_0$ is fresh to the right, but this
+does not indicate that $x_2$ will not be fresh in $\alpha$.
 
 We first compute the greatest variable occuring in a vector of terms, and then
 specialise to a single term, for termination reasons similar to that of
