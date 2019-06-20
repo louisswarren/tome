@@ -252,7 +252,7 @@ itself.
 ⟨←⟩ (renameIff {Γ} {atom r ts} {.(atom r ts)} (atom .r .ts)) d = d
 \end{code}
 
-The proof tree for the implication case is extended as follows. \todo{noline?}
+The proof tree for the implication case is extended as follows.
 \begin{code}
 
 ⟨→⟩ (renameIff {Γ} {α ⇒ β} {α′ ⇒ β′} (α≈α′ ⇒ β≈β′)) Γ⊢α⇒β =
@@ -260,7 +260,7 @@ The proof tree for the implication case is extended as follows. \todo{noline?}
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\alpha \rightarrow \beta$}
       \AxiomC{[$\alpha'$]}
       \RightLabel{induction}
@@ -324,7 +324,7 @@ The proof tree for the conjunction case is extended as follows.
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\alpha \land \beta$}
     \AxiomC{[$\alpha$]}
     \RightLabel{induction}
@@ -383,7 +383,7 @@ The proof tree for the disjunction case is extended as follows.
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\alpha \lor \beta$}
     \AxiomC{[$\alpha$]}
     \RightLabel{induction}
@@ -461,7 +461,7 @@ that $\Gamma$ is not assumed when the universal generalisation re-introduced.
   \RightLabel{$\rightarrow^+$}
   \UnaryInfC{$\forall x \alpha \rightarrow \forall x \alpha'$}
       \AxiomC{$\Gamma$}
-      \UnaryInfC{$\vdots$}
+      \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall x \alpha$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\forall x \alpha'$}
@@ -524,7 +524,7 @@ it is also not free in $\forall x \alpha$. Define $\beta \coloneq \alpha[x/y]$.
   \RightLabel{$\rightarrow^+$}
   \UnaryInfC{$\forall x \alpha \rightarrow \forall y \beta'$}
       \AxiomC{$\Gamma$}
-      \UnaryInfC{$\vdots$}
+      \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall x \alpha$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\forall y \beta'$}
@@ -562,7 +562,7 @@ In the degenerate case where $x = y$, we have $\beta = \alpha$.
   \RightLabel{$\rightarrow^+$}
   \UnaryInfC{$\forall x \beta' \rightarrow \forall x \alpha$}
       \AxiomC{$\Gamma$}
-      \UnaryInfC{$\vdots$}
+      \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall x \beta'$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\forall x \alpha$}
@@ -600,7 +600,7 @@ $x$ with $y$ in $\alpha$.
   \RightLabel{$\rightarrow^+$}
   \UnaryInfC{$\forall x \beta' \rightarrow \forall x \alpha$}
       \AxiomC{$\Gamma$}
-      \UnaryInfC{$\vdots$}
+      \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall y \beta'$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\forall x \alpha$}
@@ -644,7 +644,7 @@ We have $\beta' \coloneq \alpha'[x/y]$.
   \RightLabel{$\forall^+$}
   \UnaryInfC{$\forall y \beta'$}
       \AxiomC{$\Gamma$}
-      \UnaryInfC{$\vdots$}
+      \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall x \alpha$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\forall y \beta'$}
@@ -682,7 +682,7 @@ In the degenerate case where $x = y$, we have $\alpha' = \beta'$.
   \RightLabel{$\forall^+$}
   \UnaryInfC{$\forall x \alpha$}
       \AxiomC{$\Gamma$}
-      \UnaryInfC{$\vdots$}
+      \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall x \beta'$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\forall x \alpha$}
@@ -713,7 +713,7 @@ since $\beta'$ has been obtained by substituting $x$ with $y$ in $\alpha'$.
   \RightLabel{$\forall^+$}
   \UnaryInfC{$\forall x \alpha$}
       \AxiomC{$\Gamma$}
-      \UnaryInfC{$\vdots$}
+      \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall y \beta'$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\forall x \alpha$}
@@ -743,7 +743,7 @@ where the bound variable is not renamed.
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\exists x \alpha$}
       \AxiomC{[$\alpha$]}
       \RightLabel{induction}
@@ -799,7 +799,7 @@ Since $\beta = \alpha[x/y]$, we have $\alpha = \beta[y/x]$. If $x \neq y$, then
 $x$ cannot be free in $\beta$, and so it is also not free in $\exists y \beta$.
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\exists x \alpha$}
     \AxiomC{[$\alpha$]}
     \RightLabel{$\exists^+$}
@@ -834,7 +834,7 @@ $x$ cannot be free in $\beta$, and so it is also not free in $\exists y \beta$.
 In the degenerate case, we have $\beta = \alpha$.
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\exists x \alpha$}
       \AxiomC{[$\alpha$]}
       \RightLabel{induction}
@@ -866,7 +866,7 @@ Now, consider the other direction.
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\exists y \beta'$}
       \AxiomC{[$\beta'$]}
       \RightLabel{induction}
@@ -899,7 +899,7 @@ The third case is the dual of the second.
 If $x = y$, then $\alpha' = \beta'$.
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\exists x \alpha$}
       \AxiomC{[$\alpha$]}
       \RightLabel{induction}
@@ -927,7 +927,7 @@ and $x$ is not free in $\beta'$, and so is not free in $\exists y \beta'$.
 \todo{Remark that the dual suits $\exists$, the  other suits $\forall$?}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\exists x \alpha$}
       \AxiomC{[$\alpha$]}
       \RightLabel{induction}
@@ -959,7 +959,7 @@ Consider the other direction.
 \end{code}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
-  \UnaryInfC{$\vdots$}
+  \noLine\UnaryInfC{$\vdots$}\noLine
   \UnaryInfC{$\exists y \beta'$}
     \AxiomC{[$\beta'$]}
     \RightLabel{$\exists^+$}
