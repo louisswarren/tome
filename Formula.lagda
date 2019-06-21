@@ -333,11 +333,16 @@ data _NotFreeIn_ : Variable → Formula → Set where
 
 \end{code}
 
-We now prove that the above predicate is decidable. First, variable occurence
-within a vector of terms is decidable, simply by searching through the vector
-for occurences. In the following code we will use names like \inline{x∉t} to
-denote proofs of `$x$ is not in term $t$, \inline{x∉ts} for `$x$ is not in any
-terms in $ts$', and \inline{x∉α} for `$x$ is not free in $\alpha$`.
+We now prove that the above predicate is decidable.
+
+\begin{lemma}[\inline{_notInTerms_}]
+Variable occurence within a vector of terms is decidable.
+\end{lemma}
+\begin{proof}
+Search through the vector for occurences of the variable. In the following code
+we will use names like \inline{x∉t} to denote proofs of `$x$ is not in term
+$t$, \inline{x∉ts} for `$x$ is not in any terms in $ts$', and \inline{x∉α} for
+`$x$ is not free in $\alpha$`.
 \begin{code}
 
 _notInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotInTerms ts)
@@ -367,6 +372,7 @@ proof would do this check at the same time as doing a case split on the first
 term. However, if a term for which $x$ is free is found, it is not necessary to
 continue recursing through the vector, so it is better computationally not to
 do so.
+\end{proof}
 
 The same logic can be used for a single term, calling the above function to
 check function arguments. The proposition \inline{_NotInTerms_} is defined
@@ -391,9 +397,12 @@ x notInTerm functerm f ts with x notInTerms ts
 
 \end{code}
 
-We can now decide if a variable is free in a formula. For atoms, apply the
-lemma above. Otherwise, check recursively, checking if the variable matches the
-quantifying variable in the case of quantifiers.
+\begin{proposition}[\inline{_notFreeIn_}]
+Variable freedom is decidable.
+\end{proposition}
+\begin{proof}
+For atoms, apply the lemma above. Otherwise, check recursively, checking if the
+variable matches the quantifying variable in the case of quantifiers.
 \begin{code}
 
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
@@ -426,6 +435,8 @@ x notFreeIn V  y α    with varEq x y
                                                 ; (V y x∉α) → ¬x∉α x∉α }
 
 \end{code}
+\codeqed
+\end{proof}
 
 
 \subsection{Substitutions}
@@ -592,7 +603,11 @@ subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
 \end{code}
 }
 
+\begin{lemma}[\inline{subTermsFunc}]
 Variable substitution inside a vector of terms is functional.
+\end{lemma}
+\begin{proof}
+The constructors for term substitution have no overlap.
 \begin{code}
 
 subTermsFunc : ∀{n x t} {us vs ws : Vec Term n}
@@ -630,8 +645,14 @@ subTermsFunc (functerm st  ∷ _) (functerm rt  ∷ _)
              | refl rewrite subTermsFunc st rt = refl
 
 \end{code}
+\codeqed
+\end{proof}
 
-Now it can be shown that variable substitution in general is functional.
+\begin{proposition}[\inline{subFunc}]
+Variable substitution is functional.
+\end{proposition}
+\begin{proof}
+$ $
 \begin{code}
 
 subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
@@ -681,6 +702,8 @@ subFunc (Λ _ _ s)     (Λ _ _ r)     rewrite subFunc s r = refl
 subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
 
 \end{code}
+\codeqed
+\end{proof}
 
 We have now shown that substitution is functional, and so would like to
 construct a function that computes substitutions. However, substitutions do not
@@ -729,11 +752,14 @@ of its definition is commented below.
 x$, so that it encapsulates both a value and a proof regarding that value.
 This means sigma type can be used to define existential propositions.
 
-First for vectors of terms, recurse through all function arguments, and replace
-any variables equal to $x$ with $t$. In the code below, we do a case split on
-the first term, and use a \inline{with} block to get the substitution for the
-rest of the vector simultaneously, since this substitution is required in
-either case.
+\begin{lemma}
+Every vector of terms has a substitution of any variable with any term.
+\end{lemma}
+\begin{proof}
+Recurse through all function arguments, and replace any variables equal to $x$
+with $t$. We do a case split on the first term, and use a \inline{with} block
+to get the substitution for the rest of the vector simultaneously, since this
+substitution is required in either case.
 \begin{code}
 
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ _ [ us ][ x / t ]≡_
@@ -746,10 +772,17 @@ either case.
 ...    | xs , xspf = (functerm f xs ∷ vs) , (functerm xspf ∷ vspf)
 
 \end{code}
+\codeqed
+\end{proof}
 
-For formulae, a proof that $t$ is free for $x$ in the formula must be supplied.
-The term $t$ is fixed by supplying such a proof, so for convenience of
-notation, the proof is supplied in place of the term.
+\begin{proposition}
+If $t$ is free for $x$ in $\alpha$, then there is a substitution of $x$ with
+$t$ in $\alpha$.
+\end{proposition}
+\begin{proof}
+The proof that $t$ is free for $x$ in formula must be supplied.  The term $t$
+is fixed by supplying such a proof, so for convenience of notation, the proof
+is supplied in place of the term.
 \begin{code}
 
 _[_/_] : ∀{t} → ∀ α x → t FreeFor x In α → Σ Formula (α [ x / t ]≡_)
@@ -784,8 +817,8 @@ V y α [ x / V y∉t tffα ]     with varEq x y
 ...                                     | α′ , αpf = V y α′ , V x≢y y∉t αpf
 
 \end{code}
-
-There are two useful lemata to prove regarding variable substitution.
+\codeqed
+\end{proof}
 
 We have proved that if $t$ is free for $x$ in $α$ then $α[x/t]$ exists. The
 converse is also true, meaning that \inline{_FreeFor_In_} precisely captures
@@ -948,7 +981,12 @@ simple recursive procedure. Consider $\alpha = (P x_0 \lor P x_2) \land P x_1$;
 we find $x_1$ is fresh to the left of the conjunctive, and $x_0$ is fresh to
 the right, but this does not indicate that $x_2$ will not be fresh in $\alpha$.
 
-We first compute the greatest variable occuring in a vector of terms.
+\begin{lemma}
+There is an upper bound on the variables occuring in a given vector of terms.
+\end{lemma}
+\begin{proof}
+We call this function \inline{maxVarTerms}, but wil not actually prove that
+this is the least upper bound in particular. \todo{Upper bound?}
 \begin{code}
 
 maxVarTerms : ∀{k} → (ts : Vec Term k)
@@ -996,9 +1034,15 @@ If not, use the greatest variable in the rest of the terms.
                       ∷ tspf n ⌈ts⌉<n
 
 \end{code}
+\codeqed
+\end{proof}
 
-Given a formula, we can now produce a variable for which all greater variables
-are fresh.
+
+\begin{proposition}
+There is an upper bound on the variables occuring in a given formula.
+\end{proposition}
+\begin{proof}
+$ $
 \begin{code}
 maxVar : ∀ α → Σ Variable λ ⌈α⌉ → ∀ n → varidx ⌈α⌉ < n → var n FreshIn α
 \end{code}
@@ -1080,6 +1124,8 @@ maxVar (V x α) with maxVar α
                         (αpf n (≤trans (sn≤sm ⌈α⌉≤x) x<n))
 
 \end{code}
+\codeqed
+\end{proof}
 
 Finally, a fresh variable can be extracted by choosing the successor of
 the variable given by the proof above.
