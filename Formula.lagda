@@ -952,42 +952,38 @@ We first compute the greatest variable occuring in a vector of terms.
 \begin{code}
 
 maxVarTerms : ∀{k} → (ts : Vec Term k)
-               → Σ ℕ (λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → var n NotInTerms ts)
-maxVarTerms [] = zero , λ _ _ → []
+              → Σ Variable (λ ⌈ts⌉
+                            → ∀ n → varidx ⌈ts⌉ < n → var n NotInTerms ts)
+maxVarTerms []                   = var zero , (λ _ _ → [])
 \end{code}
 If the first term is a variable, check if its index is greater than or equal to
 the greatest variable in the rest of the terms.
 \begin{code}
-maxVarTerms (varterm (var m) ∷ ts) with maxVarTerms ts
-... | ⌈ts⌉ , tspf with compare m ⌈ts⌉
-...               | more ⌈ts⌉≤m = m , mpf
+maxVarTerms (varterm x     ∷ ts) with maxVarTerms ts
+... | ⌈ts⌉ , tspf with compare (varidx x) (varidx ⌈ts⌉)
+...               | more ⌈ts⌉≤x = x , maxIsx
   where
-    orderneq : ∀{n m} → n < m → var m ≢ var n
-    orderneq {zero} {.0} () refl
-    orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
-    mpf : ∀ n → m < n → All (var n NotInTerm_) (varterm (var m) ∷ ts)
-    mpf n m<n = varterm (orderneq m<n) ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤m) m<n)
+    maxIsx : ∀ n → (varidx x) < n → (var n) NotInTerms (varterm x ∷ ts)
+    maxIsx n x<n = varterm (λ { refl → ℕdisorder x<n ≤refl })
+                   ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤x) x<n)
 \end{code}
 Otherwise, use the greatest variable in the rest of the terms.
 \begin{code}
-...               | less m≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
+...               | less x≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
   where
-    orderneq : ∀{n m} → n < m → var m ≢ var n
-    orderneq {zero} {.0} () refl
-    orderneq {suc n} {.(suc n)} (sn≤sm x) refl = orderneq x refl
-    ⌈ts⌉pf : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (varterm (var m) ∷ ts)
-    ⌈ts⌉pf n ⌈ts⌉<n = varterm (orderneq (≤trans (sn≤sm m≤⌈ts⌉) ⌈ts⌉<n))
+    ⌈ts⌉pf : ∀ n → varidx ⌈ts⌉ < n → var n NotInTerms (varterm x ∷ ts)
+    ⌈ts⌉pf n ⌈ts⌉<n = varterm (λ { refl → ℕdisorder ⌈ts⌉<n x≤⌈ts⌉ })
                       ∷ tspf n ⌈ts⌉<n
 \end{code}
 If the first term is a function, then check if the greatest variable in its
 arguments is greater than or equal to the greatest variable of the rest of the
 terms.
 \begin{code}
-maxVarTerms (functerm f us   ∷ ts) with maxVarTerms us | maxVarTerms ts
-... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with compare ⌈us⌉ ⌈ts⌉
+maxVarTerms (functerm f us ∷ ts) with maxVarTerms us | maxVarTerms ts
+... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with compare (varidx ⌈us⌉) (varidx ⌈ts⌉)
 ...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , ⌈us⌉pf
   where
-    ⌈us⌉pf : ∀ n → ⌈us⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
+    ⌈us⌉pf : ∀ n → varidx ⌈us⌉ < n → (var n) NotInTerms (functerm f us ∷ ts)
     ⌈us⌉pf n ⌈us⌉<n = functerm (uspf n ⌈us⌉<n)
                       ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤⌈us⌉) ⌈us⌉<n)
 \end{code}
@@ -995,7 +991,7 @@ If not, use the greatest variable in the rest of the terms.
 \begin{code}
 ...                             | less ⌈us⌉≤⌈ts⌉ = ⌈ts⌉ , ⌈ts⌉pf
   where
-    ⌈ts⌉pf : ∀ n → ⌈ts⌉ < n → All (var n NotInTerm_) (functerm f us ∷ ts)
+    ⌈ts⌉pf : ∀ n → varidx ⌈ts⌉ < n → (var n) NotInTerms (functerm f us ∷ ts)
     ⌈ts⌉pf n ⌈ts⌉<n = functerm (uspf n (≤trans (sn≤sm ⌈us⌉≤⌈ts⌉) ⌈ts⌉<n))
                       ∷ tspf n ⌈ts⌉<n
 
@@ -1010,8 +1006,7 @@ In the atomic case, apply the above lemma to find the greatest variable
 occuring.
 \begin{code}
 maxVar (atom r ts) with maxVarTerms ts
-...                  | ⌈ts⌉ , tspf = var ⌈ts⌉
-                                     , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
+...                  | ⌈ts⌉ , tspf = ⌈ts⌉ , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
 \end{code}
 If all variables greater than $\lceil\alpha\rceil$ are fresh in $\alpha$, and
 all greater than $\lceil\beta\rceil$ are fresh in $\beta$, then any variable
