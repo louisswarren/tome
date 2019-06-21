@@ -36,8 +36,8 @@ Defining this as a type using a vector, instead of simply using functions,
 means that all schemes of all arities are collected under the same type
 (\inline{Scheme}), which makes it possible to define a single function for
 typesetting scheme proofs later. The definition makes no restriction on the
-structure of the instances of the scheme \todo{continuity?}, and is not able to
-put requirements on variable freedom.
+structure of the instances of the scheme, and is not able to put requirements
+on variable freedom.
 
 A scheme is derivable if every instance of the scheme is derivable. A list
 $\Omega s$ of schemes is stronger than a scheme $\Phi$ if every instance of

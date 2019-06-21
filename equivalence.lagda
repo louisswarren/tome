@@ -922,7 +922,6 @@ If $x = y$, then $\alpha' = \beta'$.
 \end{code}
 Otherwise, because $\alpha'[x/y] = \beta'$, we have $\alpha' = \beta'[y/x]$,
 and $x$ is not free in $\beta'$, and so is not free in $\exists y \beta'$.
-\todo{Remark that the dual suits $\exists$, the  other suits $\forall$?}
 \begin{prooftree}
   \AxiomC{$\Gamma$}
   \noLine\UnaryInfC{$\vdots$}\noLine

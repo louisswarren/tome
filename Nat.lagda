@@ -88,6 +88,15 @@ The relation \inline{_≤_} is reflexive and transitive.
 
 \end{code}
 
+If $n < m$ then $m \not\leq n$, and if $m \leq n$ then $n \not< m$. This can be
+expressed as a single proposition. \todo{rename this}
+\begin{code}
+
+ℕdisorder : ∀{n m} → n < m → m ≤ n → ⊥
+ℕdisorder (sn≤sm n<m) (sn≤sm m≤n) = ℕdisorder n<m m≤n
+
+\end{code}
+
 Given natural numbers $n$ and $m$, it is possible to compute whether $n \leq m$
 or $m \leq n$. To prove this, we first create a proposition \inline{Compare n m}
 which is constructed by a proof of either of these.

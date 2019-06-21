@@ -124,7 +124,7 @@ t freeFor x In α with x notFreeIn α
 -- not tight if the quantifier is the greatest variable (and does not have index
 -- zero)
 supFree : ∀ α → Σ ℕ λ ⌈α⌉ → ∀ n → ⌈α⌉ < n → var n NotFreeIn α
-supFree (atom r ts) with maxVarIn ts
+supFree (atom r ts) with maxVarTerms ts
 supFree (atom r ts) | ⌈ts⌉ , tspf = ⌈ts⌉ , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
 supFree (α ⇒ β) with supFree α | supFree β
 supFree (α ⇒ β) | ⌈α⌉ , αpf | ⌈β⌉ , βpf with compare ⌈α⌉ ⌈β⌉

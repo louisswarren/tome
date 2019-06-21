@@ -940,28 +940,25 @@ For the purposes of variable substitution, we will later need a way to generate
 a fresh variable for a given formula. Only finitely many variables occur in a
 given term or formula, so there is a greatest (with respect to the natural
 number indexing) variable occuring in each term or formula; all variables
-greater than this are fresh. That is the variable that we will compute. This
-means that the least fresh variable will not be found. For example, for $P x_0
-\lor P x_2$, we find that $x_3, x_4, \dotsc$ are fresh, missing $x_1$. However,
-finding the least fresh variable cannot be done with a simple recursive
-procedure. Consider $\alpha = (P x_0 \lor P x_2) \land P x_1$; we find $x_1$ is
-fresh to the left of the conjunctive, and $x_0$ is fresh to the right, but this
-does not indicate that $x_2$ will not be fresh in $\alpha$.
+greater than this are fresh. We will first compute this variable, and then use
+its successor. This means that the least fresh variable will not be found. For
+example, for $P x_0 \lor P x_2$, we find that $x_3, x_4, \dotsc$ are fresh,
+missing $x_1$. However, finding the least fresh variable cannot be done with a
+simple recursive procedure. Consider $\alpha = (P x_0 \lor P x_2) \land P x_1$;
+we find $x_1$ is fresh to the left of the conjunctive, and $x_0$ is fresh to
+the right, but this does not indicate that $x_2$ will not be fresh in $\alpha$.
 
-We first compute the greatest variable occuring in a vector of terms, and then
-specialise to a single term, for termination reasons similar to that of
-\inline{_notInTerms_}. For terms, there is no distinction between being fresh
-and being not-free.
+We first compute the greatest variable occuring in a vector of terms.
 \begin{code}
 
-maxVarIn : ∀{k} → (ts : Vec Term k)
+maxVarTerms : ∀{k} → (ts : Vec Term k)
                → Σ ℕ (λ ⌈ts⌉ → ∀ n → ⌈ts⌉ < n → var n NotInTerms ts)
-maxVarIn [] = zero , λ _ _ → []
+maxVarTerms [] = zero , λ _ _ → []
 \end{code}
-If the first term is a variable, check if its index is greater than the
-greatest variable of the rest of the terms.
+If the first term is a variable, check if its index is greater than or equal to
+the greatest variable in the rest of the terms.
 \begin{code}
-maxVarIn (varterm (var m) ∷ ts) with maxVarIn ts
+maxVarTerms (varterm (var m) ∷ ts) with maxVarTerms ts
 ... | ⌈ts⌉ , tspf with compare m ⌈ts⌉
 ...               | more ⌈ts⌉≤m = m , mpf
   where
@@ -983,9 +980,10 @@ Otherwise, use the greatest variable in the rest of the terms.
                       ∷ tspf n ⌈ts⌉<n
 \end{code}
 If the first term is a function, then check if the greatest variable in its
-arguments is greater than the greatest variable of the rest of the terms.
+arguments is greater than or equal to the greatest variable of the rest of the
+terms.
 \begin{code}
-maxVarIn (functerm f us   ∷ ts) with maxVarIn us | maxVarIn ts
+maxVarTerms (functerm f us   ∷ ts) with maxVarTerms us | maxVarTerms ts
 ... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with compare ⌈us⌉ ⌈ts⌉
 ...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , ⌈us⌉pf
   where
@@ -1003,103 +1001,96 @@ If not, use the greatest variable in the rest of the terms.
 
 \end{code}
 
-\todo{minFresh isn't actually a minimum}
-Given a formula, we can now produce a variable which is fresh, and for which
-all greater variables are fresh.
+Given a formula, we can now produce a variable for which all greater variables
+are fresh.
 \begin{code}
-minFresh : ∀ α → Σ Variable λ ⌈α⌉ → ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn α
+maxVar : ∀ α → Σ Variable λ ⌈α⌉ → ∀ n → varidx ⌈α⌉ < n → var n FreshIn α
 \end{code}
-In the atomic case, apply the above lemma to find the largest variable
-occuring, and construct the succeeding variable.
+In the atomic case, apply the above lemma to find the greatest variable
+occuring.
 \begin{code}
-minFresh (atom r ts) with maxVarIn ts
-...                  | ⌈ts⌉ , tspf = var (suc ⌈ts⌉)
-                                     , (λ n ⌈ts⌉≤n → atom (tspf n ⌈ts⌉≤n))
+maxVar (atom r ts) with maxVarTerms ts
+...                  | ⌈ts⌉ , tspf = var ⌈ts⌉
+                                     , λ n ⌈ts⌉<n → atom (tspf n ⌈ts⌉<n)
 \end{code}
-If all variables greater than or equal to $\lceil\alpha\rceil$ are fresh in
-$\alpha$, greater than or equal to $\lceil\beta\rceil$ are fresh in $\beta$,
-then any variable greater than or equal to $\max\{\lceil\alpha\rceil,
-\lceil\beta\rceil\}$ will be not free in $\alpha \rightarrow \beta$.
+If all variables greater than $\lceil\alpha\rceil$ are fresh in $\alpha$, and
+all greater than $\lceil\beta\rceil$ are fresh in $\beta$, then any variable
+greater than $\max\{\lceil\alpha\rceil, \lceil\beta\rceil\}$ will be fresh in
+$\alpha \rightarrow \beta$.
 \begin{code}
-minFresh (α ⇒ β) with minFresh α | minFresh β
+maxVar (α ⇒ β) with maxVar α | maxVar β
 ...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with compare (varidx ⌈α⌉) (varidx ⌈β⌉)
-...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
-  where
-    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ⇒ β)
-    freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ⇒ βpf n ⌈β⌉≤n
-...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
-  where
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ⇒ β)
-    freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ⇒ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
+...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , maxIs⌈β⌉
+    where
+      maxIs⌈β⌉ : ∀ n → varidx ⌈β⌉ < n → var n FreshIn (α ⇒ β)
+      maxIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ⇒ βpf n ⌈β⌉<n
+...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , maxIs⌈α⌉
+    where
+      maxIs⌈α⌉ : ∀ n → varidx ⌈α⌉ < n → var n FreshIn (α ⇒ β)
+      maxIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ⇒ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
 \end{code}
 The same reasoning applies to conjunction
 \begin{code}
-minFresh (α ∧ β) with minFresh α | minFresh β
+maxVar (α ∧ β) with maxVar α | maxVar β
 ...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with compare (varidx ⌈α⌉) (varidx ⌈β⌉)
-...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
-  where
-    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∧ β)
-    freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ∧ βpf n ⌈β⌉≤n
-...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
-  where
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∧ β)
-    freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∧ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
+...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , maxIs⌈β⌉
+    where
+      maxIs⌈β⌉ : ∀ n → varidx ⌈β⌉ < n → var n FreshIn (α ∧ β)
+      maxIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ∧ βpf n ⌈β⌉<n
+...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , maxIs⌈α⌉
+    where
+      maxIs⌈α⌉ : ∀ n → varidx ⌈α⌉ < n → var n FreshIn (α ∧ β)
+      maxIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∧ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
 \end{code}
 and disjunction.
 \begin{code}
-minFresh (α ∨ β) with minFresh α | minFresh β
+maxVar (α ∨ β) with maxVar α | maxVar β
 ...    | ⌈α⌉ , αpf | ⌈β⌉ , βpf with compare (varidx ⌈α⌉) (varidx ⌈β⌉)
-...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , freshIs⌈β⌉
-  where
-    freshIs⌈β⌉ : ∀ n → varidx ⌈β⌉ ≤ n → var n FreshIn (α ∨ β)
-    freshIs⌈β⌉ n ⌈β⌉≤n = αpf n (≤trans ⌈α⌉≤⌈β⌉ ⌈β⌉≤n) ∨ βpf n ⌈β⌉≤n
-...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
-  where
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn (α ∨ β)
-    freshIs⌈α⌉ n ⌈α⌉≤n = αpf n ⌈α⌉≤n ∨ βpf n (≤trans ⌈β⌉≤⌈α⌉ ⌈α⌉≤n)
+...                            | less ⌈α⌉≤⌈β⌉ = ⌈β⌉ , maxIs⌈β⌉
+    where
+      maxIs⌈β⌉ : ∀ n → varidx ⌈β⌉ < n → var n FreshIn (α ∨ β)
+      maxIs⌈β⌉ n ⌈β⌉<n = αpf n (≤trans (sn≤sm ⌈α⌉≤⌈β⌉) ⌈β⌉<n) ∨ βpf n ⌈β⌉<n
+...                            | more ⌈β⌉≤⌈α⌉ = ⌈α⌉ , maxIs⌈α⌉
+    where
+      maxIs⌈α⌉ : ∀ n → varidx ⌈α⌉ < n → var n FreshIn (α ∨ β)
+      maxIs⌈α⌉ n ⌈α⌉<n = αpf n ⌈α⌉<n ∨ βpf n (≤trans (sn≤sm ⌈β⌉≤⌈α⌉) ⌈α⌉<n)
 \end{code}
-For a universal generalisation $\forall x \alpha$, take  the greater of
-$\lceil\alpha\rceil$ and the successor of $x$.
+For a universal generalisation $\forall x \alpha$, take the greater of
+$\lceil\alpha\rceil$ and $x$.
 \begin{code}
-minFresh (Λ x@(var k) α) with minFresh α
-...                      | ⌈α⌉ , αpf with compare (suc k) (varidx ⌈α⌉)
-...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+maxVar (Λ x α) with maxVar α
+...              | ⌈α⌉ , αpf with compare (varidx x) (varidx ⌈α⌉)
+...                          | less x≤⌈α⌉ = ⌈α⌉ , maxIs⌈α⌉
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
-    skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn Λ x α
-    freshIs⌈α⌉ n ⌈α⌉≤n = Λ (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
-...                                  | more ⌈α⌉≤sk = var (suc k) , freshIssk
+      maxIs⌈α⌉ : ∀ n → varidx ⌈α⌉ < n → var n FreshIn Λ x α
+      maxIs⌈α⌉ n ⌈α⌉<n = Λ (λ { refl → ℕdisorder ⌈α⌉<n x≤⌈α⌉ }) (αpf n ⌈α⌉<n)
+...                          | more ⌈α⌉≤x = x , maxIsx
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
-    skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
-    freshIssk : ∀ n → suc k ≤ n → var n FreshIn Λ x α
-    freshIssk n sk≤n = Λ (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
+      maxIsx : ∀ n → varidx x < n → var n FreshIn Λ x α
+      maxIsx n x<n = Λ (λ { refl → ℕdisorder x<n ≤refl })
+                        (αpf n (≤trans (sn≤sm ⌈α⌉≤x) x<n))
 \end{code}
 The same applies for existential generalisation.
 \begin{code}
-minFresh (V x@(var k) α) with minFresh α
-...                      | ⌈α⌉ , αpf with compare (suc k) (varidx ⌈α⌉)
-...                                  | less sk≤⌈α⌉ = ⌈α⌉ , freshIs⌈α⌉
+maxVar (V x α) with maxVar α
+...              | ⌈α⌉ , αpf with compare (varidx x) (varidx ⌈α⌉)
+...                          | less x≤⌈α⌉ = ⌈α⌉ , maxIs⌈α⌉
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
-    skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
-    freshIs⌈α⌉ : ∀ n → varidx ⌈α⌉ ≤ n → var n FreshIn V x α
-    freshIs⌈α⌉ n ⌈α⌉≤n = V (skNewLemma (≤trans sk≤⌈α⌉ ⌈α⌉≤n)) (αpf n ⌈α⌉≤n)
-...                                  | more ⌈α⌉≤sk = var (suc k) , freshIssk
+      maxIs⌈α⌉ : ∀ n → varidx ⌈α⌉ < n → var n FreshIn V x α
+      maxIs⌈α⌉ n ⌈α⌉<n = V (λ { refl → ℕdisorder ⌈α⌉<n x≤⌈α⌉ }) (αpf n ⌈α⌉<n)
+...                          | more ⌈α⌉≤x = x , maxIsx
   where
-    skNewLemma : ∀{n m} → suc m ≤ n → var m ≢ var n
-    skNewLemma (sn≤sm m<m) refl = skNewLemma m<m refl
-    freshIssk : ∀ n → suc k ≤ n → var n FreshIn V x α
-    freshIssk n sk≤n = V (skNewLemma sk≤n) (αpf n (≤trans ⌈α⌉≤sk sk≤n))
+      maxIsx : ∀ n → varidx x < n → var n FreshIn V x α
+      maxIsx n x<n = V (λ { refl → ℕdisorder x<n ≤refl })
+                        (αpf n (≤trans (sn≤sm ⌈α⌉≤x) x<n))
 
 \end{code}
 
-Finally, a fresh variable can be extracted by choosing the first fresh variable
-given by the proof above.
+Finally, a fresh variable can be extracted by choosing the successor of
+the variable given by the proof above.
 \begin{code}
 fresh : ∀ α → Σ Variable (_FreshIn α)
-fresh α with minFresh α
-...     | ⌈α⌉ , αpf = ⌈α⌉ , αpf (varidx ⌈α⌉) ≤refl
+fresh α with maxVar α
+...     | ⌈α⌉ , αpf = var (suc (varidx ⌈α⌉)) , αpf (suc (varidx ⌈α⌉)) ≤refl
 
 \end{code}
