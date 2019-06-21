@@ -22,6 +22,12 @@ elements from a list of formulae can be defined with a function, it is unwieldy
 to give proofs regarding the results of such computations, as they depend on
 equality-checking of formulae, and so proofs must include both the case where
 the equality is as expected, and the degenerate case.
+
+An implementation of classical propositional logic in natural deduction style
+was given in \citet{caiproplogicagda2015}. While this does use (something
+equivalent to) lists, it requires manual manipulation of the context using
+added deduction rules. \todo{Explain}
+
 \todo{Details in appendix}
 
 \AgdaHide{
