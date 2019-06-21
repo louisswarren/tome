@@ -486,7 +486,6 @@ Finally, $x$ will not be free after it has been substituted out of $\alpha$.
 
 We can now show that GLPO is stronger than LEM, without worrying about the
 quantifier.
-\todo{Don't call it rlem}
 \begin{code}
 
 glpo→xnf→lem : ⊢₁ glpo → ∀ α → xvar NotFreeIn α → ⊢ (lem α)

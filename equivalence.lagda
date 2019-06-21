@@ -64,7 +64,9 @@ It may be that the latter two rules are derivable. However, if this is so,
 proving this would require several lemata which will be otherwise unnecessary.
 As the goal here is to prove that equivalent formulae are equivalently
 derivable, having extra constructors for equivalence will not weaken this
-result.
+result. It will be shown later that it would be most `natural' to adopt the
+rules \inline{} and \inline{} and to derive \inline{} and \inline{} i;
+possible.
 
 Formula equivalence is symmetric.
 \begin{code}
@@ -102,8 +104,6 @@ given instead.
                        (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
 
 \end{code}
-
-\todo{Should this be in Formula?}
 
 If a variable is not free in $\alpha$, then it should not be free in
 $\alpha[x/t]$, assuming that the variable does not appear in $t$. The proof
@@ -160,8 +160,6 @@ some bound variable has been renamed to it, so it is bound.
 \AgdaHide{
 \begin{code}
 
---todo: is it better to split this differently?
---todo: rename variables
 ≈notFree (atom r ts) (atom z∉ts) = atom z∉ts
 ≈notFree (α≈α′ ⇒ β≈β′) (z∉α ⇒ z∉β) = ≈notFree α≈α′ z∉α ⇒ ≈notFree β≈β′ z∉β
 ≈notFree (α≈α′ ∧ β≈β′) (z∉α ∧ z∉β) = ≈notFree α≈α′ z∉α ∧ ≈notFree β≈β′ z∉β
@@ -500,7 +498,6 @@ Again, the other direction is obtained by reversing the use of equivalences.
 
 The second case for universal generalisation renames the bound variable, then
 follows another equivalence.
-\todo{wording}
 \begin{code}
 
 ⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′)) Γ⊢∀xα =
@@ -638,6 +635,8 @@ We have $\beta' \coloneq \alpha'[x/y]$.
   \UnaryInfC{$\beta'$}
   \RightLabel{$\forall^+$}
   \UnaryInfC{$\forall y \beta'$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\forall x \alpha \rightarrow \forall y \beta'$}
       \AxiomC{$\Gamma$}
       \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall x \alpha$}
@@ -676,6 +675,8 @@ In the degenerate case where $x = y$, we have $\alpha' = \beta'$.
   \UnaryInfC{$\alpha$}
   \RightLabel{$\forall^+$}
   \UnaryInfC{$\forall x \alpha$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\forall x \beta' \rightarrow \forall x \alpha$}
       \AxiomC{$\Gamma$}
       \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall x \beta'$}
@@ -707,6 +708,8 @@ since $\beta'$ has been obtained by substituting $x$ with $y$ in $\alpha'$.
   \UnaryInfC{$\alpha$}
   \RightLabel{$\forall^+$}
   \UnaryInfC{$\forall x \alpha$}
+  \RightLabel{$\rightarrow^+$}
+  \UnaryInfC{$\forall y \beta' \rightarrow \forall x \alpha$}
       \AxiomC{$\Gamma$}
       \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall y \beta'$}
@@ -985,6 +988,16 @@ Consider the other direction.
        (assume _)))))
 
 \end{code}
+There is a dual structure in the proofs above, in the quantifier cases where
+the bound variable is renamed. Some proofs are straightforward in that they
+eliminate the quantifier, insert the derivation of the equivalent subcomponent
+by induction, then reintroduce the quantifier. Others are more complex, in that
+require an extra introduction and elimination step. The straightforward proofs
+are for the forward direction for \inline{Λ} and \inline{V′}, and the reverse
+direction for \inline{Λ′} and \inline{V}, while the complex proofs are the
+forward direction for \inline{Λ′} and \inline{V}, and the reverse direction for
+\inline{Λ} and \inline{V′}.
+
 
 We can conclude that examining formulae only on an intensional level does not
 restrict the deductive power of the system.
