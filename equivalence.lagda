@@ -68,7 +68,11 @@ result. It will be shown later that it would be more `natural' to adopt the
 rules \inline{Λ/} and \inline{V/′} and to derive \inline{Λ/′} and \inline{V/}
 if possible.
 
+\begin{lemma}
 Formula equivalence is symmetric.
+\end{lemma}
+\begin{proof}
+$ $
 \begin{code}
 
 ≈sym : ∀{α α′} → α ≈ α′ → α′ ≈ α
@@ -104,6 +108,8 @@ given instead.
                        (subInverse y∉α′ α′[x/y]≡β′) (≈sym α≈α′)
 
 \end{code}
+\codeqed
+\end{proof}
 
 If a variable is not free in $\alpha$, then it should not be free in
 $\alpha[x/t]$, assuming that the variable does not appear in $t$. The proof
@@ -238,7 +244,8 @@ rename      : ∀{Γ α α′}
 rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
 \end{code}
 It remains to prove \inline{renameIff}.
-
+\todo{Dual structure means some proofs are essentially duplicates}
+\begin{proof}
 The atomic case is trivial, since an atomic formula is equivalent only to
 itself.
 \begin{code}
@@ -987,6 +994,8 @@ Consider the other direction.
        (assume _)))))
 
 \end{code}
+\codeqed
+\end{proof}
 There is a dual structure in the proofs above, in the quantifier cases where
 the bound variable is renamed. Some proofs are straightforward in that they
 eliminate the quantifier, insert the derivation of the equivalent subcomponent

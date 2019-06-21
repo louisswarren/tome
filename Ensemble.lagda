@@ -138,7 +138,11 @@ data Assembled {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
 
 \end{code}
 
+\begin{proposition}
 Assembled ensembles have decidable membership.
+\end{proposition}
+\begin{proof}
+$ $
 \begin{code}
 
 decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Ensemble A}
@@ -178,8 +182,10 @@ decide∈ {A} {eq} x (from Aαs - α) with eq x α
                                                                   → x∉αs)))
 
 \end{code}
+\codeqed
+\end{proof}
 
-Given an ensemble $A$, a sensiblble definition for a predicate $P$ holding on
+Given an ensemble $A$, a sensible definition for a predicate $P$ holding on
 every element of $A$ would be $\forall x (x \in A \rightarrow P x)$. However,
 for inductively defined predicates (like \inline{_notFreeIn α} for some
 $\alpha$), this is not easy to work with, either by hand or using proof search.
@@ -228,9 +234,13 @@ All P αs = All P [ αs ∖ [] ]
 
 \end{code}
 
-This definition of all is weaker than the functional definition. We use a lemma
-to show that this is the case for all values of the removed list of elements,
-and apply it to the case of the empty list.
+\begin{proposition}
+The definition of \inline{All} for ensembles is weaker than the functional
+definition.
+\end{proposition}
+\begin{proof}
+We use a lemma to show that this is the case for all values of the removed list
+of elements, and apply it to the case of the empty list.
 \begin{code}
 
 fAll→All : {A : Set} {eq : Decidable≡ A} {P : Pred A} {αs : Ensemble A}
@@ -275,6 +285,9 @@ $x \in \alpha s - \alpha$, and that if $x \not\in \alpha \Colon xs$ then $x
               x∉xs   x∈xs = x∉α∷xs (α ∷ x∈xs)
           in  fallαs-α x x∈αs-α x∉xs
 \end{code}
+\codeqed
+\end{proof}
+
 The converse cannot be proved; \inline{All} is in fact strictly weaker than the
 functional definition. While it could be expected that pattern matching on both
 \inline{All} and \inline{Assembled} would lead to a proof, this will not work

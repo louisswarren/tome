@@ -117,7 +117,11 @@ Similarly, the intuitionistic $\bot$ rule
 \end{code}
 gives an extension to intuitionistic logic.
 
+\begin{proposition}
 The classical bottom rule holds if and only if DNE is derivable.
+\end{proposition}
+\begin{proof}
+$ $
 \begin{code}
 
 dne→⊥c-rule : ⊢₁ dne → ⊥c-rule
@@ -168,8 +172,14 @@ dne→⊥c-rule ⊢dne α Γ⊢⊥ = close
                              (assume (¬ α)))))
 
 \end{code}
+\codeqed
+\end{proof}
 
-The the intuitionistic bottom rule holds if and only if EFQ is derivable.
+\begin{proposition}
+The intuitionistic bottom rule holds if and only if EFQ is derivable.
+\end{proposition}
+\begin{proof}
+$ $
 \begin{code}
 
 efq→⊥i-rule : ⊢₁ efq → ⊥i-rule
@@ -210,10 +220,16 @@ efq→⊥i-rule ⊢efq α Γ⊢⊥ = close
                             (assume ⊥)))
 
 \end{code}
+\codeqed
+\end{proof}
 
-DP holds clasically. We show that if DNE is derivable then DP is derivable,
-meaning that DP is weaker than DNE. For illustrative purposes, lines given by
-Agda's proof search are marked with \inline{{- Auto -}} in the next proof.
+\begin{proposition}
+DP holds in classical logic.
+\end{proposition}
+\begin{proof}
+We show that if DNE is derivable then DP is derivable, meaning that DP is
+weaker than DNE. For illustrative purposes, lines given by Agda's proof search
+are marked with \inline{{- Auto -}} in the next proof.
 \begin{code}
 
 dne→dp : ⊢₁ dne → ⊢₁ dp
@@ -251,8 +267,10 @@ dne→dp ⊢dne α = close
                                (assume α)))))))))))))))
 
 \end{code}
-This is a general derivation of an arbitrary instance of DP using instances of
-DNE. We use this proof to construct the scheme relation `$\supset$', for
+\codeqed
+\end{proof}
+The above is ageneral derivation of an arbitrary instance of DP using instances
+of DNE. We use this proof to construct the scheme relation `$\supset$', for
 outputting as \LaTeX.
 \begin{code}
 
@@ -315,7 +333,11 @@ to page constraints.
 \end{prooftree}
 \vspace{\baselineskip}
 
-Similarly, the dual of the drinker paradox also holds in classical logic.
+\begin{proposition}
+The dual of the drinker paradox also holds in classical logic.
+\end{proposition}
+\begin{proof}
+$ $
 \begin{code}
 
 dne→hε : ⊢₁ dne → ⊢₁ hε
@@ -344,6 +366,12 @@ dne→hε ⊢dne α = close
                           (existintro x xvar (ident (∃x α ⇒ α) xvar)
                            (arrowintro (∃x α)
                             (assume α))))))))))))
+\end{code}
+\codeqed
+\end{proof}
+
+We extract the proof tree for H$\epsilon(Px)$.
+\begin{code}
 
 DNE⊃Hε : DNE ∷ [] ⊃ Hε
 DNE⊃Hε ⊢lhs (α ∷ []) = dne→hε (descheme₁ (⊢lhs DNE [ refl ])) α
@@ -418,6 +446,7 @@ We show first that when deriving $\text{LEM}(\Phi)$, we may assume without
 loss of generality that $x$ is not free in $\Phi$, by showing that if LEM is
 derivable in this restricted case, then it is derivable in general.
 
+\begin{proof}
 Given any formula $\alpha$, there is a fresh variable $\omega$ which appears
 nowhere in $\alpha$ and which differs from $x$. Then $\alpha[x/\omega]$ exists,
 with $x$ not free, and $\alpha[x/\omega][\omega/x] = \alpha$. Now if LEM holds
@@ -451,7 +480,7 @@ $\alpha$ and not equal to $x$.
     ω,ωFresh,x≢ω | ω , Λ x≢ω ωFrα = ω , ωFrα , x≢ω
 \end{code}
 We therefore have a variable $\omega$ which is not free in $\alpha$, which is
-free for $x$ in $\alpha$, and which is different from $x$.
+free for $x$ in $\alpha$, and which differs from $x$.
 \begin{code}
     ωvar          : Variable
     ω∉α           : ωvar NotFreeIn α
@@ -483,6 +512,8 @@ Finally, $x$ will not be free after it has been substituted out of $\alpha$.
     x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
 
 \end{code}
+\codeqed
+\end{proof}
 
 We can now show that GLPO is stronger than LEM, without worrying about the
 quantifier variable.
