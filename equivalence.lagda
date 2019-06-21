@@ -64,9 +64,9 @@ It may be that the latter two rules are derivable. However, if this is so,
 proving this would require several lemata which will be otherwise unnecessary.
 As the goal here is to prove that equivalent formulae are equivalently
 derivable, having extra constructors for equivalence will not weaken this
-result. It will be shown later that it would be most `natural' to adopt the
-rules \inline{} and \inline{} and to derive \inline{} and \inline{} i;
-possible.
+result. It will be shown later that it would be more `natural' to adopt the
+rules \inline{Λ/} and \inline{V/′} and to derive \inline{Λ/′} and \inline{V/}
+if possible.
 
 Formula equivalence is symmetric.
 \begin{code}
@@ -993,10 +993,13 @@ the bound variable is renamed. Some proofs are straightforward in that they
 eliminate the quantifier, insert the derivation of the equivalent subcomponent
 by induction, then reintroduce the quantifier. Others are more complex, in that
 require an extra introduction and elimination step. The straightforward proofs
-are for the forward direction for \inline{Λ} and \inline{V′}, and the reverse
-direction for \inline{Λ′} and \inline{V}, while the complex proofs are the
-forward direction for \inline{Λ′} and \inline{V}, and the reverse direction for
-\inline{Λ} and \inline{V′}.
+are for the forward direction for \inline{Λ/} and \inline{V/′}, and the reverse
+direction for \inline{Λ/′} and \inline{V/}, while the complex proofs are the
+forward direction for \inline{Λ/′} and \inline{V/}, and the reverse direction
+for \inline{Λ/} and \inline{V/′}. Since the forward direction of each of these
+rules is the same as the reverse direction of its dual, we see that it would be
+simplest to do renaming with the rules \inline{Λ/} and \inline{V/′}, and have
+\inline{Λ/′} and \inline{V/} be the derived rules, if possible.
 
 
 We can conclude that examining formulae only on an intensional level does not
