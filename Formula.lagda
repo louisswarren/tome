@@ -333,7 +333,7 @@ data _NotFreeIn_ : Variable → Formula → Set where
 
 \end{code}
 
-We now prove that the above predicate is decidable. First, variable freedom
+We now prove that the above predicate is decidable. First, variable occurence
 within a vector of terms is decidable, simply by searching through the vector
 for occurences. In the following code we will use names like \inline{x∉t} to
 denote proofs of `$x$ is not in term $t$, \inline{x∉ts} for `$x$ is not in any
