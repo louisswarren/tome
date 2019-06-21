@@ -666,7 +666,7 @@ subFunc (Λ∣ x α)      (Λ∣ .x .α)    = refl
 subFunc (V∣ x α)      (V∣ .x .α)    = refl
 \end{code}
 It is contradictory for one substitution to occur by matching $x$
-with the quantifier, and the other to have a different quantifier.
+with the quantifier variable, and the other to have a different quantifier.
 \begin{code}
 subFunc (Λ∣ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
 subFunc (V∣ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
@@ -769,8 +769,8 @@ For the propositional connectives, the substitution is obtained recursively.
 (α ∨ β) [ x / tffα ∨ tffβ ]  with α [ x / tffα ] | β [ x / tffβ ]
 ...                          | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
 \end{code}
-For generalisation, check if $x$ is the quantifier, and if so do nothing.
-Otherwise, recurse.
+For generalisation, check if $x$ is the quantifier variable, and if so do
+nothing.  Otherwise, recurse.
 \begin{code}
 Λ y α [ .y / Λ∣ .α ]         = Λ y α , Λ∣ y α
 Λ y α [ x / Λ y∉t tffα ]     with varEq x y
