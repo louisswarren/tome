@@ -822,8 +822,9 @@ V y α [ x / V y∉t tffα ]     with varEq x y
 
 We have proved that if $t$ is free for $x$ in $α$ then $α[x/t]$ exists. The
 converse is also true, meaning that \inline{_FreeFor_In_} precisely captures
-the notion of a substitution being possible.
-\todo{Explain and neaten}
+the notion of a substitution being possible. The proof is straightforward by
+induction on formula substitution, with the base case of atomic formulae being
+trivial.
 \begin{code}
 
 subFreeFor : ∀{α x t β} → α [ x / t ]≡ β → t FreeFor x In α
@@ -856,34 +857,55 @@ subFreeFor (V x≢y y∉t sub) = V y∉t (subFreeFor sub)
 \end{code}
 }
 
+\begin{proposition}
 If a variable has been substituted by a term not involving that variable, then
-the variable is not free in the resulting term.
+the variable is not free in the resulting formula.
+\end{proposition}
+\begin{proof}
+$ $
 \begin{code}
 
 subNotFree : ∀{α x t β} → x NotInTerm t → α [ x / t ]≡ β → x NotFreeIn β
-subNotFree (varterm x≢x) (ident α x) = ⊥-elim (x≢x refl)
-subNotFree x∉t (notfree x∉α)   = x∉α
-subNotFree x∉t (atom r p)       = atom (termsLemma x∉t p)
+\end{code}
+The case where the substitution was constructed by \inline{ident} is absurd,
+since $x$ can't not be in term $x$.
+\begin{code}
+subNotFree (varterm x≢x) (ident α x)   = ⊥-elim (x≢x refl)
+\end{code}
+If the substitution was constructed by \inline{notfree}, then $\alpha \equiv
+\beta$, so $x$ is not free in $\beta$.
+\begin{code}
+subNotFree x∉t           (notfree x∉α) = x∉α
+\end{code}
+For atomic formulae, we use an inline lemma that the proposition holds for
+vectors of terms. Every variable in a term is either equal to $x$, and so gets
+replaced with $t$, or else differs from $x$.
+\begin{code}
+subNotFree x∉t (atom r subus)  = atom (φ x∉t subus)
   where
-    termsLemma : ∀{n x t} {us vs : Vec Term n} → x NotInTerm t
+    φ : ∀{n x t} {us vs : Vec Term n} → x NotInTerm t
                       → [ us ][ x / t ]≡ vs → x NotInTerms vs
-    termsLemma x∉t []                  = []
-    termsLemma x∉t (varterm≡ ∷ ps)     = x∉t ∷ termsLemma x∉t ps
-    termsLemma x∉t (varterm≢ neq ∷ ps) = varterm neq ∷ termsLemma x∉t ps
-    termsLemma x∉t (functerm sub ∷ ps) = functerm (termsLemma x∉t sub)
-                                           ∷ termsLemma x∉t ps
-subNotFree x∉t (pα ⇒ pβ)        = subNotFree x∉t pα ⇒ subNotFree x∉t pβ
-subNotFree x∉t (pα ∧ pβ)        = subNotFree x∉t pα ∧ subNotFree x∉t pβ
-subNotFree x∉t (pα ∨ pβ)        = subNotFree x∉t pα ∨ subNotFree x∉t pβ
-subNotFree x∉t (Λ∣ y α)         = Λ∣ y α
-subNotFree x∉t (Λ x≢y y∉t p)   = Λ _ (subNotFree x∉t p)
-subNotFree x∉t (V∣ y α)         = V∣ y α
-subNotFree x∉t (V x≢y y∉t p)   = V _ (subNotFree x∉t p)
-
+    φ x∉t []                  = []
+    φ x∉t (varterm≡     ∷ subus) = x∉t                  ∷ φ x∉t subus
+    φ x∉t (varterm≢ neq ∷ subus) = varterm neq          ∷ φ x∉t subus
+    φ x∉t (functerm sub ∷ subus) = functerm (φ x∉t sub) ∷ φ x∉t subus
+\end{code}
+The remaining cases follow by recursion.
+\begin{code}
+subNotFree x∉t (subα ⇒ subβ)   = subNotFree x∉t subα ⇒ subNotFree x∉t subβ
+subNotFree x∉t (subα ∧ subβ)   = subNotFree x∉t subα ∧ subNotFree x∉t subβ
+subNotFree x∉t (subα ∨ subβ)   = subNotFree x∉t subα ∨ subNotFree x∉t subβ
+subNotFree x∉t (Λ∣ y α)        = Λ∣ y α
+subNotFree x∉t (Λ x≢y y∉t sub) = Λ _ (subNotFree x∉t sub)
+subNotFree x∉t (V∣ y α)        = V∣ y α
+subNotFree x∉t (V x≢y y∉t sub) = V _ (subNotFree x∉t sub)
 
 \end{code}
+\codeqed
+\end{proof}
 
 
+\todo{Explain and neaten}
 \begin{code}
 
 subInverse : ∀{ω α x β} → ω NotFreeIn α
