@@ -34,25 +34,24 @@ previously for decidable predicates in the metalanguage; here they are in the
 language of formulae.
 \begin{code}
 
-pattern ⊥rel = rel zero zero
-pattern ⊥ = atom ⊥rel []
+pattern ⊥ = atom (rel zero zero) []
 
-pattern ¬ α = α ⇒ ⊥
+pattern ¬  α = α ⇒ ⊥
 pattern ¬¬ α = ¬ (¬ α)
 
 \end{code}
 Fix some variables.
 \begin{code}
 
-pattern xvar   = var zero
-pattern yvar   = var (suc zero)
+pattern xvar = var zero
+pattern yvar = var (suc zero)
 
 x y : Term
 x = varterm xvar
 y = varterm yvar
 
-pattern ∀x Φ = Λ xvar Φ
-pattern ∃x Φ = V xvar Φ
+pattern ∀x  Φ = Λ xvar Φ
+pattern ∃x  Φ = V xvar Φ
 pattern ¬∀x Φ = ¬(∀x Φ)
 pattern ¬∃x Φ = ¬(∃x Φ)
 pattern ∀x¬ Φ = ∀x (¬ Φ)
@@ -100,9 +99,9 @@ This can be extended to classical logic with the classical $\bot$ rule.
 
 ⊥c-rule : Set₁
 ⊥c-rule = ∀{Γ} → ∀ α
-         →      Γ ⊢ ⊥
-           --------------- ⊥c
-         →  Γ - (¬ α) ⊢ α
+          →      Γ ⊢ ⊥
+            --------------- ⊥c
+          →  Γ - (¬ α) ⊢ α
 
 \end{code}
 Similarly, the intuitionistic $\bot$ rule
@@ -110,9 +109,9 @@ Similarly, the intuitionistic $\bot$ rule
 
 ⊥i-rule : Set₁
 ⊥i-rule = ∀{Γ} → ∀ α
-         →      Γ ⊢ ⊥
-               ------- ⊥i
-         →      Γ ⊢ α
+          →      Γ ⊢ ⊥
+                ------- ⊥i
+          →      Γ ⊢ α
 
 \end{code}
 gives an extension to intuitionistic logic.
