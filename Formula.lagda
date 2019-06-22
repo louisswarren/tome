@@ -881,7 +881,7 @@ For atomic formulae, we use an inline lemma that the proposition holds for
 vectors of terms. Every variable in a term is either equal to $x$, and so gets
 replaced with $t$, or else differs from $x$.
 \begin{code}
-subNotFree x∉t (atom r subus)  = atom (φ x∉t subus)
+subNotFree x∉t (atom r subts)  = atom (φ x∉t subts)
   where
     φ : ∀{n x t} {us vs : Vec Term n} → x NotInTerm t
                       → [ us ][ x / t ]≡ vs → x NotInTerms vs
@@ -905,37 +905,79 @@ subNotFree x∉t (V x≢y y∉t sub) = V _ (subNotFree x∉t sub)
 \end{proof}
 
 
-\todo{Explain and neaten}
+\begin{proposition}
+Substituting with a variable which is not free is invertible by reversing the
+substitution.
+\end{proposition}
+\begin{proof}
+$ $
 \begin{code}
 
 subInverse : ∀{ω α x β} → ω NotFreeIn α
                           → α [ x / varterm ω ]≡ β → β [ ω / varterm x ]≡ α
+\end{code}
+The cases where the substitution was obtained with the \inline{ident} or
+\inline{notfree} constructors are trivial, since the formula has not been
+changed.
+\begin{code}
 subInverse _           (ident α x)    = ident α x
 subInverse ω∉α         (notfree x∉α)  = notfree ω∉α
-subInverse (atom x∉ts) (atom r subts) = atom r (termsLemma x∉ts subts)
+\end{code}
+In the atomic case, we use an inline lemma that the proposition holds for
+vectors of terms.
+\begin{code}
+subInverse (atom x∉ts) (atom r subts) = atom r (φ x∉ts subts)
   where
-    termsLemma : ∀{n x ω} {us vs : Vec Term n} → ω NotInTerms us
+    φ : ∀{n x ω} {us vs : Vec Term n} → ω NotInTerms us
                  → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
-    termsLemma ω∉us [] = []
-    termsLemma (_ ∷ ω∉us) (varterm≡ ∷ subus) = varterm≡ ∷ termsLemma ω∉us subus
-    termsLemma (varterm ω≢y ∷ ω∉us) (varterm≢ x≢ω ∷ subus) = varterm≢ ω≢y ∷ termsLemma ω∉us subus
-    termsLemma (functerm ω∉ts ∷ ω∉us) (functerm subts ∷ subus) = functerm (termsLemma ω∉ts subts) ∷ termsLemma ω∉us subus
-subInverse (ω∉α ⇒ ω∉β) (subα ⇒ subβ) = subInverse ω∉α subα ⇒ subInverse ω∉β subβ
-subInverse (ω∉α ∧ ω∉β) (subα ∧ subβ) = subInverse ω∉α subα ∧ subInverse ω∉β subβ
-subInverse (ω∉α ∨ ω∉β) (subα ∨ subβ) = subInverse ω∉α subα ∨ subInverse ω∉β subβ
-subInverse ω∉α          (Λ∣ x α)              = notfree ω∉α
-subInverse (Λ∣ x α)      (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
-subInverse ω∉α          (V∣ x α)              = notfree ω∉α
-subInverse (V∣ x α)      (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
-subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω subα)           with varEq ω y
-subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω subα)           | no ω≢y = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
-subInverse {.y} (Λ y ω∉α) (Λ x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
-subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           with varEq ω y
-subInverse {.y} (V y ω∉α) (V x≢y (varterm y≢y) subα) | yes refl = ⊥-elim (y≢y refl)
-subInverse {ω} (V y ω∉α) (V x≢y y∉ω subα)           | no ω≢y = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α subα)
-
+    φ ω∉us                   []                     = []
+    φ (_             ∷ ω∉us) (varterm≡     ∷ subus) = varterm≡
+                                                      ∷ φ ω∉us subus
+    φ (varterm ω≢y   ∷ ω∉us) (varterm≢ x≢ω ∷ subus) = varterm≢ ω≢y
+                                                      ∷ φ ω∉us subus
+    φ (functerm ω∉ts ∷ ω∉us) (functerm sub ∷ subus) = functerm (φ ω∉ts sub)
+                                                      ∷ φ ω∉us subus
+\end{code}
+The propositional connective cases are solved by recursion.
+\begin{code}
+subInverse (ω∉α ⇒ ω∉β) (sα ⇒ sβ) = subInverse ω∉α sα ⇒ subInverse ω∉β sβ
+subInverse (ω∉α ∧ ω∉β) (sα ∧ sβ) = subInverse ω∉α sα ∧ subInverse ω∉β sβ
+subInverse (ω∉α ∨ ω∉β) (sα ∨ sβ) = subInverse ω∉α sα ∨ subInverse ω∉β sβ
+\end{code}
+If the substitution changed nothing because the substitution variable was a
+quantifier variable, then $\omega$ is still not free in $\beta$.
+\begin{code}
+subInverse ω∉α (Λ∣ x α) = notfree ω∉α
+subInverse ω∉α (V∣ x α) = notfree ω∉α
+\end{code}
+Finally, we have the case where the substitution occurred inside a quantifier.
+It is absurd for $\omega$ to be the quantifer, since it would not have been
+allowed to substitute $x$ with $\omega$.
+\begin{code}
+subInverse (Λ∣ x α) (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
+subInverse (V∣ x α) (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
+\end{code}
+Suppose the formula was $\forall y \alpha$. Again discard the case where
+$\omega$ is $y$.
+\begin{code}
+subInverse {ω} (Λ y ω∉α) (Λ _ y∉ω           _) with varEq ω y
+subInverse {ω} (Λ y ω∉α) (Λ _ (varterm y≢y) _) | yes refl = ⊥-elim (y≢y refl)
+\end{code}
+Recurse inside the quantifier, turning a proof of $x \neq y$ into $y \neq x$.
+\begin{code}
+subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω sub)       | no  ω≢y
+  = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α sub)
+\end{code}
+The same applies if the formula was $\exists y \alpha$
+\begin{code}
+subInverse {ω} (V y ω∉α) (V _ y∉ω           _) with varEq ω y
+subInverse {ω} (V y ω∉α) (V _ (varterm y≢y) _) | yes refl = ⊥-elim (y≢y refl)
+subInverse {ω} (V y ω∉α) (V x≢y y∉ω sub)       | no  ω≢y
+  = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α sub)
 
 \end{code}
+\codeqed
+\end{proof}
 
 \subsection{Fresh variables}
 
