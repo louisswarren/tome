@@ -92,13 +92,14 @@ It would be reasonable to define union in terms of a disjoint union type, so
 that a proof of $x \in A \cup B$ would be either a proof of $x \in A$ or of $x
 \in B$. However, we want Agda's proof search to fill in proofs regarding
 subsets. For a proof that $A \cup B \subset A \cup B \cup \emptyset$, we would
-have to do a case analysis on a proof of $x \in A \cup B$. As of Agda 2.6.0,
-\todo{how to cite this?} Agda's proof search does not support pattern matching
-lambda expressions. Instead, we define $x \in A \cup B$ using functions, so
-that pattern matching is not necessary in order to make use of such a proof.
-One definition involving only functions is $x \in A \cup B \coloneqq x \not\in
-A \rightarrow x \in B$. We take the double negative of the right side of the
-implication, for the same reasons as above.
+have to do a case analysis on a proof of $x \in A \cup B$. Agda's proof
+search\footnote{
+  As of version 2.6.0.}
+does not support pattern matching lambda expressions. Instead, we define $x \in
+A \cup B$ using functions, so that pattern matching is not necessary in order
+to make use of such a proof.  One definition involving only functions is $x \in
+A \cup B \coloneqq x \not\in A \rightarrow x \in B$. We take the double
+negative of the right side of the implication, for the same reasons as above.
 \begin{code}
 
 infixr 5 _∪_
@@ -112,8 +113,8 @@ collections, this is not a limitation. Proofs involving a conjunction (either
 by from a product type or a new data type), expressing that $x \in A - a$ means
 $x \in A \text{ and } x \neq A$, would have the same pattern matching
 requirements as disjoint unions. A translation to functions is $x \in A - a
-\coloneqq \lnot(x \in A \rightarrow x = a)$ \todo{Am I using $=$ or $\equiv$?}.
-Take the contrapositive of the inner implication.
+\coloneqq \lnot(x \in A \rightarrow x \equiv a)$. Take the contrapositive of the
+inner implication.
 \begin{code}
 
 infixl 5 _-_

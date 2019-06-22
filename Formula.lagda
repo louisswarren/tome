@@ -733,7 +733,7 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
 The definitions above for variable substitution lead directly to a procedure
 for computing substitutions. Given $\alpha$, $x$, $t$, and a proof that $t$ is
 free for $x$ in $\alpha$, we compute a $\beta$ and a proof that
-$\alpha[x/t] \equiv \beta$.
+$\alpha[x/t]\equiv \beta$.
 
 The built-in sigma (dependent sum) type has been imported. A simplified version
 of its definition is commented below.
@@ -872,7 +872,7 @@ since $x$ can't not be in term $x$.
 \begin{code}
 subNotFree (varterm x≢x) (ident α x)   = ⊥-elim (x≢x refl)
 \end{code}
-If the substitution was constructed by \inline{notfree}, then $\alpha \equiv
+If the substitution was constructed by \inline{notfree}, then $\alpha =
 \beta$, so $x$ is not free in $\beta$.
 \begin{code}
 subNotFree x∉t           (notfree x∉α) = x∉α
