@@ -25,7 +25,7 @@ open import Vec
 We adopt the definitions of \citet{schwichtenberg}.
 
 There are countably many variables, and there are countably many function
-symbols of each (natural) airty. Constants are functions with arity zero.
+symbols of each (natural) arity. Constants are functions with arity zero.
 Function symbols of different arities with the same index are considered
 distinct.
 \begin{code}
@@ -112,7 +112,7 @@ infixr 107 _∧_
 
 Equality of formulae is decidable. Logically, this follows from the fact that
 formulae are inductively defined. The proof is obtained by case analysis, using
-lemata on the types used to construct formulae. As these proofs are
+lemmas on the types used to construct formulae. As these proofs are
 unremarkable, and follow the same pattern as the proof for decidable equality
 of natural numbers above, they are omitted.
 \begin{code}
@@ -336,13 +336,13 @@ data _NotFreeIn_ : Variable → Formula → Set where
 We now prove that the above predicate is decidable.
 
 \begin{lemma}[\inline{_notInTerms_}]
-Variable occurence within a vector of terms is decidable.
+Variable occurrence within a vector of terms is decidable.
 \end{lemma}
 \begin{proof}
-Search through the vector for occurences of the variable. In the following code
-we will use names like \inline{x∉t} to denote proofs of `$x$ is not in term
-$t$, \inline{x∉ts} for `$x$ is not in any terms in $ts$', and \inline{x∉α} for
-`$x$ is not free in $\alpha$`.
+Search through the vector for occurrences of the variable. In the following
+code we will use names like \inline{x∉t} to denote proofs of `$x$ is not in
+term $t$, \inline{x∉ts} for `$x$ is not in any terms in $ts$', and \inline{x∉α}
+for `$x$ is not free in $\alpha$`.
 \begin{code}
 
 _notInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotInTerms ts)
@@ -658,7 +658,7 @@ $ $
 subFunc : ∀{x t α β γ} → α [ x / t ]≡ β → α [ x / t ]≡ γ → β ≡ γ
 \end{code}
 If either substitution came from \inline{ident} or \inline{notfree}, invoke one
-of the above lemata. If they occured in the right substitution, the lemata
+of the above lemmas. If they occurred in the right substitution, the lemmas
 prove $\gamma \equiv \beta$, so \inline{rewrite} is used to recover $\beta
 \equiv \gamma$.
 \begin{code}
@@ -972,7 +972,7 @@ freshFreeFor (V x≢y xfrα)  y = V (varterm x≢y) (freshFreeFor xfrα y)
 For the purposes of variable substitution, we will later need a way to generate
 a fresh variable for a given formula. Only finitely many variables occur in a
 given term or formula, so there is a greatest (with respect to the natural
-number indexing) variable occuring in each term or formula; all variables
+number indexing) variable occurring in each term or formula; all variables
 greater than this are fresh. We will first compute this variable, and then use
 its successor. This means that the least fresh variable will not be found. For
 example, for $P x_0 \lor P x_2$, we find that $x_3, x_4, \dotsc$ are fresh,
@@ -982,7 +982,7 @@ we find $x_1$ is fresh to the left of the conjunctive, and $x_0$ is fresh to
 the right, but this does not indicate that $x_2$ will not be fresh in $\alpha$.
 
 \begin{lemma}
-There is an upper bound on the variables occuring in a given vector of terms.
+There is an upper bound on the variables occurring in a given vector of terms.
 \end{lemma}
 \begin{proof}
 We call this function \inline{maxVarTerms}, but wil not actually prove that
@@ -1039,7 +1039,7 @@ If not, use the greatest variable in the rest of the terms.
 
 
 \begin{proposition}
-There is an upper bound on the variables occuring in a given formula.
+There is an upper bound on the variables occurring in a given formula.
 \end{proposition}
 \begin{proof}
 $ $

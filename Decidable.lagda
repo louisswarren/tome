@@ -26,7 +26,7 @@ of the equality $x \equiv y$ is a proof that $x$ and $y$ are intensionally
 equal.
 
 The bottom type, $\bot$, has no constructors, and so is provable only from
-absurdity. The usual definiton of negation follows, as does an abbreviation for
+absurdity. The usual definition of negation follows, as does an abbreviation for
 inequality.
 \begin{code}
 

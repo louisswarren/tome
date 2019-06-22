@@ -269,9 +269,9 @@ dne→dp ⊢dne α = close
 \end{code}
 \codeqed
 \end{proof}
-The above is ageneral derivation of an arbitrary instance of DP using instances
-of DNE. We use this proof to construct the scheme relation `$\supset$', for
-outputting as \LaTeX.
+The above is a general derivation of an arbitrary instance of DP using
+instances of DNE. We use this proof to construct the scheme relation
+`$\supset$', for outputting as \LaTeX.
 \begin{code}
 
 DNE⊃DP : DNE ∷ [] ⊃ DP
@@ -498,7 +498,7 @@ Now, compute $\alpha_\omega = \alpha[\omega/x]$.
     αω        = fst (α [ xvar / ωFreeForxInα ])
     α[x/ω]≡αω = snd (α [ xvar / ωFreeForxInα ])
 \end{code}
-By the construction of $\omega$, the substitution is reversable, so
+By the construction of $\omega$, the substitution is reversible, so
 $\text{LEM}(\alpha_\omega)[\omega/x] = \text{LEM}(\alpha)$.
 \begin{code}
     lemαω[ω/x]≡lemα : (lem αω) [ ωvar / _ ]≡ (lem α)
@@ -547,7 +547,7 @@ GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
 GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) α
 
 \end{code}
-No computation of a fresh variable has occured yet, since the variable depends
+No computation of a fresh variable has occurred yet, since the variable depends
 on the instance of LEM we want to derive. Extracting the proof tree for
 $\text{LEM}(Px)$, the \inline{fresh} function computes that $y$ is fresh, and
 so the proof tree below is produced.

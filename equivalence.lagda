@@ -61,7 +61,7 @@ renaming must be derivable.
 
 \end{code}
 It may be that the latter two rules are derivable. However, if this is so,
-proving this would require several lemata which will be otherwise unnecessary.
+proving this would require several lemmas which will be otherwise unnecessary.
 As the goal here is to prove that equivalent formulae are equivalently
 derivable, having extra constructors for equivalence will not weaken this
 result. It will be shown later that it would be more `natural' to adopt the

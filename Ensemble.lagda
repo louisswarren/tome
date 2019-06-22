@@ -69,7 +69,7 @@ A sensible definition of subset is $A \subset B \coloneqq \forall x (x \in A
 If it is absurd for $x$ to be in $A$ (for example, if $A$ is the empty set),
 then proving that $x \in B$ can be done using either pattern matching, or the
 lemma \inline{⊥-elim}. Agda's proof search will not do pattern matching inside
-lambda expressions, however, and it will not find lemata unless it is hinted to
+lambda expressions, however, and it will not find lemmas unless it is hinted to
 do so. For convenience, we adopt a \todo{minimal} translation by taking the
 double negative of the right side of the implication, which solves this issue.
 \begin{code}
@@ -109,11 +109,11 @@ _∪_ : {A : Set} → Ensemble A → Ensemble A → Ensemble A
 Instead of defining a set difference, define notation for removing a single
 element from an ensemble. Since we intend to use ensembles only for finite
 collections, this is not a limitation. Proofs involving a conjunction (either
-by from a cartesian product type or a new data type), expressing that $x \in A
-- a$ means $x \in A \text{ and } x \neq A$, would have the same pattern
-  matching requirements as disjoint unions. A translation to functions is $x
-  \in A - a \coloneqq \lnot(x \in A \rightarrow x = a)$ \todo{Am I using $=$ or
-  $\equiv$?}.  Take the contrapositive of the inner implication.
+by from a product type or a new data type), expressing that $x \in A - a$ means
+$x \in A \text{ and } x \neq A$, would have the same pattern matching
+requirements as disjoint unions. A translation to functions is $x \in A - a
+\coloneqq \lnot(x \in A \rightarrow x = a)$ \todo{Am I using $=$ or $\equiv$?}.
+Take the contrapositive of the inner implication.
 \begin{code}
 
 infixl 5 _-_

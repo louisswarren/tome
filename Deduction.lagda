@@ -140,7 +140,7 @@ Finally, we define the following shorthand.
 
 It is trivial to show that the context of a deduction is assembled (and so
 membership is decidable), simply by recursing over the deduction rules. The
-proof is ommited.
+proof is omitted.
 \begin{code}
 assembled-context : ∀{Γ α} → Γ ⊢ α → Assembled formulaEq Γ
 -- Proof omitted.
