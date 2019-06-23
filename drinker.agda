@@ -1156,3 +1156,36 @@ DP⊃LPO ⊢lhs (α ∷ β ∷ []) = dp→lpo (descheme₁ (⊢lhs DP [ refl ]))
 
 
 
+results = join "\n" (""
+-- Classical
+  ∷ texprop DP   (P x ∷       []) DNE⊃DP
+  ∷ texprop HE   (P x ∷       []) DNE⊃HE
+-- Propositional
+  ∷ texprop DNE  (A   ∷       []) LEM,EFQ⊃DNE
+  ∷ texprop EFQ  (A   ∷       []) DNE⊃EFQ
+  ∷ texprop LEM  (A   ∷       []) DNE⊃LEM
+  ∷ texprop WLEM (A   ∷       []) LEM⊃WLEM
+  ∷ texprop WLEM (A   ∷       []) DGP⊃WLEM
+-- Equivalences
+  ∷ texprop GLPO (P x ∷       []) LEM⊃GLPO
+  ∷ texprop LEM  (P x ∷       []) GLPO⊃LEM
+  ∷ texprop IP   (P x ∷ A   ∷ []) HE⊃IP
+  ∷ texprop HE   (P x ∷       []) IP⊃HE
+  ∷ texprop WGMP (P x ∷       []) DNSU⊃WGMP
+  ∷ texprop DNSU (P x ∷       []) WGMP⊃DNSU
+-- DP and HE
+  ∷ texprop GMP  (P x ∷       []) DP⊃GMP
+  ∷ texprop CD   (P x ∷ A   ∷ []) DP⊃CD
+  ∷ texprop DNSE (P x ∷       []) HE⊃DNSE
+-- GLPO and GLPO'
+  ∷ texprop GMP  (P x ∷       []) GLPOA⊃GMP
+  ∷ texprop LEM  (A   ∷       []) GLPOA⊃LEM
+  ∷ texprop DNSE (P x ∷       []) GLPO⊃DNSE
+-- GMP
+  ∷ texprop DNSE (P x ∷       []) GMP⊃DNSE
+  ∷ texprop WGMP (P x ∷       []) GMP⊃WGMP
+-- Two terms
+  ∷ texprop DGP  (P x ∷ Q x ∷ []) DP,EFQ,TT⊃DGP
+  ∷ texprop DGP  (P x ∷ Q x ∷ []) HE,EFQ,TT⊃DGP
+  ∷ texprop WLEM (P x ∷       []) DNSE,TT⊃WLEM
+  ∷ [])

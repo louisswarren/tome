@@ -221,3 +221,15 @@ texreduce {xs} y αs xs⊃y = texdeduction (xs⊃y ⊢xs αs)
     ⊢xs (scheme n name f) _ αs = cite name Ω
       where
         postulate Ω : ∅ ⊢ f αs
+
+texprop : {xs : List Scheme}
+            → (y : Scheme) → Vec Formula (Scheme.arity y) → xs ⊃ y → String
+texprop {xs} y αs xs⊃y
+  = "\\begin{proposition}\n"
+    >> "$\\text{" >> joinmap "," Scheme.name xs >> "}"
+       >> " \\supset \\text{" >> Scheme.name y >> "}$\n"
+    >> "\\end{proposition}\n"
+    >> "\\begin{proof}\n"
+    >> (texreduce y αs xs⊃y)
+    >> "\\end{proof}\n"
+
