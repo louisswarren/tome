@@ -1158,16 +1158,16 @@ DP⊃LPO ⊢lhs (α ∷ β ∷ []) = dp→lpo (descheme₁ (⊢lhs DP [ refl ]))
 
 results = join "\n" (""
 -- Classical
-  ∷ texprop DP   (P x ∷       []) DNE⊃DP
-  ∷ texprop Hε   (P x ∷       []) DNE⊃Hε
+-- In drinkerexample  ∷ texprop DP   (P x ∷       []) DNE⊃DP
+-- In drinkerexample ∷ texprop Hε   (P x ∷       []) DNE⊃Hε
 -- Propositional
   ∷ texprop DNE  (A   ∷       []) LEM,EFQ⊃DNE
   ∷ texprop EFQ  (A   ∷       []) DNE⊃EFQ
   ∷ texprop LEM  (A   ∷       []) DNE⊃LEM
-  ∷ texprop WLEM (A   ∷       []) LEM⊃WLEM
+-- Trivial  ∷ texprop WLEM (A   ∷       []) LEM⊃WLEM
   ∷ texprop WLEM (A   ∷       []) DGP⊃WLEM
 -- Equivalences
-  ∷ texprop GLPO (P x ∷       []) LEM⊃GLPO
+-- In drinkerexample  ∷ texprop GLPO (P x ∷       []) LEM⊃GLPO
   ∷ texprop LEM  (P x ∷       []) GLPO⊃LEM
   ∷ texprop IP   (P x ∷ A   ∷ []) Hε⊃IP
   ∷ texprop Hε   (P x ∷       []) IP⊃Hε
@@ -1185,7 +1185,7 @@ results = join "\n" (""
   ∷ texprop DNS∃ (P x ∷       []) GMP⊃DNS∃
   ∷ texprop WGMP (P x ∷       []) GMP⊃WGMP
 -- Two terms
-  ∷ texprop DGP  (P x ∷ Q x ∷ []) DP,EFQ,TT⊃DGP
-  ∷ texprop DGP  (P x ∷ Q x ∷ []) Hε,EFQ,TT⊃DGP
-  ∷ texprop WLEM (P x ∷       []) DNS∃,TT⊃WLEM
+-- In drinker  ∷ texprop DGP  (P x ∷ Q x ∷ []) DP,EFQ,TT⊃DGP
+-- In drinker  ∷ texprop DGP  (P x ∷ Q x ∷ []) Hε,EFQ,TT⊃DGP
+-- In drinker  ∷ texprop WLEM (P x ∷       []) DNS∃,TT⊃WLEM
   ∷ [])
