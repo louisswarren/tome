@@ -230,6 +230,9 @@ texprop {xs} y αs xs⊃y
        >> " \\supset \\text{" >> Scheme.name y >> "}$\n"
     >> "\\end{proposition}\n"
     >> "\\begin{proof}\n"
+    >> "$ $\n"
+    >> "\\vspace{-\\baselineskip}\n"
     >> (texreduce y αs xs⊃y)
+    >> "\\vspace{-\\baselineskip}\n"
     >> "\\end{proof}\n"
 
