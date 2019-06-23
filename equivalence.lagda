@@ -142,10 +142,10 @@ notFreeSub (z∉α ∧ z∉β) z∉t (subα ∧ subβ) = notFreeSub z∉α z∉t
                                            ∧ notFreeSub z∉β z∉t subβ
 notFreeSub (z∉α ∨ z∉β) z∉t (subα ∨ subβ) = notFreeSub z∉α z∉t subα
                                            ∨ notFreeSub z∉β z∉t subβ
-notFreeSub z∉α       z∉t (Λ∣ x α)        = z∉α
-notFreeSub z∉α       z∉t (V∣ x α)        = z∉α
-notFreeSub (Λ∣ x α)  z∉t (Λ x≢y y∉t sub) = Λ∣ x _
-notFreeSub (V∣ x α)  z∉t (V x≢y y∉t sub) = V∣ x _
+notFreeSub z∉α       z∉t (Λ↓ x α)        = z∉α
+notFreeSub z∉α       z∉t (V↓ x α)        = z∉α
+notFreeSub (Λ↓ x α)  z∉t (Λ x≢y y∉t sub) = Λ↓ x _
+notFreeSub (V↓ x α)  z∉t (V x≢y y∉t sub) = V↓ x _
 notFreeSub (Λ y z∉α) z∉t (Λ x≢y y∉t sub) = Λ y (notFreeSub z∉α z∉t sub)
 notFreeSub (V y z∉α) z∉t (V x≢y y∉t sub) = V y (notFreeSub z∉α z∉t sub)
 
@@ -170,33 +170,33 @@ some bound variable has been renamed to it, so it is bound.
 ≈notFree (α≈α′ ⇒ β≈β′) (z∉α ⇒ z∉β) = ≈notFree α≈α′ z∉α ⇒ ≈notFree β≈β′ z∉β
 ≈notFree (α≈α′ ∧ β≈β′) (z∉α ∧ z∉β) = ≈notFree α≈α′ z∉α ∧ ≈notFree β≈β′ z∉β
 ≈notFree (α≈α′ ∨ β≈β′) (z∉α ∨ z∉β) = ≈notFree α≈α′ z∉α ∨ ≈notFree β≈β′ z∉β
-≈notFree (Λ x α≈α′) (Λ∣ .x α) = Λ∣ x _
-≈notFree (V x α≈α′) (V∣ .x α) = V∣ x _
-≈notFree {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ∣ .x α) with varEq x y
-...    | yes refl = Λ∣ x β′
+≈notFree (Λ x α≈α′) (Λ↓ .x α) = Λ↓ x _
+≈notFree (V x α≈α′) (V↓ .x α) = V↓ x _
+≈notFree {Λ x α} {Λ y β′} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ↓ .x α) with varEq x y
+...    | yes refl = Λ↓ x β′
 ...    | no  x≢y  = Λ y (≈notFree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
-≈notFree {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) (V∣ .x α) with varEq x y
-...    | yes refl = V∣ x β′
+≈notFree {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) (V↓ .x α) with varEq x y
+...    | yes refl = V↓ x β′
 ...    | no  x≢y  = V y (≈notFree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β))
-≈notFree {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) (Λ∣ x α) with varEq x y
-...    | yes refl = Λ∣ x β′
+≈notFree {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) (Λ↓ x α) with varEq x y
+...    | yes refl = Λ↓ x β′
 ...    | no  x≢y  = Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′)
-≈notFree {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) (V∣ x α) with varEq x y
-...    | yes refl = V∣ x β′
+≈notFree {V x α} {V y β′} (V/′ α≈α′ y∉α′ α′[x/y]≡β′) (V↓ x α) with varEq x y
+...    | yes refl = V↓ x β′
 ...    | no  x≢y  = V y (subNotFree (varterm x≢y) α′[x/y]≡β′)
 ≈notFree (Λ y α≈α′) (Λ .y z∉α) = Λ y (≈notFree α≈α′ z∉α)
 ≈notFree (V y α≈α′) (V .y z∉α) = V y (≈notFree α≈α′ z∉α)
 ≈notFree {Λ x α} {Λ y β′} {z} (Λ/ y∉α α[x/y]≡β β≈β′) (Λ .x z∉α) with varEq z y
-...    | yes refl = Λ∣ z β′
+...    | yes refl = Λ↓ z β′
 ...    | no  z≢y  = Λ y (≈notFree β≈β′ (notFreeSub z∉α (varterm z≢y) α[x/y]≡β))
 ≈notFree {V x α} {V y β′} {z} (V/ y∉α α[x/y]≡β β≈β′) (V .x z∉α) with varEq z y
-...    | yes refl = V∣ z β′
+...    | yes refl = V↓ z β′
 ...    | no  z≢y  = V y (≈notFree β≈β′ (notFreeSub z∉α (varterm z≢y) α[x/y]≡β))
 ≈notFree {Λ x α} {Λ y β′} {z} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β) (Λ .x z∉α) with varEq z y
-...    | yes refl = Λ∣ z β′
+...    | yes refl = Λ↓ z β′
 ...    | no  z≢y  = Λ y (notFreeSub (≈notFree α≈α′ z∉α) (varterm z≢y) α′[x/y]≡β)
 ≈notFree {V x α} {V y β′} {z} (V/′ α≈α′ y∉α′ α′[x/y]≡β) (V .x z∉α) with varEq z y
-...    | yes refl = V∣ z β′
+...    | yes refl = V↓ z β′
 ...    | no  z≢y  = V y (notFreeSub (≈notFree α≈α′ z∉α) (varterm z≢y) α′[x/y]≡β)
 
 \end{code}
@@ -473,7 +473,7 @@ that $\Gamma$ is not assumed when the universal generalisation re-introduced.
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α)
-     (univintro x (all⟨ Λ∣ x α ⟩)
+     (univintro x (all⟨ Λ↓ x α ⟩)
       (⟨→⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident α x)
         (assume (Λ x α))))))
@@ -495,7 +495,7 @@ Again, the other direction is obtained by reversing the use of equivalences.
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x α′)
-     (univintro x (all⟨ Λ∣ x α′ ⟩)
+     (univintro x (all⟨ Λ↓ x α′ ⟩)
       (⟨←⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident α′ x)
         (assume (Λ x α′))))))
@@ -574,7 +574,7 @@ In the degenerate case where $x = y$, we have $\beta = \alpha$.
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x β′)
-     (univintro x all⟨ Λ∣ x β′ ⟩
+     (univintro x all⟨ Λ↓ x β′ ⟩
       (⟨←⟩ (renameIff β≈β′)
        (univelim (varterm x) (ident β′ x)
         (assume (Λ x β′))))))
@@ -615,7 +615,7 @@ $x$ with $y$ in $\alpha$.
      (univintro x
       all⟨ Λ y (≈notFree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩
       (univelim (varterm x) (subInverse y∉α α[x/y]≡β)
-       (univintro y all⟨ Λ∣ y β′ ⟩
+       (univintro y all⟨ Λ↓ y β′ ⟩
         (⟨←⟩ (renameIff β≈β′)
          (univelim (varterm y) (ident β′ y)
           (assume (Λ y β′))))))))
@@ -659,7 +659,7 @@ We have $\beta' \coloneq \alpha'[x/y]$.
     (arrowintro (Λ x α)
      (univintro y all⟨ ≈notFree (Λ x (≈sym α≈α′)) (Λ x y∉α′) ⟩
       (univelim (varterm y) α′[x/y]≡β′
-       (univintro x all⟨ Λ∣ x α ⟩
+       (univintro x all⟨ Λ↓ x α ⟩
         (⟨→⟩ (renameIff α≈α′)
          (univelim (varterm x) (ident α x)
           (assume (Λ x α))))))))
@@ -698,7 +698,7 @@ In the degenerate case where $x = y$, we have $\alpha' = \beta'$.
    (λ x z → z (λ z₁ → z₁ (λ z₂ → z₂)))
    (arrowelim
     (arrowintro (Λ x β′)
-     (univintro x all⟨ Λ∣ x β′ ⟩
+     (univintro x all⟨ Λ↓ x β′ ⟩
       (⟨←⟩ (renameIff α≈α′)
        (univelim (varterm x) (ident β′ x)
         (assume (Λ x β′))))))
@@ -763,7 +763,7 @@ where the bound variable is not renamed.
   close
    (assembled-context Γ⊢∃xα)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x α′ ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+   (existelim (all⟨ V↓ x α′ ⟩ all∪ (all- all⟨- [ refl ] ⟩))
     Γ⊢∃xα
     (existintro (varterm x) x (ident α′ x)
      (⟨→⟩ (renameIff α≈α′)
@@ -783,7 +783,7 @@ The reverse direction is the same, with equivalences reversed.
   close
    (assembled-context Γ⊢∃xα′)
    (λ x z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+   (existelim (all⟨ V↓ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
     Γ⊢∃xα′
     (existintro (varterm x) x (ident α x)
      (⟨←⟩ (renameIff α≈α′)
@@ -828,7 +828,7 @@ $x$ cannot be free in $\beta$, and so it is also not free in $\exists y \beta$.
    (existelim (all⟨ V y (≈notFree β≈β′ (subNotFree (varterm x≢y) α[x/y]≡β)) ⟩
                all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨- [ refl ] ⟩))))
     Γ⊢∃xα
-    (existelim (all⟨ V∣ y β′ ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+    (existelim (all⟨ V↓ y β′ ⟩ all∪ (all- all⟨- [ refl ] ⟩))
      (existintro (varterm x) y (subInverse y∉α α[x/y]≡β)
       (assume α))
      (existintro (varterm y) y (ident β′ y)
@@ -856,7 +856,7 @@ In the degenerate case, we have $\beta = \alpha$.
   close
    (assembled-context Γ⊢∃xα)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x β′ ⟩ all∪ (all- all⟨ y∉α ⟩))
+   (existelim (all⟨ V↓ x β′ ⟩ all∪ (all- all⟨ y∉α ⟩))
     Γ⊢∃xα
     (existintro (varterm x) x (ident β′ x)
      (⟨→⟩ (renameIff β≈β′)
@@ -920,7 +920,7 @@ If $x = y$, then $\alpha' = \beta'$.
   close
    (assembled-context Γ⊢∃xα)
    (λ x₁ z z₁ → z z₁ (λ z₂ → z₂ (λ z₃ → z₃)))
-   (existelim (all⟨ V∣ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+   (existelim (all⟨ V↓ x β ⟩ all∪ (all- all⟨- [ refl ] ⟩))
     Γ⊢∃xα
     (existintro (varterm x) x (ident β x)
      (⟨→⟩ (renameIff α≈α′)
@@ -986,7 +986,7 @@ Consider the other direction.
    (existelim (all⟨ V x (≈notFree (≈sym α≈α′) y∉α′) ⟩
                all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- all⟨ y∉α′ ⟩))))
     Γ⊢∃yβ′
-    (existelim (all⟨ V∣ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+    (existelim (all⟨ V↓ x α ⟩ all∪ (all- all⟨- [ refl ] ⟩))
      (existintro (varterm y) x α′[x/y]≡β′
       (assume β′))
      (existintro (varterm x) x (ident α x)

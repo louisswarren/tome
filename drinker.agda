@@ -221,7 +221,7 @@ hε→ip ⊢hε α β = close from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ →  z₄ (λ z₅ → z₅)  (λ z₅ → z₅ (λ z₆ z₇ → z₇ (λ z₈ z₉ → z₉ z₆ (λ z₁₀ → z₁₀ z₃ z₈)))))))
                  (arrowintro (∃x β ⇒ ∃x α)
                   (existelim
-                   (all⟨ V∣ xvar (∃x β ⇒ α) ⟩ all∪ (all- (all- (all⟨- ∃x β ∷ [ refl ] ⟩ all∪ all⟨ V∣ xvar β ⇒ V∣ xvar α ⟩ all∪ all⟨ V∣ xvar β ⟩))))
+                   (all⟨ V↓ xvar (∃x β ⇒ α) ⟩ all∪ (all- (all- (all⟨- ∃x β ∷ [ refl ] ⟩ all∪ all⟨ V↓ xvar β ⇒ V↓ xvar α ⟩ all∪ all⟨ V↓ xvar β ⟩))))
                    (⊢hε α)
                    (existintro x xvar
                     (ident (∃x β ⇒ α) xvar)
@@ -239,7 +239,7 @@ ip→hε : ⊢₂ ip → ⊢₁ hε
 ip→hε ⊢ip α = close from∅
                (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃ (λ z₄ → z₄) (λ z₄ → z₄ (λ z₅ → z₅)))  (λ z₃ → z₃ (λ z₄ → z₄))))
                (existelim
-                (all⟨ V∣ xvar (∃x α ⇒ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                (all⟨ V↓ xvar (∃x α ⇒ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
                 (arrowelim
                  (⊢ip α α)
                  (arrowintro (∃x α)
@@ -260,7 +260,7 @@ lem→glpo ⊢lem α = close from∅
                      (assume (∃x α)))
                     (disjintro₁ (∃x α)
                      (univintro xvar
-                      (all- (all⟨ V∣ xvar α ⇒ atom [] ⟩ all∪ all⟨- [ refl ] ⟩))
+                      (all- (all⟨ V↓ xvar α ⇒ atom [] ⟩ all∪ all⟨- [ refl ] ⟩))
                       (arrowintro α
                        (arrowelim
                         (assume (¬∃x α))
@@ -453,7 +453,7 @@ glpo→∃lem ⊢glpo α = close
                        (disjintro₂ α
                          (univelim x (ident (¬ α) xvar)
                          (assume (∀x¬ α)))))
-                       (existelim (all⟨ V∣ xvar (α ∨ ¬ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                       (existelim (all⟨ V↓ xvar (α ∨ ¬ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
                        (assume (∃x α))
                        (existintro x xvar (ident (α ∨ ¬ α) xvar)
                          (disjintro₁ (¬ α)
@@ -520,7 +520,7 @@ dns∀→wgmp ⊢dns∀ α = close
                        (arrowelim
                         (arrowelim
                          (⊢dns∀ α)
-                         (univintro xvar (all- (all⟨ V∣ xvar (¬ α) ⇒ atom [] ⟩ all∪ all⟨- [ refl ] ⟩))
+                         (univintro xvar (all- (all⟨ V↓ xvar (¬ α) ⇒ atom [] ⟩ all∪ all⟨- [ refl ] ⟩))
                           (arrowintro (¬ α)
                            (arrowelim
                             (assume (¬∃x¬ α))
@@ -541,7 +541,7 @@ wgmp→dns∀ ⊢wgmp α = close
                          (⊢wgmp α)
                          (assume (¬∀x α)))
                         (arrowintro (∃x¬ α)
-                         (existelim (all⟨ atom [] ⟩ all∪  (all- (all⟨ Λ∣ xvar (¬¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
+                         (existelim (all⟨ atom [] ⟩ all∪  (all- (all⟨ Λ↓ xvar (¬¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
                           (assume (∃x¬ α))
                           (arrowelim
                            (univelim x (ident (¬¬ α) xvar)
@@ -564,7 +564,7 @@ dne→dp ⊢dne α = close
                     (assume (¬ (dp α)))
                     (existintro x xvar (ident (α ⇒ ∀x α) xvar)
                      (arrowintro α
-                      (univintro xvar (all∅ all∪ (all- (all⟨ V∣ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩ all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷ [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
+                      (univintro xvar (all∅ all∪ (all- (all⟨ V↓ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩ all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷ [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
                        (arrowelim
                         (⊢dne α)
                         (arrowintro (¬ α)
@@ -595,7 +595,7 @@ dne→hε ⊢dne α = close
                       (arrowelim
                        (⊢dne α)
                        (arrowintro (¬ α)
-                        (existelim (all⟨ atom [] ⟩ all∪ (all- (all⟨ V∣ xvar (∃x α ⇒ α) ⇒ atom [] ⟩ all∪ (all- all⟨- ∃x α ∷ [ refl ] ⟩))))
+                        (existelim (all⟨ atom [] ⟩ all∪ (all- (all⟨ V↓ xvar (∃x α ⇒ α) ⇒ atom [] ⟩ all∪ (all- all⟨- ∃x α ∷ [ refl ] ⟩))))
                          (assume (∃x α))
                          (arrowelim
                           (assume (¬ (hε α)))
@@ -661,7 +661,7 @@ glpoa→∃lem ⊢glpoa α = close
                          (disjintro₁ (¬ α)
                           (univelim x (ident α xvar)
                            (assume (∀x α)))))
-                        (existelim (all⟨ V∣ xvar (α ∨ ¬ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
+                        (existelim (all⟨ V↓ xvar (α ∨ ¬ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
                          (assume (∃x¬ α))
                          (existintro x xvar (ident (α ∨ ¬ α) xvar)
                           (disjintro₂ α
@@ -694,7 +694,7 @@ dp→cd ⊢dp α β = close
                  from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ z₃ (λ z₈ → z₈ (λ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₆ z₁₀)) (λ z₉ → z₉ (λ z₁₀ → z₁₀))))))))
                  (arrowintro (∀x (α ∨ ∃x β))
-                  (existelim (all⟨ Λ∣ xvar α ∨ V∣ xvar β ⟩ all∪ (all- (all⟨ Λ∣ xvar (α ∨ ∃x β) ⟩ all∪ (all- (all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ V∣ xvar β ⟩))))
+                  (existelim (all⟨ Λ↓ xvar α ∨ V↓ xvar β ⟩ all∪ (all- (all⟨ Λ↓ xvar (α ∨ ∃x β) ⟩ all∪ (all- (all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ V↓ xvar β ⟩))))
                    (⊢dp α)
                    (disjelim
                     (univelim x (ident (α ∨ ∃x β) xvar)
@@ -710,7 +710,7 @@ dp→gmp ⊢dp α = close
                 from∅
                 (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ (λ z₈ z₉ → z₉ z₃ (λ z₁₀ → z₁₀ z₆ z₈)))))))
                 (arrowintro (¬∀x α)
-                 (existelim (all⟨ V∣ xvar (¬ α) ⟩ all∪ (all- (all- (all⟨ Λ∣ xvar α ⇒ atom [] ⟩ all∪ all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩))))
+                 (existelim (all⟨ V↓ xvar (¬ α) ⟩ all∪ (all- (all- (all⟨ Λ↓ xvar α ⇒ atom [] ⟩ all∪ all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩))))
                   (⊢dp α)
                   (existintro x xvar (ident (¬ α) xvar)
                    (arrowintro α
@@ -728,7 +728,7 @@ hε→dns∃ ⊢hε α = close
                    from∅
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ (λ z₈ z₉ → z₉ z₃ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ z₈ (λ z₁₃ → z₁₃ z₆ z₁₁)))))))))
                    (arrowintro (¬¬∃x α)
-                    (existelim (all⟨ V∣ xvar (¬¬ α) ⟩ all∪ (all- (all- (all⟨ (V∣ xvar α ⇒ atom []) ⇒ atom [] ⟩ all∪ (all- (all⟨- ∃x α ∷ [ refl ] ⟩ all∪ all⟨- ∃x α ∷ (¬ α ∷ [ refl ]) ⟩ all∪ all⟨ V∣ xvar α ⟩))))))
+                    (existelim (all⟨ V↓ xvar (¬¬ α) ⟩ all∪ (all- (all- (all⟨ (V↓ xvar α ⇒ atom []) ⇒ atom [] ⟩ all∪ (all- (all⟨- ∃x α ∷ [ refl ] ⟩ all∪ all⟨- ∃x α ∷ (¬ α ∷ [ refl ]) ⟩ all∪ all⟨ V↓ xvar α ⟩))))))
                      (⊢hε α)
                      (existintro x xvar (ident (¬¬ α) xvar)
                       (arrowintro (¬ α)
@@ -756,13 +756,13 @@ glpo→dns∃ ⊢glpo α = close
                        (arrowelim
                         (assume (¬¬∃x α))
                         (arrowintro (∃x α)
-                         (existelim (all⟨ atom [] ⟩ all∪  (all- (all⟨ Λ∣ xvar (¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
+                         (existelim (all⟨ atom [] ⟩ all∪  (all- (all⟨ Λ↓ xvar (¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
                           (assume (∃x α))
                           (arrowelim
                            (univelim x (ident (¬ α) xvar)
                             (assume (∀x¬ α)))
                            (assume α)))))))
-                     (existelim (all⟨ V∣ xvar (¬¬ α) ⟩ all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all⟨- ¬ α ∷ [ refl ] ⟩))))
+                     (existelim (all⟨ V↓ xvar (¬¬ α) ⟩ all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all⟨- ¬ α ∷ [ refl ] ⟩))))
                       (assume (∃x α))
                       (existintro x xvar (ident (¬¬ α) xvar)
                        (arrowintro (¬ α)
@@ -784,7 +784,7 @@ gmp→dns∃ ⊢gmp α = close
                       (arrowelim
                        (assume (¬¬∃x α))
                        (arrowintro (∃x α)
-                        (existelim (all⟨ atom [] ⟩ all∪ (all- (all⟨ Λ∣ xvar (¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
+                        (existelim (all⟨ atom [] ⟩ all∪ (all- (all⟨ Λ↓ xvar (¬ α) ⟩ all∪ all⟨- [ refl ] ⟩)))
                          (assume (∃x α))
                          (arrowelim
                           (univelim x (ident (¬ α) xvar)
@@ -1139,7 +1139,7 @@ dp→lpo ⊢dp α β = close
                   (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ z₃ (λ z₈ → z₈ (λ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₆ z₁₀)) (λ z₉ → z₉ (λ z₁₀ → z₁₀))))))))
                   (arrowintro (∀x (α ∨ β))
                    (existelim
-                    (all⟨ Λ∣ xvar α ∨ V∣ xvar β ⟩ all∪ (all- (all⟨ Λ∣ xvar (α ∨ β) ⟩ all∪ (all- (all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨- [ refl ] ⟩))))
+                    (all⟨ Λ↓ xvar α ∨ V↓ xvar β ⟩ all∪ (all- (all⟨ Λ↓ xvar (α ∨ β) ⟩ all∪ (all- (all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨- [ refl ] ⟩))))
                     (⊢dp α)
                     (disjelim
                      (univelim x (ident (α ∨ β) xvar)

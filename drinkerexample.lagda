@@ -247,7 +247,7 @@ dne→dp ⊢dne α = close
   {- Auto -}         (ident (α ⇒ ∀x α) xvar)
                      (arrowintro α
                       (univintro xvar
-  {- Auto -}           (all∅ all∪ (all- (all⟨ V∣ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩
+  {- Auto -}           (all∅ all∪ (all- (all⟨ V↓ xvar (α ⇒ ∀x α) ⇒ atom [] ⟩
   {- Auto -}            all∪ (all- (all∅ all∪ (all- (all⟨- ¬∀x α ∷ (α ∷
   {- Auto -}             [ refl ]) ⟩ all∪ all⟨- ¬∀x α ∷ [ refl ] ⟩)))))))
                        (arrowelim
@@ -357,7 +357,7 @@ dne→hε ⊢dne α = close
                        (⊢dne α)
                        (arrowintro (¬ α)
                         (existelim
-                         (all⟨ atom [] ⟩ all∪ (all- (all⟨ V∣ xvar (∃x α ⇒ α)
+                         (all⟨ atom [] ⟩ all∪ (all- (all⟨ V↓ xvar (∃x α ⇒ α)
                           ⇒ atom [] ⟩ all∪ (all- all⟨- ∃x α ∷ [ refl ] ⟩))))
                          (assume (∃x α))
                          (arrowelim

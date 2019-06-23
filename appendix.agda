@@ -24,13 +24,13 @@ derived-ident (α ⇒ β) x = derived-ident α x ⇒ derived-ident β x
 derived-ident (α ∧ β) x = derived-ident α x ∧ derived-ident β x
 derived-ident (α ∨ β) x = derived-ident α x ∨ derived-ident β x
 derived-ident (Λ y α) x with varEq x y
-...             | yes refl = Λ∣ y α
+...             | yes refl = Λ↓ y α
 ...             | no  x≢y  = Λ x≢y (varterm y≢x) (derived-ident α x)
                              where
                                y≢x : y ≢ x
                                y≢x refl = x≢y refl
 derived-ident (V y α) x with varEq x y
-...             | yes refl = V∣ y α
+...             | yes refl = V↓ y α
 ...             | no  x≢y  = V x≢y (varterm y≢x) (derived-ident α x)
                              where
                                y≢x : y ≢ x
@@ -85,13 +85,13 @@ t freeFor x In α with x notFreeIn α
                                                 ¬tffα∨β (_ ∨ tffβ) = ¬tffβ tffβ
     ...                          | yes tffβ = yes (tffα ∨ tffβ)
     lemma (Λ y α)     xf with varEq x y
-    ...                  | yes refl = yes (Λ∣ α)
+    ...                  | yes refl = yes (Λ↓ α)
     ...                  | no  x≢y  with t freeFor x In α
     ...                             | no ¬tffα = no ¬tff
                                                  where
                                                    ¬tff : _
                                                    ¬tff (notfree xnf) = xf xnf
-                                                   ¬tff (Λ∣ .α) = x≢y refl
+                                                   ¬tff (Λ↓ .α) = x≢y refl
                                                    ¬tff (Λ _ tffα) = ¬tffα tffα
     ...                             | yes tffα with y notInTerm t
     ...                                        | yes ynft = yes (Λ ynft tffα)
@@ -99,16 +99,16 @@ t freeFor x In α with x notFreeIn α
                                                             where
                                                               ¬tff : _
                                                               ¬tff (notfree xnf) = xf xnf
-                                                              ¬tff (Λ∣ .α) = x≢y refl
+                                                              ¬tff (Λ↓ .α) = x≢y refl
                                                               ¬tff (Λ ynft _) = ¬ynft ynft
     lemma (V y α)     xf with varEq x y
-    ...                  | yes refl = yes (V∣ α)
+    ...                  | yes refl = yes (V↓ α)
     ...                  | no  x≢y  with t freeFor x In α
     ...                             | no ¬tffα = no ¬tff
                                                  where
                                                    ¬tff : _
                                                    ¬tff (notfree xnf) = xf xnf
-                                                   ¬tff (V∣ .α) = x≢y refl
+                                                   ¬tff (V↓ .α) = x≢y refl
                                                    ¬tff (V _ tffα) = ¬tffα tffα
     ...                             | yes tffα with y notInTerm t
     ...                                        | yes ynft = yes (V ynft tffα)
@@ -116,7 +116,7 @@ t freeFor x In α with x notFreeIn α
                                                             where
                                                               ¬tff : _
                                                               ¬tff (notfree xnf) = xf xnf
-                                                              ¬tff (V∣ .α) = x≢y refl
+                                                              ¬tff (V↓ .α) = x≢y refl
                                                               ¬tff (V ynft _) = ¬ynft ynft
 
 
@@ -194,19 +194,19 @@ unfree α x with x notFreeIn α
 --≈sub (ap ⇒ ap₁) (sub₁ ⇒ sub₂) (sub₃ ⇒ sub₄) = ≈sub ap sub₁ sub₃ ⇒ ≈sub ap₁ sub₂ sub₄
 --≈sub (ap ∧ ap₁) (sub₁ ∧ sub₂) (sub₃ ∧ sub₄) = ≈sub ap sub₁ sub₃ ∧ ≈sub ap₁ sub₂ sub₄
 --≈sub (ap ∨ ap₁) (sub₁ ∨ sub₂) (sub₃ ∨ sub₄) = ≈sub ap sub₁ sub₃ ∨ ≈sub ap₁ sub₂ sub₄
---≈sub (Λ x ap) (Λ∣ .x α) (Λ∣ .x α₁) = Λ x ap
---≈sub (Λ x ap) (Λ∣ .x α) (Λ x₁ x₂ sub₂) = ⊥-elim (x₁ refl)
---≈sub (Λ x ap) (Λ x₁ x₂ sub₁) (Λ∣ .x α) = ⊥-elim (x₁ refl)
+--≈sub (Λ x ap) (Λ↓ .x α) (Λ↓ .x α₁) = Λ x ap
+--≈sub (Λ x ap) (Λ↓ .x α) (Λ x₁ x₂ sub₂) = ⊥-elim (x₁ refl)
+--≈sub (Λ x ap) (Λ x₁ x₂ sub₁) (Λ↓ .x α) = ⊥-elim (x₁ refl)
 --≈sub (Λ x ap) (Λ x₁ x₂ sub₁) (Λ x₃ x₄ sub₂) = Λ x (≈sub ap sub₁ sub₂)
---≈sub (Λ/ x x₁ ap) (Λ∣ x₂ α) (Λ∣ .x₂ α₁) = Λ/ x x₁ ap
---≈sub (Λ/ x x₁ ap) (Λ∣ x₂ α) (Λ x₃ x₄ sub₂) with subNotFreeFunc sub₂ (≈notfree ap (subNotFree (varterm x₃) x₁))
+--≈sub (Λ/ x x₁ ap) (Λ↓ x₂ α) (Λ↓ .x₂ α₁) = Λ/ x x₁ ap
+--≈sub (Λ/ x x₁ ap) (Λ↓ x₂ α) (Λ x₃ x₄ sub₂) with subNotFreeFunc sub₂ (≈notfree ap (subNotFree (varterm x₃) x₁))
 --...                                        | refl = Λ/ x x₁ ap
---≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ y≢x x₃ sub₁) (Λ∣ x₄ α) with subNotFreeFunc sub₁ y∉α
---≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ y≢x x₃ sub₁) (Λ∣ x₄ α) | refl = Λ/ y∉α α[x/y]≡β ap
+--≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ y≢x x₃ sub₁) (Λ↓ x₄ α) with subNotFreeFunc sub₁ y∉α
+--≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ y≢x x₃ sub₁) (Λ↓ x₄ α) | refl = Λ/ y∉α α[x/y]≡β ap
 --≈sub (Λ/ y∉α α[x/y]≡β ap) (Λ x₂ x₃ sub₁) (Λ x₄ x₅ sub₂) = Λ/ {!   !} {!   !} (≈sub ap {!   !} sub₂)
---≈sub (Λ/′ ap x x₁) (Λ∣ x₂ α) (Λ∣ .x₂ α₁) = Λ/′ ap x x₁
---≈sub (Λ/′ ap x x₁) (Λ∣ x₂ α) (Λ x₃ x₄ sub₂) = {!   !}
---≈sub (Λ/′ ap x x₁) (Λ x₂ x₃ sub₁) (Λ∣ x₄ α) = Λ/′ (≈sub ap sub₁ (notfree x)) x x₁
+--≈sub (Λ/′ ap x x₁) (Λ↓ x₂ α) (Λ↓ .x₂ α₁) = Λ/′ ap x x₁
+--≈sub (Λ/′ ap x x₁) (Λ↓ x₂ α) (Λ x₃ x₄ sub₂) = {!   !}
+--≈sub (Λ/′ ap x x₁) (Λ x₂ x₃ sub₁) (Λ↓ x₄ α) = Λ/′ (≈sub ap sub₁ (notfree x)) x x₁
 --≈sub (Λ/′ ap x x₁) (Λ x₂ x₃ sub₁) (Λ x₄ x₅ sub₂) = {!   !}
 --≈sub (V x ap) sub₁ sub₂ = {! sub₁ sub₂  !}
 --≈sub (V/ x x₁ ap) sub₁ sub₂ = {!  sub₁ sub₂ !}
@@ -246,5 +246,5 @@ unfree α x with x notFreeIn α
 --   where
 --    x∉∀yβ′ : x NotFreeIn Λ y β′
 --    x∉∀yβ′ with varEq x y
---    ...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ∣ x β′
+--    ...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ↓ x β′
 --    ...    | no  x≢y  = Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′)

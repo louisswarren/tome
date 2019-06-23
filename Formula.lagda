@@ -317,7 +317,6 @@ meaning it is not in the terms that the relation is operating on. It is not
 free inside a quantification over a subformula either if it is the
 quantification variable, or else if it is not free in the subformula. Separate
 constructors are given for each case.
-\todo{Notation: \inline{Λ∣}?}
 \begin{code}
 
 data _NotFreeIn_ : Variable → Formula → Set where
@@ -326,8 +325,8 @@ data _NotFreeIn_ : Variable → Formula → Set where
   _⇒_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ⇒ β)
   _∧_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ∧ β)
   _∨_  : ∀{x α β} → x NotFreeIn α → x NotFreeIn β → x NotFreeIn (α ∨ β)
-  Λ∣   : ∀ x α    → x NotFreeIn Λ x α
-  V∣   : ∀ x α    → x NotFreeIn V x α
+  Λ↓   : ∀ x α    → x NotFreeIn Λ x α
+  V↓   : ∀ x α    → x NotFreeIn V x α
   Λ    : ∀{x α}   → ∀ y → x NotFreeIn α → x NotFreeIn Λ y α
   V    : ∀{x α}   → ∀ y → x NotFreeIn α → x NotFreeIn V y α
 
@@ -422,16 +421,16 @@ x notFreeIn (α ∨ β)   with x notFreeIn α | x notFreeIn β
 ...                   | _       | no ¬x∉β = no λ { (x∉α ∨ x∉β) → ¬x∉β x∉β }
 ...                   | no ¬x∉α | _       = no λ { (x∉α ∨ x∉β) → ¬x∉α x∉α }
 x notFreeIn Λ  y α    with varEq x y
-...                   | yes refl = yes (Λ∣ x α)
+...                   | yes refl = yes (Λ↓ x α)
 ...                   | no x≢y with x notFreeIn α
 ...                            | yes x∉α = yes (Λ y x∉α)
-...                            | no ¬x∉α = no λ { (Λ∣ x α)  → x≢y refl
+...                            | no ¬x∉α = no λ { (Λ↓ x α)  → x≢y refl
                                                 ; (Λ y x∉α) → ¬x∉α x∉α }
 x notFreeIn V  y α    with varEq x y
-...                   | yes refl = yes (V∣ x α)
+...                   | yes refl = yes (V↓ x α)
 ...                   | no x≢y with x notFreeIn α
 ...                            | yes x∉α = yes (V y x∉α)
-...                            | no ¬x∉α = no λ { (V∣ x α)  → x≢y refl
+...                            | no ¬x∉α = no λ { (V↓ x α)  → x≢y refl
                                                 ; (V y x∉α) → ¬x∉α x∉α }
 
 \end{code}
@@ -507,8 +506,8 @@ Variable substitution for a quantified formula has two cases, which are similar
 to their counterparts in \inline{_NotFreeIn_}. If $x$ is the quantification
 variable, then the formula is unchanged.
 \begin{code}
-  Λ∣      : ∀{t} → ∀ x α → (Λ x α) [ x / t ]≡ (Λ x α)
-  V∣      : ∀{t} → ∀ x α → (V x α) [ x / t ]≡ (V x α)
+  Λ↓      : ∀{t} → ∀ x α → (Λ x α) [ x / t ]≡ (Λ x α)
+  V↓      : ∀{t} → ∀ x α → (V x α) [ x / t ]≡ (V x α)
 \end{code}
 Finally, if $x$ is not the quantification variable, and the quantification
 variable does not appear in $t$, then the substitution simply occurs inside the
@@ -557,8 +556,8 @@ subIdentFunc (subα ∧ subβ) with subIdentFunc subα | subIdentFunc subβ
 ...                   | refl | refl = refl
 subIdentFunc (subα ∨ subβ) with subIdentFunc subα | subIdentFunc subβ
 ...                   | refl | refl = refl
-subIdentFunc (Λ∣ x α) = refl
-subIdentFunc (V∣ x α) = refl
+subIdentFunc (Λ↓ x α) = refl
+subIdentFunc (V↓ x α) = refl
 subIdentFunc (Λ x≢y y∉x sub) rewrite subIdentFunc sub = refl
 subIdentFunc (V x≢y y∉x sub) rewrite subIdentFunc sub = refl
 
@@ -593,11 +592,11 @@ subNotFreeFunc (subα ∧ subβ) (x∉α ∧ x∉β) with subNotFreeFunc subα x
 ...                                 | refl | refl = refl
 subNotFreeFunc (subα ∨ subβ) (x∉α ∨ x∉β) with subNotFreeFunc subα x∉α | subNotFreeFunc subβ x∉β
 ...                                 | refl | refl = refl
-subNotFreeFunc (Λ∣ x α) _ = refl
-subNotFreeFunc (V∣ x α) _ = refl
-subNotFreeFunc (Λ x≢x _ r) (Λ∣ x α) = ⊥-elim (x≢x refl)
+subNotFreeFunc (Λ↓ x α) _ = refl
+subNotFreeFunc (V↓ x α) _ = refl
+subNotFreeFunc (Λ x≢x _ r) (Λ↓ x α) = ⊥-elim (x≢x refl)
 subNotFreeFunc (Λ x≢y _ r) (Λ y x∉α) rewrite subNotFreeFunc r x∉α = refl
-subNotFreeFunc (V x≢y _ r) (V∣ x α) = ⊥-elim (x≢y refl)
+subNotFreeFunc (V x≢y _ r) (V↓ x α) = ⊥-elim (x≢y refl)
 subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
 
 \end{code}
@@ -683,16 +682,16 @@ subFunc (s₁ ∨ s₂)     (r₁ ∨ r₂)     with subFunc s₁ r₁ | subFunc
 If the formula is a quantification over $x$, then neither substitution changes
 the formula.
 \begin{code}
-subFunc (Λ∣ x α)      (Λ∣ .x .α)    = refl
-subFunc (V∣ x α)      (V∣ .x .α)    = refl
+subFunc (Λ↓ x α)      (Λ↓ .x .α)    = refl
+subFunc (V↓ x α)      (V↓ .x .α)    = refl
 \end{code}
 It is contradictory for one substitution to occur by matching $x$
 with the quantifier variable, and the other to have a different quantifier.
 \begin{code}
-subFunc (Λ∣ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
-subFunc (V∣ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
-subFunc (Λ x≢x _ s)   (Λ∣ x α)      = ⊥-elim (x≢x refl)
-subFunc (V x≢x _ s)   (V∣ x α)      = ⊥-elim (x≢x refl)
+subFunc (Λ↓ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
+subFunc (V↓ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
+subFunc (Λ x≢x _ s)   (Λ↓ x α)      = ⊥-elim (x≢x refl)
+subFunc (V x≢x _ s)   (V↓ x α)      = ⊥-elim (x≢x refl)
 \end{code}
 Finally, if the formula is a quantification over a variable other than $x$,
 then substitution occurs inside the quantified formula, so recurse inside those
@@ -723,8 +722,8 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
                      → t FreeFor x In α ∧ β
   _∨_     : ∀{α β} → t FreeFor x In α → t FreeFor x In β
                      → t FreeFor x In α ∨ β
-  Λ∣      : ∀ α → t FreeFor x In Λ x α
-  V∣      : ∀ α → t FreeFor x In V x α
+  Λ↓      : ∀ α → t FreeFor x In Λ x α
+  V↓      : ∀ α → t FreeFor x In V x α
   Λ       : ∀{α y} → y NotInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
   V       : ∀{α y} → y NotInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
@@ -805,14 +804,14 @@ For the propositional connectives, the substitution is obtained recursively.
 For generalisation, check if $x$ is the quantifier variable, and if so do
 nothing.  Otherwise, recurse.
 \begin{code}
-Λ y α [ .y / Λ∣ .α ]         = Λ y α , Λ∣ y α
+Λ y α [ .y / Λ↓ .α ]         = Λ y α , Λ↓ y α
 Λ y α [ x / Λ y∉t tffα ]     with varEq x y
-...                          | yes refl = Λ y α , Λ∣ y α
+...                          | yes refl = Λ y α , Λ↓ y α
 ...                          | no  x≢y  with α [ x / tffα ]
 ...                                     | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
-V y α [ .y / V∣ .α ]         = V y α , V∣ y α
+V y α [ .y / V↓ .α ]         = V y α , V↓ y α
 V y α [ x / V y∉t tffα ]     with varEq x y
-...                          | yes refl = V y α , V∣ y α
+...                          | yes refl = V y α , V↓ y α
 ...                          | no  x≢y  with α [ x / tffα ]
 ...                                     | α′ , αpf = V y α′ , V x≢y y∉t αpf
 
@@ -839,18 +838,18 @@ subFreeFor (ident (α ⇒ β) x) = subFreeFor (ident α x) ⇒ subFreeFor (ident
 subFreeFor (ident (α ∧ β) x) = subFreeFor (ident α x) ∧ subFreeFor (ident β x)
 subFreeFor (ident (α ∨ β) x) = subFreeFor (ident α x) ∨ subFreeFor (ident β x)
 subFreeFor (ident (Λ y α) x) with varEq y x
-...                          | yes refl = Λ∣ α
+...                          | yes refl = Λ↓ α
 ...                          | no  y≢x  = Λ (varterm y≢x) (subFreeFor (ident α x))
 subFreeFor (ident (V y α) x) with varEq y x
-...                          | yes refl = V∣ α
+...                          | yes refl = V↓ α
 ...                          | no  y≢x  = V (varterm y≢x) (subFreeFor (ident α x))
 subFreeFor (notfree x) = notfree x
 subFreeFor (atom r subts) = atom r _
 subFreeFor (subα ⇒ subβ) = subFreeFor subα ⇒ subFreeFor subβ
 subFreeFor (subα ∧ subβ) = subFreeFor subα ∧ subFreeFor subβ
 subFreeFor (subα ∨ subβ) = subFreeFor subα ∨ subFreeFor subβ
-subFreeFor (Λ∣ x α) = Λ∣ α
-subFreeFor (V∣ x α) = V∣ α
+subFreeFor (Λ↓ x α) = Λ↓ α
+subFreeFor (V↓ x α) = V↓ α
 subFreeFor (Λ x≢y y∉t sub) = Λ y∉t (subFreeFor sub)
 subFreeFor (V x≢y y∉t sub) = V y∉t (subFreeFor sub)
 
@@ -895,9 +894,9 @@ The remaining cases follow by recursion.
 subNotFree x∉t (subα ⇒ subβ)   = subNotFree x∉t subα ⇒ subNotFree x∉t subβ
 subNotFree x∉t (subα ∧ subβ)   = subNotFree x∉t subα ∧ subNotFree x∉t subβ
 subNotFree x∉t (subα ∨ subβ)   = subNotFree x∉t subα ∨ subNotFree x∉t subβ
-subNotFree x∉t (Λ∣ y α)        = Λ∣ y α
+subNotFree x∉t (Λ↓ y α)        = Λ↓ y α
 subNotFree x∉t (Λ x≢y y∉t sub) = Λ _ (subNotFree x∉t sub)
-subNotFree x∉t (V∣ y α)        = V∣ y α
+subNotFree x∉t (V↓ y α)        = V↓ y α
 subNotFree x∉t (V x≢y y∉t sub) = V _ (subNotFree x∉t sub)
 
 \end{code}
@@ -947,15 +946,15 @@ subInverse (ω∉α ∨ ω∉β) (sα ∨ sβ) = subInverse ω∉α sα ∨ subI
 If the substitution changed nothing because the substitution variable was a
 quantifier variable, then $\omega$ is still not free in $\beta$.
 \begin{code}
-subInverse ω∉α (Λ∣ x α) = notfree ω∉α
-subInverse ω∉α (V∣ x α) = notfree ω∉α
+subInverse ω∉α (Λ↓ x α) = notfree ω∉α
+subInverse ω∉α (V↓ x α) = notfree ω∉α
 \end{code}
 Finally, we have the case where the substitution occurred inside a quantifier.
 It is absurd for $\omega$ to be the quantifer, since it would not have been
 allowed to substitute $x$ with $\omega$.
 \begin{code}
-subInverse (Λ∣ x α) (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
-subInverse (V∣ x α) (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
+subInverse (Λ↓ x α) (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
+subInverse (V↓ x α) (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
 \end{code}
 Suppose the formula was $\forall y \alpha$. Again discard the case where
 $\omega$ is $y$.
