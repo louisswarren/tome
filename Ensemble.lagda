@@ -21,14 +21,14 @@ The \inline{List} (or \inline{Vec}) type is not suitable. While removal of
 elements from a list of formulae can be defined with a function, it is unwieldy
 to give proofs regarding the results of such computations, as they depend on
 equality-checking of formulae, and so proofs must include both the case where
-the equality is as expected, and the degenerate case.
+the equality is as expected, and the degenerate case\footnote{Examples of this
+are included in the \todo{ref} appendix}.
 
 An implementation of classical propositional logic in natural deduction style
 was given in \citet{caiproplogicagda2015}. While this does use (something
-equivalent to) lists, it requires manual manipulation of the context using
-added deduction rules. \todo{Explain}
-
-\todo{Details in appendix}
+equivalent to) lists, it requires extra deduction rules for manipulation of the
+context. This would not be suitable for a natural deduction assistant, and it
+also does not solve the problems given above for first order logic.
 
 \AgdaHide{
 \begin{code}
@@ -41,10 +41,11 @@ open import List using (List ; [] ; _∷_)
 \end{code}
 }
 
-We define the type \inline{Ensemble}. It is actually another name for
-\inline{Pred}, but will be used to refer to predicates which should be thought
-of as being created in a manner to follow. This is only for ease of
-understanding, and is not an actual restriction.
+Predicates can be used to store collections of values, in the manner of set
+comprehension.  We define the type \inline{Ensemble} as another name for
+\inline{Pred}. It will be used to refer to predicates which have been created
+in a manner to follow. This is only for ease of understanding, and is not an
+actual restriction. Ensembles will resemble finite sets.
 \begin{code}
 
 Ensemble : Set → Set₁
@@ -122,6 +123,11 @@ _-_ : {A : Set} → Ensemble A → A → Ensemble A
 (αs - α) = λ x → ¬(x ≢ α → x ∉ αs)
 
 \end{code}
+By introducing double negations to avoid the need for \inline{⊥-elim} (EFQ), we
+have defined ensemble membership and subsets as a minimal logic translation of
+the usual definition for sets. The result is that a proof that one ensemble is
+a subset of another will consist solely of lambda functions. \todo{Simply typed
+lambda calculus!}
 
 Of course, ensembles are just predicates, so they can be created in any way
 that functions can be created. We can define a type to keep track of the
