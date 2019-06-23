@@ -22,7 +22,7 @@ elements from a list of formulae can be defined with a function, it is unwieldy
 to give proofs regarding the results of such computations, as they depend on
 equality-checking of formulae, and so proofs must include both the case where
 the equality is as expected, and the degenerate case\footnote{Examples of this
-are included in the \todo{ref} appendix}.
+are included in the appendix}.
 
 An implementation of classical propositional logic in natural deduction style
 was given in \citet{caiproplogicagda2015}. While this does use (something
@@ -71,7 +71,7 @@ If it is absurd for $x$ to be in $A$ (for example, if $A$ is the empty set),
 then proving that $x \in B$ can be done using either pattern matching, or the
 lemma \inline{⊥-elim}. Agda's proof search will not do pattern matching inside
 lambda expressions, however, and it will not find lemmas unless it is hinted to
-do so. For convenience, we adopt a \todo{minimal} translation by taking the
+do so. For convenience, we adopt a minimal logic translation by taking the
 double negative of the right side of the implication, which solves this issue.
 \begin{code}
 _⊂_ : {A : Set} → Ensemble A → Ensemble A → Set

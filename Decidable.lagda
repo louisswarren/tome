@@ -83,8 +83,8 @@ However, the special case of the equality predicate being decidable for a given
 type\footnote{
   This is as much a property of the type as it is a property of the equality
   predicate for that type. A type with a decidable equality is called discrete
-  \citep{hasegawa2013typed}.k}
-will be used later. \todo{Cite proceedings}
+  \citep{hasegawa2013typed}.}
+will be used later.
 \begin{code}
 
 Decidable≡ : Set → Set

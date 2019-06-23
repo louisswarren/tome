@@ -421,7 +421,9 @@ hε-prooftree = texreduce Hε (P x ∷ []) DNE⊃Hε
 \vspace{\baselineskip}
 
 As a final example, consider the law of excluded middle, and a generalised form
-of the limited principle of omniscience \todo{cite LPO}.
+of the limited principle of omniscience\footnote{This is generalised in the
+sense that it is not over a binary sequence, like that of \citet{varieties},
+but rather over a predicate which may not be decidable.}.
 \begin{code}
 
 lem glpo : Formula → Formula
