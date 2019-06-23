@@ -21,7 +21,7 @@ constFreeFor (α ∨ β) x n = constFreeFor α x n ∨ constFreeFor β x n
 constFreeFor (Λ x₁ α) x n = Λ (functerm []) (constFreeFor α x n)
 constFreeFor (V x₁ α) x n = V (functerm []) (constFreeFor α x n)
 
-LPO DNE EFQ LEM WLEM DGP GLPO GLPOA GMP WGMP DP HE DNSU DNSE IP CD : Scheme
+LPO DNE EFQ LEM WLEM DGP GLPO GLPO′ GMP WGMP DP Hε DNS∀ DNS∃ IP CD : Scheme
 
 
 lpo : Formula → Formula → Formula
@@ -69,27 +69,27 @@ gmp   Φx = ¬∀x Φx ⇒ ∃x ¬Φx                                      where
 wgmp  Φx = ¬∀x Φx ⇒ ¬¬(∃x ¬Φx)                                  where ¬Φx = ¬ Φx
 
 GLPO  = unaryscheme "GLPO"  glpo
-GLPOA = unaryscheme "GLPO'" glpoa
+GLPO′ = unaryscheme "GLPO'" glpoa
 GMP   = unaryscheme "GMP"   gmp
 WGMP  = unaryscheme "WGMP"  wgmp
 
 
 
-dp he : Formula → Formula
+dp hε : Formula → Formula
 dp  Φx = ∃x(Φx ⇒ ∀x Φx)
-he  Φx = ∃x(∃x Φx ⇒ Φx)
+hε  Φx = ∃x(∃x Φx ⇒ Φx)
 
 DP  = unaryscheme "DP" dp
-HE  = unaryscheme "H$\\epsilon$" he
+Hε  = unaryscheme "H$\\epsilon$" hε
 
 
 
-dnsu dnse : Formula → Formula
-dnsu Φx = ∀x(¬¬ Φx) ⇒ ¬¬(∀x Φx)
-dnse Φx = ¬¬(∃x Φx) ⇒ ∃x (¬¬ Φx)
+dns∀ dns∃ : Formula → Formula
+dns∀ Φx = ∀x(¬¬ Φx) ⇒ ¬¬(∀x Φx)
+dns∃ Φx = ¬¬(∃x Φx) ⇒ ∃x (¬¬ Φx)
 
-DNSU = unaryscheme "DNS$\\forall$" dnsu
-DNSE = unaryscheme "DNS$\\exists$" dnse
+DNS∀ = unaryscheme "DNS$\\forall$" dns∀
+DNS∃ = unaryscheme "DNS$\\exists$" dns∃
 
 
 
@@ -216,13 +216,13 @@ LEM,EFQ⊃DNE : LEM ∷ EFQ ∷ [] ⊃ DNE
 LEM,EFQ⊃DNE ⊢lhs (α ∷ []) = lem,efq→dne (descheme₁ (⊢lhs LEM [ refl ])) (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ]))) α
 
 
-he→ip : ⊢₁ he → ⊢₂ ip
-he→ip ⊢he α β = close from∅
+hε→ip : ⊢₁ hε → ⊢₂ ip
+hε→ip ⊢hε α β = close from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁  (λ z₃ z₄ →  z₄ (λ z₅ → z₅)  (λ z₅ → z₅ (λ z₆ z₇ → z₇ (λ z₈ z₉ → z₉ z₆ (λ z₁₀ → z₁₀ z₃ z₈)))))))
                  (arrowintro (∃x β ⇒ ∃x α)
                   (existelim
                    (all⟨ V∣ xvar (∃x β ⇒ α) ⟩ all∪ (all- (all- (all⟨- ∃x β ∷ [ refl ] ⟩ all∪ all⟨ V∣ xvar β ⇒ V∣ xvar α ⟩ all∪ all⟨ V∣ xvar β ⟩))))
-                   (⊢he α)
+                   (⊢hε α)
                    (existintro x xvar
                     (ident (∃x β ⇒ α) xvar)
                     (arrowintro (∃x β)
@@ -231,12 +231,12 @@ he→ip ⊢he α β = close from∅
                      (arrowelim
                       (assume (∃x β ⇒ ∃x α))
                       (assume (∃x β))))))))
-HE⊃IP : HE ∷ [] ⊃ IP
-HE⊃IP ⊢lhs (α ∷ β ∷ []) = he→ip (descheme₁ (⊢lhs HE [ refl ])) α β
+Hε⊃IP : Hε ∷ [] ⊃ IP
+Hε⊃IP ⊢lhs (α ∷ β ∷ []) = hε→ip (descheme₁ (⊢lhs Hε [ refl ])) α β
 
 
-ip→he : ⊢₂ ip → ⊢₁ he
-ip→he ⊢ip α = close from∅
+ip→hε : ⊢₂ ip → ⊢₁ hε
+ip→hε ⊢ip α = close from∅
                (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃ (λ z₄ → z₄) (λ z₄ → z₄ (λ z₅ → z₅)))  (λ z₃ → z₃ (λ z₄ → z₄))))
                (existelim
                 (all⟨ V∣ xvar (∃x α ⇒ α) ⟩ all∪ (all- all⟨- [ refl ] ⟩))
@@ -247,8 +247,8 @@ ip→he ⊢ip α = close from∅
                 (existintro x xvar
                  (ident (∃x α ⇒ α) xvar)
                  (assume (∃x α ⇒ α))))
-IP⊃HE : IP ∷ [] ⊃ HE
-IP⊃HE ⊢lhs (α ∷ []) = ip→he (descheme₂ (⊢lhs IP [ refl ])) α
+IP⊃Hε : IP ∷ [] ⊃ Hε
+IP⊃Hε ⊢lhs (α ∷ []) = ip→hε (descheme₂ (⊢lhs IP [ refl ])) α
 
 
 lem→glpo : ⊢₁ lem → ⊢₁ glpo
@@ -511,15 +511,15 @@ glpo→lem ⊢glpo = wlog-lem (glpo→rlem ⊢glpo)
 GLPO⊃LEM : GLPO ∷ [] ⊃ LEM
 GLPO⊃LEM ⊢lhs (α ∷ []) = glpo→lem (descheme₁ (⊢lhs GLPO [ refl ])) α
 
-dnsu→wgmp : ⊢₁ dnsu → ⊢₁ wgmp
-dnsu→wgmp ⊢dnsu α = close
+dns∀→wgmp : ⊢₁ dns∀ → ⊢₁ wgmp
+dns∀→wgmp ⊢dns∀ α = close
                      from∅
                      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ → z₇ (λ z₈ → z₈) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ z₅ z₉))) z₃))))
                      (arrowintro (¬∀x α)
                       (arrowintro (¬∃x¬ α)
                        (arrowelim
                         (arrowelim
-                         (⊢dnsu α)
+                         (⊢dns∀ α)
                          (univintro xvar (all- (all⟨ V∣ xvar (¬ α) ⇒ atom [] ⟩ all∪ all⟨- [ refl ] ⟩))
                           (arrowintro (¬ α)
                            (arrowelim
@@ -527,11 +527,11 @@ dnsu→wgmp ⊢dnsu α = close
                             (existintro x xvar (ident (¬ α) xvar)
                              (assume (¬ α)))))))
                         (assume (¬∀x α)))))
-DNSU⊃WGMP : DNSU ∷ [] ⊃ WGMP
-DNSU⊃WGMP ⊢lhs (α ∷ []) = dnsu→wgmp (descheme₁ (⊢lhs DNSU [ refl ])) α
+DNS∀⊃WGMP : DNS∀ ∷ [] ⊃ WGMP
+DNS∀⊃WGMP ⊢lhs (α ∷ []) = dns∀→wgmp (descheme₁ (⊢lhs DNS∀ [ refl ])) α
 
-wgmp→dnsu : ⊢₁ wgmp → ⊢₁ dnsu
-wgmp→dnsu ⊢wgmp α = close
+wgmp→dns∀ : ⊢₁ wgmp → ⊢₁ dns∀
+wgmp→dns∀ ⊢wgmp α = close
                      from∅
                      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ (λ z₇ → z₇ (λ z₈ → z₈) z₅) (λ z₇ → z₇ (λ z₈ z₉ → z₉ z₈ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ z₃ z₁₁))))))))
                      (arrowintro (∀x¬¬ α)
@@ -547,8 +547,8 @@ wgmp→dnsu ⊢wgmp α = close
                            (univelim x (ident (¬¬ α) xvar)
                             (assume (∀x¬¬ α)))
                            (assume (¬ α))))))))
-WGMP⊃DNSU : WGMP ∷ [] ⊃ DNSU
-WGMP⊃DNSU ⊢lhs (α ∷ []) = wgmp→dnsu (descheme₁ (⊢lhs WGMP [ refl ])) α
+WGMP⊃DNS∀ : WGMP ∷ [] ⊃ DNS∀
+WGMP⊃DNS∀ ⊢lhs (α ∷ []) = wgmp→dns∀ (descheme₁ (⊢lhs WGMP [ refl ])) α
 
 --dp→dp′ : ⊢₁ dp → ∀ α ωvar → (ff : (varterm ωvar) FreeFor xvar In α) → ⊢ V ωvar (Λ xvar (fst (α [ xvar / ff ]) ⇒ α))
 --dp→dp′ ⊢dp α ωvar ωffx = close {!   !} {!   !} (existelim {!   !} (⊢dp α) (existintro {!   !} {!   !} {!   !} {!   !}))
@@ -581,15 +581,15 @@ dne→dp ⊢dne α = close
 DNE⊃DP : DNE ∷ [] ⊃ DP
 DNE⊃DP ⊢lhs (α ∷ []) = dne→dp (descheme₁ (⊢lhs DNE [ refl ])) α
 
-dne→he : ⊢₁ dne → ⊢₁ he
-dne→he ⊢dne α = close
+dne→hε : ⊢₁ dne → ⊢₁ hε
+dne→hε ⊢dne α = close
                  from∅
                  (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ z₄ (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ z₉ → z₉) (λ z₉ → z₉ (λ _ z₁₀ → z₁₀ z₇ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₄ (λ z₁₄ → z₁₄ (λ _ → z₁₂))))))))))))
                  (arrowelim
-                  (⊢dne (he α))
-                  (arrowintro (¬ (he α))
+                  (⊢dne (hε α))
+                  (arrowintro (¬ (hε α))
                    (arrowelim
-                    (assume (¬ (he α)))
+                    (assume (¬ (hε α)))
                     (existintro x xvar (ident (∃x α ⇒ α) xvar)
                      (arrowintro (∃x α)
                       (arrowelim
@@ -598,12 +598,12 @@ dne→he ⊢dne α = close
                         (existelim (all⟨ atom [] ⟩ all∪ (all- (all⟨ V∣ xvar (∃x α ⇒ α) ⇒ atom [] ⟩ all∪ (all- all⟨- ∃x α ∷ [ refl ] ⟩))))
                          (assume (∃x α))
                          (arrowelim
-                          (assume (¬ (he α)))
+                          (assume (¬ (hε α)))
                           (existintro x xvar (ident (∃x α ⇒ α) xvar)
                            (arrowintro (∃x α)
                             (assume α))))))))))))
-DNE⊃HE : DNE ∷ [] ⊃ HE
-DNE⊃HE ⊢lhs (α ∷ []) = dne→he (descheme₁ (⊢lhs DNE [ refl ])) α
+DNE⊃Hε : DNE ∷ [] ⊃ Hε
+DNE⊃Hε ⊢lhs (α ∷ []) = dne→hε (descheme₁ (⊢lhs DNE [ refl ])) α
 
 
 lem→wlem : ⊢₁ lem → ⊢₁ wlem
@@ -669,8 +669,8 @@ glpoa→∃lem ⊢glpoa α = close
 
 glpoa→lem : ⊢₁ glpoa → ⊢₁ lem
 glpoa→lem ⊢glpoa α = ∃lem→lem (glpoa→∃lem ⊢glpoa) α
-GLPOA⊃LEM : GLPOA ∷ [] ⊃ LEM
-GLPOA⊃LEM ⊢lhs (α ∷ []) = glpoa→lem (descheme₁ (⊢lhs GLPOA [ refl ])) α
+GLPO′⊃LEM : GLPO′ ∷ [] ⊃ LEM
+GLPO′⊃LEM ⊢lhs (α ∷ []) = glpoa→lem (descheme₁ (⊢lhs GLPO′ [ refl ])) α
 
 glpoa→gmp : ⊢₁ glpoa → ⊢₁ gmp
 glpoa→gmp ⊢glpoa α = close
@@ -685,8 +685,8 @@ glpoa→gmp ⊢glpoa α = close
                            (assume (¬∀x α))
                            (assume (∀x α)))))
                         (assume (∃x¬ α))))
-GLPOA⊃GMP : GLPOA ∷ [] ⊃ GMP
-GLPOA⊃GMP ⊢lhs (α ∷ []) = glpoa→gmp (descheme₁ (⊢lhs GLPOA [ refl ])) α
+GLPO′⊃GMP : GLPO′ ∷ [] ⊃ GMP
+GLPO′⊃GMP ⊢lhs (α ∷ []) = glpoa→gmp (descheme₁ (⊢lhs GLPO′ [ refl ])) α
 
 
 dp→cd : ⊢₁ dp → ⊢₂ cd
@@ -723,13 +723,13 @@ DP⊃GMP : DP ∷ [] ⊃ GMP
 DP⊃GMP ⊢lhs (α ∷ []) = dp→gmp (descheme₁ (⊢lhs DP [ refl ])) α
 
 
-he→dnse : ⊢₁ he → ⊢₁ dnse
-he→dnse ⊢he α = close
+hε→dns∃ : ⊢₁ hε → ⊢₁ dns∃
+hε→dns∃ ⊢hε α = close
                    from∅
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ (λ z₈ z₉ → z₉ z₃ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ z₈ (λ z₁₃ → z₁₃ z₆ z₁₁)))))))))
                    (arrowintro (¬¬∃x α)
                     (existelim (all⟨ V∣ xvar (¬¬ α) ⟩ all∪ (all- (all- (all⟨ (V∣ xvar α ⇒ atom []) ⇒ atom [] ⟩ all∪ (all- (all⟨- ∃x α ∷ [ refl ] ⟩ all∪ all⟨- ∃x α ∷ (¬ α ∷ [ refl ]) ⟩ all∪ all⟨ V∣ xvar α ⟩))))))
-                     (⊢he α)
+                     (⊢hε α)
                      (existintro x xvar (ident (¬¬ α) xvar)
                       (arrowintro (¬ α)
                        (arrowelim
@@ -740,12 +740,12 @@ he→dnse ⊢he α = close
                           (arrowelim
                            (assume (∃x α ⇒ α))
                            (assume (∃x α))))))))))
-HE⊃DNSE : HE ∷ [] ⊃ DNSE
-HE⊃DNSE ⊢lhs (α ∷ []) = he→dnse (descheme₁ (⊢lhs HE [ refl ])) α
+Hε⊃DNS∃ : Hε ∷ [] ⊃ DNS∃
+Hε⊃DNS∃ ⊢lhs (α ∷ []) = hε→dns∃ (descheme₁ (⊢lhs Hε [ refl ])) α
 
 
-glpo→dnse : ⊢₁ glpo → ⊢₁ dnse
-glpo→dnse ⊢glpo α = close
+glpo→dns∃ : ⊢₁ glpo → ⊢₁ dns∃
+glpo→dns∃ ⊢glpo α = close
                    from∅
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ _ z₉ → z₉ z₃ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ z₁₁ (λ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ z₇ z₁₄))))))) (λ z₆ → z₆ (λ z₇ z₈ → z₈ z₇ (λ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₁₂ z₁₀)))))))))
                    (arrowintro (¬¬∃x α)
@@ -769,12 +769,12 @@ glpo→dnse ⊢glpo α = close
                         (arrowelim
                          (assume (¬ α))
                          (assume α)))))))
-GLPO⊃DNSE : GLPO ∷ [] ⊃ DNSE
-GLPO⊃DNSE ⊢lhs (α ∷ []) = glpo→dnse (descheme₁ (⊢lhs GLPO [ refl ])) α
+GLPO⊃DNS∃ : GLPO ∷ [] ⊃ DNS∃
+GLPO⊃DNS∃ ⊢lhs (α ∷ []) = glpo→dns∃ (descheme₁ (⊢lhs GLPO [ refl ])) α
 
 
-gmp→dnse : ⊢₁ gmp → ⊢₁ dnse
-gmp→dnse ⊢gmp α = close
+gmp→dns∃ : ⊢₁ gmp → ⊢₁ dns∃
+gmp→dns∃ ⊢gmp α = close
                    from∅
                    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅) (λ z₅ → z₅ (λ z₆ z₇ → z₇ z₃ (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ z₉ (λ z₁₁ → z₁₁ (λ z₁₂ z₁₃ → z₁₃ z₆ z₁₂)))))))))
                    (arrowintro (¬¬∃x α)
@@ -790,8 +790,8 @@ gmp→dnse ⊢gmp α = close
                           (univelim x (ident (¬ α) xvar)
                            (assume (∀x¬ α)))
                           (assume α))))))))
-GMP⊃DNSE : GMP ∷ [] ⊃ DNSE
-GMP⊃DNSE ⊢lhs (α ∷ []) = gmp→dnse (descheme₁ (⊢lhs GMP [ refl ])) α
+GMP⊃DNS∃ : GMP ∷ [] ⊃ DNS∃
+GMP⊃DNS∃ ⊢lhs (α ∷ []) = gmp→dns∃ (descheme₁ (⊢lhs GMP [ refl ])) α
 
 
 wlog-dgp : (∀ α β → xvar NotFreeIn α → xvar NotFreeIn β → ⊢ (dgp α β)) → ⊢₂ dgp
@@ -903,13 +903,13 @@ DP,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
      β
 
 
-he,efq,tt→rdgp : ⊢₁ he → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α β → xvar NotFreeIn α → xvar NotFreeIn β → ⊢ dgp α β
-he,efq,tt→rdgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
+hε,efq,tt→rdgp : ⊢₁ hε → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α β → xvar NotFreeIn α → xvar NotFreeIn β → ⊢ dgp α β
+hε,efq,tt→rdgp ⊢hε ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
     close
      from∅
      (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ (λ z₁₈ → z₁₈) z₁₅))) (λ z₁₄ → z₁₄ (λ _ → z₁₀)))) (λ z₁₂ → z₁₂ (λ _ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ z₁₄ z₈)))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ (λ z₁₂ → z₁₂ z₄ (λ z₁₃ → z₁₃ (λ z₁₄ → z₁₄ (λ _ → z₁₀)) (λ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) (λ z₁₇ → z₁₇ z₁₅ (λ z₁₈ → z₁₈)))))) (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ (λ _ z₁₅ → z₁₅ z₁₃ z₈)))))))))))
      (existelim (all⟨ (x∉α ⇒ x∉β) ∨ (x∉β ⇒ x∉α) ⟩ all∪ (all- (all∅ all∪ (all- (all- ((all⟨- β ∷ (D x ∷ [ refl ]) ⟩ all∪ (all- (all∅ all∪ all∅ all∪ all⟨- [ refl ] ⟩)) all∪ (all- all⟨ x∉β ⟩)) all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all⟨- (D x ⇒ α) ∷ ((¬D x ⇒ β) ∷ (β ∷ [ refl ])) ⟩)))))) all∪ (all- (all- ((all⟨- α ∷ (¬D x ∷ [ refl ]) ⟩ all∪ (all- all⟨ x∉α ⟩) all∪ (all- (all∅ all∪ all⟨- [ refl ] ⟩ all∪ all∅))) all∪ (all- (all- (all⟨- (D x ⇒ α) ∷ [ refl ] ⟩ all∪ all⟨- (D x ⇒ α) ∷ ((¬D x ⇒ β) ∷ (α ∷ [ refl ])) ⟩)))))))))
-      (⊢he φ)
+      (⊢hε φ)
       (disjelim
        (univelim x (ident (D x ∨ ¬ (D x)) xvar)
         ⊢d∀)
@@ -956,13 +956,13 @@ he,efq,tt→rdgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ α β x∉α x∉β =
     φ1sub : φ [ xvar / t1 ]≡ ((D t1 ⇒ α) ∧ (¬ (D t1) ⇒ β))
     φ1sub = (D varterm≡ ⇒ notfree x∉α) ∧ (¬ (D varterm≡) ⇒ notfree x∉β)
 
-he,efq,tt→dgp : ⊢₁ he → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
-he,efq,tt→dgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ = wlog-dgp (he,efq,tt→rdgp ⊢he ⊢efq ⊢d0 ⊢¬d1 ⊢d∀)
+hε,efq,tt→dgp : ⊢₁ hε → ⊢₁ efq → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₂ dgp
+hε,efq,tt→dgp ⊢hε ⊢efq ⊢d0 ⊢¬d1 ⊢d∀ = wlog-dgp (hε,efq,tt→rdgp ⊢hε ⊢efq ⊢d0 ⊢¬d1 ⊢d∀)
 
-HE,EFQ,TT⊃DGP : HE ∷ EFQ ∷ TT ⊃ DGP
-HE,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
-    he,efq,tt→dgp
-     (descheme₁ (⊢lhs HE [ refl ]))
+Hε,EFQ,TT⊃DGP : Hε ∷ EFQ ∷ TT ⊃ DGP
+Hε,EFQ,TT⊃DGP ⊢lhs (α ∷ β ∷ []) =
+    hε,efq,tt→dgp
+     (descheme₁ (⊢lhs Hε [ refl ]))
      (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ])))
      (descheme₀ (⊢lhs D0 (_ ∷ (_ ∷ [ refl ]))))
      (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
@@ -1003,8 +1003,8 @@ wlog-wlem ⊢nfwlem α = close
     x∉αω : xvar NotFreeIn αω
     x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
 
-dnse,tt→rwlem-lemma : ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ ¬¬∃x ((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α))
-dnse,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
+dns∃,tt→rwlem-lemma : ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ ¬¬∃x ((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α))
+dns∃,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
   close
     from∅
     (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ → z₆ (λ _ z₇ → z₇ (λ
@@ -1042,14 +1042,14 @@ dnse,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
     φ1sub : φ [ xvar / t1 ]≡ (D t1 ⇒ ¬¬ α) ∧ (¬D t1 ⇒ ¬ α)
     φ1sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
 
-dnse,tt→rwlem : ⊢₁ dnse → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ wlem α
-dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
+dns∃,tt→rwlem : ⊢₁ dns∃ → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ wlem α
+dns∃,tt→rwlem ⊢dns∃ ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
   close
    from∅
    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃ (λ z₄ → z₄) (λ z₄ → z₄ (λ z₅ z₆ → z₆ z₅ (λ z₇ → z₇ (λ z₈ → z₈ (λ _ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₅ (λ z₁₂ → z₁₂ (λ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ (λ _ z₁₆ → z₁₆ (λ z₁₇ → z₁₇) z₁₄))) (λ z₁₃ → z₁₃ (λ _ → z₁₀)))))) (λ z₈ → z₈ (λ z₉ z₁₀ → z₁₀ (λ _ z₁₁ → z₁₁ z₉ (λ z₁₂ → z₁₂)))))))) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₄ (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ z₁₃ (λ z₁₅ → z₁₅ (λ _ z₁₆ → z₁₆ (λ z₁₇ z₁₈ → z₁₈ (λ z₁₉ → z₁₉ z₁₇ z₈) z₁₀)))))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₄ (λ z₁₂ → z₁₂ (λ z₁₃ z₁₄ → z₁₄ z₁₃ (λ z₁₅ → z₁₅ (λ z₁₆ z₁₇ → z₁₇ (λ _ z₁₈ → z₁₈ (λ z₁₉ → z₁₉ z₁₆ z₈) z₁₀)))))))))))))
    (existelim (all⟨ (x∉α ⇒ atom []) ∨ ((x∉α ⇒ atom []) ⇒ atom []) ⟩ all∪ (all- (all∅ all∪ (all- (all- (all⟨- ¬ α ∷ (D x ∷ [ refl ]) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- (all- ((all⟨- [ refl ] ⟩ all∪ all⟨- (D x ⇒ ¬¬ α) ∷ ((¬D x ⇒ ¬ α) ∷  (((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)) ∷   (¬ α ∷ [ refl ]))) ⟩) all∪ all⟨ x∉α ⇒ atom [] ⟩)))))))) all∪ (all- (all- (all⟨- α ∷ (¬D x ∷ [ refl ]) ⟩ all∪ (all- (all⟨- [ refl ] ⟩ all∪ (all- (all- ((all⟨- (D x ⇒ ¬¬ α) ∷ [ refl ] ⟩ all∪ all⟨- (D x ⇒ ¬¬ α) ∷ ((¬D x ⇒ ¬ α) ∷  (((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)) ∷   (α ∷ [ refl ]))) ⟩) all∪ all⟨ x∉α ⟩)))))))))))
     (arrowelim
-     (⊢dnse φ)
+     (⊢dns∃ φ)
      (arrowintro (¬∃x φ)
       (arrowelim
        (assume (¬∃x φ))
@@ -1108,23 +1108,23 @@ dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
     φ1sub : φ [ xvar / t1 ]≡ (D t1 ⇒ ¬¬ α) ∧ (¬D t1 ⇒ ¬ α)
     φ1sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
 
-dnse,tt→wlem : ⊢₁ dnse → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
-dnse,tt→wlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀ = wlog-wlem (dnse,tt→rwlem ⊢dnse ⊢d0 ⊢¬d1 ⊢d∀)
+dns∃,tt→wlem : ⊢₁ dns∃ → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
+dns∃,tt→wlem ⊢dns∃ ⊢d0 ⊢¬d1 ⊢d∀ = wlog-wlem (dns∃,tt→rwlem ⊢dns∃ ⊢d0 ⊢¬d1 ⊢d∀)
 
-DNSE,TT⊃WLEM : DNSE ∷ TT ⊃ WLEM
-DNSE,TT⊃WLEM ⊢lhs (α ∷ []) =
-    dnse,tt→wlem
-     (descheme₁ (⊢lhs DNSE [ refl ]))
+DNS∃,TT⊃WLEM : DNS∃ ∷ TT ⊃ WLEM
+DNS∃,TT⊃WLEM ⊢lhs (α ∷ []) =
+    dns∃,tt→wlem
+     (descheme₁ (⊢lhs DNS∃ [ refl ]))
      (descheme₀ (⊢lhs D0 (_ ∷ [ refl ])))
      (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ [ refl ]))))
      (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
      α
 
-he,tt→wlem : ⊢₁ he → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
-he,tt→wlem ⊢he ⊢d0 ⊢d1 ⊢d∀ = dnse,tt→wlem (he→dnse ⊢he) ⊢d0 ⊢d1 ⊢d∀
+hε,tt→wlem : ⊢₁ hε → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
+hε,tt→wlem ⊢hε ⊢d0 ⊢d1 ⊢d∀ = dns∃,tt→wlem (hε→dns∃ ⊢hε) ⊢d0 ⊢d1 ⊢d∀
 
 gmp,tt→wlem : ⊢₁ gmp → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
-gmp,tt→wlem ⊢gmp ⊢d0 ⊢d1 ⊢d∀ = dnse,tt→wlem (gmp→dnse ⊢gmp) ⊢d0 ⊢d1 ⊢d∀
+gmp,tt→wlem ⊢gmp ⊢d0 ⊢d1 ⊢d∀ = dns∃,tt→wlem (gmp→dns∃ ⊢gmp) ⊢d0 ⊢d1 ⊢d∀
 
 dp,tt→wlem : ⊢₁ dp → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
 dp,tt→wlem ⊢dp ⊢d0 ⊢d1 ⊢d∀ = gmp,tt→wlem (dp→gmp ⊢dp) ⊢d0 ⊢d1 ⊢d∀
@@ -1159,7 +1159,7 @@ DP⊃LPO ⊢lhs (α ∷ β ∷ []) = dp→lpo (descheme₁ (⊢lhs DP [ refl ]))
 results = join "\n" (""
 -- Classical
   ∷ texprop DP   (P x ∷       []) DNE⊃DP
-  ∷ texprop HE   (P x ∷       []) DNE⊃HE
+  ∷ texprop Hε   (P x ∷       []) DNE⊃Hε
 -- Propositional
   ∷ texprop DNE  (A   ∷       []) LEM,EFQ⊃DNE
   ∷ texprop EFQ  (A   ∷       []) DNE⊃EFQ
@@ -1169,23 +1169,23 @@ results = join "\n" (""
 -- Equivalences
   ∷ texprop GLPO (P x ∷       []) LEM⊃GLPO
   ∷ texprop LEM  (P x ∷       []) GLPO⊃LEM
-  ∷ texprop IP   (P x ∷ A   ∷ []) HE⊃IP
-  ∷ texprop HE   (P x ∷       []) IP⊃HE
-  ∷ texprop WGMP (P x ∷       []) DNSU⊃WGMP
-  ∷ texprop DNSU (P x ∷       []) WGMP⊃DNSU
--- DP and HE
+  ∷ texprop IP   (P x ∷ A   ∷ []) Hε⊃IP
+  ∷ texprop Hε   (P x ∷       []) IP⊃Hε
+  ∷ texprop WGMP (P x ∷       []) DNS∀⊃WGMP
+  ∷ texprop DNS∀ (P x ∷       []) WGMP⊃DNS∀
+-- DP and Hε
   ∷ texprop GMP  (P x ∷       []) DP⊃GMP
   ∷ texprop CD   (P x ∷ A   ∷ []) DP⊃CD
-  ∷ texprop DNSE (P x ∷       []) HE⊃DNSE
+  ∷ texprop DNS∃ (P x ∷       []) Hε⊃DNS∃
 -- GLPO and GLPO'
-  ∷ texprop GMP  (P x ∷       []) GLPOA⊃GMP
-  ∷ texprop LEM  (A   ∷       []) GLPOA⊃LEM
-  ∷ texprop DNSE (P x ∷       []) GLPO⊃DNSE
+  ∷ texprop GMP  (P x ∷       []) GLPO′⊃GMP
+  ∷ texprop LEM  (A   ∷       []) GLPO′⊃LEM
+  ∷ texprop DNS∃ (P x ∷       []) GLPO⊃DNS∃
 -- GMP
-  ∷ texprop DNSE (P x ∷       []) GMP⊃DNSE
+  ∷ texprop DNS∃ (P x ∷       []) GMP⊃DNS∃
   ∷ texprop WGMP (P x ∷       []) GMP⊃WGMP
 -- Two terms
   ∷ texprop DGP  (P x ∷ Q x ∷ []) DP,EFQ,TT⊃DGP
-  ∷ texprop DGP  (P x ∷ Q x ∷ []) HE,EFQ,TT⊃DGP
-  ∷ texprop WLEM (P x ∷       []) DNSE,TT⊃WLEM
+  ∷ texprop DGP  (P x ∷ Q x ∷ []) Hε,EFQ,TT⊃DGP
+  ∷ texprop WLEM (P x ∷       []) DNS∃,TT⊃WLEM
   ∷ [])
