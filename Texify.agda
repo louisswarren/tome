@@ -87,9 +87,8 @@ texterm t3 = wrap "3"
 texterm t4 = wrap "4"
 texterm t5 = wrap "5"
 texterm (functerm (func n f) ts) with n
-...                              | zero  = wrap (strfunc (func n f))
-...                              | suc _ = wrap (strfunc (func n f)
-                                                 >> lp >> textermvec ts >> rp)
+...    | zero  = wrap (strfunc (func n f))
+...    | suc _ = wrap (strfunc (func n f) >> lp >> textermvec ts >> rp)
 
 textermvec [] = ""
 textermvec (t ∷ []) = texterm t
@@ -111,17 +110,14 @@ parenformula p@(V _ _) = texformula p
 texformula a@(atom f ts) with formulaEq a ⊥
 ...                            | yes _ = TEXbot
 texformula (atom (rel n k) ts) | no _  with k
-...                                    | zero     = strrel (rel n k)
-...                                    | suc zero = strrel (rel n k)
-                                                    >> textermvec ts
-texformula (atom (rel n k) (x ∷ y ∷ []))
-                               | no _  | suc (suc zero)
-                                                 = texterm x >> strrel (rel n k) >> texterm y
-...                                    | suc (suc _) = strrel (rel n k)  >> lp
-                                                       >> textermvec ts >> rp
+...    | zero     = strrel (rel n k)
+...    | suc zero = strrel (rel n k) >> textermvec ts
+texformula (atom (rel n k) (x ∷ y ∷ [])) | no _
+       | suc (suc zero) = texterm x >> strrel (rel n k) >> texterm y
+...    | suc (suc _)    = strrel (rel n k)  >> lp >> textermvec ts >> rp
 texformula (a ⇒ b) with formulaEq b ⊥
-...           | yes _  = TEXnot >> wrap (parenformula a)
-...           | no _  = parenformula a >> TEXarrow >> parenformula b
+...    | yes _  = TEXnot >> wrap (parenformula a)
+...    | no _  = parenformula a >> TEXarrow >> parenformula b
 texformula (a ∧ b) = parenformula a >> TEXand >> parenformula b
 texformula (a ∨ b) = parenformula a >> TEXor >> parenformula b
 texformula (Λ x a) = TEXforall >> wrap(strvar x) >> parenformula a
@@ -176,7 +172,8 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
                                         >> inf i "TrinaryInfC" x
 
 
-dtot : ∀{α Γ} {ω : Ensemble Formula} → Assembled formulaEq ω → Γ ⊢ α → Textree
+dtot : ∀{α Γ} {ω : Ensemble Formula}
+       → Assembled formulaEq ω → Γ ⊢ α → Textree
 dtot {α} o (cite s d)           = schemeax α s
 dtot {α} o (assume a) with Ensemble.decide∈ a o
 ...                   | yes _   = openax     α
@@ -208,9 +205,9 @@ texdeduction d = "\\begin{prooftree}\n"
 
 
 -- We postulate that every instance of the stronger schemes is derivable. By
--- using cite, the deductions for these become irrelevant, so a string is still
--- produced. Postulates are not safe, but here this should not cause problems,
--- since this can only be used to produce strings.
+-- using cite, the deductions for these become irrelevant, so a string is
+-- still produced. Postulates are not safe, but here this should not cause
+-- problems, since this can only be used to produce strings.
 
 -- The scheme y can't be found implicitly because of how strings are defined.
 texreduce : {xs : List Scheme}
@@ -235,4 +232,3 @@ texprop {xs} y αs xs⊃y
     >> (texreduce y αs xs⊃y)
     >> "\\vspace{-\\baselineskip}\n"
     >> "\\end{proof}\n"
-
