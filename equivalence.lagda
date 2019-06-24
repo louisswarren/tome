@@ -1,11 +1,15 @@
-Usual \todo{specify?} treatments of formulae assume equivalence of formulae up
-to renaming of bound variables. This has not been included in the definition of
-formulae or of natural deduction. To do so would introduce an extra
-complication to the deduction rules, as every step in a natural deduction proof
-would have to include a proof that the conclusion is equivalent to the desired
-one. However, it is possible to prove that this is unnecessary; in the system
-given, if $\Gamma \vdash \alpha$ and $\alpha$ is equivalent to $\alpha'$ up to
-the renaming of bound variables, then $\Gamma \vdash \alpha'$.
+Avoiding conflicts of variables with the same name can be done algorithmically
+by machines \citep{debruijin1972}, including internally by Agda, by using a
+nameless notation. Since natural deduction is intended to be used by humans,
+treatments such as that of \citet{schwichtenberg} state that formulae can be
+used equivalently if they are equivalent up to renaming of bound variables.
+This has not been included in the definition of formulae or of natural
+deduction. To do so would introduce an extra complication to the deduction
+rules, as every step in a natural deduction proof would have to include a proof
+that the conclusion is equivalent to the desired one. However, it is possible
+to prove that this is unnecessary; in the system given, if $\Gamma \vdash
+\alpha$ and $\alpha$ is equivalent to $\alpha'$ up to the renaming of bound
+variables, then $\Gamma \vdash \alpha'$.
 
 \begin{code}
 
@@ -244,7 +248,6 @@ rename      : ∀{Γ α α′}
 rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
 \end{code}
 It remains to prove \inline{renameIff}.
-\todo{Dual structure means some proofs are essentially duplicates}
 \begin{proof}
 The atomic case is trivial, since an atomic formula is equivalent only to
 itself.

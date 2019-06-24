@@ -208,8 +208,7 @@ $\alpha$), this is not easy to work with, either by hand or using proof search.
 For example, to prove that the variable $y$ is not-free in all members of
 $\{\forall y Q y\}\cup\{\bot\}$, it would be necessary to show that any member
 $x$ is either equal to $\forall y Q y$ or $\bot$, and only then supply the
-required constructors for each case. Once again, this requires pattern matching
-\todo{among other things?}.
+required constructors for each case. Once again, this requires pattern matching.
 
 Instead, for an assembled ensemble, we give a definition for \inline{All} which
 utilises the structure of the ensemble, and describes what computation must be
