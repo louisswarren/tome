@@ -999,6 +999,10 @@ Consider the other direction.
 \end{code}
 \codeqed
 \end{proof}
+
+We can conclude that examining formulae only on an intensional level does not
+restrict the deductive power of the system.
+
 There is a dual structure in the proofs above, in the quantifier cases where
 the bound variable is renamed. Some proofs are straightforward in that they
 eliminate the quantifier, insert the derivation of the equivalent subcomponent
@@ -1011,8 +1015,3 @@ for \inline{Λ/} and \inline{V/′}. Since the forward direction of each of thes
 rules is the same as the reverse direction of its dual, we see that it would be
 simplest to do renaming with the rules \inline{Λ/} and \inline{V/′}, and have
 \inline{Λ/′} and \inline{V/} be the derived rules, if possible.
-
-
-We can conclude that examining formulae only on an intensional level does not
-restrict the deductive power of the system.
-\todo{More}

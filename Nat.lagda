@@ -67,7 +67,6 @@ _<_ : ℕ → ℕ → Set
 n < m = suc n ≤ m
 
 \end{code}
-\todo{Is this explanation necessary?}
 In the definition of `$leq$', the type is \emph{indexed} by a pair of natural
 numbers, rather than parametrised (given specific names, on the left side of
 the colon). This is an example of a dependent type. The constructors do not

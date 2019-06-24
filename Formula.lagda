@@ -1049,7 +1049,7 @@ There is an upper bound on the variables occurring in a given vector of terms.
 \end{lemma}
 \begin{proof}
 We call this function \inline{maxVarTerms}, but wil not actually prove that
-this is the least upper bound in particular. \todo{Upper bound?}
+this is the least upper bound in particular.
 \begin{code}
 
 maxVarTerms : ∀{k} → (ts : Vec Term k)
