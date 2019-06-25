@@ -1189,3 +1189,43 @@ results = join "\n" (""
 -- In drinker chapter  ∷ texprop DGP  (P x ∷ Q x ∷ []) Hε,EFQ,TT⊃DGP
 -- In drinker chapter  ∷ texprop WLEM (P x ∷       []) DNS∃,TT⊃WLEM
   ∷ [])
+
+
+dns∀′ dns∃′ : Formula → Formula
+dns∀′ Φx = ¬¬∀x Φx ⇒ ∀x¬¬ Φx
+dns∃′ Φx = ∃x¬¬ Φx ⇒ ¬¬∃x Φx
+
+⊢dns∀′ : ⊢₁ dns∀′
+⊢dns∀′ α = close
+            from∅
+            (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ z₆ → z₆ z₃ (λ z₇ → z₇ (λ z₈ z₉ → z₉ z₅ z₈))))))
+            (arrowintro (¬¬∀x α)
+             (univintro xvar (all- (all⟨ (Λ↓ xvar α ⇒ atom []) ⇒ atom [] ⟩ all∪ (all- (all⟨- ∀x α ∷ [ refl ] ⟩ all∪ all⟨ Λ↓ xvar α ⟩))))
+              (arrowintro (¬ α)
+               (arrowelim
+                (assume (¬¬∀x α))
+                (arrowintro (∀x α)
+                 (arrowelim
+                  (assume (¬ α))
+                  (univelim x (ident α xvar)
+                   (assume (∀x α)))))))))
+
+⊢dns∀′-prooftree = texdeduction (⊢dns∀′ (P x))
+
+⊢dns∃′ : ⊢₁ dns∃′
+⊢dns∃′ α = close
+            from∅
+            (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ z₃ (λ z₅ → z₅ (λ z₆ z₇ → z₇ (λ z₈ z₉ → z₉ z₆ (λ z₁₀ → z₁₀ (λ z₁₁ z₁₂ → z₁₂ z₈ z₁₁))))))))
+            (arrowintro (∃x¬¬ α)
+             (existelim (all⟨ (V↓ xvar α ⇒ atom []) ⇒ atom [] ⟩ all∪ (all- (all- (all⟨- ¬∃x α ∷ [ refl ] ⟩ all∪ (all- (all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- [ refl ] ⟩))))))
+              (assume (∃x¬¬ α))
+              (arrowintro (¬∃x α)
+               (arrowelim
+                (assume (¬¬ α))
+                (arrowintro α
+                 (arrowelim
+                  (assume (¬∃x α))
+                  (existintro (varterm xvar) xvar (ident α xvar)
+                  (assume α))))))))
+
+⊢dns∃′-prooftree = texdeduction (⊢dns∃′ (P x))
