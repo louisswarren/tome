@@ -1003,6 +1003,93 @@ wlog-wlem ⊢nfwlem α = close
     x∉αω : xvar NotFreeIn αω
     x∉αω = subNotFree (varterm x≢ω) α[x/ω]≡αω
 
+
+gmp,tt→rwlem-lemma : ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ ¬∀x ((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α))
+gmp,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
+  close
+    from∅
+    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ z₄ → z₄ (λ z₅ → z₅ z₃ (λ z₆ → z₆ (λ _ z₇ → z₇ (λ z₈ z₉ → z₉ z₈ (λ z₁₀ → z₁₀))))) (λ z₅ → z₅ z₃ (λ z₆ → z₆ (λ z₇ z₈ → z₈ (λ _ z₉ → z₉ z₇ (λ z₁₀ → z₁₀))))))))
+    (arrowintro (∀x φ)
+     (arrowelim
+      (conjelim
+       (univelim t0 φ0sub
+        (assume (∀x φ)))
+       (arrowelim
+        (assume (D t0 ⇒ ¬¬ α))
+        ⊢d0))
+      (conjelim
+       (univelim t1 φ1sub
+        (assume (∀x φ)))
+       (arrowelim
+        (assume (¬D t1 ⇒ ¬ α))
+        ⊢¬d1))))
+  where
+    φ : Formula
+    φ = (D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)
+    φ0sub : φ [ xvar / t0 ]≡ (D t0 ⇒ ¬¬ α) ∧ (¬D t0 ⇒ ¬ α)
+    φ0sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
+    φ1sub : φ [ xvar / t1 ]≡ (D t1 ⇒ ¬¬ α) ∧ (¬D t1 ⇒ ¬ α)
+    φ1sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
+
+gmp,tt→rwlem : ⊢₁ gmp → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ wlem α
+gmp,tt→rwlem ⊢gmp ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
+  close
+   from∅
+    (λ x₁ z₁ z₂ → z₂ (z₁ (λ z₃ → z₃ (λ z₄ → z₄) (λ z₄ → z₄)) (λ z₃ → z₃ (λ z₄ z₅ → z₅ (λ z₆ → z₆) (λ z₆ → z₆ (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₄ (λ z₁₂ → z₁₂ (λ z₁₃ → z₁₃ (λ _ z₁₄ → z₁₄ (λ z₁₅ z₁₆ → z₁₆ z₁₅ z₁₀))) (λ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ (λ _ z₁₆ → z₁₆ z₁₄ z₈))))))) (λ z₇ → z₇ (λ z₈ z₉ → z₉ (λ z₁₀ z₁₁ → z₁₁ z₄ (λ z₁₂ → z₁₂ (λ z₁₃ → z₁₃ (λ z₁₄ z₁₅ → z₁₅ (λ _ z₁₆ → z₁₆ z₈ z₁₄))) (λ z₁₃ → z₁₃ (λ _ → z₁₀)))))))))))
+    (existelim (all⟨ (x∉α ⇒ atom []) ∨ ((x∉α ⇒ atom []) ⇒ atom []) ⟩ all∪ (all- (all∅ all∪ (all- (all- (all⟨- α ∷ (D (varterm xvar) ∷ [ refl ]) ⟩ all∪ (all- (all- (all⟨- [ refl ] ⟩ all∪ all⟨ x∉α ⟩))) all∪ (all- (all- (all⟨- α ∷ [ refl ] ⟩ all∪ all⟨- α ∷ (¬D (varterm xvar) ∷ (α ∷ [ refl ])) ⟩)))))) all∪ (all- (all- (all⟨- ¬ α ∷ (¬D (varterm xvar) ∷ [ refl ]) ⟩ all∪ (all- (all- (all⟨- ¬ α ∷ (D (varterm xvar) ∷ (¬ α ∷ [ refl ])) ⟩ all∪ all⟨- ¬ α ∷ [ refl ] ⟩))) all∪ (all- all⟨- ¬D (varterm xvar) ∷ [ refl ] ⟩)))))))
+    (arrowelim
+     (⊢gmp φ)
+     (cite "Lemma" (gmp,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α)))
+    (disjelim
+     (univelim x (ident (D (varterm xvar) ∨ ¬D (varterm xvar)) xvar)
+      ⊢d∀)
+     (disjintro₁ (¬¬ α)
+      (arrowintro α
+       (arrowelim
+        (assume (¬ φ))
+        (conjintro
+         (arrowintro (D x)
+          (arrowintro (¬ α)
+           (arrowelim
+            (assume (¬ α))
+            (assume α))))
+         (arrowintro (¬D x)
+          (arrowintro α
+           (arrowelim
+            (assume (¬D x))
+            (assume (D x)))))))))
+     (disjintro₂ (¬ α)
+      (arrowintro (¬ α)
+       (arrowelim
+        (assume (¬ φ))
+        (conjintro
+         (arrowintro (D x)
+          (arrowintro (¬ α)
+           (arrowelim
+            (assume (¬D x))
+            (assume (D x)))))
+         (arrowintro (¬D x)
+          (assume (¬ α)))))))))
+  where
+    φ : Formula
+    φ = (D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α)
+    φ0sub : φ [ xvar / t0 ]≡ (D t0 ⇒ ¬¬ α) ∧ (¬D t0 ⇒ ¬ α)
+    φ0sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
+    φ1sub : φ [ xvar / t1 ]≡ (D t1 ⇒ ¬¬ α) ∧ (¬D t1 ⇒ ¬ α)
+    φ1sub = (D varterm≡ ⇒ notfree ((x∉α ⇒ atom []) ⇒ atom [])) ∧ (¬D varterm≡ ⇒ notfree (x∉α ⇒ atom []))
+
+gmp,tt→wlem : ⊢₁ gmp → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
+gmp,tt→wlem ⊢gmp ⊢d0 ⊢d1 ⊢d∀ = wlog-wlem (gmp,tt→rwlem ⊢gmp ⊢d0 ⊢d1 ⊢d∀)
+
+GMP,TT⊃WLEM : GMP ∷ TT ⊃ WLEM
+GMP,TT⊃WLEM ⊢lhs (α ∷ []) =
+    gmp,tt→wlem
+     (descheme₁ (⊢lhs GMP [ refl ]))
+     (descheme₀ (⊢lhs D0 (_ ∷ [ refl ])))
+     (descheme₀ (⊢lhs ¬D1 (_ ∷ (_ ∷ [ refl ]))))
+     (descheme₀ (⊢lhs D∀ (_ ∷ (_ ∷ (_ ∷ [ refl ])))))
+     α
+
 dns∃,tt→rwlem-lemma : ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ∀ α → xvar NotFreeIn α → ⊢ ¬¬∃x ((D x ⇒ ¬¬ α) ∧ (¬D x ⇒ ¬ α))
 dns∃,tt→rwlem-lemma ⊢d0 ⊢¬d1 ⊢d∀ α x∉α =
   close
@@ -1122,9 +1209,6 @@ DNS∃,TT⊃WLEM ⊢lhs (α ∷ []) =
 
 hε,tt→wlem : ⊢₁ hε → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
 hε,tt→wlem ⊢hε ⊢d0 ⊢d1 ⊢d∀ = dns∃,tt→wlem (hε→dns∃ ⊢hε) ⊢d0 ⊢d1 ⊢d∀
-
-gmp,tt→wlem : ⊢₁ gmp → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
-gmp,tt→wlem ⊢gmp ⊢d0 ⊢d1 ⊢d∀ = dns∃,tt→wlem (gmp→dns∃ ⊢gmp) ⊢d0 ⊢d1 ⊢d∀
 
 dp,tt→wlem : ⊢₁ dp → ⊢₀ d0 → ⊢₀ ¬d1 → ⊢₀ d∀ → ⊢₁ wlem
 dp,tt→wlem ⊢dp ⊢d0 ⊢d1 ⊢d∀ = gmp,tt→wlem (dp→gmp ⊢dp) ⊢d0 ⊢d1 ⊢d∀
