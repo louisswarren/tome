@@ -433,17 +433,17 @@ have a similar structure to that of \inline{_NotFreeIn_} above. The more
 general case of replacing terms with terms is not needed for natural deduction.
 
 Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
-variable distinct from $x$ is left unchanged. For a function application, $x$
-is replaced with $t$ inside all of the arguments.
+variable distinct from $x$ is left unchanged. For a function term, $x$ is
+replaced with $t$ inside all of the arguments.
 \begin{code}
 
 data [_][_/_]≡_ : ∀{n} → Vec Term n → Variable → Term → Vec Term n → Set
 
 data ⟨_⟩[_/_]≡_ : Term → Variable → Term → Term → Set where
-  varterm≡ : ∀{x t} → ⟨ varterm x ⟩[ x / t ]≡ t
-  varterm≢ : ∀{x t y} → x ≢ y → ⟨ varterm y ⟩[ x / t ]≡ varterm y
-  functerm : ∀{x t f us vs} → [ us ][ x  / t ]≡ vs
-               → ⟨ functerm f us ⟩[ x / t ]≡ functerm f vs
+  varterm≡ : ∀{x t}         → ⟨ varterm x ⟩[ x / t ]≡ t
+  varterm≢ : ∀{x t y}       → x ≢ y → ⟨ varterm y ⟩[ x / t ]≡ varterm y
+  functerm : ∀{x t f us vs} → [ us ][ x / t ]≡ vs
+                              → ⟨ functerm f us ⟩[ x / t ]≡ functerm f vs
 
 data [_][_/_]≡_ where
   []  : ∀{x t} → [ [] ][ x / t ]≡ []
@@ -463,7 +463,7 @@ yields the original formula. While this can be proved as a derived rule, in
 practice it is the case we usually want to use. Providing a constructor allows
 Agda's proof search to apply this case easily.
 \begin{code}
-  ident : ∀ α x → α [ x / varterm x ]≡ α
+  ident   : ∀ α x → α [ x / varterm x ]≡ α
 \end{code}
 If $x$ is not free in $\alpha$, then replacing it with any term should leave
 $\alpha$ unchanged. This rule is not derivable when $t$ is not otherwise able
@@ -648,22 +648,22 @@ of the above lemmas. If they occurred in the right substitution, the lemmas
 prove $\gamma \equiv \beta$, so \inline{rewrite} is used to recover $\beta
 \equiv \gamma$.
 \begin{code}
-subFunc (ident α x)   r             = subIdentFunc r
-subFunc (notfree x∉α) r             = subNotFreeFunc r x∉α
+subFunc (ident α x)   s             = subIdentFunc s
+subFunc (notfree x∉α) s             = subNotFreeFunc s x∉α
 subFunc r             (ident α x)   rewrite subIdentFunc r       = refl
 subFunc r             (notfree x∉α) rewrite subNotFreeFunc r x∉α = refl
 \end{code}
 The atomic case comes from the previous lemma.
 \begin{code}
-subFunc (atom p s)    (atom .p r)   rewrite subTermsFunc s r = refl
+subFunc (atom p r)    (atom .p s)   rewrite subTermsFunc r s = refl
 \end{code}
 The propositional connectives can be proved inductively.
 \begin{code}
-subFunc (s₁ ⇒ s₂)     (r₁ ⇒ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+subFunc (r₁ ⇒ r₂)     (s₁ ⇒ s₂)     with subFunc r₁ s₁ | subFunc r₂ s₂
 ...                                 | refl | refl = refl
-subFunc (s₁ ∧ s₂)     (r₁ ∧ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+subFunc (r₁ ∧ r₂)     (s₁ ∧ s₂)     with subFunc r₁ s₁ | subFunc r₂ s₂
 ...                                 | refl | refl = refl
-subFunc (s₁ ∨ s₂)     (r₁ ∨ r₂)     with subFunc s₁ r₁ | subFunc s₂ r₂
+subFunc (r₁ ∨ r₂)     (s₁ ∨ s₂)     with subFunc r₁ s₁ | subFunc r₂ s₂
 ...                                 | refl | refl = refl
 \end{code}
 If the formula is a quantification over $x$, then neither substitution changes
@@ -675,17 +675,17 @@ subFunc (V↓ x α)      (V↓ .x .α)    = refl
 It is contradictory for one substitution to occur by matching $x$
 with the quantifier variable, and the other to have a different quantifier.
 \begin{code}
-subFunc (Λ↓ x α)      (Λ x≢x _ r)   = ⊥-elim (x≢x refl)
-subFunc (V↓ x α)      (V x≢x _ r)   = ⊥-elim (x≢x refl)
-subFunc (Λ x≢x _ s)   (Λ↓ x α)      = ⊥-elim (x≢x refl)
-subFunc (V x≢x _ s)   (V↓ x α)      = ⊥-elim (x≢x refl)
+subFunc (Λ↓ x α)      (Λ x≢x _ s)   = ⊥-elim (x≢x refl)
+subFunc (V↓ x α)      (V x≢x _ s)   = ⊥-elim (x≢x refl)
+subFunc (Λ x≢x _ r)   (Λ↓ x α)      = ⊥-elim (x≢x refl)
+subFunc (V x≢x _ r)   (V↓ x α)      = ⊥-elim (x≢x refl)
 \end{code}
 Finally, if the formula is a quantification over a variable other than $x$,
 then substitution occurs inside the quantified formula, so recurse inside those
 substitutions.
 \begin{code}
-subFunc (Λ _ _ s)     (Λ _ _ r)     rewrite subFunc s r = refl
-subFunc (V _ _ s)     (V _ _ r)     rewrite subFunc s r = refl
+subFunc (Λ _ _ r)     (Λ _ _ s)     rewrite subFunc r s = refl
+subFunc (V _ _ r)     (V _ _ s)     rewrite subFunc r s = refl
 
 \end{code}
 \codeqed
@@ -734,9 +734,10 @@ of its definition is commented below.
 -}
 
 \end{code}
-\inline{Σ A B} can be proved by providing an $x$ of type $A$, and a proof of $B
-x$, so that it encapsulates both a value and a proof regarding that value.
-This means sigma type can be used to define existential propositions.
+A proof of a sigma type encapsulates both a value and a proof regarding that
+value. Proposition $\Sigma A B$ can be proved by providing an $x$ of type $A$,
+and a proof of $B x$. This means that the sigma type can be used to define
+existential propositions.
 
 \begin{lemma}
 Every vector of terms has a substitution of any variable with any term.
@@ -752,8 +753,8 @@ substitution is required in either case.
 [ []                 ][ x / t ] = [] , []
 [ u             ∷ us ][ x / t ] with [ us ][ x / t ]
 [ varterm y     ∷ us ][ x / t ] | vs , vspf with varEq x y
-...    | yes refl = (t ∷ vs) , (varterm≡ ∷ vspf)
-...    | no  x≢y  = (varterm y ∷ vs) , (varterm≢ x≢y ∷ vspf)
+...    | yes refl  = (t             ∷ vs) , (varterm≡      ∷ vspf)
+...    | no  x≢y   = (varterm y     ∷ vs) , (varterm≢ x≢y  ∷ vspf)
 [ functerm f ws ∷ us ][ x / t ] | vs , vspf with [ ws ][ x / t ]
 ...    | xs , xspf = (functerm f xs ∷ vs) , (functerm xspf ∷ vspf)
 
