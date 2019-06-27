@@ -1,4 +1,4 @@
-Vectors are similar to lists, but are type indexed by length. For example,
+Vectors are similar to lists, but the type is indexed by length. For example,
 vectors in $\mathbb{N}^2$ are of different type to vectors in $\mathbb{N}^3$.
 
 \AgdaHide{
@@ -22,7 +22,7 @@ data Vec (A : Set) : ℕ → Set where
 
 We define All, Any, and membership the same was as for lists. The decidability
 proofs below are omitted, as they are identical to the corresponding proofs for
-lists. See List.lagda for details.
+lists.
 
 \begin{code}
 

@@ -1,6 +1,7 @@
 We extend the built-in module for lists, by showing that if a predicate over a
-type is decidable, then it is decidable whether that property holds for any or
-all members of a list of that type.
+type is decidable, then given a list over that type, it is decidable if the
+predicate holds on any member, and it is decidable if the predicate holds on
+all members.
 
 \AgdaHide{
 \begin{code}
@@ -18,7 +19,7 @@ open import Agda.Builtin.List public
 {-
   data List (A : Set) : Set where
     []  : List A
-    _∷_ : (x : A) (xs : List A) → List A
+    _∷_ : A → List A → List A
 -}
 
 \end{code}
@@ -48,7 +49,7 @@ element.
 \begin{code}
 
 all : ∀{A} {P : Pred A} → (p : Decidable P) → (xs : List A) → Dec (All P xs)
-all p [] = yes []
+all p []       = yes []
 all p (x ∷ xs) with p x
 ...            | no ¬Px = no λ { (Px ∷ _) → ¬Px Px }
 ...            | yes Px with all p xs
@@ -71,7 +72,7 @@ Again, the above is decidable for decidable predicates.
 \begin{code}
 
 any : ∀{A} {P : Pred A} → (p : Decidable P) → (xs : List A) → Dec (Any P xs)
-any p [] = no λ ()
+any p []       = no λ ()
 any p (x ∷ xs) with p x
 ...            | yes Px = yes [ Px ]
 ...            | no ¬Px with any p xs
