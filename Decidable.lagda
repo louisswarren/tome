@@ -10,7 +10,7 @@ module Decidable where
 
 Agda has a built-in module defining equality. We import this module and
 re-export it here. For illustrative purposes, a simplified version of this
-definition for small types is commented below.
+definition for small types (types of type \inline{Set}) is commented below.
 \begin{code}
 
 open import Agda.Builtin.Equality public
@@ -41,10 +41,11 @@ x ≢ y = ¬(x ≡ y)
 
 \end{code}
 
-EFQ holds in Agda, in the sense that any type can be constructed from the
-bottom type. To show this, we do a case split on the instance of $\bot$. There
-is no constructor for $\bot$, which is stated using empty parentheses. Cases
-which are not constructable do not need proving.
+The principle of \emph{ex falso quodlibet} (EFQ) holds in Agda, in the sense
+that any type can be constructed from the bottom type. To show this, we do a
+case split on the instance of $\bot$. There is no constructor for $\bot$, which
+is stated using empty parentheses. Cases which are not constructable do not
+need proving.
 \begin{code}
 
 ⊥-elim : {A : Set} → ⊥ → A
@@ -63,9 +64,9 @@ data Dec (A : Set) : Set where
 
 \end{code}
 The constructors \inline{yes} and \inline{no} can be thought of as similar to
-truth values in the boolean type \inline{true} and \inline{false}, with the
-addition of carrying the constructive content of the predicates that they are
-truth values for.
+the truth values \inline{true} and \inline{false} in the boolean type, with the
+addition that they keep the proof or disproof of the proposition for which they
+are acting as a truth value.
 
 A unary predicate is \emph{decidable} if each of its values is decidable.
 \begin{code}
@@ -77,7 +78,6 @@ Decidable : {A : Set} → Pred A → Set
 Decidable P = ∀ x → Dec (P x)
 
 \end{code}
-
 The same could be defined for binary predicates, but this won't be needed.
 However, the special case of the equality predicate being decidable for a given
 type\footnote{

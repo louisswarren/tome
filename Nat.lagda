@@ -67,10 +67,10 @@ _<_ : ℕ → ℕ → Set
 n < m = suc n ≤ m
 
 \end{code}
-In the definition of `$leq$', the type is \emph{indexed} by a pair of natural
+In the definition of `$\leq$', the type is \emph{indexed} by a pair of natural
 numbers, rather than parametrised (given specific names, on the left side of
 the colon). This is an example of a dependent type. The constructors do not
-produce values of the same type. Moreover, there types for which there is no
+produce values of the same type. Moreover, there are types for which there is no
 constructor. For example, there is no way of constructing \inline{1 ≤ 0}. In
 this manner, dependent types can describe predicates.
 
@@ -88,7 +88,9 @@ The relation \inline{_≤_} is reflexive and transitive.
 \end{code}
 
 If $n < m$ then $m \not\leq n$, and if $m \leq n$ then $n \not< m$. This can be
-expressed as a single proposition. \todo{rename this}
+expressed as a single proposition. To derive $\bot$, recurse on $n$ and $m$
+until one of them is $0$, at which point there is either no constructor for $n
+< m$ or no constructor for $m \leq n$. \todo{rename this}
 \begin{code}
 
 ℕdisorder : ∀{n m} → n < m → m ≤ n → ⊥
@@ -119,6 +121,6 @@ compare (suc n) (suc m) with compare n m
 
 \end{code}
 While it is possible to directly define a function which returns the greater of
-two natural numbers, this method preserves the proposition showing which is
-greater. Defining a relation, and then giving a function to construct it from
-all possible arguments is a common technique, and it will be used often.
+two natural numbers, this method preserves the proof showing which is greater.
+Defining a relation, and then supplying a function to construct it from all
+possible arguments is a common technique, and it will be used often.
