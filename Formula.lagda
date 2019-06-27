@@ -33,34 +33,33 @@ distinct.
 record Variable : Set where
   constructor var
   field
-    idx : ℕ
+    index : ℕ
 
-open Variable renaming (idx to varidx)
+open Variable renaming (index to varidx)
 
 record Function : Set where
   constructor func
   field
-    idx   : ℕ
+    index : ℕ
     arity : ℕ
 
-open Function renaming (idx to funcidx ; arity to funcarity)
+open Function renaming (index to funcidx ; arity to funcarity)
 
 \end{code}
 By defining these as \inline{record} types, we get destructors for accessing
 the indices and arities, which we then extract into the current module for ease
 of use. Note that the indices are natural numbers. While it seems equivalent
-and more useful to use string indices, strings are not supported by Agda's
-proof search. Internally, strings are not recursively defined as the natural
-numbers are; instead the string type is a postulated type which is bound to
-string literals.
+and more natural to use string indices, strings are less useful for proofs.
+Internally, strings are not recursively defined as the natural numbers are;
+instead the string type is a postulated type which is bound to string literals.
 
 Terms are either variables, or functions applied to the appropriate number of
 arguments (zero for constants).
 \begin{code}
 
 data Term : Set where
-  varterm  : (x : Variable) → Term
-  functerm : (f : Function) → (ts : Vec Term (funcarity f)) → Term
+  varterm  : Variable → Term
+  functerm : (f : Function) → Vec Term (funcarity f) → Term
 
 \end{code}
 
@@ -89,12 +88,12 @@ is reserved by Agda\footnote{
 \begin{code}
 
 data Formula : Set where
-  atom   : (r : Relation) → (ts : Vec Term (relarity r)) → Formula
-  _⇒_    : (α : Formula)  → (β : Formula) → Formula
-  _∧_    : (α : Formula)  → (β : Formula) → Formula
-  _∨_    : (α : Formula)  → (β : Formula) → Formula
-  Λ      : (x : Variable) → (α : Formula) → Formula
-  V      : (x : Variable) → (α : Formula) → Formula
+  atom   : (r : Relation) → Vec Term (relarity r) → Formula
+  _⇒_    : Formula  → Formula → Formula
+  _∧_    : Formula  → Formula → Formula
+  _∨_    : Formula  → Formula → Formula
+  Λ      : Variable → Formula → Formula
+  V      : Variable → Formula → Formula
 
 _⇔_ : Formula → Formula → Formula
 Φ ⇔ Ψ = (Φ ⇒ Ψ) ∧ (Ψ ⇒ Φ)
@@ -166,24 +165,6 @@ funcEq (func n j) (func m k) with natEq n m
 }
 \begin{code}
 
-vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
--- Proof omitted.
-
-\end{code}
-\AgdaHide{
-\begin{code}
-
-vecEq eq [] [] = yes refl
-vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
-...                        | no  x≢y  = no λ { refl → x≢y refl }
-...                        | yes refl with vecEq eq xs ys
-...                                   | yes refl  = yes refl
-...                                   | no  xs≢xy = no λ { refl → xs≢xy refl }
-
-\end{code}
-}
-\begin{code}
-
 termEq : Decidable≡ Term
 -- Proof omitted.
 
@@ -211,6 +192,15 @@ termEq
         with termEq (functerm (func n j) us) (functerm (func m k) vs)
 ...     | yes refl = yes refl
 ...     | no  neq  = no λ { refl → neq refl }
+
+
+vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
+vecEq eq [] [] = yes refl
+vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
+...                        | no  x≢y  = no λ { refl → x≢y refl }
+...                        | yes refl with vecEq eq xs ys
+...                                   | yes refl  = yes refl
+...                                   | no  xs≢xy = no λ { refl → xs≢xy refl }
 
 \end{code}
 }
@@ -310,8 +300,7 @@ data _NotInTerm_ x where
                   → x NotInTerms us → x NotInTerm (functerm f us)
 
 \end{code}
-
-A variable is now shown to be not free in a formula with the obvious recursive
+A variable is now not free in a formula according to the obvious recursive
 definition. It is not free inside an atom if it is not inside that atom,
 meaning it is not in the terms that the relation is operating on. It is not
 free inside a quantification over a subformula either if it is the
@@ -332,16 +321,14 @@ data _NotFreeIn_ : Variable → Formula → Set where
 
 \end{code}
 
-We now prove that the above predicate is decidable.
-
-\begin{lemma}[\inline{_notInTerms_}]
+\begin{lemma}
 Variable occurrence within a vector of terms is decidable.
 \end{lemma}
 \begin{proof}
 Search through the vector for occurrences of the variable. In the following
 code we will use names like \inline{x∉t} to denote proofs of `$x$ is not in
-term $t$, \inline{x∉ts} for `$x$ is not in any terms in $ts$', and \inline{x∉α}
-for `$x$ is not free in $\alpha$`.
+term $t$', \inline{x∉ts} for `$x$ is not in any terms in $ts$', and \inline{x∉α}
+for `$x$ is not free in $\alpha$'.
 \begin{code}
 
 _notInTerms_ : ∀{n} → ∀ x → (ts : Vec Term n) → Dec (x NotInTerms ts)
@@ -354,7 +341,7 @@ x notInTerms (varterm y ∷ ts) with varEq x y
 ...    | yes refl = no λ { (varterm x≢x ∷ _) → x≢x refl }
 ...    | no  x≢y  with x notInTerms ts
 ...               | yes x∉ts = yes (varterm x≢y ∷ x∉ts)
-...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
+...               | no ¬x∉ts = no  λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
 \end{code}
 To check against a function term, recurse over the arguments, then recurse over
 the rest of the terms.
@@ -363,7 +350,7 @@ x notInTerms (functerm f us ∷ ts) with x notInTerms us
 ...    | no ¬x∉us = no λ { (functerm x∉us ∷ _) → ¬x∉us x∉us }
 ...    | yes x∉us with x notInTerms ts
 ...               | yes x∉ts = yes (functerm x∉us ∷ x∉ts)
-...               | no ¬x∉ts = no λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
+...               | no ¬x∉ts = no  λ { (_ ∷ x∉ts) → ¬x∉ts x∉ts }
 
 \end{code}
 Each case checks if $x$ is free in the remaining terms in the vector. A shorter
@@ -396,7 +383,7 @@ x notInTerm functerm f ts with x notInTerms ts
 
 \end{code}
 
-\begin{proposition}[\inline{_notFreeIn_}]
+\begin{proposition}
 Variable freedom is decidable.
 \end{proposition}
 \begin{proof}
@@ -407,31 +394,31 @@ variable matches the quantifying variable in the case of quantifiers.
 _notFreeIn_ : (x : Variable) → (α : Formula) → Dec (x NotFreeIn α)
 x notFreeIn atom r ts with x notInTerms ts
 ...                   | yes x∉ts = yes (atom x∉ts)
-...                   | no ¬x∉ts = no λ { (atom x∉ts) → ¬x∉ts x∉ts }
+...                   | no ¬x∉ts = no  λ { (atom x∉ts) → ¬x∉ts x∉ts }
 x notFreeIn (α ⇒ β)   with x notFreeIn α | x notFreeIn β
 ...                   | yes x∉α | yes x∉β = yes (x∉α ⇒ x∉β)
-...                   | _       | no ¬x∉β = no λ { (x∉α ⇒ x∉β) → ¬x∉β x∉β }
-...                   | no ¬x∉α | _       = no λ { (x∉α ⇒ x∉β) → ¬x∉α x∉α }
+...                   | no ¬x∉α | _       = no  λ { (x∉α ⇒ _  ) → ¬x∉α x∉α }
+...                   | _       | no ¬x∉β = no  λ { (_   ⇒ x∉β) → ¬x∉β x∉β }
 x notFreeIn (α ∧ β)   with x notFreeIn α | x notFreeIn β
 ...                   | yes x∉α | yes x∉β = yes (x∉α ∧ x∉β)
-...                   | _       | no ¬x∉β = no λ { (x∉α ∧ x∉β) → ¬x∉β x∉β }
-...                   | no ¬x∉α | _       = no λ { (x∉α ∧ x∉β) → ¬x∉α x∉α }
+...                   | no ¬x∉α | _       = no  λ { (x∉α ∧ _  ) → ¬x∉α x∉α }
+...                   | _       | no ¬x∉β = no  λ { (_   ∧ x∉β) → ¬x∉β x∉β }
 x notFreeIn (α ∨ β)   with x notFreeIn α | x notFreeIn β
 ...                   | yes x∉α | yes x∉β = yes (x∉α ∨ x∉β)
-...                   | _       | no ¬x∉β = no λ { (x∉α ∨ x∉β) → ¬x∉β x∉β }
-...                   | no ¬x∉α | _       = no λ { (x∉α ∨ x∉β) → ¬x∉α x∉α }
+...                   | no ¬x∉α | _       = no  λ { (x∉α ∨ _  ) → ¬x∉α x∉α }
+...                   | _       | no ¬x∉β = no  λ { (_   ∨ x∉β) → ¬x∉β x∉β }
 x notFreeIn Λ  y α    with varEq x y
 ...                   | yes refl = yes (Λ↓ x α)
-...                   | no x≢y with x notFreeIn α
-...                            | yes x∉α = yes (Λ y x∉α)
-...                            | no ¬x∉α = no λ { (Λ↓ x α)  → x≢y refl
-                                                ; (Λ y x∉α) → ¬x∉α x∉α }
+...                   | no  x≢y  with x notFreeIn α
+...                              | yes x∉α = yes (Λ y x∉α)
+...                              | no ¬x∉α = no  λ { (Λ↓ x α)  → x≢y refl
+                                                   ; (Λ y x∉α) → ¬x∉α x∉α }
 x notFreeIn V  y α    with varEq x y
 ...                   | yes refl = yes (V↓ x α)
-...                   | no x≢y with x notFreeIn α
-...                            | yes x∉α = yes (V y x∉α)
-...                            | no ¬x∉α = no λ { (V↓ x α)  → x≢y refl
-                                                ; (V y x∉α) → ¬x∉α x∉α }
+...                   | no  x≢y  with x notFreeIn α
+...                              | yes x∉α = yes (V y x∉α)
+...                              | no ¬x∉α = no  λ { (V↓ x α)  → x≢y refl
+                                                   ; (V y x∉α) → ¬x∉α x∉α }
 
 \end{code}
 \codeqed
@@ -602,7 +589,7 @@ subNotFreeFunc (V x≢y _ r) (V y x∉α) rewrite subNotFreeFunc r x∉α = refl
 \end{code}
 }
 
-\begin{lemma}[\inline{subTermsFunc}]
+\begin{lemma}
 Variable substitution inside a vector of terms is functional.
 \end{lemma}
 \begin{proof}
@@ -647,7 +634,7 @@ subTermsFunc (functerm st  ∷ _) (functerm rt  ∷ _)
 \codeqed
 \end{proof}
 
-\begin{proposition}[\inline{subFunc}]
+\begin{proposition}
 Variable substitution is functional.
 \end{proposition}
 \begin{proof}

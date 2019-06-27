@@ -1,6 +1,6 @@
 We now define the type of natural deductions, using the deduction rules of of
 \citet{schwichtenberg}. Given $\Gamma$ and $\alpha$, anything that the
-type-checker confirms as being of type $\Gamma \vdash \alpha$ is a valid
+type checker confirms as being of type $\Gamma \vdash \alpha$ is a valid
 natural deduction proof of $\alpha$ from assumptions $\Gamma$, and so is a
 proof of $\alpha$ from $\Gamma$ over minimal logic.
 
