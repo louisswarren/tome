@@ -790,14 +790,14 @@ For the propositional connectives, the substitution is obtained recursively.
 ...                          | α′ , αpf | β′ , βpf = α′ ∨ β′ , αpf ∨ βpf
 \end{code}
 For generalisation, check if $x$ is the quantifier variable, and if so do
-nothing.  Otherwise, recurse.
+nothing. Otherwise, recurse.
 \begin{code}
 Λ y α [ .y / Λ↓ .α ]         = Λ y α , Λ↓ y α
+V y α [ .y / V↓ .α ]         = V y α , V↓ y α
 Λ y α [ x / Λ y∉t tffα ]     with varEq x y
 ...                          | yes refl = Λ y α , Λ↓ y α
 ...                          | no  x≢y  with α [ x / tffα ]
 ...                                     | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
-V y α [ .y / V↓ .α ]         = V y α , V↓ y α
 V y α [ x / V y∉t tffα ]     with varEq x y
 ...                          | yes refl = V y α , V↓ y α
 ...                          | no  x≢y  with α [ x / tffα ]
@@ -870,9 +870,9 @@ replaced with $t$, or else differs from $x$.
 \begin{code}
 subNotFree x∉t (atom r subts)  = atom (φ x∉t subts)
   where
-    φ : ∀{n x t} {us vs : Vec Term n} → x NotInTerm t
-                      → [ us ][ x / t ]≡ vs → x NotInTerms vs
-    φ x∉t []                  = []
+    φ : ∀{n x t} {us vs : Vec Term n}
+        → x NotInTerm t → [ us ][ x / t ]≡ vs → x NotInTerms vs
+    φ x∉t []                     = []
     φ x∉t (varterm≡     ∷ subus) = x∉t                  ∷ φ x∉t subus
     φ x∉t (varterm≢ neq ∷ subus) = varterm neq          ∷ φ x∉t subus
     φ x∉t (functerm sub ∷ subus) = functerm (φ x∉t sub) ∷ φ x∉t subus
@@ -915,8 +915,9 @@ vectors of terms.
 \begin{code}
 subInverse (atom x∉ts) (atom r subts) = atom r (φ x∉ts subts)
   where
-    φ : ∀{n x ω} {us vs : Vec Term n} → ω NotInTerms us
-                 → [ us ][ x / varterm ω ]≡ vs → [ vs ][ ω / varterm x ]≡ us
+    φ : ∀{n x ω} {us vs : Vec Term n}
+        → ω NotInTerms us → [ us ][ x / varterm ω ]≡ vs
+        → [ vs ][ ω / varterm x ]≡ us
     φ ω∉us                   []                     = []
     φ (_             ∷ ω∉us) (varterm≡     ∷ subus) = varterm≡
                                                       ∷ φ ω∉us subus
