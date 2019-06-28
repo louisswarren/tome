@@ -149,10 +149,10 @@ a type with a decidable equality.
 
 data Assembled {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
   from∅   : Assembled eq ∅
-  from⟨_⟩ : (α : A) → Assembled eq (⟨ α ⟩)
+  from⟨_⟩ : (α : A)  → Assembled eq (⟨ α ⟩)
   from_∪_ : ∀{αs βs} → Assembled eq αs → Assembled eq βs
                        → Assembled eq (αs ∪ βs)
-  from_-_ : ∀{αs} → Assembled eq αs → (α : A) → Assembled eq (αs - α)
+  from_-_ : ∀{αs}    → Assembled eq αs → (α : A) → Assembled eq (αs - α)
 
 \end{code}
 
@@ -168,28 +168,29 @@ decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Ensemble A}
 \end{code}
 Nothing is in the empty ensemble.
 \begin{code}
-decide∈ x from∅ = no λ x∈∅ → x∈∅
+decide∈          x from∅            = no λ x∈∅ → x∈∅
 \end{code}
 Membership of a singleton is defined by an equality, and so its decidability is
 just the the decidable equality from \inline{Assembled}.
 \begin{code}
-decide∈ {A} {eq} x (from⟨ α ⟩) = eq x α
+decide∈ {_} {eq} x (from⟨ α ⟩)      = eq x α
 \end{code}
 To check membership for a union, simply check first for membership of the left
 ensemble, then the right. The lambda expression proofs given here are
-non-trivial, and difficult to read, but can be provided by Agda's proof search.
+non-trivial, and difficult to interpret, but can be provided by Agda's proof
+search.
 \begin{code}
-decide∈ x (from Aαs ∪ Aβs) with decide∈ x Aαs
+decide∈          x (from Aαs ∪ Aβs) with decide∈ x Aαs
 ...   | yes x∈αs = yes λ x∉αs _ → x∉αs x∈αs
 ...   | no  x∉αs with decide∈ x Aβs
 ...              | yes x∈βs = yes λ _ x∉βs → x∉βs x∈βs
 ...              | no  x∉βs = no  λ x∉αs∪βs → x∉αs∪βs x∉αs x∉βs
 \end{code}
-Finally, in the case of an element being removed, use the decidability from
-\inline{Assembled} to check if the given element was removed, and otherwise
-check if the given element is in the inner ensemble.
+Finally, in the case of an element being removed, use the decidable equality
+from \inline{Assembled} to check if the given element was removed, and
+otherwise check if the given element is in the inner ensemble.
 \begin{code}
-decide∈ {A} {eq} x (from Aαs - α) with eq x α
+decide∈ {_} {eq} x (from Aαs - α)   with eq x α
 ...   | yes refl = no λ α∈αs-α → α∈αs-α λ α≢α _ → α≢α refl
 ...   | no x≢α   with decide∈ x Aαs
 ...              | yes x∈αs = yes λ x≢α→x∉αs → x≢α→x∉αs x≢α x∈αs
@@ -207,10 +208,11 @@ Given an ensemble $A$, a sensible definition for a predicate $P$ holding on
 every element of $A$ would be $\forall x (x \in A \rightarrow P x)$. However,
 for inductively defined predicates (like \inline{_notFreeIn α} for some
 $\alpha$), this is not easy to work with, either by hand or using proof search.
-For example, to prove that the variable $y$ is not-free in all members of
-$\{\forall y Q y\}\cup\{\bot\}$, it would be necessary to show that any member
-$x$ is either equal to $\forall y Q y$ or $\bot$, and only then supply the
-required constructors for each case. Once again, this requires pattern matching.
+For example, to prove that the variable $y$ is not free in all members of
+$\{\forall y Q y\}\cup\{\bot\}$, it would be necessary to show that every
+member is equal to either $\forall y Q y$ or $\bot$, and only then supply the
+required constructors for each case. Once again, this requires pattern
+matching.
 
 Instead, for an assembled ensemble, we give a definition for \inline{All} which
 utilises the structure of the ensemble, and describes what computation must be
@@ -226,10 +228,10 @@ data All_[_∖_] {A : Set} (P : Pred A) : Ensemble A → List A → Set₁ where
 $P$ holds on all of a singleton if it holds on the element of the singleton, or
 else if that element has already been removed.
 \begin{code}
-  all⟨_⟩  : ∀{xs α}     → P α         → All P [ ⟨ α ⟩ ∖ xs ]
-  all⟨-_⟩ : ∀{xs α}     → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
+  all⟨_⟩  : ∀{α xs}     → P α         → All P [ ⟨ α ⟩ ∖ xs ]
+  all⟨-_⟩ : ∀{α xs}     → α List.∈ xs → All P [ ⟨ α ⟩ ∖ xs ]
 \end{code}
-In the case of a union, simply recurse over both.
+In the case of a union, $P$ must hold on both sides of the union.
 \begin{code}
   _all∪_  : ∀{αs βs xs} → All P [ αs ∖ xs ] → All P [ βs ∖ xs ]
                           → All P [ αs ∪ βs ∖ xs ]
@@ -252,8 +254,8 @@ All P αs = All P [ αs ∖ [] ]
 \end{code}
 
 \begin{proposition}
-The definition of \inline{All} for ensembles is weaker than the functional
-definition.
+The definition of \inline{All} for assembled ensembles is weaker than the usual
+set \todo{Set?} definition.
 \end{proposition}
 \begin{proof}
 We use a lemma to show that this is the case for all values of the removed list
