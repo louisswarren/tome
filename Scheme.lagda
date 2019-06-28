@@ -51,7 +51,7 @@ Derivable S = ∀ αs → ⊢ (Scheme.inst S αs)
 
 infix 1 _⊃_
 _⊃_ : List Scheme → Scheme → Set₁
-Ω ⊃ Φ = (∀ ω → ω List.∈ Ω → Derivable ω) → Derivable Φ
+Ωs ⊃ Φ = (∀ ω → ω List.∈ Ωs → Derivable ω) → Derivable Φ
 
 \end{code}
 

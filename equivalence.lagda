@@ -1,15 +1,15 @@
 Avoiding conflicts of variables with the same name can be done algorithmically
-by machines \citep{debruijin1972}, including internally by Agda, by using a
-nameless notation. Since natural deduction is intended to be used by humans,
-treatments such as that of \citet{schwichtenberg} state that formulae can be
-used equivalently if they are equivalent up to renaming of bound variables.
-This has not been included in the definition of formulae or of natural
-deduction. To do so would introduce an extra complication to the deduction
-rules, as every step in a natural deduction proof would have to include a proof
-that the conclusion is equivalent to the desired one. However, it is possible
-to prove that this is unnecessary; in the system given, if $\Gamma \vdash
-\alpha$ and $\alpha$ is equivalent to $\alpha'$ up to the renaming of bound
-variables, then $\Gamma \vdash \alpha'$.
+by machines (including internally by Agda) by using a nameless notation
+\citep{debruijin1972}. Since natural deduction is intended to be used by
+humans, treatments such as that of \citet{schwichtenberg} state that formulae
+can be used equivalently if they are equivalent up to renaming of bound
+variables. This has not been included in the definition of formulae or of
+natural deduction. To do so would introduce an extra complication to the
+deduction rules, as every step in a natural deduction proof would have to
+include a proof that the conclusion is equivalent to the desired one. However,
+it is possible to prove that this is unnecessary; in the system given, if
+$\Gamma \vdash \alpha$, and $\alpha$ is equivalent to $\alpha'$ up to the
+renaming of bound variables, then $\Gamma \vdash \alpha'$.
 
 \begin{code}
 
@@ -100,8 +100,8 @@ given instead.
                         (subInverse y∉α α[x/y]≡β)
 ≈sym {V x α} {V y β′} (V/ y∉α α[x/y]≡β β≈β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α[x/y]≡β = V x (≈sym β≈β′)
-...    | no x≢y = V/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β)
-                      (subInverse y∉α α[x/y]≡β)
+...    | no  x≢y  = V/′ (≈sym β≈β′) (subNotFree (varterm x≢y) α[x/y]≡β)
+                        (subInverse y∉α α[x/y]≡β)
 ≈sym {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′) with varEq x y
 ...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ x (≈sym α≈α′)
 ...    | no  x≢y  = Λ/ (subNotFree (varterm x≢y) α′[x/y]≡β′)
@@ -208,9 +208,9 @@ some bound variable has been renamed to it, so it is bound.
 
 \subsection{Deriving the rename rule}
 
-We want to derive the rule $\alpha \approx \alpha' \rightarrow \Gamma \vdash
-\alpha \rightarrow \Gamma \vdash \alpha'$.  As $\Gamma$ is the same in both
-deductions, changing variable names within the deduction of $\Gamma \vdash
+We want to derive the deduction rule $\alpha \approx \alpha' \rightarrow \Gamma
+\vdash \alpha \rightarrow \Gamma \vdash \alpha'$. As $\Gamma$ is the same in
+both deductions, changing variable names within the deduction of $\Gamma \vdash
 \alpha$ will not suffice. Instead, the deduction tree is extended to obtain the
 new conclusion.
 
@@ -218,7 +218,9 @@ Proving this rule has a termination issue for the case that $\alpha$ is an
 implication, which will be explained below. However, it is possible to prove
 the stronger rule $\alpha \approx \alpha' \rightarrow (\Gamma \vdash \alpha
 \leftrightarrow \Gamma \vdash \alpha')$. A simplified notion of
-`$\leftrightarrow$' in Agda can be defined as follows.
+`$\leftrightarrow$' in Agda can be defined as follows.\footnote{
+This is simplified in that it requires all types involved to be of type
+\inline{Set₁}, which is enough for our purposes.}
 \begin{code}
 
 private
@@ -229,9 +231,7 @@ private
   open _↔_
 
 \end{code}
-This is simplified in that it requires all types involved to be of type
-\inline{Set₁}, which is enough for our purposes. We can now define the stronger
-rename rule.
+We can now define the stronger rename rule.
 \begin{code}
 
 renameIff : ∀{Γ α α′} → α ≈ α′ → (Γ ⊢ α) ↔ (Γ ⊢ α′)
@@ -247,7 +247,11 @@ rename      : ∀{Γ α α′}
               →                                Γ ⊢ α′
 rename α≈α′ = ⟨→⟩ (renameIff α≈α′)
 \end{code}
-It remains to prove \inline{renameIff}.
+It remains to prove \inline{renameIff}. In the natural deduction proofs that
+follow, the subset proofs for \inline{close} were found automatically by Agda's
+proof search. The variable freedom proofs were also found, except where extra
+reasoning (regarding substitution and equivalence lemmas) were required. Such
+lemmas are necessary when manipulating proof trees in the abstract.
 \begin{proof}
 The atomic case is trivial, since an atomic formula is equivalent only to
 itself.
@@ -275,15 +279,14 @@ The proof tree for the implication case is extended as follows.
     \RightLabel{$\rightarrow^-$}
     \UnaryInfC{$\alpha' \rightarrow \beta'$}
 \end{prooftree}
-The induction step involves invoking the rename rule on $\alpha' \approx
+One of the induction steps involves invoking the rename rule on $\alpha' \approx
 \alpha$ and the assumption of $\alpha'$. We have $\alpha \approx \alpha'$, and
 \inline{≈sym} shows that formula equivalence is symmetric. However, calling
-\inline{rename} on \inline{≈sym α≈α′} would not be structurally recursive. This
-happens because Agda cannot determine that \inline{≈sym α≈α′} is structurally
-smaller than \inline{α≈α′ ⇒ β≈β′}. This is the reason for proving
-\inline{renameIff} instead of proving \inline{rename} directly; we have access
-to a proof of $\alpha' \vdash \alpha$ by using the opposite direction of
-\inline{renameIff}.
+\inline{rename} on \inline{≈sym α≈α′} would not be structurally recursive,
+because Agda cannot determine that \inline{≈sym α≈α′} is structurally smaller
+than \inline{α≈α′ ⇒ β≈β′}. This is the reason for proving \inline{renameIff}
+instead of proving \inline{rename} directly; we have access to a proof of
+$\alpha' \vdash \alpha$ by using the opposite direction of \inline{renameIff}.
 \begin{code}
 
   close
@@ -451,7 +454,7 @@ renamed.
 
 \end{code}
 Since $x$ may be free $\Gamma$, we use arrow introduction and elimination so
-that $\Gamma$ is not assumed when the universal generalisation re-introduced.
+that $\Gamma$ is not assumed when the universal generalisation is re-introduced.
 
 \begin{prooftree}
   \AxiomC{[$\forall x \alpha$]}
@@ -460,7 +463,7 @@ that $\Gamma$ is not assumed when the universal generalisation re-introduced.
   \RightLabel{induction}
   \UnaryInfC{$\alpha'$}
   \RightLabel{$\forall^+$}
-  \UnaryInfC{$\forall x \alpha$}
+  \UnaryInfC{$\forall x \alpha'$}
   \RightLabel{$\rightarrow^+$}
   \UnaryInfC{$\forall x \alpha \rightarrow \forall x \alpha'$}
       \AxiomC{$\Gamma$}
@@ -522,7 +525,7 @@ it is also not free in $\forall x \alpha$. Define $\beta \coloneq \alpha[x/y]$.
   \RightLabel{induction}
   \UnaryInfC{$\beta'$}
   \RightLabel{$\forall^+$}
-  \UnaryInfC{$\forall y \beta$}
+  \UnaryInfC{$\forall y \beta'$}
   \RightLabel{$\rightarrow^+$}
   \UnaryInfC{$\forall x \alpha \rightarrow \forall y \beta'$}
       \AxiomC{$\Gamma$}
@@ -600,7 +603,7 @@ $x$ with $y$ in $\alpha$.
   \RightLabel{$\forall^+$}
   \UnaryInfC{$\forall x \alpha$}
   \RightLabel{$\rightarrow^+$}
-  \UnaryInfC{$\forall x \beta' \rightarrow \forall x \alpha$}
+  \UnaryInfC{$\forall y \beta' \rightarrow \forall x \alpha$}
       \AxiomC{$\Gamma$}
       \noLine\UnaryInfC{$\vdots$}\noLine
       \UnaryInfC{$\forall y \beta'$}
@@ -632,7 +635,6 @@ The third case is the dual of the second.
 ⟨→⟩ (renameIff {Γ} {Λ x α} {Λ y β′} (Λ/′ α≈α′ y∉α′ α′[x/y]≡β′)) Γ⊢∀xα =
 
 \end{code}
-We have $\beta' \coloneq \alpha'[x/y]$.
 \begin{prooftree}
   \AxiomC{[$\forall x \alpha$]}
   \RightLabel{$\forall^-$}
