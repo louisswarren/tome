@@ -24,7 +24,7 @@ open import Vec
 open import Texify
 
 \end{code}
-The code for this is entirely computational, and so has been omitted.
+The code for this is entirely computational, and can be found in the appendix.
 
 First, some syntactic sugar. The \inline{pattern} notation causes Adga to
 recognise the notation in places where their values would be used in pattern
@@ -50,16 +50,17 @@ x y : Term
 x = varterm xvar
 y = varterm yvar
 
-pattern ∀x  Φ = Λ xvar Φ
-pattern ∃x  Φ = V xvar Φ
-pattern ¬∀x Φ = ¬(∀x Φ)
-pattern ¬∃x Φ = ¬(∃x Φ)
-pattern ∀x¬ Φ = ∀x (¬ Φ)
-pattern ∃x¬ Φ = ∃x (¬ Φ)
+pattern  ∀x  Φ = Λ xvar Φ
+pattern  ∃x  Φ = V xvar Φ
+pattern ¬∀x  Φ = ¬(∀x Φ)
+pattern ¬∃x  Φ = ¬(∃x Φ)
+pattern  ∀x¬ Φ = ∀x (¬ Φ)
+pattern  ∃x¬ Φ = ∃x (¬ Φ)
 
 \end{code}
-Define a nullary and a unary predicate, which will be used to instantiate the
-scheme proofs for output as proof trees in \LaTeX.
+Define a nullary and a unary predicate (in the language of formulae), which
+will be used to instantiate the scheme proofs for output as proof trees in
+\LaTeX.
 \begin{code}
 
 pattern Arel = rel 1 0
@@ -69,9 +70,9 @@ pattern Prel = rel 5 1
 pattern P t  = atom Prel (t ∷ [])
 
 \end{code}
-The indices used for variables $x$ and $y$ and predicates $A$ and $P$ are
-arbitrary, but correspond to those used internally by the texify module, so
-they will be outputted with the same names.
+The indices used for $x$, $y$, $\bot$, $A$, and $P$ are arbitrary, but
+correspond to those used internally by the texify module, so they will be
+outputted with the appropriate names.
 
 Define the schemes DNE (double negation elimination), EFQ (ex falso quodlibet),
 DP (the drinker paradox), and H$\epsilon$ (the dual of the drinker paradox).
@@ -228,7 +229,13 @@ DP holds in classical logic.
 \begin{proof}
 We show that if DNE is derivable then DP is derivable, meaning that DP is
 weaker than DNE. For illustrative purposes, lines given by Agda's proof search
-are marked with \inline{{- Auto -}} in the next proof.
+are marked with \inline{{- Auto -}} in the next proof. The remainder of the
+proof, with the exception of the \inline{close} function call, corresponds
+exactly to doing natural deduction by hand, from the bottom up. As the
+proof tree is developed, Agda displays the subgoal is of each hole in the
+deduction, and will only accept valid subproofs and formulae. In this way, Agda
+not only verifies the deduction after it has been completed, but also acts as a
+proof assistant for natural deduction.
 \begin{code}
 
 dne→dp : ⊢₁ dne → ⊢₁ dp
@@ -283,7 +290,7 @@ which is shown below, with instances of DP abbreviated, and split into two, due
 to page constraints.
 
 \begin{prooftree}
-  \AxiomC{$\left[\lnot{\text{DP}({Px})}\right]$}
+  \AxiomC{$\left[\lnot{\exists{x}\left(P{x} \rightarrow \forall{x}P{x}\right)}\right]$}
     \AxiomC{}
     \RightLabel{DNE}
     \UnaryInfC{$\lnot{\lnot{\forall{x}P{x}}} \rightarrow \forall{x}P{x}$}
@@ -298,7 +305,7 @@ to page constraints.
     \RightLabel{$\rightarrow^+$}
     \UnaryInfC{$P{x} \rightarrow \forall{x}P{x}$}
     \RightLabel{$\exists^+$}
-    \UnaryInfC{$\text{DP}({Px})$}
+    \UnaryInfC{$\exists{x}\left(P{x} \rightarrow \forall{x}P{x}\right)$}
   \RightLabel{$\rightarrow^-$}
   \BinaryInfC{$\bot$}
   \UnaryInfC{$\vdots$}
@@ -307,7 +314,7 @@ to page constraints.
 \AxiomC{}
 \RightLabel{DNE}
 \UnaryInfC{$\lnot{\lnot{\text{DP}({Px})}} \rightarrow \text{DP}({Px})$}
-    \AxiomC{$\left[\lnot{\text{DP}({Px})}\right]$}
+    \AxiomC{$\left[\lnot{\exists{x}\left(P{x} \rightarrow \forall{x}P{x}\right)}\right]$}
       \AxiomC{}
       \RightLabel{DNE}
       \UnaryInfC{$\lnot{\lnot{P{x}}} \rightarrow P{x}$}
@@ -322,11 +329,11 @@ to page constraints.
       \RightLabel{$\rightarrow^+$}
       \UnaryInfC{$P{x} \rightarrow \forall{x}P{x}$}
       \RightLabel{$\exists^+$}
-      \UnaryInfC{$\text{DP}({Px})$}
+      \UnaryInfC{$\exists{x}\left(P{x} \rightarrow \forall{x}P{x}\right)$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\bot$}
     \RightLabel{$\rightarrow^+$}
-    \UnaryInfC{$\lnot{\lnot{\text{DP}({Px})}}$}
+    \UnaryInfC{$\lnot{\lnot{\exists{x}\left(P{x} \rightarrow \forall{x}P{x}\right)}}$}
   \RightLabel{$\rightarrow^-$}
   \BinaryInfC{$\exists{x}\left(P{x} \rightarrow \forall{x}P{x}\right)$}
 \end{prooftree}
@@ -380,12 +387,12 @@ hε-prooftree = texreduce Hε (P x ∷ []) DNE⊃Hε
 
 \begin{prooftree}
   \AxiomC{$\left[\exists{x}P{x}\right]$}
-    \AxiomC{$\left[\lnot{\text{H$\epsilon$}(Px)}\right]$}
+    \AxiomC{$\left[\lnot{\exists{x}\left(\exists{x}P{x} \rightarrow P{x}\right)}\right]$}
       \AxiomC{$\left[P{x}\right]$}
       \RightLabel{$\rightarrow^+$}
       \UnaryInfC{$\exists{x}P{x} \rightarrow P{x}$}
       \RightLabel{$\exists^+$}
-      \UnaryInfC{$\text{H$\epsilon$}(Px)$}
+      \UnaryInfC{$\exists{x}\left(\exists{x}P{x} \rightarrow P{x}\right)$}
     \RightLabel{$\rightarrow^-$}
     \BinaryInfC{$\bot$}
   \RightLabel{$\exists^-$}
@@ -397,7 +404,7 @@ hε-prooftree = texreduce Hε (P x ∷ []) DNE⊃Hε
 \AxiomC{}
 \RightLabel{DNE}
 \UnaryInfC{$\lnot{\lnot{\text{H$\epsilon$}(Px)}} \rightarrow \text{H$\epsilon$}(Px)$}
-  \AxiomC{$\left[\lnot{\text{H$\epsilon$}(Px)}\right]$}
+	\AxiomC{$\left[\lnot{\exists{x}\left(\exists{x}P{x} \rightarrow P{x}\right)}\right]$}
     \AxiomC{}
     \RightLabel{DNE}
     \UnaryInfC{$\lnot{\lnot{P{x}}} \rightarrow P{x}$}
@@ -410,13 +417,14 @@ hε-prooftree = texreduce Hε (P x ∷ []) DNE⊃Hε
     \RightLabel{$\rightarrow^+$}
     \UnaryInfC{$\exists{x}P{x} \rightarrow P{x}$}
     \RightLabel{$\exists^+$}
-    \UnaryInfC{$\text{H$\epsilon$}(Px)$}
+		\UnaryInfC{$\exists{x}\left(\exists{x}P{x} \rightarrow P{x}\right)$}
   \RightLabel{$\rightarrow^-$}
   \BinaryInfC{$\bot$}
   \RightLabel{$\rightarrow^+$}
-  \UnaryInfC{$\lnot{\lnot{\text{H$\epsilon$}(Px)}}$}
+
+	\UnaryInfC{$\lnot{\lnot{\exists{x}\left(\exists{x}P{x} \rightarrow P{x}\right)}}$}
 \RightLabel{$\rightarrow^-$}
-\BinaryInfC{$\text{H$\epsilon$}(Px)$}
+\BinaryInfC{$\exists{x}\left(\exists{x}P{x} \rightarrow P{x}\right)$}
 \end{prooftree}
 \vspace{\baselineskip}
 
