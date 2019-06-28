@@ -938,8 +938,8 @@ quantifier variable, then $\omega$ is still not free in $\beta$.
 subInverse ω∉α (Λ↓ x α) = notfree ω∉α
 subInverse ω∉α (V↓ x α) = notfree ω∉α
 \end{code}
-Finally, we have the case where the substitution occurred inside a quantifier.
-It is absurd for $\omega$ to be the quantifer, since it would not have been
+Now consider the case where the substitution occurred inside a quantifier. It
+is absurd for $\omega$ to be the quantifer, since it would not have been
 allowed to substitute $x$ with $\omega$.
 \begin{code}
 subInverse (Λ↓ x α) (Λ _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
@@ -954,14 +954,14 @@ subInverse {ω} (Λ y ω∉α) (Λ _ (varterm y≢y) _) | yes refl = ⊥-elim (y
 Recurse inside the quantifier, turning a proof of $x \neq y$ into $y \neq x$.
 \begin{code}
 subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω sub)       | no  ω≢y
-  = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α sub)
+    = Λ ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α sub)
 \end{code}
-The same applies if the formula was $\exists y \alpha$
+The same applies if the formula was $\exists y \alpha$.
 \begin{code}
 subInverse {ω} (V y ω∉α) (V _ y∉ω           _) with varEq ω y
 subInverse {ω} (V y ω∉α) (V _ (varterm y≢y) _) | yes refl = ⊥-elim (y≢y refl)
 subInverse {ω} (V y ω∉α) (V x≢y y∉ω sub)       | no  ω≢y
-  = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α sub)
+    = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α sub)
 
 \end{code}
 \codeqed
@@ -973,12 +973,12 @@ A variable is \emph{fresh} if appears nowhere (free or bound) in a formula.
 \begin{code}
 
 data _FreshIn_ (x : Variable) : Formula → Set where
-  atom : ∀{r ts} → x NotInTerms ts  → x FreshIn (atom r ts)
-  _⇒_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
-  _∧_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∧ β
-  _∨_  : ∀{α β} → x FreshIn α → x FreshIn β → x FreshIn α ∨ β
-  Λ    : ∀{α y} → y ≢ x → x FreshIn α → x FreshIn Λ y α
-  V    : ∀{α y} → y ≢ x → x FreshIn α → x FreshIn V y α
+  atom : ∀{r ts} → x NotInTerms ts → x FreshIn (atom r ts)
+  _⇒_  : ∀{α β}  → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
+  _∧_  : ∀{α β}  → x FreshIn α → x FreshIn β → x FreshIn α ∧ β
+  _∨_  : ∀{α β}  → x FreshIn α → x FreshIn β → x FreshIn α ∨ β
+  Λ    : ∀{α y}  → y ≢ x → x FreshIn α → x FreshIn Λ y α
+  V    : ∀{α y}  → y ≢ x → x FreshIn α → x FreshIn V y α
 
 \end{code}
 
@@ -1026,12 +1026,13 @@ a fresh variable for a given formula. Only finitely many variables occur in a
 given term or formula, so there is a greatest (with respect to the natural
 number indexing) variable occurring in each term or formula; all variables
 greater than this are fresh. We will first compute this variable, and then use
-its successor. This means that the least fresh variable will not be found. For
-example, for $P x_0 \lor P x_2$, we find that $x_3, x_4, \dotsc$ are fresh,
-missing $x_1$. However, finding the least fresh variable cannot be done with a
-simple recursive procedure. Consider $\alpha = (P x_0 \lor P x_2) \land P x_1$;
-we find $x_1$ is fresh to the left of the conjunctive, and $x_0$ is fresh to
-the right, but this does not indicate that $x_2$ will not be fresh in $\alpha$.
+its successor as the fresh variable. This means that the least fresh variable
+will not be found. For example, for $P x_0 \lor P x_2$, we find that $x_3, x_4,
+\dotsc$ are fresh, missing $x_1$. However, finding the least fresh variable
+cannot be done with a simple recursive procedure. Consider $\alpha = (P x_0
+\lor P x_2) \land P x_1$; we find $x_1$ is fresh to the left of the
+conjunctive, and $x_0$ is fresh to the right, but this does not indicate that
+$x_2$ will not be fresh in $\alpha$.
 
 \begin{lemma}
 There is an upper bound on the variables occurring in a given vector of terms.
@@ -1051,11 +1052,14 @@ the greatest variable in the rest of the terms.
 \begin{code}
 maxVarTerms (varterm x     ∷ ts) with maxVarTerms ts
 ... | ⌈ts⌉ , tspf with compare (varidx x) (varidx ⌈ts⌉)
+\end{code}
+If so, use it.
+\begin{code}
 ...               | more ⌈ts⌉≤x = x , maxIsx
   where
     maxIsx : ∀ n → (varidx x) < n → (var n) NotInTerms (varterm x ∷ ts)
-    maxIsx n x<n = varterm (λ { refl → ℕdisorder x<n ≤refl })
-                   ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤x) x<n)
+    maxIsx n x<n    = varterm (λ { refl → ℕdisorder x<n ≤refl })
+                      ∷ tspf n (≤trans (sn≤sm ⌈ts⌉≤x) x<n)
 \end{code}
 Otherwise, use the greatest variable in the rest of the terms.
 \begin{code}
@@ -1071,6 +1075,9 @@ terms.
 \begin{code}
 maxVarTerms (functerm f us ∷ ts) with maxVarTerms us | maxVarTerms ts
 ... | ⌈us⌉ , uspf | ⌈ts⌉ , tspf with compare (varidx ⌈us⌉) (varidx ⌈ts⌉)
+\end{code}
+If so, use it.
+\begin{code}
 ...                             | more ⌈ts⌉≤⌈us⌉ = ⌈us⌉ , ⌈us⌉pf
   where
     ⌈us⌉pf : ∀ n → varidx ⌈us⌉ < n → (var n) NotInTerms (functerm f us ∷ ts)
