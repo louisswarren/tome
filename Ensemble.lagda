@@ -21,14 +21,15 @@ The \inline{List} (or \inline{Vec}) type is not suitable. While removal of
 elements from a list of formulae can be defined with a function, it is unwieldy
 to give proofs regarding the results of such computations, as they depend on
 equality-checking of formulae, and so proofs must include both the case where
-the equality is as expected, and the degenerate case\footnote{Examples of this
-are included in the appendix}.
+the equality is as expected, and the degenerate case.\footnote{Examples of this
+are included in the appendix.}
 
-An implementation of classical propositional logic in natural deduction style
-was given in \citet{caiproplogicagda2015}. While this does use (something
-equivalent to) lists, it requires extra deduction rules for manipulation of the
-context. This would not be suitable for a natural deduction assistant, and it
-also does not solve the problems given above for first order logic.
+An implementation of classical propositional logic in the style of natural
+deduction was given in \citet{caiproplogicagda2015}. While this does use
+(something equivalent to) lists, it requires frequent use of extra deduction
+rules for weakening the context. This would not be suitable for a natural
+deduction assistant, and it also does not solve the problems given above for
+first order logic.
 
 \AgdaHide{
 \begin{code}
@@ -65,15 +66,20 @@ _∉_ : {A : Set} → A → Ensemble A → Set
 
 \end{code}
 
-A sensible definition of subset is $A \subset B \coloneqq \forall x (x \in A
+A sensible definition of subset is $A \subset B$ if $\forall x (x \in A
 \rightarrow x \in B)$. However, some ensembles will be defined using negations.
 If it is absurd for $x$ to be in $A$ (for example, if $A$ is the empty set),
-then proving that $x \in B$ can be done using either pattern matching, or the
-lemma \inline{⊥-elim}. Agda's proof search will not do pattern matching inside
-lambda expressions, however, and it will not find lemmas unless it is hinted to
-do so. For convenience, we adopt a minimal logic translation by taking the
-double negative of the right side of the implication, which solves this issue.
+then proving that $x \in B$ can be done by either pattern matching to an empty
+case, or using the lemma \inline{⊥-elim}. However, Agda's proof search will not
+do pattern matching inside lambda
+expressions,\footnote{
+  As of version 2.6.0.}
+and it will not find lemmas unless it is hinted to do so. For convenience, we
+adopt a minimal logic translation by taking the double negative of the right
+side of the implication, which solves this issue.
 \begin{code}
+
+infix 4 _⊂_
 _⊂_ : {A : Set} → Ensemble A → Ensemble A → Set
 αs ⊂ βs = ∀ x → x ∈ αs → ¬(x ∉ βs)
 
@@ -93,13 +99,10 @@ It would be reasonable to define union in terms of a disjoint union type, so
 that a proof of $x \in A \cup B$ would be either a proof of $x \in A$ or of $x
 \in B$. However, we want Agda's proof search to fill in proofs regarding
 subsets. For a proof that $A \cup B \subset A \cup B \cup \emptyset$, we would
-have to do a case analysis on a proof of $x \in A \cup B$. Agda's proof
-search\footnote{
-  As of version 2.6.0.}
-does not support pattern matching lambda expressions. Instead, we define $x \in
-A \cup B$ using functions, so that pattern matching is not necessary in order
-to make use of such a proof.  One definition involving only functions is $x \in
-A \cup B \coloneqq x \not\in A \rightarrow x \in B$. We take the double
+have to do a case analysis on a proof of $x \in A \cup B$. Instead we define $x
+\in A \cup B$ using functions, so that pattern matching is not necessary in
+order to make use of such a proof. One definition involving only functions is
+$x \in A \cup B \coloneqq x \not\in A \rightarrow x \in B$. We take the double
 negative of the right side of the implication, for the same reasons as above.
 \begin{code}
 
@@ -108,14 +111,12 @@ _∪_ : {A : Set} → Ensemble A → Ensemble A → Ensemble A
 (αs ∪ βs) = λ x → x ∉ αs → ¬(x ∉ βs)
 
 \end{code}
-Instead of defining a set difference, define notation for removing a single
-element from an ensemble. Since we intend to use ensembles only for finite
-collections, this is not a limitation. Proofs involving a conjunction (either
-by from a product type or a new data type), expressing that $x \in A - a$ means
-$x \in A \text{ and } x \neq A$, would have the same pattern matching
-requirements as disjoint unions. A translation to functions is $x \in A - a
-\coloneqq \lnot(x \in A \rightarrow x \equiv a)$. Take the contrapositive of the
-inner implication.
+Instead of defining a set difference, we define notation for removing a single
+element from an ensemble. Since ensembles will be used only for finite
+collections, this is not a limitation.  A definition using conjunctions is that
+$x \in A - a$ means $x \in A \text{ and } x \neq A$. Translating this to
+functions gives $x \in A - a \coloneqq \lnot(x \in A \rightarrow x \equiv a)$.
+Take the contrapositive of the inner implication.
 \begin{code}
 
 infixl 5 _-_
@@ -135,8 +136,9 @@ calculus terms, which is precisely equivalent to minimal logic \todo{cite}.
 Subset proofs can now be solved by Agda automatically, with good performance.
 In the case of all natural deduction proofs to follow, Agda solved the subset
 proof in less than one second (the default time limit for proof search).
-Moreover, we may expect that Agda will successfully find a proof if one exists,
-since the implicational fragment of minimal logic is decidable \todo{cite}.
+Moreover, since the implicational fragment of minimal logic is decidable, there
+are proof search algorithms which will always find a proof if one exists
+\citep{weich2001}.
 
 Of course, ensembles are just predicates, so they can be created in any way
 that functions can be created. We can define a type to keep track of the
