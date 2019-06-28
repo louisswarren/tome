@@ -448,12 +448,12 @@ derive a form with any other quantifying variable. Therefore while the variable
 $x$ is fixed, it can be expected that LEM and GPO are equivalent with respect
 to derivability.  That is, in an extension of minimal logic where one is
 derivable, the other should also be derivable. The former leads to the latter
-trivially. The other direction is more complicated, since $\Phi$ could have $x$
-free.
+in a straightforward manner. The other direction is more complicated, since
+$\Phi$ could have $x$ free.
 
 We show first that when deriving $\text{LEM}(\Phi)$, we may assume without
 loss of generality that $x$ is not free in $\Phi$, by showing that if LEM is
-derivable in this restricted case, then it is derivable in general.
+derivable in this restricted case then it is derivable in general.
 
 \begin{proof}
 Given any formula $\alpha$, there is a fresh variable $\omega$ which appears
@@ -486,7 +486,7 @@ $\alpha$ and not equal to $x$.
 \begin{code}
     ω,ωFresh,x≢ω : Σ Variable (λ ω → Σ (ω FreshIn α) (λ _ → xvar ≢ ω))
     ω,ωFresh,x≢ω with fresh (∀x α)
-    ω,ωFresh,x≢ω | ω , Λ x≢ω ωFrα = ω , ωFrα , x≢ω
+    ...          | ω , Λ x≢ω ωFrα = ω , ωFrα , x≢ω
 \end{code}
 We therefore have a variable $\omega$ which is not free in $\alpha$, which is
 free for $x$ in $\alpha$, and which differs from $x$.
