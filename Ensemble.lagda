@@ -131,7 +131,8 @@ definition of \inline{_⊂_}. Since functions are equivalent to implications, we
 have translated the notion of subset to a proposition of the form $\forall x
 A$, where $A$ is a formula in the implicational fragment of minimal logic. This
 is to be expected, since we wanted the proof terms to be simply typed lambda
-calculus terms, which is precisely equivalent to minimal logic \todo{cite}.
+calculus terms, which is precisely equivalent to minimal logic
+\citep{curryhoward}.
 
 Subset proofs can now be solved by Agda automatically, with good performance.
 In the case of all natural deduction proofs to follow, Agda solved the subset
