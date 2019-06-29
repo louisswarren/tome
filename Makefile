@@ -1,4 +1,4 @@
-MINTED=_minted.Decidable.gen _minted.Nat.gen _minted.List.gen _minted.Vec.gen _minted.Formula.gen _minted.Ensemble.gen _minted.Deduction.gen _minted.equivalence.gen _minted.Scheme.gen _minted.drinkerexample.gen _minted.no-ensemble.gen
+MINTED=_minted.Decidable.gen _minted.Nat.gen _minted.List.gen _minted.Vec.gen _minted.Formula.gen _minted.Ensemble.gen _minted.Deduction.gen _minted.equivalence.gen _minted.Scheme.gen _minted.drinkerexample.gen _minted.no-ensemble.gen _minted.Texify.gen
 
 MINTCODE='s/\\begin{code}/\\begin{minted}{agda}/; s/\\end{code}/\\end{minted}/'
 

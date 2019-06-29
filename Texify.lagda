@@ -1,3 +1,10 @@
+The following code defines a function called \inline{texdeduction} for
+outputting proof trees as \LaTeX, using the \emph{bussproofs} package. The
+function \inline{texreduce} does the same for derivations from schemes to
+schemes.
+
+\begin{code}
+
 module Texify where
 
 open import Agda.Builtin.Bool
@@ -14,22 +21,22 @@ open import Vec
 open import Sugar
 
 TEXarrowintro = "$\\rightarrow^+$"
-TEXarrowelim = "$\\rightarrow^-$"
-TEXconjintro = "$\\land^+$"
-TEXconjelim = "$\\land^-$"
-TEXdisjintro = "$\\lor^+$"
-TEXdisjelim = "$\\lor^-$"
-TEXunivintro = "$\\forall^+$"
-TEXunivelim = "$\\forall^-$"
+TEXarrowelim  = "$\\rightarrow^-$"
+TEXconjintro  = "$\\land^+$"
+TEXconjelim   = "$\\land^-$"
+TEXdisjintro  = "$\\lor^+$"
+TEXdisjelim   = "$\\lor^-$"
+TEXunivintro  = "$\\forall^+$"
+TEXunivelim   = "$\\forall^-$"
 TEXexistintro = "$\\exists^+$"
-TEXexistelim = "$\\exists^-$"
-TEXarrow = " \\rightarrow "
-TEXand = " \\land "
-TEXor = " \\lor "
-TEXforall = "\\forall"
-TEXexists = "\\exists"
-TEXnot = "\\lnot"
-TEXbot = "\\bot"
+TEXexistelim  = "$\\exists^-$"
+TEXarrow      = " \\rightarrow "
+TEXand        = " \\land "
+TEXor         = " \\lor "
+TEXforall     = "\\forall"
+TEXexists     = "\\exists"
+TEXnot        = "\\lnot"
+TEXbot        = "\\bot"
 
 -- String manipulation
 _>>_ = primStringAppend
@@ -232,3 +239,5 @@ texprop {xs} y αs xs⊃y
     >> (texreduce y αs xs⊃y)
     >> "\\vspace{-\\baselineskip}\n"
     >> "\\end{proof}\n"
+
+\end{code}
