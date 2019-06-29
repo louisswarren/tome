@@ -90,7 +90,7 @@ The relation \inline{_≤_} is reflexive and transitive.
 If $n < m$ then $m \not\leq n$, and if $m \leq n$ then $n \not< m$. This can be
 expressed as a single proposition. To derive $\bot$, recurse on $n$ and $m$
 until one of them is $0$, at which point there is either no constructor for $n
-< m$ or no constructor for $m \leq n$. \todo{rename this}
+< m$ or no constructor for $m \leq n$.
 \begin{code}
 
 ℕdisorder : ∀{n m} → n < m → m ≤ n → ⊥

@@ -256,7 +256,7 @@ All P αs = All P [ αs ∖ [] ]
 
 \begin{proposition}
 The definition of \inline{All} for assembled ensembles is weaker than the usual
-set \todo{Set?} definition.
+set definition.
 \end{proposition}
 \begin{proof}
 We use a lemma to show that this is the case for all values of the removed list

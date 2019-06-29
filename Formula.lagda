@@ -697,7 +697,7 @@ always exist. For example, there is no way of constructing a formula for
 $(\forall y P x)[x/y]$. In general, $\alpha [x/t]$ exists only if $t$ is
 \emph{free for} $x$ \emph{in} $\alpha$, meaning no variables in $t$ would
 become bound inside $\alpha$. This can be formalised by using (with minor
-modification) the rules of \cite{vandalen}.
+modification) the rules of \cite{logicandstructure}.
 \begin{code}
 
 data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
