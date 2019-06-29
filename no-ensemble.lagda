@@ -21,14 +21,14 @@ private
 }
 \begin{code}
 
-infixl 4 _-_
+infixl 5 _-_
 _-_ : List Formula → Formula → List Formula
 [] - β = []
 (α ∷ αs) - β with formulaEq α β
 ((β ∷ αs) - .β) | yes refl = αs - β
 ((α ∷ αs) -  β) | no  _    = α ∷ (αs - β)
 
-infixl 6 _∪_
+infixr 5 _∪_
 _∪_ : List Formula → List Formula → List Formula
 []       ∪ ys = ys
 (x ∷ xs) ∪ ys = x ∷ (xs ∪ ys)
@@ -132,8 +132,8 @@ arrow-example α = eqcontext closed
                   where
                     closed : ((α ∷ []) - α) ≡ []
                     closed with formulaEq α α
-                    closed | yes refl = refl
-                    closed | no  α≢α  = ⊥-elim (α≢α refl)
+                    ...    | yes refl = refl
+                    ...    | no  α≢α  = ⊥-elim (α≢α refl)
 
 \end{code}
 To examine what the result of \inline{(α ∷ []) - α} is, we must examine the
@@ -145,7 +145,7 @@ the proof is \inline{refl}. However, we must also consider the case where
 \AgdaHide{
 \begin{code}
 
-removeonce : ∀ α → (α ∷ α ∷ [] - α) ≡ []
+removeonce : ∀ α → ((α ∷ α ∷ []) - α) ≡ []
 removeonce α with formulaEq α α
 removeonce α | yes refl with formulaEq α α
 removeonce α | yes refl | yes refl = refl
