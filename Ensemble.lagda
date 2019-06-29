@@ -76,7 +76,10 @@ expressions,\footnote{
   As of version 2.6.0.}
 and it will not find lemmas unless it is hinted to do so. For convenience, we
 adopt a minimal logic translation by taking the double negative of the right
-side of the implication, which solves this issue.
+side of the implication, which solves this issue.\footnote{
+  A catalogue of negative translations can be found in
+  \citet{oliviatranslations}. The translation we use is less complete, as we
+  use only enough negations to make the subset predicate minimally provable.}
 \begin{code}
 
 infix 4 _⊂_
