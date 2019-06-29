@@ -319,3 +319,14 @@ does not unify with \inline{λ _ → ⊥}, so \inline{all∅} may or may not be 
 constructor.  If we wanted a stronger type which is equivalent to the
 functional definition, the assembled structure would need to be included in
 \inline{All}.
+
+We can use the \inline{All} predicate to define the restriction that certain
+deductions are valid only if a given variable is not free in an ensemble of
+open assumptions.  For the usual use case (i.e. cases other than abstract proof
+tree manipulation where variable freedom is determined by some lemma), Agda's
+proof search will find the required proof. However, due to the above
+limitations with unification of functions, Agda does not see that there is only
+one constructor for each non-singleton ensemble, so the search algorithm is not
+fast. For larger proof trees, it is necessary to increase the timeout from the
+default one second to ten seconds. This could also be resolved by including the
+assembled structure in \inline{All}.
