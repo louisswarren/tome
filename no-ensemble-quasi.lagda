@@ -42,7 +42,10 @@ data _⊢_ : List Formula → Formula → Set where
   assume     : ∀{Γ} → (α : Formula)
                →                              α ∷ Γ ⊢ α
 
-  weaken     : ∀{Γ α} → (Δ : List Formula) → Γ ⊢ α → (Δ ++ Γ) ⊢ α
+  weaken     : ∀{Γ α} → (Δ : List Formula)
+               →                                  Γ ⊢ α
+                                              --------------
+               →                               (Δ ++ Γ) ⊢ α
 
   arrowintro : ∀{Γ β} → (α : Formula)
                →                                α ∷ Γ ⊢ β
