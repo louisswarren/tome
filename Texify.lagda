@@ -216,7 +216,7 @@ texdeduction d = "\\begin{prooftree}\n"
 -- still produced. Postulates are not safe, but here this should not cause
 -- problems, since this can only be used to produce strings.
 
--- The scheme y can't be found implicitly because of how strings are defined.
+-- The scheme y cannot be found implicitly because of how strings are defined.
 texreduce : {xs : List Scheme}
             → (y : Scheme) → Vec Formula (Scheme.arity y) → xs ⊃ y → String
 texreduce {xs} y αs xs⊃y = texdeduction (xs⊃y ⊢xs αs)
