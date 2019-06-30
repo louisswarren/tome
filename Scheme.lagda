@@ -1,9 +1,8 @@
 The previous modules define the language of natural deduction. This system can
 be used to show that certain first-order formulae are derivable in minimal
 logic. It is common in logical enquiries to examine proofs regarding axiom
-schemes, as we will do later, and as can be seen in chapter
-\ref{chapter:drinker}, and can also be found in
-\citet{hDHabil,troelstra1988constructivism1,troelstra1988constructivism2}.
+schemes, as we will do later (see also
+\citet{hDHabil,troelstra1988constructivism1,troelstra1988constructivism2}).
 
 \AgdaHide{
 \begin{code}
