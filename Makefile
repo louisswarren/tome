@@ -26,5 +26,6 @@ clean:
 test:
 	agda --safe appendix.agda
 	agda --safe no-ensemble.lagda
+	agda --safe no-ensemble-quasi.lagda
 	agda drinkerexample.lagda
 	agda drinker.agda
