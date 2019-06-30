@@ -79,11 +79,11 @@ open Relation renaming (idx to relidx ; arity to relarity)
 A formula is either atomic (a prime formula), or formed from one of the logical
 connectives or quantifiers. We use `\inline{Λ}' (capital lambda) and
 `\inline{V}' (capital `v') for `$\forall$' and `$\exists$', since `\inline{∀}'
-is reserved by Agda\footnote{
+is reserved by Agda.\footnote{
   While the typical n-ary logical operator symbols `\inline{⋁}' and
   `\inline{⋀}' are available, they are more easily confused with the symbols
   `\inline{∧}' and `\inline{∨}' for `and' and `or', and are unavailable in some
-  fonts.}.
+  fonts.}
 
 \begin{code}
 
