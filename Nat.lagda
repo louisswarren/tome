@@ -70,9 +70,9 @@ n < m = suc n ≤ m
 In the definition of `$\leq$', the type is \emph{indexed} by a pair of natural
 numbers, rather than parametrised (given specific names, on the left side of
 the colon). This is an example of a dependent type. The constructors do not
-produce values of the same type. Moreover, there are types for which there is no
-constructor. For example, there is no way of constructing \inline{1 ≤ 0}. In
-this manner, dependent types can describe predicates.
+produce values of the same type. Moreover, there are types for which there are
+no constructors. For example, there is no way of constructing \inline{1 ≤ 0}.
+In this manner, dependent types can describe predicates.
 
 The relation \inline{_≤_} is reflexive and transitive.
 \begin{code}
