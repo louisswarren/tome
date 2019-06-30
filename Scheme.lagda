@@ -1,6 +1,9 @@
 The previous modules define the language of natural deduction. This system can
 be used to show that certain first-order formulae are derivable in minimal
-logic. To examine axiom schemes, we define some metalanguage concepts.
+logic. It is common in logical enquiries to examine proofs regarding axiom
+schemes, as we will do later, and as can be seen in chapter
+\ref{chapter:drinker}, and can also be found in
+\citet{hDHabil,troelstra1988constructivism1,troelstra1988constructivism2}.
 
 \AgdaHide{
 \begin{code}
@@ -18,10 +21,11 @@ open import Vec
 \end{code}
 }
 
-A \emph{scheme} is often thought of as a formula containing schematic
-variables, which can be replaced by subformulae to produce a new formula. The
-following notion is more general than this; instead, a scheme is just
-constructed from a function from (a vector of) formulae to a formula.
+We define some metalanguage concepts. A \emph{scheme} is often thought of as a
+formula containing schematic variables, which can be replaced by subformulae to
+produce a new formula. The following notion is more general than this; instead,
+a scheme is just constructed from a function from (a vector of) formulae to a
+formula.
 \begin{code}
 
 record Scheme : Set where
