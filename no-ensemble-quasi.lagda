@@ -50,7 +50,7 @@ data _⊢_ : List Formula → Formula → Set where
 
   arrowintro : ∀{Γ β} → (α : Formula)
                →                                α ∷ Γ ⊢ β
-                                               ----------- ⇒⁺ α
+                                               ----------- ⇒⁺
                →                                Γ ⊢ α ⇒ β
 
   arrowelim  : ∀{Γ α β}

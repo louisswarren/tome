@@ -65,7 +65,7 @@ as Gentzen-style inferences.
 
   arrowintro  : ∀{Γ β} → (α : Formula)
                 →                                 Γ ⊢ β
-                                             --------------- ⇒⁺ α
+                                             --------------- ⇒⁺
                 →                             Γ - α ⊢ α ⇒ β
 
   arrowelim   : ∀{Γ₁ Γ₂ α β}
