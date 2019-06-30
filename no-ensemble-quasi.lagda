@@ -1,8 +1,9 @@
 In a similar fashion to \citet{caiproplogicagda2015}, we could define a proof
 system which is similar to natural deduction, which does not use list
 computation in the main deduction rules. Instead, include a deduction rule for
-weakening the context on the left, and allow assume to weaken the context on
-the right. We show only the rules for implication and universal generalisation.
+weakening the context on the left, and allow \inline{assume} to weaken the
+context on the right. We show only the rules for implication and universal
+generalisation.
 
 \AgdaHide{
 \begin{code}
@@ -40,7 +41,7 @@ data _⊢_ : List Formula → Formula → Set where
 }
 \begin{code}
   assume     : ∀{Γ} → (α : Formula)
-               →                              α ∷ Γ ⊢ α
+               →                                α ∷ Γ ⊢ α
 
   weaken     : ∀{Γ α} → (Δ : List Formula)
                →                                  Γ ⊢ α
@@ -52,14 +53,14 @@ data _⊢_ : List Formula → Formula → Set where
                                                ----------- ⇒⁺ α
                →                                Γ ⊢ α ⇒ β
 
-\end{code}
-\AgdaHide{
-\begin{code}
-
   arrowelim  : ∀{Γ α β}
                →                       Γ ⊢ α ⇒ β    →    Γ ⊢ α
                                       ------------------------- ⇒⁻
                →                                 Γ ⊢ β
+
+\end{code}
+\AgdaHide{
+\begin{code}
 
   conjintro  : ∀{Γ α β}
                →                          Γ ⊢ α    →    Γ ⊢ β

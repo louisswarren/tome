@@ -38,14 +38,21 @@ TEXexists     = "\\exists"
 TEXnot        = "\\lnot"
 TEXbot        = "\\bot"
 
+lp = "\\left("
+rp = "\\right)"
+
+
 -- String manipulation
 _>>_ = primStringAppend
 infixr 1 _>>_
 
+wrap : String → String
+wrap s = "{" >> s >> "}"
+
 -- Instead of using stdlib
 strnum : ℕ → String
 strnum zero = "0"
-strnum (suc n) = "s(" >> strnum n >> ")"
+strnum (suc n) = wrap ("s(" >> strnum n >> ")")
 
 strrel : Relation → String
 strrel (rel 0 k) = "\\bot"
@@ -76,12 +83,6 @@ joinmap : {A : Set} → String → (A → String) → List A → String
 joinmap delim f [] = ""
 joinmap delim f (x ∷ []) = f x
 joinmap delim f (x ∷ xs@(_ ∷ _)) = f x >> delim >> joinmap delim f xs
-
-lp = "\\left("
-rp = "\\right)"
-
-wrap : String → String
-wrap s = "{" >> s >> "}"
 
 texterm : Term → String
 textermvec : ∀{n} → Vec Term n → String

@@ -111,8 +111,8 @@ data _⊢_ : List Formula → Formula → Set where
 }
 
 However, it is now more complicated to prove that a given deduction's context
-is a subset of the permitted open assumptions. It is now necessary to reason
-about the result of a computation. Begin with the following trivial lemma.
+is a subset of the permitted open assumptions. It is necessary to reason about
+the result of a computation. Begin with the following trivial lemma.
 
 \begin{code}
 
