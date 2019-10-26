@@ -9,10 +9,11 @@ proof of $\alpha$ from $\Gamma$ over minimal logic.
 
 module Deduction where
 
+open import Agda.Builtin.Equality
 open import Agda.Builtin.String
 
 open import Ensemble
-open import Formula
+open import Formula-stripped
 
 \end{code}
 }
@@ -112,13 +113,13 @@ to supply them.
                 →                               Γ ⊢ Λ x α
 
   univelim    : ∀{Γ α x α[x/t]} → (t : Term)
-                → α [ x / t ]≡ α[x/t]
+                → (α [ x / t ]) ≡ α[x/t]
                 →                               Γ ⊢ Λ x α
                                                ------------ ∀⁻
                 →                               Γ ⊢ α[x/t]
 
   existintro  : ∀{Γ α α[x/t]} → (t : Term) → (x : Variable)
-                → α [ x / t ]≡ α[x/t]
+                → (α [ x / t ]) ≡ α[x/t]
                 →                               Γ ⊢ α[x/t]
                                                ------------ ∃⁺
                 →                               Γ ⊢ V x α
