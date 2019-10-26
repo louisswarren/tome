@@ -803,6 +803,10 @@ V y α [ x / V y∉t tffα ]     with varEq x y
 ...                          | no  x≢y  with α [ x / tffα ]
 ...                                     | α′ , αpf = V y α′ , V x≢y y∉t αpf
 
+_[_/_]' : Formula → Variable → Term → Formula
+α [ x / t ]' = fst (α [ x / κ ])
+  where
+    postulate κ : t FreeFor x In α
 \end{code}
 \codeqed
 \end{proof}
