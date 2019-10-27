@@ -216,6 +216,8 @@ LEM,EFQ⊃DNE ⊢lhs (α ∷ []) = lem,efq→dne (descheme₁ (⊢lhs LEM [ refl
 
 simple : ∀ α → ⟨ ∀x α ⟩ ⊢ α
 simple α = {! univelim ?  ?    !}
+-- Usual solution is
+-- simple α = univelim x (ident α xvar) (assume (∀x α))
 
 
 --hε→ip : ⊢₁ hε → ⊢₂ ip
