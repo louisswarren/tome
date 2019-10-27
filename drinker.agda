@@ -215,7 +215,9 @@ LEM,EFQ⊃DNE : LEM ∷ EFQ ∷ [] ⊃ DNE
 LEM,EFQ⊃DNE ⊢lhs (α ∷ []) = lem,efq→dne (descheme₁ (⊢lhs LEM [ refl ])) (descheme₁ (⊢lhs EFQ (_ ∷ [ refl ]))) α
 
 simple : ∀ α → ⟨ ∀x α ⟩ ⊢ α
-simple α = univelim x {! refl  !} (assume (∀x α))
+simple α with α [ xvar / x ]'
+simple α | c = univelim x {!   !} (assume (∀x α))
+--= univelim x {! refl  !} (assume (∀x α))
 -- Usual solution is
 -- simple α = univelim x (ident α xvar) (assume (∀x α))
 
