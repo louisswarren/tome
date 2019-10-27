@@ -9,6 +9,7 @@ proof of $\alpha$ from $\Gamma$ over minimal logic.
 
 module Deduction where
 
+open import Agda.Builtin.Equality
 open import Agda.Builtin.String
 open import Agda.Builtin.Sigma
 
@@ -112,13 +113,15 @@ to supply them.
                                                ----------- ∀⁺
                 →                               Γ ⊢ Λ x α
 
-  univelim    : ∀{Γ α x} → (t : Term)
+  univelim    : ∀{Γ α x α[x/t]} → (t : Term)
+                → (α [ x / t ]') ≡ α[x/t]
                 →                               Γ ⊢ Λ x α
                                                ------------ ∀⁻
-                →                               Γ ⊢ (α [ x / t ]')
+                →                               Γ ⊢ α[x/t]
 
-  existintro  : ∀{Γ α} → (t : Term) → (x : Variable)
-                →                               Γ ⊢ (α [ x / t ]')
+  existintro  : ∀{Γ α α[x/t]} → (t : Term) → (x : Variable)
+                → (α [ x / t ]') ≡ α[x/t]
+                →                               Γ ⊢ α[x/t]
                                                ------------ ∃⁺
                 →                               Γ ⊢ V x α
 
@@ -167,8 +170,8 @@ assembled-context (disjelim d₁ d₂ d₃)  = from assembled-context d₁
                                              from assembled-context d₂ - _
                                             ∪ (from assembled-context d₃ - _))
 assembled-context (univintro _ _ d)    = assembled-context d
-assembled-context (univelim _ d)     = assembled-context d
-assembled-context (existintro _ _ d) = assembled-context d
+assembled-context (univelim _ _ d)     = assembled-context d
+assembled-context (existintro _ _ _ d) = assembled-context d
 assembled-context (existelim _ d₁ d₂)  = from assembled-context d₁
                                          ∪ (from assembled-context d₂ - _)
 
