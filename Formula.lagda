@@ -714,6 +714,87 @@ data _FreeFor_In_ (t : Term) (x : Variable) : Formula → Set where
   Λ       : ∀{α y} → y NotInTerm t → t FreeFor x In α → t FreeFor x In Λ y α
   V       : ∀{α y} → y NotInTerm t → t FreeFor x In α → t FreeFor x In V y α
 
+_freeFor_In_ : ∀ t x α → Dec (t FreeFor x In α)
+t freeFor x In α with x notFreeIn α
+(t freeFor x In α) | yes xnfα = yes (notfree xnfα)
+(t freeFor x In α) | no ¬xnfα = lemma α ¬xnfα
+  where
+    lemma : ∀ α → ¬(x NotFreeIn α)  → Dec (t FreeFor x In α)
+    lemma (atom r ts) xf = yes (atom r ts)
+    lemma (α ⇒ β)     xf with t freeFor x In α
+    ...               | no ¬tffα = no ¬tffα⇒β
+                                   where
+                                     ¬tffα⇒β : _
+                                     ¬tffα⇒β (notfree xnf) = xf xnf
+                                     ¬tffα⇒β (tffα ⇒ _)     = ¬tffα tffα
+    ...               | yes tffα with t freeFor x In β
+    ...                          | no ¬tffβ = no ¬tffα⇒β
+                                              where
+                                                ¬tffα⇒β : _
+                                                ¬tffα⇒β (notfree xnf) = xf xnf
+                                                ¬tffα⇒β (_ ⇒ tffβ) = ¬tffβ tffβ
+    ...                          | yes tffβ = yes (tffα ⇒ tffβ)
+    lemma (α ∧ β)     xf with t freeFor x In α
+    ...               | no ¬tffα = no ¬tffα∧β
+                                   where
+                                     ¬tffα∧β : _
+                                     ¬tffα∧β (notfree xnf) = xf xnf
+                                     ¬tffα∧β (tffα ∧ _)     = ¬tffα tffα
+    ...               | yes tffα with t freeFor x In β
+    ...                          | no ¬tffβ = no ¬tffα∧β
+                                              where
+                                                ¬tffα∧β : _
+                                                ¬tffα∧β (notfree xnf) = xf xnf
+                                                ¬tffα∧β (_ ∧ tffβ) = ¬tffβ tffβ
+    ...                          | yes tffβ = yes (tffα ∧ tffβ)
+    lemma (α ∨ β)     xf with t freeFor x In α
+    ...               | no ¬tffα = no ¬tffα∨β
+                                   where
+                                     ¬tffα∨β : _
+                                     ¬tffα∨β (notfree xnf) = xf xnf
+                                     ¬tffα∨β (tffα ∨ _)     = ¬tffα tffα
+    ...               | yes tffα with t freeFor x In β
+    ...                          | no ¬tffβ = no ¬tffα∨β
+                                              where
+                                                ¬tffα∨β : _
+                                                ¬tffα∨β (notfree xnf) = xf xnf
+                                                ¬tffα∨β (_ ∨ tffβ) = ¬tffβ tffβ
+    ...                          | yes tffβ = yes (tffα ∨ tffβ)
+    lemma (Λ y α)     xf with varEq x y
+    ...                  | yes refl = yes (Λ↓ α)
+    ...                  | no  x≢y  with t freeFor x In α
+    ...                             | no ¬tffα = no ¬tff
+                                                 where
+                                                   ¬tff : _
+                                                   ¬tff (notfree xnf) = xf xnf
+                                                   ¬tff (Λ↓ .α) = x≢y refl
+                                                   ¬tff (Λ _ tffα) = ¬tffα tffα
+    ...                             | yes tffα with y notInTerm t
+    ...                                        | yes ynft = yes (Λ ynft tffα)
+    ...                                        | no ¬ynft = no ¬tff
+                                                            where
+                                                              ¬tff : _
+                                                              ¬tff (notfree xnf) = xf xnf
+                                                              ¬tff (Λ↓ .α) = x≢y refl
+                                                              ¬tff (Λ ynft _) = ¬ynft ynft
+    lemma (V y α)     xf with varEq x y
+    ...                  | yes refl = yes (V↓ α)
+    ...                  | no  x≢y  with t freeFor x In α
+    ...                             | no ¬tffα = no ¬tff
+                                                 where
+                                                   ¬tff : _
+                                                   ¬tff (notfree xnf) = xf xnf
+                                                   ¬tff (V↓ .α) = x≢y refl
+                                                   ¬tff (V _ tffα) = ¬tffα tffα
+    ...                             | yes tffα with y notInTerm t
+    ...                                        | yes ynft = yes (V ynft tffα)
+    ...                                        | no ¬ynft = no ¬tff
+                                                            where
+                                                              ¬tff : _
+                                                              ¬tff (notfree xnf) = xf xnf
+                                                              ¬tff (V↓ .α) = x≢y refl
+                                                              ¬tff (V ynft _) = ¬ynft ynft
+
 \end{code}
 
 The definitions above for variable substitution lead directly to a procedure
@@ -803,10 +884,38 @@ V y α [ x / V y∉t tffα ]     with varEq x y
 ...                          | no  x≢y  with α [ x / tffα ]
 ...                                     | α′ , αpf = V y α′ , V x≢y y∉t αpf
 
-_[_/_]' : Formula → Variable → Term → Formula
-α [ x / t ]' = fst (α [ x / κ ])
+data _FreshIn_ (x : Variable) : Formula → Set
+fresh : ∀ α → Σ Variable (_FreshIn α)
+
+{-# TERMINATING #-}
+_[_/_]'' : Formula → Variable → Term → Formula
+(atom r x₁ [ x / t ]'') = atom r (fst [ x₁ ][ x / t ])
+(α ⇒ β)    [ x / t ]''  = (α [ x / t ]'') ⇒ (β [ x / t ]'')
+(α ∧ β)    [ x / t ]''  = (α [ x / t ]'') ∧ (β [ x / t ]'')
+(α ∨ β)    [ x / t ]''  = (α [ x / t ]'') ∨ (β [ x / t ]'')
+Λ y α      [ x / t ]''  with varEq x y
+...                     | yes _ = Λ y α
+...                     | no _  with y notInTerm t
+...                             | yes _ = Λ y (α [ x / t ]'')
+...                             | no  _ = Λ z ((α [ y / varterm z ]'') [ x / t ]'')
   where
-    postulate κ : t FreeFor x In α
+    z : Variable
+    z = fst (fresh (atom (rel 0 1) (t ∷ []) ⇒ Λ y α))
+V y α      [ x / t ]''  with varEq x y
+...                     | yes _ = V y α
+...                     | no _  with y notInTerm t
+...                             | yes _ = V y (α [ x / t ]'')
+...                             | no  _ = V z ((α [ y / varterm z ]'') [ x / t ]'')
+  where
+    z : Variable
+    z = fst (fresh (atom (rel 0 1) (t ∷ []) ⇒ V y α))
+
+
+_[_/_]' : Formula → Variable → Term → Formula
+α [ x / varterm y ]' with varEq x y
+...                  | yes _ = α
+...                  | no  _ = α [ x / varterm y ]''
+α [ x / functerm f x₁ ]' = α [ x / functerm f x₁ ]''
 \end{code}
 \codeqed
 \end{proof}
@@ -976,7 +1085,7 @@ subInverse {ω} (V y ω∉α) (V x≢y y∉ω sub)       | no  ω≢y
 A variable is \emph{fresh} if appears nowhere (free or bound) in a formula.
 \begin{code}
 
-data _FreshIn_ (x : Variable) : Formula → Set where
+data _FreshIn_ x where
   atom : ∀{r ts} → x NotInTerms ts → x FreshIn (atom r ts)
   _⇒_  : ∀{α β}  → x FreshIn α → x FreshIn β → x FreshIn α ⇒ β
   _∧_  : ∀{α β}  → x FreshIn α → x FreshIn β → x FreshIn α ∧ β
@@ -1193,7 +1302,6 @@ maxVar (V x α) with maxVar α
 Finally, a fresh variable can be extracted by choosing the successor of
 the variable given by the proof above.
 \begin{code}
-fresh : ∀ α → Σ Variable (_FreshIn α)
 fresh α with maxVar α
 ...     | ⌈α⌉ , αpf = var (suc (varidx ⌈α⌉)) , αpf (suc (varidx ⌈α⌉)) ≤refl
 
