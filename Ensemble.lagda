@@ -116,8 +116,8 @@ _∪_ : {A : Set} → Ensemble A → Ensemble A → Ensemble A
 \end{code}
 Instead of defining a set difference, we define notation for removing a single
 element from an ensemble. Since ensembles will be used only for finite
-collections, this is not a limitation.  A definition using conjunctions is that
-$x \in A - a$ means $x \in A \text{ and } x \neq A$. Translating this to
+collections, this is not a limitation. A definition using conjunctions is that
+$x \in A - a$ means $x \in A \text{ and } x \neq a$. Translating this to
 functions gives $x \in A - a \coloneqq \lnot(x \in A \rightarrow x \equiv a)$.
 Take the contrapositive of the inner implication.
 \begin{code}

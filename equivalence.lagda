@@ -907,6 +907,7 @@ The third case is the dual of the second.
 
 \end{code}
 If $x = y$, then $\alpha' = \beta'$.
+\vspace{-0.1pt} %To fit the qed on this page
 \begin{prooftree}
   \AxiomC{$\Gamma$}
   \noLine\UnaryInfC{$\vdots$}\noLine
