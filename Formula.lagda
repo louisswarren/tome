@@ -33,17 +33,17 @@ distinct.
 record Variable : Set where
   constructor var
   field
-    index : ℕ
+    varidx : ℕ
 
-open Variable renaming (index to varidx)
+open Variable
 
 record Function : Set where
   constructor func
   field
-    index : ℕ
-    arity : ℕ
+    funcidx   : ℕ
+    funcarity : ℕ
 
-open Function renaming (index to funcidx ; arity to funcarity)
+open Function
 
 \end{code}
 By defining these as \inline{record} types, we get destructors for accessing
