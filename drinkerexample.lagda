@@ -232,8 +232,8 @@ weaker than DNE. For illustrative purposes, lines given by Agda's proof search
 are marked with \inline{{- Auto -}} in the next proof. The remainder of the
 proof, with the exception of the \inline{close} function call, corresponds
 exactly to doing natural deduction by hand, from the bottom up. As the
-proof tree is developed, Agda displays the subgoal is of each hole in the
-deduction, and will only accept valid subproofs and formulae. In this way, Agda
+proof tree is developed, Agda displays the subgoal of each hole in the
+deduction, and will accept valid subproofs and formulae only. In this way, Agda
 not only verifies the deduction after it has been completed, but also acts as a
 proof assistant for natural deduction.
 \begin{code}
@@ -500,7 +500,7 @@ free for $x$ in $\alpha$, and which differs from $x$.
     ωFreeForxInα  = freshFreeFor (fst (snd ω,ωFresh,x≢ω)) xvar
     x≢ω           = snd (snd ω,ωFresh,x≢ω)
 \end{code}
-Now, compute $\alpha_\omega = \alpha[\omega/x]$.
+Now, compute $\alpha_\omega = \alpha[x/\omega]$.
 \begin{code}
     αω        : Formula
     α[x/ω]≡αω : α [ xvar / _ ]≡ αω

@@ -44,7 +44,7 @@ on variable freedom.
 
 A scheme is derivable if every instance of the scheme is derivable. A list
 $\Omega s$ of schemes is stronger than a scheme $\Phi$ if every instance of
-$\Phi$ is derivable from finitely many instances of schemes in $\Omega$.
+$\Phi$ is derivable from finitely many instances of schemes in $\Omega s$.
 Equivalently, $\Omega s$ is stronger than $\Phi$ if the derivability of $\Omega
 s$ implies the derivability of $\Phi$.
 \begin{code}
