@@ -100,7 +100,7 @@ It follows that if equality is decidable, then
 membership is decidable.
 \begin{code}
 
-decide∈ : ∀{A} → Decidable≡ A → (x : A) → (xs : List A) → Dec (x ∈ xs)
-decide∈ _≟_ x xs = any (x ≟_) xs
+decide∈ : ∀{A} ⦃ _ : Discrete A ⦄ → (x : A) → (xs : List A) → Dec (x ∈ xs)
+decide∈ x xs = any (x ≟_) xs
 
 \end{code}

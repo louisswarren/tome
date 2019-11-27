@@ -79,7 +79,7 @@ x ∈ xs = Any (x ≡_) xs
 _∉_ : {A : Set} {n : ℕ} → (x : A) → Vec A n → Set
 x ∉ xs = ¬(x ∈ xs)
 
-decide∈ : ∀{A n} → Decidable≡ A → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
-decide∈ _≟_ x xs = any (x ≟_) xs
+decide∈ : ∀{A n} ⦃ _ : Discrete A ⦄ → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
+decide∈ x xs = any (x ≟_) xs
 
 \end{code}

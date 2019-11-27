@@ -46,13 +46,13 @@ successors, check if their predecessors are equal. If so, then equality
 follows. Otherwise, assuming the numbers are equal leads to a contradiction.
 \begin{code}
 
-natEq : Decidable≡ ℕ
-natEq zero    zero    = yes refl
-natEq zero    (suc m) = no λ ()
-natEq (suc n) zero    = no λ ()
-natEq (suc n) (suc m) with natEq n m
-...                   | yes refl = yes refl
-...                   | no  n≢m  = no  λ { refl → n≢m refl }
+instance natD : Discrete ℕ
+natD ⟨ zero  ≟ zero  ⟩ = yes refl
+natD ⟨ zero  ≟ suc m ⟩ = no λ ()
+natD ⟨ suc n ≟ zero  ⟩ = no λ ()
+natD ⟨ suc n ≟ suc m ⟩ with n ≟ m
+...                    | yes refl = yes refl
+...                    | no  n≢m  = no λ { refl → n≢m refl }
 
 \end{code}
 

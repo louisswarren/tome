@@ -23,7 +23,7 @@ private
 infixl 5 _-_
 _-_ : List Formula → Formula → List Formula
 [] - β = []
-(α ∷ αs) - β with formulaEq α β
+(α ∷ αs) - β with α ≟ β
 ((β ∷ αs) - .β) | yes refl = αs - β
 ((α ∷ αs) -  β) | no  _    = α ∷ (αs - β)
 
@@ -130,13 +130,13 @@ arrow-example α = eqcontext closed
                     (assume α))
                   where
                     closed : ((α ∷ []) - α) ≡ []
-                    closed with formulaEq α α
+                    closed with α ≟ α
                     ...    | yes refl = refl
                     ...    | no  α≢α  = ⊥-elim (α≢α refl)
 
 \end{code}
 To examine what the result of \inline{(α ∷ []) - α} is, we must examine the
-pattern matching that occurs on the result of \inline{formulaEq α α}. In the
+pattern matching that occurs on the result of \inline{α ≟ α}. In the
 real case where \inline{α ≡ α} holds, $\alpha$ is removed from the list, and
 the proof is \inline{refl}. However, we must also consider the case where
 \inline{α ≢ α} (which we prove using absurdity).
@@ -145,8 +145,8 @@ the proof is \inline{refl}. However, we must also consider the case where
 \begin{code}
 
 removeonce : ∀ α → ((α ∷ α ∷ []) - α) ≡ []
-removeonce α with formulaEq α α
-removeonce α | yes refl with formulaEq α α
+removeonce α with α ≟ α
+removeonce α | yes refl with α ≟ α
 removeonce α | yes refl | yes refl = refl
 removeonce α | yes refl | no x = ⊥-elim (x refl)
 removeonce α | no x = ⊥-elim (x refl)
@@ -155,12 +155,12 @@ simple₂ : ∀ α β → [] ⊢ α ⇒ α ∧ (β ⇒ α)
 simple₂ α β = eqcontext closed (arrowintro α (conjintro (assume α) (arrowintro β (assume α))))
   where
     closed : (((α ∷ []) ∪ ((α ∷ []) - β)) - α) ≡ []
-    closed with formulaEq α β
-    closed | yes refl with formulaEq α α
+    closed with α ≟ β
+    closed | yes refl with α ≟ α
     closed | yes refl | yes refl = refl
     closed | yes refl | no x = ⊥-elim (x refl)
-    closed | no _ with formulaEq α α
-    closed | no _ | yes refl with formulaEq α α
+    closed | no _ with α ≟ α
+    closed | no _ | yes refl with α ≟ α
     closed | no _ | yes refl | yes refl = refl
     closed | no _ | yes refl | no x = ⊥-elim (x refl)
     closed | no _ | no x = ⊥-elim (x refl)
@@ -183,17 +183,17 @@ reorder α β γ = eqcontext closed
                    (assume β))))
   where
     closed : ((α ⇒ β ⇒ γ ∷ α ∷ β ∷ []) - α - β) ≡ α ⇒ β ⇒ γ ∷ []
-    closed with formulaEq (α ⇒ β ⇒ γ) α
+    closed with (α ⇒ β ⇒ γ) ≟ α
     closed | yes ()
-    closed | no _ with formulaEq α α
+    closed | no _ with α ≟ α
     closed | no _ | no  α≢α  = ⊥-elim (α≢α refl)
-    closed | no _ | yes refl with formulaEq β α
-    closed | no _ | yes refl | yes refl with formulaEq (α ⇒ β ⇒ γ) β
+    closed | no _ | yes refl with β ≟ α
+    closed | no _ | yes refl | yes refl with (α ⇒ β ⇒ γ) ≟ β
     closed | no _ | yes refl | yes refl | yes ()
     closed | no _ | yes refl | yes refl | no _ = refl
-    closed | no _ | yes refl | no _ with formulaEq (α ⇒ β ⇒ γ) β
+    closed | no _ | yes refl | no _ with (α ⇒ β ⇒ γ) ≟ β
     closed | no _ | yes refl | no _ | yes ()
-    closed | no _ | yes refl | no _ | no _ with formulaEq β β
+    closed | no _ | yes refl | no _ | no _ with β ≟ β
     closed | no _ | yes refl | no _ | no _ | yes refl = refl
     closed | no _ | yes refl | no _ | no _ | no  β≢β  = ⊥-elim (β≢β refl)
 

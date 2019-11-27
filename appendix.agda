@@ -16,20 +16,20 @@ derived-ident (atom r ts) x = atom r (termsLemma ts)
   where
     termsLemma : ∀{n} → (ts : Vec Term n) → [ ts ][ x / varterm x ]≡ ts
     termsLemma [] = []
-    termsLemma (varterm y     ∷ ts) with varEq x y
+    termsLemma (varterm y     ∷ ts) with x ≟ y
     ...                             | yes refl = varterm≡     ∷ termsLemma ts
     ...                             | no  x≢y  = varterm≢ x≢y ∷ termsLemma ts
     termsLemma (functerm f us ∷ ts) = functerm (termsLemma us) ∷ termsLemma ts
 derived-ident (α ⇒ β) x = derived-ident α x ⇒ derived-ident β x
 derived-ident (α ∧ β) x = derived-ident α x ∧ derived-ident β x
 derived-ident (α ∨ β) x = derived-ident α x ∨ derived-ident β x
-derived-ident (Λ y α) x with varEq x y
+derived-ident (Λ y α) x with x ≟ y
 ...             | yes refl = Λ↓ y α
 ...             | no  x≢y  = Λ x≢y (varterm y≢x) (derived-ident α x)
                              where
                                y≢x : y ≢ x
                                y≢x refl = x≢y refl
-derived-ident (V y α) x with varEq x y
+derived-ident (V y α) x with x ≟ y
 ...             | yes refl = V↓ y α
 ...             | no  x≢y  = V x≢y (varterm y≢x) (derived-ident α x)
                              where
@@ -84,7 +84,7 @@ t freeFor x In α with x notFreeIn α
                                                 ¬tffα∨β (notfree xnf) = xf xnf
                                                 ¬tffα∨β (_ ∨ tffβ) = ¬tffβ tffβ
     ...                          | yes tffβ = yes (tffα ∨ tffβ)
-    lemma (Λ y α)     xf with varEq x y
+    lemma (Λ y α)     xf with x ≟ y
     ...                  | yes refl = yes (Λ↓ α)
     ...                  | no  x≢y  with t freeFor x In α
     ...                             | no ¬tffα = no ¬tff
@@ -101,7 +101,7 @@ t freeFor x In α with x notFreeIn α
                                                               ¬tff (notfree xnf) = xf xnf
                                                               ¬tff (Λ↓ .α) = x≢y refl
                                                               ¬tff (Λ ynft _) = ¬ynft ynft
-    lemma (V y α)     xf with varEq x y
+    lemma (V y α)     xf with x ≟ y
     ...                  | yes refl = yes (V↓ α)
     ...                  | no  x≢y  with t freeFor x In α
     ...                             | no ¬tffα = no ¬tff
@@ -245,6 +245,6 @@ unfree α x with x notFreeIn α
 --    d)
 --   where
 --    x∉∀yβ′ : x NotFreeIn Λ y β′
---    x∉∀yβ′ with varEq x y
+--    x∉∀yβ′ with x ≟ y
 --    ...    | yes refl rewrite subIdentFunc α′[x/y]≡β′ = Λ↓ x β′
 --    ...    | no  x≢y  = Λ y (subNotFree (varterm x≢y) α′[x/y]≡β′)

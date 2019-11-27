@@ -151,12 +151,12 @@ the functions above. Additionally, the type requires that the predicate is over
 a type with a decidable equality.
 \begin{code}
 
-data Assembled {A : Set} (eq : Decidable≡ A) : Pred A → Set₁ where
-  from∅   : Assembled eq ∅
-  from⟨_⟩ : (α : A)  → Assembled eq (⟨ α ⟩)
-  from_∪_ : ∀{αs βs} → Assembled eq αs → Assembled eq βs
-                       → Assembled eq (αs ∪ βs)
-  from_-_ : ∀{αs}    → Assembled eq αs → (α : A) → Assembled eq (αs - α)
+data Assembled {A : Set} ⦃ _ : Discrete A ⦄ : Pred A → Set₁ where
+  from∅   : Assembled ∅
+  from⟨_⟩ : (α : A)  → Assembled (⟨ α ⟩)
+  from_∪_ : ∀{αs βs} → Assembled αs → Assembled βs
+                       → Assembled (αs ∪ βs)
+  from_-_ : ∀{αs}    → Assembled αs → (α : A) → Assembled (αs - α)
 
 \end{code}
 
@@ -167,8 +167,8 @@ Assembled ensembles have decidable membership.
 $ $
 \begin{code}
 
-decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Ensemble A}
-          → (x : A) → Assembled eq αs → Dec (x ∈ αs)
+decide∈ : {A : Set} ⦃ _ : Discrete A ⦄ {αs : Ensemble A}
+          → (x : A) → Assembled αs → Dec (x ∈ αs)
 \end{code}
 Nothing is in the empty ensemble.
 \begin{code}
@@ -177,7 +177,7 @@ decide∈          x from∅            = no λ x∈∅ → x∈∅
 Membership of a singleton is defined by an equality, and so its decidability is
 just the the decidable equality from \inline{Assembled}.
 \begin{code}
-decide∈ {_} {eq} x (from⟨ α ⟩)      = eq x α
+decide∈          x (from⟨ α ⟩)      = x ≟ α
 \end{code}
 To check membership for a union, simply check first for membership of the left
 ensemble, then the right. The lambda expression proofs given here are
@@ -194,7 +194,7 @@ Finally, in the case of an element being removed, use the decidable equality
 from \inline{Assembled} to check if the given element was removed, and
 otherwise check if the given element is in the inner ensemble.
 \begin{code}
-decide∈ {_} {eq} x (from Aαs - α)   with eq x α
+decide∈          x (from Aαs - α)   with x ≟ α
 ...   | yes refl = no λ α∈αs-α → α∈αs-α λ α≢α _ → α≢α refl
 ...   | no x≢α   with decide∈ x Aαs
 ...              | yes x∈αs = yes λ x≢α→x∉αs → x≢α→x∉αs x≢α x∈αs
@@ -266,11 +266,11 @@ We use a lemma to show that this is the case for all values of the removed list
 of elements, and apply it to the case of the empty list.
 \begin{code}
 
-fAll→All : {A : Set} {eq : Decidable≡ A} {P : Pred A} {αs : Ensemble A}
-            → Assembled eq αs → (∀ x → x ∈ αs → P x) → All P αs
-fAll→All {A} {eq} {P} Aαs fall = φ Aαs [] (λ x x∈αs _ → fall x x∈αs)
+fAll→All : {A : Set} ⦃ _ : Discrete A ⦄ {P : Pred A} {αs : Ensemble A}
+            → Assembled αs → (∀ x → x ∈ αs → P x) → All P αs
+fAll→All {A} {P} Aαs fall = φ Aαs [] (λ x x∈αs _ → fall x x∈αs)
   where
-    φ : ∀{αs} → Assembled eq αs → ∀ xs
+    φ : ∀{αs} → Assembled αs → ∀ xs
                 → (∀ x → x ∈ αs → x List.∉ xs → P x) → All P [ αs ∖ xs ]
     φ from∅            xs fall∅     = all∅
 \end{code}
@@ -278,7 +278,7 @@ For a singleton $\{\alpha\}$, either $\alpha$ has been removed, or otherwise it
 has not been removed, in which case we use the functional all to prove $P
 \alpha$.
 \begin{code}
-    φ from⟨ α ⟩        xs fall⟨α⟩   with List.decide∈ eq α xs
+    φ from⟨ α ⟩        xs fall⟨α⟩   with List.decide∈ α xs
     ...                             | yes α∈xs = all⟨- α∈xs ⟩
     ...                             | no  α∉xs = all⟨ fall⟨α⟩ α refl α∉xs ⟩
 \end{code}

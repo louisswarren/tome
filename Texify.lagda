@@ -107,7 +107,7 @@ texformula : Formula → String
 
 parenformula : Formula → String
 parenformula p@(atom _ _) = texformula p
-parenformula p@(_ ⇒ b) with formulaEq b ⊥
+parenformula p@(_ ⇒ b) with b ≟ ⊥
 ...                    | yes _ = texformula p
 ...                    | no _  = lp >> texformula p >> rp
 parenformula p@(_ ∧ _) = lp >> texformula p >> rp
@@ -115,7 +115,7 @@ parenformula p@(_ ∨ _) = lp >> texformula p >> rp
 parenformula p@(Λ _ _) = texformula p
 parenformula p@(V _ _) = texformula p
 
-texformula a@(atom f ts) with formulaEq a ⊥
+texformula a@(atom f ts) with a ≟ ⊥
 ...                            | yes _ = TEXbot
 texformula (atom (rel n k) ts) | no _  with k
 ...    | zero     = strrel (rel n k)
@@ -123,7 +123,7 @@ texformula (atom (rel n k) ts) | no _  with k
 texformula (atom (rel n k) (x ∷ y ∷ [])) | no _
        | suc (suc zero) = texterm x >> strrel (rel n k) >> texterm y
 ...    | suc (suc _)    = strrel (rel n k)  >> lp >> textermvec ts >> rp
-texformula (a ⇒ b) with formulaEq b ⊥
+texformula (a ⇒ b) with b ≟ ⊥
 ...    | yes _  = TEXnot >> wrap (parenformula a)
 ...    | no _  = parenformula a >> TEXarrow >> parenformula b
 texformula (a ∧ b) = parenformula a >> TEXand >> parenformula b
@@ -181,7 +181,7 @@ texifytree i (trinaryinf x s T₁ T₂ T₃) = texifytree i T₁
 
 
 dtot : ∀{α Γ} {ω : Ensemble Formula}
-       → Assembled formulaEq ω → Γ ⊢ α → Textree
+       → Assembled ω → Γ ⊢ α → Textree
 dtot {α} o (cite s d)           = schemeax α s
 dtot {α} o (assume a) with Ensemble.decide∈ a o
 ...                   | yes _   = openax     α

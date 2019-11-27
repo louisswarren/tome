@@ -116,160 +116,159 @@ unremarkable, and follow the same pattern as the proof for decidable equality
 of natural numbers above, they are omitted.
 \begin{code}
 
-varEq : Decidable≡ Variable
+instance varD : Discrete Variable
 -- Proof omitted.
 
 \end{code}
 \AgdaHide{
 \begin{code}
 
-varEq (var n) (var m) with natEq n m
-...                   | yes refl = yes refl
-...                   | no  n≢m  = no λ { refl → n≢m refl }
+varD ⟨ var n ≟ var m ⟩ with n ≟ m
+...                    | yes refl = yes refl
+...                    | no  n≢m  = no λ { refl → n≢m refl }
 
 \end{code}
 }
 \begin{code}
 
-relEq : Decidable≡ Relation
+instance relD : Discrete Relation
 -- Proof omitted.
 
 \end{code}
 \AgdaHide{
 \begin{code}
 
-relEq (rel n j) (rel m k) with natEq n m
-...                       | no  n≢m  = no λ { refl → n≢m refl }
-...                       | yes refl with natEq j k
-...                                  | yes refl = yes refl
-...                                  | no  j≢k  = no λ { refl → j≢k refl }
+relD ⟨ rel n j ≟ rel m k ⟩ with n ≟ m
+...                        | no  n≢m  = no λ { refl → n≢m refl }
+...                        | yes refl with j ≟ k
+...                                   | yes refl = yes refl
+...                                   | no  j≢k  = no λ { refl → j≢k refl }
 
 \end{code}
 }
 \begin{code}
 
-funcEq : Decidable≡ Function
+instance funcD : Discrete Function
 -- Proof omitted.
 
 \end{code}
 \AgdaHide{
 \begin{code}
 
-funcEq (func n j) (func m k) with natEq n m
-...                          | no  n≢m  = no λ { refl → n≢m refl }
-...                          | yes refl with natEq j k
+funcD ⟨ func n j ≟ func m k ⟩ with n ≟ m | j ≟ k
+...                           | yes refl | yes refl = yes refl
+...                           | no n≢m   | _        = no λ { refl → n≢m refl }
+...                           | _        | no j≢k   = no λ { refl → j≢k refl }
+
+\end{code}
+}
+\begin{code}
+
+instance termD : Discrete Term
+-- Proof omitted.
+
+\end{code}
+\AgdaHide{
+\begin{code}
+
+termD ⟨ varterm x     ≟ varterm y     ⟩ with x ≟ y
 ...                                     | yes refl = yes refl
-...                                     | no  j≢k  = no λ { refl → j≢k refl }
-
-\end{code}
-}
-\begin{code}
-
-termEq : Decidable≡ Term
--- Proof omitted.
-
-\end{code}
-\AgdaHide{
-\begin{code}
-
-termEq (varterm x)     (varterm y)     with varEq x y
-...                                    | yes refl = yes refl
-...                                    | no  x≢y  = no λ { refl → x≢y refl }
-termEq (varterm x)     (functerm f ts) = no λ ()
-termEq (functerm f ts) (varterm x)     = no λ ()
-termEq (functerm f []) (functerm g []) with funcEq f g
-...                                    | yes refl = yes refl
-...                                    | no  f≢g  = no λ { refl → f≢g refl }
-termEq (functerm f []) (functerm g (_ ∷ _)) = no λ ()
-termEq (functerm f (_ ∷ _)) (functerm g []) = no λ ()
-termEq
-  (functerm (func n (suc j)) (u ∷ us)) (functerm (func m (suc k)) (v ∷ vs))
-  with natEq j k
+...                                     | no  x≢y  = no λ { refl → x≢y refl }
+termD ⟨ varterm x     ≟ functerm f ts ⟩ = no λ ()
+termD ⟨ functerm f ts ≟ varterm x ⟩     = no λ ()
+termD ⟨ functerm f [] ≟ functerm g [] ⟩ with f ≟ g
+...                                     | yes refl = yes refl
+...                                     | no  f≢g  = no λ { refl → f≢g refl }
+termD ⟨ functerm f [] ≟ functerm g (_ ∷ _) ⟩ = no λ ()
+termD ⟨ functerm f (_ ∷ _) ≟ functerm g [] ⟩ = no λ ()
+termD
+  ⟨ functerm (func n (suc j)) (u ∷ us) ≟ functerm (func m (suc k)) (v ∷ vs) ⟩
+  with j ≟ k
 ... | no  j≢k  = no λ { refl → j≢k refl }
-... | yes refl with termEq u v
+... | yes refl with u ≟ v
 ...   | no  u≢v  = no λ { refl → u≢v refl }
 ...   | yes refl
-        with termEq (functerm (func n j) us) (functerm (func m k) vs)
+        with (functerm (func n j) us) ≟ (functerm (func m k) vs)
 ...     | yes refl = yes refl
 ...     | no  neq  = no λ { refl → neq refl }
 
 
-vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
-vecEq eq [] [] = yes refl
-vecEq eq (x ∷ xs) (y ∷ ys) with eq x y
-...                        | no  x≢y  = no λ { refl → x≢y refl }
-...                        | yes refl with vecEq eq xs ys
-...                                   | yes refl  = yes refl
-...                                   | no  xs≢xy = no λ { refl → xs≢xy refl }
+instance vecD : ∀{n} {A : Set} ⦃ _ : Discrete A ⦄ → Discrete (Vec A n)
+vecD ⟨ []     ≟ []     ⟩ = yes refl
+vecD ⟨ x ∷ xs ≟ y ∷ ys ⟩ with x ≟ y
+...                      | no  x≢y  = no λ { refl → x≢y refl }
+...                      | yes refl with xs ≟ ys
+...                                 | yes refl  = yes refl
+...                                 | no  xs≢xy = no λ { refl → xs≢xy refl }
 
 \end{code}
 }
 \begin{code}
 
-formulaEq : Decidable≡ Formula
+instance formulaD : Discrete Formula
 -- Proof omitted.
 
 \end{code}
 \AgdaHide{
 \begin{code}
 
-formulaEq (atom r xs) (atom s ys)
-    with natEq (relarity r) (relarity s)
+formulaD ⟨ atom r xs ≟ atom s ys ⟩
+    with (relarity r) ≟ (relarity s)
 ... | no ar≢as = no λ { refl → ar≢as refl }
-... | yes refl with (relEq r s) | (vecEq termEq xs ys)
+... | yes refl with r ≟ s | xs ≟ ys
 ...            | yes refl | yes refl  = yes refl
 ...            | _        | no  xs≢ys = no λ { refl → xs≢ys refl }
 ...            | no  r≢s  | _         = no λ { refl → r≢s refl }
-formulaEq (α ⇒ β) (γ ⇒ δ) with (formulaEq α γ) | (formulaEq β δ)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
-...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
-formulaEq (α ∧ β) (γ ∧ δ) with (formulaEq α γ) | (formulaEq β δ)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
-...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
-formulaEq (α ∨ β) (γ ∨ δ) with (formulaEq α γ) | (formulaEq β δ)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
-...                       | no  α≢γ  | _        = no λ { refl → α≢γ refl }
-formulaEq (Λ x α) (Λ y β) with (varEq x y) | (formulaEq α β)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  α≢β  = no λ { refl → α≢β refl }
-...                       | no  x≢y  | _        = no λ { refl → x≢y refl }
-formulaEq (V x α) (V y β) with (varEq x y) | (formulaEq α β)
-...                       | yes refl | yes refl = yes refl
-...                       | _        | no  α≢β  = no λ { refl → α≢β refl }
-...                       | no  x≢y  | _        = no λ { refl → x≢y refl }
-formulaEq (atom r us) (γ ⇒ δ)     = no λ ()
-formulaEq (atom r us) (γ ∧ δ)     = no λ ()
-formulaEq (atom r us) (γ ∨ δ)     = no λ ()
-formulaEq (atom r us) (Λ y γ)     = no λ ()
-formulaEq (atom r us) (V y γ)     = no λ ()
-formulaEq (α ⇒ β)     (atom r vs) = no λ ()
-formulaEq (α ⇒ β)     (γ ∧ δ)     = no λ ()
-formulaEq (α ⇒ β)     (γ ∨ δ)     = no λ ()
-formulaEq (α ⇒ β)     (Λ y γ)     = no λ ()
-formulaEq (α ⇒ β)     (V y γ)     = no λ ()
-formulaEq (α ∧ β)     (atom r vs) = no λ ()
-formulaEq (α ∧ β)     (γ ⇒ δ)     = no λ ()
-formulaEq (α ∧ β)     (γ ∨ δ)     = no λ ()
-formulaEq (α ∧ β)     (Λ y γ)     = no λ ()
-formulaEq (α ∧ β)     (V y γ)     = no λ ()
-formulaEq (α ∨ β)     (atom r vs) = no λ ()
-formulaEq (α ∨ β)     (γ ⇒ δ)     = no λ ()
-formulaEq (α ∨ β)     (γ ∧ δ)     = no λ ()
-formulaEq (α ∨ β)     (Λ y γ)     = no λ ()
-formulaEq (α ∨ β)     (V y γ)     = no λ ()
-formulaEq (Λ x α)     (atom r vs) = no λ ()
-formulaEq (Λ x α)     (γ ⇒ δ)     = no λ ()
-formulaEq (Λ x α)     (γ ∧ δ)     = no λ ()
-formulaEq (Λ x α)     (γ ∨ δ)     = no λ ()
-formulaEq (Λ x α)     (V y γ)     = no λ ()
-formulaEq (V x α)     (atom r vs) = no λ ()
-formulaEq (V x α)     (γ ⇒ δ)     = no λ ()
-formulaEq (V x α)     (γ ∧ δ)     = no λ ()
-formulaEq (V x α)     (γ ∨ δ)     = no λ ()
-formulaEq (V x α)     (Λ y γ)     = no λ ()
+formulaD ⟨ α ⇒ β ≟ γ ⇒ δ ⟩ with α ≟ γ | β ≟ δ
+...                        | yes refl   | yes refl = yes refl
+...                        | _          | no  β≢δ  = no λ { refl → β≢δ refl }
+...                        | no  α≢γ    | _        = no λ { refl → α≢γ refl }
+formulaD ⟨ α ∧ β ≟ γ ∧ δ ⟩ with α ≟ γ | β ≟ δ
+...                        | yes refl   | yes refl = yes refl
+...                        | _          | no  β≢δ  = no λ { refl → β≢δ refl }
+...                        | no  α≢γ    | _        = no λ { refl → α≢γ refl }
+formulaD ⟨ α ∨ β ≟ γ ∨ δ ⟩ with α ≟ γ | β ≟ δ
+...                        | yes refl   | yes refl = yes refl
+...                        | _          | no  β≢δ  = no λ { refl → β≢δ refl }
+...                        | no  α≢γ    | _        = no λ { refl → α≢γ refl }
+formulaD ⟨ Λ x α ≟ Λ y β ⟩ with x ≟ y | α ≟ β
+...                        | yes refl   | yes refl = yes refl
+...                        | _          | no  α≢β  = no λ { refl → α≢β refl }
+...                        | no  x≢y    | _        = no λ { refl → x≢y refl }
+formulaD ⟨ V x α ≟ V y β ⟩ with x ≟ y | α ≟ β
+...                        | yes refl   | yes refl = yes refl
+...                        | _          | no  α≢β  = no λ { refl → α≢β refl }
+...                        | no  x≢y    | _        = no λ { refl → x≢y refl }
+formulaD ⟨ atom r us ≟ γ ⇒ δ     ⟩ = no λ ()
+formulaD ⟨ atom r us ≟ γ ∧ δ     ⟩ = no λ ()
+formulaD ⟨ atom r us ≟ γ ∨ δ     ⟩ = no λ ()
+formulaD ⟨ atom r us ≟ Λ y γ     ⟩ = no λ ()
+formulaD ⟨ atom r us ≟ V y γ     ⟩ = no λ ()
+formulaD ⟨ α ⇒ β     ≟ atom r vs ⟩ = no λ ()
+formulaD ⟨ α ⇒ β     ≟ γ ∧ δ     ⟩ = no λ ()
+formulaD ⟨ α ⇒ β     ≟ γ ∨ δ     ⟩ = no λ ()
+formulaD ⟨ α ⇒ β     ≟ Λ y γ     ⟩ = no λ ()
+formulaD ⟨ α ⇒ β     ≟ V y γ     ⟩ = no λ ()
+formulaD ⟨ α ∧ β     ≟ atom r vs ⟩ = no λ ()
+formulaD ⟨ α ∧ β     ≟ γ ⇒ δ     ⟩ = no λ ()
+formulaD ⟨ α ∧ β     ≟ γ ∨ δ     ⟩ = no λ ()
+formulaD ⟨ α ∧ β     ≟ Λ y γ     ⟩ = no λ ()
+formulaD ⟨ α ∧ β     ≟ V y γ     ⟩ = no λ ()
+formulaD ⟨ α ∨ β     ≟ atom r vs ⟩ = no λ ()
+formulaD ⟨ α ∨ β     ≟ γ ⇒ δ     ⟩ = no λ ()
+formulaD ⟨ α ∨ β     ≟ γ ∧ δ     ⟩ = no λ ()
+formulaD ⟨ α ∨ β     ≟ Λ y γ     ⟩ = no λ ()
+formulaD ⟨ α ∨ β     ≟ V y γ     ⟩ = no λ ()
+formulaD ⟨ Λ x α     ≟ atom r vs ⟩ = no λ ()
+formulaD ⟨ Λ x α     ≟ γ ⇒ δ     ⟩ = no λ ()
+formulaD ⟨ Λ x α     ≟ γ ∧ δ     ⟩ = no λ ()
+formulaD ⟨ Λ x α     ≟ γ ∨ δ     ⟩ = no λ ()
+formulaD ⟨ Λ x α     ≟ V y γ     ⟩ = no λ ()
+formulaD ⟨ V x α     ≟ atom r vs ⟩ = no λ ()
+formulaD ⟨ V x α     ≟ γ ⇒ δ     ⟩ = no λ ()
+formulaD ⟨ V x α     ≟ γ ∧ δ     ⟩ = no λ ()
+formulaD ⟨ V x α     ≟ γ ∨ δ     ⟩ = no λ ()
+formulaD ⟨ V x α     ≟ Λ y γ     ⟩ = no λ ()
 
 \end{code}
 }
@@ -337,7 +336,7 @@ x notInTerms [] = yes []
 To check against a variable term, use the decidable equality of variables, then
 recurse over the rest of the terms.
 \begin{code}
-x notInTerms (varterm y ∷ ts) with varEq x y
+x notInTerms (varterm y ∷ ts) with x ≟ y
 ...    | yes refl = no λ { (varterm x≢x ∷ _) → x≢x refl }
 ...    | no  x≢y  with x notInTerms ts
 ...               | yes x∉ts = yes (varterm x≢y ∷ x∉ts)
@@ -374,7 +373,7 @@ applied only to arguments structurally smaller than \inline{t ∷ ts}.
 \begin{code}
 
 _notInTerm_ : (x : Variable) → (t : Term) → Dec (x NotInTerm t)
-x notInTerm varterm y     with varEq x y
+x notInTerm varterm y     with x ≟ y
 ...                       | yes refl = no  λ { (varterm x≢x) → x≢x refl }
 ...                       | no  x≢y  = yes (varterm x≢y)
 x notInTerm functerm f ts with x notInTerms ts
@@ -407,13 +406,13 @@ x notFreeIn (α ∨ β)   with x notFreeIn α | x notFreeIn β
 ...                   | yes x∉α | yes x∉β = yes (x∉α ∨ x∉β)
 ...                   | no ¬x∉α | _       = no  λ { (x∉α ∨ _  ) → ¬x∉α x∉α }
 ...                   | _       | no ¬x∉β = no  λ { (_   ∨ x∉β) → ¬x∉β x∉β }
-x notFreeIn Λ  y α    with varEq x y
+x notFreeIn Λ  y α    with x ≟ y
 ...                   | yes refl = yes (Λ↓ x α)
 ...                   | no  x≢y  with x notFreeIn α
 ...                              | yes x∉α = yes (Λ y x∉α)
 ...                              | no ¬x∉α = no  λ { (Λ↓ x α)  → x≢y refl
                                                    ; (Λ y x∉α) → ¬x∉α x∉α }
-x notFreeIn V  y α    with varEq x y
+x notFreeIn V  y α    with x ≟ y
 ...                   | yes refl = yes (V↓ x α)
 ...                   | no  x≢y  with x notFreeIn α
 ...                              | yes x∉α = yes (V y x∉α)
@@ -752,7 +751,7 @@ substitution is required in either case.
 [_][_/_] : ∀{n} → (us : Vec Term n) → ∀ x t → Σ _ [ us ][ x / t ]≡_
 [ []                 ][ x / t ] = [] , []
 [ u             ∷ us ][ x / t ] with [ us ][ x / t ]
-[ varterm y     ∷ us ][ x / t ] | vs , vspf with varEq x y
+[ varterm y     ∷ us ][ x / t ] | vs , vspf with x ≟ y
 ...    | yes refl  = (t             ∷ vs) , (varterm≡      ∷ vspf)
 ...    | no  x≢y   = (varterm y     ∷ vs) , (varterm≢ x≢y  ∷ vspf)
 [ functerm f ws ∷ us ][ x / t ] | vs , vspf with [ ws ][ x / t ]
@@ -794,11 +793,11 @@ nothing. Otherwise, recurse.
 \begin{code}
 Λ y α [ .y / Λ↓ .α ]         = Λ y α , Λ↓ y α
 V y α [ .y / V↓ .α ]         = V y α , V↓ y α
-Λ y α [ x / Λ y∉t tffα ]     with varEq x y
+Λ y α [ x / Λ y∉t tffα ]     with x ≟ y
 ...                          | yes refl = Λ y α , Λ↓ y α
 ...                          | no  x≢y  with α [ x / tffα ]
 ...                                     | α′ , αpf = Λ y α′ , Λ x≢y y∉t αpf
-V y α [ x / V y∉t tffα ]     with varEq x y
+V y α [ x / V y∉t tffα ]     with x ≟ y
 ...                          | yes refl = V y α , V↓ y α
 ...                          | no  x≢y  with α [ x / tffα ]
 ...                                     | α′ , αpf = V y α′ , V x≢y y∉t αpf
@@ -825,10 +824,10 @@ subFreeFor (ident (atom r ts) x) = atom r ts
 subFreeFor (ident (α ⇒ β) x) = subFreeFor (ident α x) ⇒ subFreeFor (ident β x)
 subFreeFor (ident (α ∧ β) x) = subFreeFor (ident α x) ∧ subFreeFor (ident β x)
 subFreeFor (ident (α ∨ β) x) = subFreeFor (ident α x) ∨ subFreeFor (ident β x)
-subFreeFor (ident (Λ y α) x) with varEq y x
+subFreeFor (ident (Λ y α) x) with y ≟ x
 ...                          | yes refl = Λ↓ α
 ...                          | no  y≢x  = Λ (varterm y≢x) (subFreeFor (ident α x))
-subFreeFor (ident (V y α) x) with varEq y x
+subFreeFor (ident (V y α) x) with y ≟ x
 ...                          | yes refl = V↓ α
 ...                          | no  y≢x  = V (varterm y≢x) (subFreeFor (ident α x))
 subFreeFor (notfree x) = notfree x
@@ -948,7 +947,7 @@ subInverse (V↓ x α) (V _ (varterm x≢x) _) = ⊥-elim (x≢x refl)
 Suppose the formula was $\forall y \alpha$. Again discard the case where
 $\omega$ is $y$.
 \begin{code}
-subInverse {ω} (Λ y ω∉α) (Λ _ y∉ω           _) with varEq ω y
+subInverse {ω} (Λ y ω∉α) (Λ _ y∉ω           _) with ω ≟ y
 subInverse {ω} (Λ y ω∉α) (Λ _ (varterm y≢y) _) | yes refl = ⊥-elim (y≢y refl)
 \end{code}
 Recurse inside the quantifier, turning a proof of $x \neq y$ into $y \neq x$.
@@ -958,7 +957,7 @@ subInverse {ω} (Λ y ω∉α) (Λ x≢y y∉ω sub)       | no  ω≢y
 \end{code}
 The same applies if the formula was $\exists y \alpha$.
 \begin{code}
-subInverse {ω} (V y ω∉α) (V _ y∉ω           _) with varEq ω y
+subInverse {ω} (V y ω∉α) (V _ y∉ω           _) with ω ≟ y
 subInverse {ω} (V y ω∉α) (V _ (varterm y≢y) _) | yes refl = ⊥-elim (y≢y refl)
 subInverse {ω} (V y ω∉α) (V x≢y y∉ω sub)       | no  ω≢y
     = V ω≢y (varterm λ { refl → x≢y refl }) (subInverse ω∉α sub)

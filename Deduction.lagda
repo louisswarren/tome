@@ -52,7 +52,7 @@ the beginning of a proof to finalise the ensemble of assumptions. We require
 that an assembled ensemble is given, so that membership remains decidable.
 \begin{code}
 
-  close       : ∀{Γ Δ α} → Assembled formulaEq Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
+  close       : ∀{Γ Δ α} → Assembled Δ → Γ ⊂ Δ → Γ ⊢ α → Δ ⊢ α
 
 \end{code}
 The remaining constructors correspond precisely to the usual natural deduction
@@ -143,7 +143,7 @@ It is trivial to show that the context of a deduction is assembled (and so
 membership is decidable), simply by recursing over the deduction rules. The
 proof is omitted.
 \begin{code}
-assembled-context : ∀{Γ α} → Γ ⊢ α → Assembled formulaEq Γ
+assembled-context : ∀{Γ α} → Γ ⊢ α → Assembled Γ
 -- Proof omitted.
 
 \end{code}
