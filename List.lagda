@@ -48,13 +48,13 @@ every element of a list, by simply recursing through and examining $P$ on every
 element.
 \begin{code}
 
-all : ∀{A} {P : Pred A} → (p : Decidable P) → (xs : List A) → Dec (All P xs)
-all p []       = yes []
-all p (x ∷ xs) with p x
-...            | no ¬Px = no λ { (Px ∷ _) → ¬Px Px }
-...            | yes Px with all p xs
-...                     | yes ∀xsP = yes (Px ∷ ∀xsP)
-...                     | no ¬∀xsP = no  λ { (_ ∷ ∀xsP) → ¬∀xsP ∀xsP }
+decAll : ∀{A P} → (p : Decidable P) → (xs : List A) → Dec (All P xs)
+decAll p []       = yes []
+decAll p (x ∷ xs) with p x
+...               | no ¬Px = no λ { (Px ∷ _) → ¬Px Px }
+...               | yes Px with decAll p xs
+...                        | yes ∀xsP = yes (Px ∷ ∀xsP)
+...                        | no ¬∀xsP = no  λ { (_ ∷ ∀xsP) → ¬∀xsP ∀xsP }
 
 \end{code}
 
@@ -71,14 +71,14 @@ data Any {A : Set} (P : Pred A) : List A → Set where
 Again, the above is decidable for decidable predicates.
 \begin{code}
 
-any : ∀{A} {P : Pred A} → (p : Decidable P) → (xs : List A) → Dec (Any P xs)
-any p []       = no λ ()
-any p (x ∷ xs) with p x
-...            | yes Px = yes [ Px ]
-...            | no ¬Px with any p xs
-...                     | yes ∃xsP = yes (x ∷ ∃xsP)
-...                     | no ¬∃xsP = no  λ { [ Px ]      → ¬Px Px
-                                           ; ( _ ∷ ∃xsP) → ¬∃xsP ∃xsP }
+decAny : ∀{A P} → (p : Decidable P) → (xs : List A) → Dec (Any P xs)
+decAny p []       = no λ ()
+decAny p (x ∷ xs) with p x
+...               | yes Px = yes [ Px ]
+...               | no ¬Px with decAny p xs
+...                        | yes ∃xsP = yes (x ∷ ∃xsP)
+...                        | no ¬∃xsP = no  λ { [ Px ]      → ¬Px Px
+                                              ; ( _ ∷ ∃xsP) → ¬∃xsP ∃xsP }
 
 \end{code}
 
@@ -100,7 +100,7 @@ It follows that if equality is decidable, then
 membership is decidable.
 \begin{code}
 
-decide∈ : ∀{A} → Decidable≡ A → (x : A) → (xs : List A) → Dec (x ∈ xs)
-decide∈ _≟_ x xs = any (x ≟_) xs
+dec∈ : ∀{A} → Decidable≡ A → (x : A) → (xs : List A) → Dec (x ∈ xs)
+dec∈ _≟_ x xs = decAny (x ≟_) xs
 
 \end{code}

@@ -30,19 +30,19 @@ data All {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   []  : All P []
   _∷_ : ∀{x n} {xs : Vec A n} → P x → All P xs → All P (x ∷ xs)
 
-all : ∀{A n P} → (p : Decidable P) → (xs : Vec A n) → Dec (All P xs)
+decAll : ∀{A n P} → (p : Decidable P) → (xs : Vec A n) → Dec (All P xs)
 -- Proof omitted.
 
 \end{code}
 \AgdaHide{
 \begin{code}
 
-all p [] = yes []
-all p (x ∷ xs) with p x
-...            | no ¬Px = no λ { (Px ∷ _) → ¬Px Px }
-...            | yes Px with all p xs
-...                     | yes ∀xsP = yes (Px ∷ ∀xsP)
-...                     | no ¬∀xsP = no λ { (_ ∷ ∀xsP) → ¬∀xsP ∀xsP }
+decAll p []       = yes []
+decAll p (x ∷ xs) with p x
+...               | no ¬Px = no λ { (Px ∷ _) → ¬Px Px }
+...               | yes Px with decAll p xs
+...                        | yes ∀xsP = yes (Px ∷ ∀xsP)
+...                        | no ¬∀xsP = no λ { (_ ∷ ∀xsP) → ¬∀xsP ∀xsP }
 
 \end{code}
 }
@@ -50,22 +50,22 @@ all p (x ∷ xs) with p x
 
 data Any {A : Set} (P : Pred A) : ∀{n} → Vec A n → Set where
   [_] : ∀{n x} {xs : Vec A n} → P x → Any P (x ∷ xs)
-  _∷_ : ∀{n}   {xs : Vec A n} → ∀ x → Any P xs → Any P (x ∷ xs)
+  _∷_ : ∀{n}   {xs : Vec A n} → (x : A) → Any P xs → Any P (x ∷ xs)
 
-any : ∀{A n P} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
+decAny : ∀{A n P} → (p : Decidable P) → (xs : Vec A n) → Dec (Any P xs)
 -- Proof omitted.
 
 \end{code}
 \AgdaHide{
 \begin{code}
 
-any p [] = no λ ()
-any p (x ∷ xs) with p x
-...            | yes Px = yes [ Px ]
-...            | no ¬Px with any p xs
-...                     | yes ∃xsP = yes (x ∷ ∃xsP)
-...                     | no ¬∃xsP = no λ { [ Px ]      → ¬Px Px
-                                          ; ( _ ∷ ∃xsP) → ¬∃xsP ∃xsP }
+decAny p []       = no λ ()
+decAny p (x ∷ xs) with p x
+...               | yes Px = yes [ Px ]
+...               | no ¬Px with decAny p xs
+...                        | yes ∃xsP = yes (x ∷ ∃xsP)
+...                        | no ¬∃xsP = no  λ { [ Px ]      → ¬Px Px
+                                              ; ( _ ∷ ∃xsP) → ¬∃xsP ∃xsP }
 
 \end{code}
 }
@@ -79,7 +79,7 @@ x ∈ xs = Any (x ≡_) xs
 _∉_ : {A : Set} {n : ℕ} → (x : A) → Vec A n → Set
 x ∉ xs = ¬(x ∈ xs)
 
-decide∈ : ∀{A n} → Decidable≡ A → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
-decide∈ _≟_ x xs = any (x ≟_) xs
+dec∈ : ∀{A n} → Decidable≡ A → (x : A) → (xs : Vec A n) → Dec (x ∈ xs)
+dec∈ _≟_ x xs = decAny (x ≟_) xs
 
 \end{code}

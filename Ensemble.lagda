@@ -167,26 +167,26 @@ Assembled ensembles have decidable membership.
 $ $
 \begin{code}
 
-decide∈ : {A : Set} {eq : Decidable≡ A} {αs : Ensemble A}
-          → (x : A) → Assembled eq αs → Dec (x ∈ αs)
+dec∈ : {A : Set} {eq : Decidable≡ A} {αs : Ensemble A}
+       → (x : A) → Assembled eq αs → Dec (x ∈ αs)
 \end{code}
 Nothing is in the empty ensemble.
 \begin{code}
-decide∈          x from∅            = no λ x∈∅ → x∈∅
+dec∈          x from∅            = no λ x∈∅ → x∈∅
 \end{code}
 Membership of a singleton is defined by an equality, and so its decidability is
 just the the decidable equality from \inline{Assembled}.
 \begin{code}
-decide∈ {_} {eq} x (from⟨ α ⟩)      = eq x α
+dec∈ {_} {eq} x (from⟨ α ⟩)      = eq x α
 \end{code}
 To check membership for a union, simply check first for membership of the left
 ensemble, then the right. The lambda expression proofs given here are
 non-trivial, and difficult to interpret, but can be provided by Agda's proof
 search.
 \begin{code}
-decide∈          x (from Aαs ∪ Aβs) with decide∈ x Aαs
+dec∈          x (from Aαs ∪ Aβs) with dec∈ x Aαs
 ...   | yes x∈αs = yes λ x∉αs _ → x∉αs x∈αs
-...   | no  x∉αs with decide∈ x Aβs
+...   | no  x∉αs with dec∈ x Aβs
 ...              | yes x∈βs = yes λ _ x∉βs → x∉βs x∈βs
 ...              | no  x∉βs = no  λ x∉αs∪βs → x∉αs∪βs x∉αs x∉βs
 \end{code}
@@ -194,9 +194,9 @@ Finally, in the case of an element being removed, use the decidable equality
 from \inline{Assembled} to check if the given element was removed, and
 otherwise check if the given element is in the inner ensemble.
 \begin{code}
-decide∈ {_} {eq} x (from Aαs - α)   with eq x α
+dec∈ {_} {eq} x (from Aαs - α)   with eq x α
 ...   | yes refl = no λ α∈αs-α → α∈αs-α λ α≢α _ → α≢α refl
-...   | no x≢α   with decide∈ x Aαs
+...   | no x≢α   with dec∈ x Aαs
 ...              | yes x∈αs = yes λ x≢α→x∉αs → x≢α→x∉αs x≢α x∈αs
 ...              | no  x∉αs = no  λ x∈αs-α
                                     → x∈αs-α (λ _ _
@@ -278,7 +278,7 @@ For a singleton $\{\alpha\}$, either $\alpha$ has been removed, or otherwise it
 has not been removed, in which case we use the functional all to prove $P
 \alpha$.
 \begin{code}
-    φ from⟨ α ⟩        xs fall⟨α⟩   with List.decide∈ eq α xs
+    φ from⟨ α ⟩        xs fall⟨α⟩   with List.dec∈ eq α xs
     ...                             | yes α∈xs = all⟨- α∈xs ⟩
     ...                             | no  α∉xs = all⟨ fall⟨α⟩ α refl α∉xs ⟩
 \end{code}
