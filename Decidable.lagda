@@ -83,7 +83,12 @@ However, the special case of the equality predicate being decidable for a given
 type\footnote{
   This is as much a property of the type as it is a property of the equality
   predicate for that type. A type with a decidable equality is called discrete
-  \citep{hasegawa2013typed}.}
+  \citep{hasegawa2013typed}. In a programming-focused implementation, we could
+  define a type expressing the discreteness of another type, and provide
+  \inline{instance} proofs for the discreteness of the types we work with. Agda
+  would then find any required decidable equalities implicitly by instance
+  resolution. However, in the interests of remaining closer to a type-theoretic
+  implementation, we will eschew this Agda feature.}
 will be used later.
 \begin{code}
 
