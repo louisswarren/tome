@@ -23,7 +23,8 @@ open import Agda.Builtin.Equality public
 \end{code}
 For every $x$ of any type, there is a constructor for $x \equiv x$. An instance
 of the equality $x \equiv y$ is a proof that $x$ and $y$ are intensionally
-equal.
+equal. In Agda, we use \inline{data} types as a convenient notation for what
+would otherwise be defined type-theoretically using W-types.
 
 The bottom type, $\bot$, has no constructors, and so is provable only from
 absurdity. The usual definition of negation follows, as does an abbreviation for

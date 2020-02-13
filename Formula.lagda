@@ -46,6 +46,9 @@ record Function : Set where
 open Function
 
 \end{code}
+Agda's \inline{record} types fill the role of sigma types from MLTT.\footnote{
+  We will later define the type \inline{Σ} for sigma types using
+  \inline{record} types.}
 By defining these as \inline{record} types, we get destructors for accessing
 the indices and arities, which we then extract into the current module for ease
 of use. Note that the indices are natural numbers. While it seems equivalent
