@@ -185,16 +185,13 @@ termEq (functerm f []) (functerm g []) with funcEq f g
 ...                                    | no  f≢g  = no λ { refl → f≢g refl }
 termEq (functerm f []) (functerm g (_ ∷ _)) = no λ ()
 termEq (functerm f (_ ∷ _)) (functerm g []) = no λ ()
-termEq
-  (functerm (func n (suc j)) (u ∷ us)) (functerm (func m (suc k)) (v ∷ vs))
-  with natEq j k
-... | no  j≢k  = no λ { refl → j≢k refl }
-... | yes refl with termEq u v
-...   | no  u≢v  = no λ { refl → u≢v refl }
-...   | yes refl
-        with termEq (functerm (func n j) us) (functerm (func m k) vs)
-...     | yes refl = yes refl
-...     | no  neq  = no λ { refl → neq refl }
+termEq (functerm (func n (suc j)) (u ∷ us)) (functerm (func m (suc k)) (v ∷ vs)) with termEq (functerm (func n j) us) (functerm (func m k) vs)
+... | no  neq  = no λ { refl → neq refl }
+... | yes refl with natEq j k
+...            | no  j≢k  = no λ { refl → j≢k refl }
+...            | yes refl with termEq u v
+...                       | no  u≢v  = no λ { refl → u≢v refl }
+...                       | yes refl = yes refl
 
 
 vecEq : ∀{n} {A : Set} → Decidable≡ A → Decidable≡ (Vec A n)
