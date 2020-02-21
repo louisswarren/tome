@@ -214,12 +214,11 @@ formulaEq : Decidable≡ Formula
 \begin{code}
 
 formulaEq (atom r xs) (atom s ys)
-    with natEq (relarity r) (relarity s)
-... | no ar≢as = no λ { refl → ar≢as refl }
-... | yes refl with (relEq r s) | (vecEq termEq xs ys)
-...            | yes refl | yes refl  = yes refl
-...            | _        | no  xs≢ys = no λ { refl → xs≢ys refl }
-...            | no  r≢s  | _         = no λ { refl → r≢s refl }
+                          with relEq r s
+...                       | no  r≢s  = no λ { refl → r≢s refl }
+...                       | yes refl with vecEq termEq xs ys
+...                                  | yes refl  = yes refl
+...                                  | no  xs≢ys = no λ { refl → xs≢ys refl }
 formulaEq (α ⇒ β) (γ ⇒ δ) with (formulaEq α γ) | (formulaEq β δ)
 ...                       | yes refl | yes refl = yes refl
 ...                       | _        | no  β≢δ  = no λ { refl → β≢δ refl }
