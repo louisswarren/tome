@@ -30,7 +30,9 @@ open import Vec
 \subsection{Formula equivalence}
 
 Formulae are \emph{equivalent} if they are equal up to renaming bound
-variables. Here, renaming means substituting a variable for another variable
+variables.\footnote{
+  This is often called $\alpha$-equivalence.
+} Here, renaming means substituting a variable for another variable
 which is not free, so that the meaning of the formula does not change.
 \begin{code}
 
