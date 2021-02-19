@@ -107,9 +107,9 @@ texformula : Formula → String
 
 parenformula : Formula → String
 parenformula p@(atom _ _) = texformula p
-parenformula p@(_ ⇒ b) with formulaEq b ⊥
-...                    | yes _ = texformula p
-...                    | no _  = lp >> texformula p >> rp
+parenformula p@(_ ⇒ b) with formulaEq b ⊥ | texformula p
+...                    | yes _ | tfp = tfp
+...                    | no _  | tfp = lp >> tfp >> rp
 parenformula p@(_ ∧ _) = lp >> texformula p >> rp
 parenformula p@(_ ∨ _) = lp >> texformula p >> rp
 parenformula p@(Λ _ _) = texformula p
