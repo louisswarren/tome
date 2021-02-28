@@ -428,9 +428,20 @@ x notFreeIn V  y α    with varEq x y
 \subsection{Substitutions}
 
 We define what it means for a formula $\beta$ to be obtained from $\alpha$ by
-replacing all free instances of a variable $x$ with term $t$. The definitions
-have a similar structure to that of \inline{_NotFreeIn_} above. The more
-general case of replacing terms with terms is not needed for natural deduction.
+replacing all free instances of a variable $x$ with term $t$, by giving a
+relation \inline{_[_/_]≡_}. Some of the natural deduction rules will involve
+variable substitution, and the type of the result of the deduction will depend
+on the result of the substitution. If we instead defined substitution as a
+function instead of a relation, we would have to provide equality proofs about
+the value computed by the function for (sometimes arbitrary) formulae. This is
+unweildy, and cannot be solved in general by Agda's proof search. Instead, we
+will define our relation so that it can be proved easily (and automatically)
+when doing natural deduction, and then later give a function which computes
+both a formula $\beta$, and a proof that $\beta$ is the required substitution.
+
+The definitions below have a similar structure to that of \inline{_NotFreeIn_}
+above. The more general case of replacing terms with terms is not needed for
+natural deduction.
 
 Inside a vector of terms, wherever $x$ occurs, it is replaced with $t$. Any
 variable distinct from $x$ is left unchanged. For a function term, $x$ is
