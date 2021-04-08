@@ -818,11 +818,11 @@ V y α [ x / V y∉t tffα ]     with varEq x y
 \codeqed
 \end{proof}
 
-We have proved that if $t$ is free for $x$ in $α$ then $α[x/t]$ exists. The
-converse is also true, meaning that \inline{_FreeFor_In_} precisely captures
-the notion of a substitution being possible. The proof is straightforward by
-induction on formula substitution, with the base case of atomic formulae being
-trivial.
+We have proved that if $t$ is free for $x$ in $\alpha$ then $alpha[x/t]$
+exists. The converse is also true, meaning that \inline{_FreeFor_In_} precisely
+captures the notion of a substitution being possible. The proof is
+straightforward by induction on formula substitution, with the base case of
+atomic formulae being trivial.
 \begin{code}
 
 subFreeFor : ∀{α x t β} → α [ x / t ]≡ β → t FreeFor x In α
